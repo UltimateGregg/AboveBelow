@@ -1,0 +1,31 @@
+{
+  "name": "sbox-mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server that talks to the s&box editor via the CoworkBridge HTTP listener.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "sbox-mcp-server": "dist/index.js",
+    "blender-mcp-server": "dist/blender.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "start:blender": "node dist/blender.js",
+    "dev": "tsx watch src/index.ts",
+    "clean": "rm -rf dist"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "esbuild": "^0.28.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

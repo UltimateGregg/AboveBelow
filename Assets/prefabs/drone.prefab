@@ -1,0 +1,364 @@
+{
+  "RootObject": {
+    "__guid": "22222222-d000-0000-0000-000000000001",
+    "Flags": 0,
+    "Name": "Drone",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [
+      {
+        "__type": "Sandbox.Rigidbody",
+        "__guid": "22222222-d100-0000-0000-000000000001",
+        "AngularDamping": 12,
+        "Gravity": false,
+        "LinearDamping": 2.5,
+        "Locking": {},
+        "MassOverride": 2.5,
+        "MotionEnabled": true,
+        "RigidbodyFlags": 0,
+        "StartAsleep": false
+      },
+      {
+        "__type": "Sandbox.BoxCollider",
+        "__guid": "22222222-d200-0000-0000-000000000001",
+        "Center": "0,0,0",
+        "IsTrigger": false,
+        "Scale": "22,19,7",
+        "Static": false
+      },
+      {
+        "__type": "DroneVsPlayers.DroneController",
+        "__guid": "22222222-d300-0000-0000-000000000001",
+        "MaxSpeed": 900,
+        "Acceleration": 8,
+        "Damping": 3.5,
+        "BoostMultiplier": 1.6,
+        "YawRateDegrees": 140,
+        "MouseLookDeadZone": 0.15,
+        "MouseYawSensitivity": 0.1,
+        "MousePitchSensitivity": 0.05,
+        "VisualTiltDegrees": 18,
+        "VisualTiltSmoothing": 6,
+        "PropellerSpinDegreesPerSecond": 2160,
+        "PropellerIdleSpinFraction": 0.35,
+        "PropellerBoostSpinMultiplier": 1.25,
+        "PropellerSound": "sounds/drone_hum.sound",
+        "PropellerSoundVolume": 0.35,
+        "PropellerIdlePitch": 0.85,
+        "PropellerMaxPitch": 1.35,
+        "VisualModel": {
+          "_type": "gameobject",
+          "go": "22222222-d000-1000-0000-000000000001"
+        },
+        "Body": {
+          "_type": "component",
+          "component_id": "22222222-d100-0000-0000-000000000001",
+          "go": "22222222-d000-0000-0000-000000000001",
+          "component_type": "Rigidbody"
+        },
+        "EyeAngles": "0,0,0",
+        "BoostActive": false
+      },
+      {
+        "__type": "DroneVsPlayers.DroneCamera",
+        "__guid": "22222222-d400-0000-0000-000000000001",
+        "Drone": {
+          "_type": "component",
+          "component_id": "22222222-d300-0000-0000-000000000001",
+          "go": "22222222-d000-0000-0000-000000000001",
+          "component_type": "DroneController"
+        },
+        "CameraSocket": {
+          "_type": "gameobject",
+          "go": "22222222-d000-2000-0000-000000000001"
+        },
+        "FirstPerson": true,
+        "CameraToggleInput": "ToggleDroneCamera",
+        "ChaseDistance": 220,
+        "ChaseHeight": 80
+      },
+      {
+        "__type": "DroneVsPlayers.DroneWeapon",
+        "__guid": "22222222-d500-0000-0000-000000000001",
+        "Drone": {
+          "_type": "component",
+          "component_id": "22222222-d300-0000-0000-000000000001",
+          "go": "22222222-d000-0000-0000-000000000001",
+          "component_type": "DroneController"
+        },
+        "MuzzleSocket": {
+          "_type": "gameobject",
+          "go": "22222222-d000-3000-0000-000000000001"
+        },
+        "EnableHitscan": true,
+        "HitscanDamage": 8,
+        "HitscanRange": 5000,
+        "HitscanInterval": 0.18,
+        "EnableKamikaze": true,
+        "KamikazeRadius": 320,
+        "KamikazeDamage": 200,
+        "KamikazeFalloff": 0.6,
+        "ExplosionPrefab": null
+      },
+      {
+        "__type": "DroneVsPlayers.Health",
+        "__guid": "22222222-d600-0000-0000-000000000001",
+        "MaxHealth": 60,
+        "CurrentHealth": 60,
+        "IsDead": false
+      }
+    ],
+    "Children": [
+      {
+        "__guid": "22222222-d000-1000-0000-000000000001",
+        "Flags": 0,
+        "Name": "Visual",
+        "Scale": "0.25,0.25,0.25",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "22222222-d000-1100-0000-000000000001",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/drone_high.vmdl",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ],
+        "Children": [
+          {
+            "__guid": "22222222-d000-4100-0000-000000000001",
+            "Flags": 0,
+            "Name": "Propeller_1",
+            "Position": "27.5,27.5,3",
+            "Enabled": true,
+            "Components": [],
+            "Children": [
+              {
+                "__guid": "22222222-d000-4110-0000-000000000001",
+                "Flags": 0,
+                "Name": "BladeA",
+                "Scale": "0.36,0.06,0.012",
+                "Enabled": true,
+                "Components": [
+                  {
+                    "__type": "Sandbox.ModelRenderer",
+                    "__guid": "22222222-d000-4111-0000-000000000001",
+                    "BodyGroups": 18446744073709551615,
+                    "MaterialOverride": "materials/drone_propeller.vmat",
+                    "Model": "models/dev/box.vmdl",
+                    "RenderType": "On",
+                    "Tint": "1,1,1,1"
+                  }
+                ]
+              },
+              {
+                "__guid": "22222222-d000-4120-0000-000000000001",
+                "Flags": 0,
+                "Name": "BladeB",
+                "Scale": "0.06,0.36,0.012",
+                "Enabled": true,
+                "Components": [
+                  {
+                    "__type": "Sandbox.ModelRenderer",
+                    "__guid": "22222222-d000-4121-0000-000000000001",
+                    "BodyGroups": 18446744073709551615,
+                    "MaterialOverride": "materials/drone_propeller.vmat",
+                    "Model": "models/dev/box.vmdl",
+                    "RenderType": "On",
+                    "Tint": "1,1,1,1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "__guid": "22222222-d000-4200-0000-000000000001",
+            "Flags": 0,
+            "Name": "Propeller_2",
+            "Position": "27.5,-27.5,3",
+            "Enabled": true,
+            "Components": [],
+            "Children": [
+              {
+                "__guid": "22222222-d000-4210-0000-000000000001",
+                "Flags": 0,
+                "Name": "BladeA",
+                "Scale": "0.36,0.06,0.012",
+                "Enabled": true,
+                "Components": [
+                  {
+                    "__type": "Sandbox.ModelRenderer",
+                    "__guid": "22222222-d000-4211-0000-000000000001",
+                    "BodyGroups": 18446744073709551615,
+                    "MaterialOverride": "materials/drone_propeller.vmat",
+                    "Model": "models/dev/box.vmdl",
+                    "RenderType": "On",
+                    "Tint": "1,1,1,1"
+                  }
+                ]
+              },
+              {
+                "__guid": "22222222-d000-4220-0000-000000000001",
+                "Flags": 0,
+                "Name": "BladeB",
+                "Scale": "0.06,0.36,0.012",
+                "Enabled": true,
+                "Components": [
+                  {
+                    "__type": "Sandbox.ModelRenderer",
+                    "__guid": "22222222-d000-4221-0000-000000000001",
+                    "BodyGroups": 18446744073709551615,
+                    "MaterialOverride": "materials/drone_propeller.vmat",
+                    "Model": "models/dev/box.vmdl",
+                    "RenderType": "On",
+                    "Tint": "1,1,1,1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "__guid": "22222222-d000-4300-0000-000000000001",
+            "Flags": 0,
+            "Name": "Propeller_3",
+            "Position": "-27.5,27.5,3",
+            "Enabled": true,
+            "Components": [],
+            "Children": [
+              {
+                "__guid": "22222222-d000-4310-0000-000000000001",
+                "Flags": 0,
+                "Name": "BladeA",
+                "Scale": "0.36,0.06,0.012",
+                "Enabled": true,
+                "Components": [
+                  {
+                    "__type": "Sandbox.ModelRenderer",
+                    "__guid": "22222222-d000-4311-0000-000000000001",
+                    "BodyGroups": 18446744073709551615,
+                    "MaterialOverride": "materials/drone_propeller.vmat",
+                    "Model": "models/dev/box.vmdl",
+                    "RenderType": "On",
+                    "Tint": "1,1,1,1"
+                  }
+                ]
+              },
+              {
+                "__guid": "22222222-d000-4320-0000-000000000001",
+                "Flags": 0,
+                "Name": "BladeB",
+                "Scale": "0.06,0.36,0.012",
+                "Enabled": true,
+                "Components": [
+                  {
+                    "__type": "Sandbox.ModelRenderer",
+                    "__guid": "22222222-d000-4321-0000-000000000001",
+                    "BodyGroups": 18446744073709551615,
+                    "MaterialOverride": "materials/drone_propeller.vmat",
+                    "Model": "models/dev/box.vmdl",
+                    "RenderType": "On",
+                    "Tint": "1,1,1,1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "__guid": "22222222-d000-4400-0000-000000000001",
+            "Flags": 0,
+            "Name": "Propeller_4",
+            "Position": "-27.5,-27.5,3",
+            "Enabled": true,
+            "Components": [],
+            "Children": [
+              {
+                "__guid": "22222222-d000-4410-0000-000000000001",
+                "Flags": 0,
+                "Name": "BladeA",
+                "Scale": "0.36,0.06,0.012",
+                "Enabled": true,
+                "Components": [
+                  {
+                    "__type": "Sandbox.ModelRenderer",
+                    "__guid": "22222222-d000-4411-0000-000000000001",
+                    "BodyGroups": 18446744073709551615,
+                    "MaterialOverride": "materials/drone_propeller.vmat",
+                    "Model": "models/dev/box.vmdl",
+                    "RenderType": "On",
+                    "Tint": "1,1,1,1"
+                  }
+                ]
+              },
+              {
+                "__guid": "22222222-d000-4420-0000-000000000001",
+                "Flags": 0,
+                "Name": "BladeB",
+                "Scale": "0.06,0.36,0.012",
+                "Enabled": true,
+                "Components": [
+                  {
+                    "__type": "Sandbox.ModelRenderer",
+                    "__guid": "22222222-d000-4421-0000-000000000001",
+                    "BodyGroups": 18446744073709551615,
+                    "MaterialOverride": "materials/drone_propeller.vmat",
+                    "Model": "models/dev/box.vmdl",
+                    "RenderType": "On",
+                    "Tint": "1,1,1,1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "__guid": "22222222-d000-2000-0000-000000000001",
+        "Flags": 0,
+        "Name": "CameraSocket",
+        "Position": "14,0,3",
+        "Enabled": true,
+        "Components": []
+      },
+      {
+        "__guid": "22222222-d000-3000-0000-000000000001",
+        "Flags": 0,
+        "Name": "MuzzleSocket",
+        "Position": "15,0,-2.5",
+        "Enabled": true,
+        "Components": []
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {},
+      "NavMesh": {
+        "Enabled": false,
+        "IncludeStaticBodies": true,
+        "IncludeKeyframedBodies": true,
+        "EditorAutoUpdate": true,
+        "AgentHeight": 64,
+        "AgentRadius": 16,
+        "AgentStepSize": 18,
+        "AgentMaxSlope": 40,
+        "ExcludedBodies": "",
+        "IncludedBodies": ""
+      }
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Drone",
+  "MenuIcon": "flight",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

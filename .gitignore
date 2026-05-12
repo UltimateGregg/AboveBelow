@@ -1,0 +1,52 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vs/
+.vscode/
+*.user
+*.suo
+*.sln.docstates
+
+# Local agent/editor state
+.codex-tmp/
+.tmpbuild/
+.sbox/
+**/.sbox/
+.claude/settings.local.json
+.mcp.json
+
+# Generated or bulky local artifacts
+api schema.json
+mcp.zip
+screenshots/
+*_preview.png
+*.log
+*.binlog
+*.bak-*
+*.blend.before-*
+
+# .NET build output
+bin/
+obj/
+**/.bin/
+TestResults/
+
+# S&Box compiled asset cache
+Assets/**/*_c
+Assets/**/*_d
+Libraries/**/*_c
+Libraries/**/*_d
+
+# Node / Python generated files
+node_modules/
+mcp/node_modules/
+mcp/dist/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+
+# Blender backup files
+*.blend1
+*.blend2
+*.blend@

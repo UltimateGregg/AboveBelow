@@ -1,0 +1,23 @@
+{
+  "source_blend": "weapons_model.blend/shotgun.blend",
+  "root_object": "Shotgun",
+  "target_fbx": "Assets/models/shotgun.fbx",
+  "target_vmdl": "Assets/models/shotgun.vmdl",
+  "model_resource_path": "models/shotgun.vmdl",
+  "visual_object": "Visual",
+  "visual_scale": "1,1,1",
+  "visual_tint": "1,1,1,1",
+  "clear_visual_children": false,
+  "verify_fbx": true,
+  "required_object": [ "ShotgunMesh" ],
+  "object_type": [ "MESH" ],
+  "combine_meshes": true,
+  "combined_object_name": "ShotgunMesh",
+  "material_remap": {
+    "Shotgun_Wood": "materials/shotgun_wood.vmat",
+    "Shotgun_Metal": "materials/shotgun_metal.vmat"
+  },
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z"
+}

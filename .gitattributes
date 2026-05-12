@@ -1,0 +1,32 @@
+* text=auto
+
+# S&Box / source text
+*.cs text
+*.razor text
+*.scss text
+*.json text
+*.md text
+*.prefab text
+*.scene text
+*.vmat text
+*.vmdl text
+*.sound text
+*.config text
+*.sbproj text
+*.slnx text
+*.ps1 text
+*.py text
+*.ts text
+*.js text
+*.toml text
+
+# Binary assets
+*.blend binary
+*.fbx binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.tga binary
+*.wav binary
+*.plugin binary
+*.cll binary

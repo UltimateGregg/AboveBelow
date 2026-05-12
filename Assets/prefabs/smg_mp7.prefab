@@ -1,0 +1,53 @@
+{
+  "RootObject": {
+    "__guid": "44444444-b000-0000-0000-000000000001",
+    "Flags": 0,
+    "Name": "SMG MP7",
+    "Enabled": true,
+    "NetworkMode": 0,
+    "Components": [],
+    "Children": [
+      {
+        "__guid": "44444444-b000-1000-0000-000000000001",
+        "Flags": 0,
+        "Name": "Visual",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "44444444-b000-1100-0000-000000000001",
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": null,
+            "Materials": null,
+            "Model": "models/weapons/smg_mp7.vmdl",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ],
+        "Scale": "1,1,1"
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": true,
+  "MenuPath": "Drone vs Players/Weapons/SMG MP7",
+  "MenuIcon": "speed",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

@@ -1,0 +1,32 @@
+{
+  "source_blend": "weapon_model.blend/assault_rifle_m4.blend",
+  "root_object": "AssaultRifle_M4",
+  "target_fbx": "Assets/models/weapons/assault_rifle_m4.fbx",
+  "target_vmdl": "Assets/models/weapons/assault_rifle_m4.vmdl",
+  "model_resource_path": "models/weapons/assault_rifle_m4.vmdl",
+  "prefab": "Assets/prefabs/assault_rifle_m4.prefab",
+  "visual_object": "Visual",
+  "visual_scale": "1,1,1",
+  "visual_tint": "1,1,1,1",
+  "clear_visual_children": false,
+  "verify_fbx": true,
+  "required_object": [
+    "AssaultRifleM4"
+  ],
+  "object_type": [
+    "MESH"
+  ],
+  "combine_meshes": true,
+  "combined_object_name": "AssaultRifleM4",
+  "material_remap": {
+    "M4_Accent": "materials/weapons/m4_accent.vmat",
+    "M4_BareMetal": "materials/weapons/m4_bare_metal.vmat",
+    "M4_Markings": "materials/weapons/m4_markings.vmat",
+    "M4_Polymer": "materials/weapons/m4_polymer.vmat",
+    "M4_Receiver": "materials/weapons/m4_receiver.vmat",
+    "M4_Rubber": "materials/weapons/m4_rubber.vmat"
+  },
+  "global_scale": 1.0,
+  "axis_forward": "-Y",
+  "axis_up": "Z"
+}

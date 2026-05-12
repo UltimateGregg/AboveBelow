@@ -1,0 +1,13 @@
+"Layer0"
+{
+	"shader"		"shaders/complex.shader"
+	"TextureColor"		"materials/default/default_color.tga"
+	"g_flModelTintAmount"		"1.000000"
+	"g_vColorTint"		"[0.550000 0.100000 0.150000 0.000000]"
+	"g_flMetalness"		"0.850000"
+	"g_flRoughness"		"0.250000"
+	"g_bFogEnabled"		"1"
+	"g_vTexCoordScale"		"[1.000 1.000]"
+	"g_vTexCoordOffset"		"[0.000 0.000]"
+	"g_vTexCoordScrollSpeed"		"[0.000 0.000]"
+}

@@ -1,0 +1,23 @@
+{
+  "UI": true,
+  "Volume": "0.95",
+  "Pitch": "1",
+  "PitchRandom": "0.04",
+  "Decibels": 75,
+  "SelectionMode": "Random",
+  "Sounds": [ "sounds/m4_fire_fp.wav" ],
+  "Occlusion": false,
+  "Reflections": false,
+  "AirAbsorption": false,
+  "Transmission": false,
+  "OcclusionRadius": 0,
+  "DistanceAttenuation": false,
+  "Distance": 100,
+  "Falloff": [
+    { "x": 0, "y": 1, "in": 0, "out": 0, "mode": "Mirrored" },
+    { "x": 1, "y": 1, "in": 0, "out": 0, "mode": "Mirrored" }
+  ],
+  "DefaultMixer": { "Name": "unknown", "Id": "00000000-0000-0000-0000-000000000000" },
+  "__references": [],
+  "__version": 1
+}

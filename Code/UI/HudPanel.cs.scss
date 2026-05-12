@@ -1,0 +1,476 @@
+// HudPanel styles. Uses s&box's SCSS dialect (compiled to UI styles by the engine).
+
+HudPanel {
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    color: white;
+    font-family: Roboto;
+
+    .hud {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+
+        .role-select {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            pointer-events: all;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.55);
+
+            .role-panel {
+                width: 720px;
+                max-width: 88%;
+                padding: 24px;
+                border-radius: 6px;
+                background-color: rgba(18, 22, 24, 0.94);
+                border: 1px solid rgba(255, 255, 255, 0.16);
+                flex-direction: column;
+                gap: 12px;
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+            }
+
+            .title {
+                font-size: 30px;
+                font-weight: 800;
+                color: white;
+            }
+
+            .subtitle {
+                font-size: 15px;
+                color: rgba(255, 255, 255, 0.72);
+                margin-bottom: 2px;
+            }
+
+            .team-choices {
+                flex-direction: row;
+                gap: 12px;
+                width: 100%;
+            }
+
+            .team-choice {
+                pointer-events: all;
+                flex-grow: 1;
+                min-height: 76px;
+                border-radius: 6px;
+                border: 1px solid rgba(255, 255, 255, 0.16);
+                padding: 14px 16px;
+                flex-direction: column;
+                justify-content: center;
+                gap: 4px;
+                cursor: pointer;
+                transition: all 0.08s ease-out;
+
+                .label {
+                    font-size: 24px;
+                    font-weight: 900;
+                    color: white;
+                }
+
+                .desc {
+                    font-size: 13px;
+                    color: rgba(255, 255, 255, 0.72);
+                }
+
+                &:hover,
+                &.selected {
+                    transform: translateY(-2px);
+                    border-color: rgba(255, 255, 255, 0.38);
+                }
+
+                &.soldier {
+                    background-color: rgba(132, 62, 13, 0.94);
+                    border-color: rgba(255, 155, 54, 0.62);
+                    box-shadow: 0 0 24px rgba(255, 122, 32, 0.18);
+                }
+
+                &.pilot {
+                    background-color: rgba(7, 72, 110, 0.94);
+                    border-color: rgba(55, 197, 255, 0.62);
+                    box-shadow: 0 0 24px rgba(32, 175, 255, 0.18);
+                }
+
+                &.soldier:hover,
+                &.soldier.selected {
+                    background-color: rgba(173, 79, 15, 0.96);
+                    border-color: rgba(255, 183, 79, 0.92);
+                }
+
+                &.pilot:hover,
+                &.pilot.selected {
+                    background-color: rgba(9, 99, 150, 0.96);
+                    border-color: rgba(105, 217, 255, 0.92);
+                }
+            }
+
+            .loadout-section {
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .section-title {
+                font-size: 14px;
+                font-weight: 800;
+                color: rgba(255, 255, 255, 0.72);
+                text-transform: uppercase;
+            }
+
+            .choices {
+                flex-direction: row;
+                gap: 12px;
+                width: 100%;
+            }
+
+            .choice {
+                pointer-events: all;
+                flex-grow: 1;
+                min-height: 104px;
+                border-radius: 6px;
+                border: 1px solid rgba(255, 255, 255, 0.14);
+                padding: 14px 12px;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                cursor: pointer;
+                text-align: center;
+                transition: all 0.08s ease-out;
+
+                .label {
+                    font-size: 20px;
+                    font-weight: 800;
+                    color: white;
+                }
+
+                .desc {
+                    font-size: 12px;
+                    color: rgba(255, 255, 255, 0.74);
+                }
+
+                &:hover {
+                    transform: translateY(-2px);
+                    border-color: rgba(255, 255, 255, 0.34);
+                }
+
+                &.soldier {
+                    background-color: rgba(132, 62, 13, 0.94);
+                    border-color: rgba(255, 155, 54, 0.56);
+                    box-shadow: 0 0 20px rgba(255, 122, 32, 0.16);
+                }
+
+                &.pilot {
+                    background-color: rgba(7, 72, 110, 0.94);
+                    border-color: rgba(55, 197, 255, 0.56);
+                    box-shadow: 0 0 20px rgba(32, 175, 255, 0.16);
+                }
+
+                &.soldier:hover {
+                    background-color: rgba(173, 79, 15, 0.96);
+                    border-color: rgba(255, 183, 79, 0.88);
+                }
+
+                &.pilot:hover {
+                    background-color: rgba(9, 99, 150, 0.96);
+                    border-color: rgba(105, 217, 255, 0.88);
+                }
+            }
+        }
+
+        .top-center {
+            position: absolute;
+            top: 24px;
+            left: 50%;
+            transform: translatex(-50%);
+            align-items: center;
+            flex-direction: column;
+            text-shadow: 0 2px 4px rgba(black, 0.8);
+
+            .state {
+                font-size: 28px;
+                font-weight: 700;
+                letter-spacing: 0;
+            }
+
+            .timer {
+                font-size: 42px;
+                font-weight: 900;
+                margin-top: 4px;
+                color: #ffd34d;
+            }
+        }
+
+        .top-right {
+            position: absolute;
+            top: 24px;
+            right: 32px;
+            background-color: rgba(black, 0.45);
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-shadow: 0 2px 4px rgba(black, 0.8);
+
+            .score {
+                font-size: 22px;
+                font-weight: 700;
+                flex-direction: row;
+                gap: 12px;
+
+                .pilot {
+                    color: #4dd2ff;
+                }
+                .soldier {
+                    color: #ff9b36;
+                }
+                .sep {
+                    color: rgba(white, 0.5);
+                    font-weight: 400;
+                }
+            }
+        }
+
+        .bottom-left {
+            position: absolute;
+            bottom: 28px;
+            left: 32px;
+            width: 320px;
+            flex-direction: column;
+            gap: 6px;
+            text-shadow: 0 2px 4px rgba(black, 0.8);
+
+            .role {
+                font-size: 14px;
+                font-weight: 700;
+                letter-spacing: 0;
+                text-transform: uppercase;
+
+                &.pilot {
+                    color: #4dd2ff;
+                }
+                &.soldier {
+                    color: #ff9b36;
+                }
+                &.spectator {
+                    color: rgba(white, 0.6);
+                }
+            }
+
+            .hp-bar {
+                width: 100%;
+                height: 14px;
+                background-color: rgba(black, 0.55);
+                border: 1px solid rgba(white, 0.2);
+                border-radius: 3px;
+                overflow: hidden;
+
+                .hp-fill {
+                    height: 100%;
+                    background-color: #d24747;
+                    transition: width 0.15s ease-out;
+                }
+            }
+
+            .hp-text {
+                font-size: 13px;
+                font-weight: 600;
+                color: rgba(white, 0.85);
+            }
+        }
+
+        .loadout-hud {
+            position: absolute;
+            left: 50%;
+            bottom: 28px;
+            transform: translatex(-50%);
+            width: 520px;
+            max-width: 40%;
+            flex-direction: column;
+            gap: 6px;
+            text-shadow: 0 2px 4px rgba(black, 0.8);
+
+            .loadout-title {
+                font-size: 12px;
+                font-weight: 800;
+                letter-spacing: 0;
+                text-transform: uppercase;
+                color: rgba(white, 0.76);
+            }
+
+            .loadout-slots {
+                width: 100%;
+                flex-direction: row;
+                gap: 8px;
+            }
+
+            .loadout-slot {
+                flex-grow: 1;
+                min-width: 0;
+                min-height: 82px;
+                padding: 8px;
+                border-radius: 6px;
+                background-color: rgba(black, 0.52);
+                border: 1px solid rgba(white, 0.16);
+                flex-direction: column;
+                gap: 6px;
+                overflow: hidden;
+
+                &.selected {
+                    background-color: rgba(24, 30, 34, 0.74);
+                    border-color: rgba(white, 0.42);
+                }
+
+                &.disabled {
+                    opacity: 0.48;
+                }
+            }
+
+            &.pilot .loadout-slot.selected {
+                border-color: rgba(77, 210, 255, 0.9);
+                box-shadow: 0 0 18px rgba(32, 175, 255, 0.16);
+            }
+
+            &.soldier .loadout-slot.selected {
+                border-color: rgba(255, 155, 54, 0.9);
+                box-shadow: 0 0 18px rgba(255, 122, 32, 0.16);
+            }
+
+            .slot-main-row,
+            .slot-status-row {
+                flex-direction: row;
+                align-items: center;
+            }
+
+            .slot-main-row {
+                gap: 8px;
+            }
+
+            .slot-status-row {
+                justify-content: space-between;
+                gap: 8px;
+            }
+
+            .slot-key {
+                width: 28px;
+                height: 28px;
+                border-radius: 4px;
+                background-color: rgba(white, 0.14);
+                border: 1px solid rgba(white, 0.22);
+                color: white;
+                font-size: 17px;
+                font-weight: 900;
+                text-align: center;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .slot-copy {
+                flex-grow: 1;
+                min-width: 0;
+                flex-direction: column;
+                gap: 1px;
+            }
+
+            .slot-name {
+                font-size: 15px;
+                font-weight: 900;
+                color: white;
+            }
+
+            .slot-detail {
+                font-size: 10px;
+                font-weight: 600;
+                color: rgba(white, 0.62);
+            }
+
+            .slot-action {
+                min-width: 36px;
+                padding: 2px 5px;
+                border-radius: 3px;
+                background-color: rgba(white, 0.1);
+                color: rgba(white, 0.86);
+                font-size: 10px;
+                font-weight: 900;
+                text-align: center;
+            }
+
+            .slot-status {
+                font-size: 12px;
+                font-weight: 900;
+                color: rgba(white, 0.94);
+            }
+
+            .slot-ammo {
+                font-size: 10px;
+                font-weight: 800;
+                color: rgba(white, 0.58);
+            }
+
+            .slot-meter {
+                width: 100%;
+                height: 4px;
+                border-radius: 2px;
+                background-color: rgba(white, 0.12);
+                overflow: hidden;
+            }
+
+            .slot-meter-fill {
+                height: 100%;
+                background-color: #d6d6d6;
+                transition: width 0.12s ease-out;
+            }
+
+            &.pilot .slot-meter-fill {
+                background-color: #4dd2ff;
+            }
+
+            &.soldier .slot-meter-fill {
+                background-color: #ff9b36;
+            }
+        }
+
+        .pilot-controls {
+            position: absolute;
+            right: 32px;
+            bottom: 28px;
+            min-width: 260px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            background-color: rgba(black, 0.48);
+            border: 1px solid rgba(white, 0.14);
+            flex-direction: column;
+            gap: 6px;
+            text-shadow: 0 2px 4px rgba(black, 0.8);
+
+            .control-row {
+                flex-direction: row;
+                align-items: center;
+                gap: 10px;
+                font-size: 13px;
+                font-weight: 600;
+                color: rgba(white, 0.82);
+
+                &.emphasized {
+                    margin-top: 4px;
+                    color: white;
+                }
+            }
+
+            .key {
+                width: 64px;
+                min-height: 20px;
+                padding: 2px 6px;
+                border-radius: 4px;
+                background-color: rgba(white, 0.13);
+                border: 1px solid rgba(white, 0.18);
+                color: rgba(white, 0.96);
+                font-size: 12px;
+                font-weight: 800;
+                text-align: center;
+            }
+        }
+    }
+}

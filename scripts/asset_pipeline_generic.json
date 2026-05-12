@@ -1,0 +1,24 @@
+{
+  "source_blend": "${BLEND_FILE}",
+  "root_object": "Root",
+  "target_fbx": "Assets/models/${ASSET_NAME}.fbx",
+  "target_vmdl": "Assets/models/${ASSET_NAME}.vmdl",
+  "model_resource_path": "models/${ASSET_NAME}.vmdl",
+  "prefab": "Assets/prefabs/${ASSET_NAME}.prefab",
+  "visual_object": "Visual",
+  "visual_scale": "0.25,0.25,0.25",
+  "visual_tint": "1,1,1,1",
+  "clear_visual_children": false,
+  "verify_fbx": true,
+  "required_object": [],
+  "object_type": [
+    "MESH"
+  ],
+  "combine_meshes": true,
+  "combined_object_name": "Geometry",
+  "material_remap": {},
+  "global_scale": 1.0,
+  "axis_forward": "-Y",
+  "axis_up": "Z",
+  "_comment": "Generic config for any Blender asset. Variables: ${BLEND_FILE} = source blend path, ${ASSET_NAME} = blend filename without extension. Override with asset-specific configs (e.g., drone_asset_pipeline.json) for custom behavior."
+}

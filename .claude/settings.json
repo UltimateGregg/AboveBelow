@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "hooks": [
+    {
+      "id": "blend-auto-export",
+      "name": "Auto-Export Blender Assets",
+      "description": "Runs asset pipeline when any .blend file is saved",
+      "enabled": true,
+      "trigger": {
+        "type": "file_pattern_change",
+        "patterns": [
+          "**/*.blend",
+          "**/*.blend.blend"
+        ],
+        "events": ["modified", "saved"],
+        "debounce_ms": 2000
+      },
+      "action": {
+        "type": "script",
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          ".\\scripts\\smart_asset_export.ps1",
+          "-BlendFilePath",
+          "${FILE_PATH}"
+        ],
+        "cwd": "${WORKSPACE_ROOT}",
+        "timeout_seconds": 300,
+        "capture_output": true,
+        "on_success": {
+          "notify": true,
+          "message": "Asset exported successfully",
+          "level": "info"
+        },
+        "on_failure": {
+          "notify": true,
+          "message": "Asset export failed - check logs",
+          "level": "error"
+        }
+      }
+    }
+  ]
+}

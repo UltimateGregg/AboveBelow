@@ -1,0 +1,13 @@
+"Layer0"
+{
+	"shader"		"shaders/complex.shader"
+	"TextureColor"		"materials/arena/asphalt_cover_color.png"
+	"g_flModelTintAmount"		"1.000000"
+	"g_vColorTint"		"[1.000000 1.000000 1.000000 0.000000]"
+	"g_flMetalness"		"0.000000"
+	"g_flRoughness"		"0.950000"
+	"g_bFogEnabled"		"1"
+	"g_vTexCoordScale"		"[4.000 4.000]"
+	"g_vTexCoordOffset"		"[0.000 0.000]"
+	"g_vTexCoordScrollSpeed"		"[0.000 0.000]"
+}

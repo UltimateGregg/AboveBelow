@@ -1,0 +1,363 @@
+{
+  "RootObject": {
+    "__guid": "33333333-d000-0000-0000-000000000001",
+    "Flags": 0,
+    "Name": "Pilot (Ground)",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [
+      {
+        "__type": "Sandbox.CharacterController",
+        "__guid": "33333333-d100-0000-0000-000000000001",
+        "Acceleration": 10,
+        "Bounciness": 0,
+        "GroundAngle": 45,
+        "Height": 72,
+        "IgnoreLayers": "",
+        "Radius": 16,
+        "StepHeight": 18
+      },
+      {
+        "__type": "DroneVsPlayers.GroundPlayerController",
+        "__guid": "33333333-d200-0000-0000-000000000001",
+        "Gravity": "0,0,800",
+        "WalkSpeed": 110,
+        "SprintSpeed": 260,
+        "JumpStrength": 322,
+        "FirstPerson": true,
+        "EyeAngles": "0,0,0",
+        "IsSprinting": false,
+        "FootstepSound": "sounds/footstep.sound",
+        "JumpSound": "sounds/jump_grunt.sound",
+        "LandSound": "sounds/land_thud.sound"
+      },
+      {
+        "__type": "DroneVsPlayers.Health",
+        "__guid": "33333333-d300-0000-0000-000000000001",
+        "MaxHealth": 60,
+        "CurrentHealth": 60,
+        "IsDead": false
+      },
+      {
+        "__type": "DroneVsPlayers.PilotSoldier",
+        "__guid": "33333333-d400-0000-0000-000000000001"
+      },
+      {
+        "__type": "DroneVsPlayers.RemoteController",
+        "__guid": "33333333-d500-0000-0000-000000000001",
+        "ToggleInput": "TogglePilotControl"
+      },
+      {
+        "__type": "DroneVsPlayers.SoldierLoadout",
+        "__guid": "33333333-d600-0000-0000-000000000001",
+        "SelectedSlot": 1
+      }
+    ],
+    "Children": [
+      {
+        "__guid": "33333333-d000-1000-0000-000000000001",
+        "Flags": 0,
+        "Name": "Body",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.SkinnedModelRenderer",
+            "__guid": "33333333-d000-1100-0000-000000000001",
+            "BodyGroups": 18446744073709551615,
+            "CreateBoneObjects": false,
+            "Model": "models/citizen/citizen.vmdl",
+            "RenderType": "On",
+            "Tint": "0.3,0.3,0.4,1",
+            "UseAnimGraph": true
+          },
+          {
+            "__type": "Sandbox.Citizen.CitizenAnimationHelper",
+            "__guid": "33333333-d000-1200-0000-000000000001",
+            "Target": {
+              "_type": "component",
+              "component_id": "33333333-d000-1100-0000-000000000001",
+              "go": "33333333-d000-1000-0000-000000000001",
+              "component_type": "SkinnedModelRenderer"
+            }
+          }
+        ],
+        "Children": [
+          {
+            "__guid": "33333333-d000-3000-0000-000000000001",
+            "Flags": 0,
+            "Name": "Weapon",
+            "Position": "20,15,55",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "DroneVsPlayers.HitscanWeapon",
+                "__guid": "33333333-d000-3100-0000-000000000001",
+                "WeaponDisplayName": "MP7",
+                "Damage": 12,
+                "MaxRange": 1100,
+                "FireInterval": 0.07,
+                "RecoilDegrees": 0.8,
+                "HipSpreadDegrees": 9,
+                "AdsSpreadDegrees": 4.25,
+                "MagazineSize": 40,
+                "StartingReserveAmmo": 160,
+                "ReloadSeconds": 1.85,
+                "Slot": 2,
+                "MuzzleSocket": {
+                  "_type": "gameobject",
+                  "go": "33333333-d000-3200-0000-000000000001"
+                },
+                "WeaponVisual": {
+                  "_type": "gameobject",
+                  "go": "33333333-d000-3300-0000-000000000001"
+                },
+                "MuzzleFlash": {
+                  "_type": "component",
+                  "component_id": "33333333-d000-3210-0000-000000000001",
+                  "go": "33333333-d000-3210-1000-000000000001",
+                  "component_type": "PointLight"
+                },
+                "FireSound": "sounds/assault_rifle_fire.sound",
+                "FireSoundFirstPerson": "sounds/m4_fire_fp.sound",
+                "ReloadSound": "sounds/assault_rifle_reload.sound",
+                "MagDropSound": "sounds/mag_drop.sound",
+                "MagInsertSound": "sounds/mag_insert.sound",
+                "BoltRackSound": "sounds/bolt_rack.sound",
+                "EmptyClickSound": "sounds/empty_click.sound",
+                "TracerPrefab": {
+                  "_type": "gameobject",
+                  "prefab": "prefabs/tracer_default.prefab"
+                },
+                "MuzzleFlashSeconds": 0.04,
+                "FirstPersonOffset": "32,8,-11",
+                "FirstPersonRotationOffset": "0,0,0",
+                "AdsOffset": "22,0,-6",
+                "AdsRotationOffset": "0,0,0",
+                "AdsFovDegrees": 60,
+                "ThirdPersonLocalPosition": "20,15,55",
+                "ThirdPersonLocalAngles": "0,0,0",
+                "AmmoInMagazine": 40,
+                "AmmoReserve": 160,
+                "IsReloading": false,
+                "ReloadFinishTime": 0
+              }
+            ],
+            "Children": [
+              {
+                "__guid": "33333333-d000-3300-0000-000000000001",
+                "Flags": 0,
+                "Name": "WeaponVisual",
+                "Position": "0,0,0",
+                "Enabled": true,
+                "Components": [
+                  {
+                    "__type": "Sandbox.ModelRenderer",
+                    "__guid": "33333333-d000-3310-0000-000000000001",
+                    "BodyGroups": 18446744073709551615,
+                    "Model": "models/weapons/smg_mp7.vmdl",
+                    "RenderType": "On",
+                    "Tint": "1,1,1,1"
+                  }
+                ]
+              },
+              {
+                "__guid": "33333333-d000-3200-0000-000000000001",
+                "Flags": 0,
+                "Name": "MuzzleSocket",
+                "Position": "22,0,1",
+                "Enabled": true,
+                "Components": [],
+                "Children": [
+                  {
+                    "__guid": "33333333-d000-3210-1000-000000000001",
+                    "Flags": 0,
+                    "Name": "MuzzleFlash",
+                    "Enabled": true,
+                    "Components": [
+                      {
+                        "__type": "Sandbox.PointLight",
+                        "__guid": "33333333-d000-3210-0000-000000000001",
+                        "LightColor": "1,0.68,0.28,1",
+                        "Radius": 120
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "__guid": "33333333-d000-4000-0000-000000000001",
+            "Flags": 0,
+            "Name": "DroneDeployer",
+            "Position": "0,0,0",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "DroneVsPlayers.DroneDeployer",
+                "__guid": "33333333-d000-4100-0000-000000000001",
+                "Slot": 1,
+                "LeftHandVisual": {
+                  "_type": "gameobject",
+                  "go": "33333333-d000-4200-0000-000000000001"
+                },
+                "RightHandVisual": {
+                  "_type": "gameobject",
+                  "go": "33333333-d000-4300-0000-000000000001"
+                },
+                "LeftHandIkTarget": {
+                  "_type": "gameobject",
+                  "go": "33333333-d000-4400-0000-000000000001"
+                },
+                "RightHandIkTarget": {
+                  "_type": "gameobject",
+                  "go": "33333333-d000-4500-0000-000000000001"
+                },
+                "GpsDronePrefab": {
+                  "_type": "gameobject",
+                  "prefab": "prefabs/drone_gps.prefab"
+                },
+                "FpvDronePrefab": {
+                  "_type": "gameobject",
+                  "prefab": "prefabs/drone_fpv.prefab"
+                },
+                "FiberOpticFpvDronePrefab": {
+                  "_type": "gameobject",
+                  "prefab": "prefabs/drone_fpv_fiber.prefab"
+                },
+                "LaunchCooldown": 8,
+                "LaunchSpeed": 300,
+                "LaunchSpawnOffset": "60,0,-4",
+                "LeftHandFpOffset": "28,-6,-10",
+                "LeftHandFpRotation": "0,0,0",
+                "RightHandFpOffset": "26,6,-10",
+                "RightHandFpRotation": "0,0,0",
+                "LeftHandTpLocalPos": "20,0,47",
+                "LeftHandTpLocalAngles": "0,0,0",
+                "RightHandTpLocalPos": "22,14,49",
+                "RightHandTpLocalAngles": "0,0,0",
+                "SwayLerpRate": 18,
+                "LaunchReadyAt": 0,
+                "DroneInFlight": false
+              }
+            ],
+            "Children": [
+              {
+                "__guid": "33333333-d000-4200-0000-000000000001",
+                "Flags": 0,
+                "Name": "LeftHand",
+                "Position": "0,0,0",
+                "Scale": "0.75,0.75,0.75",
+                "Enabled": true,
+                "Components": [
+                  {
+                    "__type": "Sandbox.ModelRenderer",
+                    "__guid": "33333333-d000-4210-0000-000000000001",
+                    "BodyGroups": 18446744073709551615,
+                    "Model": "models/weapons/rc_transmitter.vmdl",
+                    "RenderType": "On",
+                    "Tint": "1,1,1,1"
+                  }
+                ]
+              },
+              {
+                "__guid": "33333333-d000-4300-0000-000000000001",
+                "Flags": 0,
+                "Name": "RightHand",
+                "Position": "0,0,0",
+                "Scale": "0.3,0.3,0.3",
+                "Enabled": true,
+                "Components": [
+                  {
+                    "__type": "Sandbox.ModelRenderer",
+                    "__guid": "33333333-d000-4310-0000-000000000001",
+                    "BodyGroups": 18446744073709551615,
+                    "Model": "models/drone_fpv.vmdl",
+                    "RenderType": "On",
+                    "Tint": "0.6,0.65,0.7,1"
+                  }
+                ]
+              },
+              {
+                "__guid": "33333333-d000-4400-0000-000000000001",
+                "Flags": 0,
+                "Name": "LeftHandIk",
+                "Position": "21,-9,48",
+                "Enabled": true,
+                "Components": []
+              },
+              {
+                "__guid": "33333333-d000-4500-0000-000000000001",
+                "Flags": 0,
+                "Name": "RightHandIk",
+                "Position": "21,9,48",
+                "Enabled": true,
+                "Components": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "__guid": "33333333-d000-2000-0000-000000000001",
+        "Flags": 0,
+        "Name": "Eye",
+        "Position": "0,0,64",
+        "Enabled": true,
+        "Components": [],
+        "Children": [
+          {
+            "__guid": "33333333-d000-2100-0000-000000000001",
+            "Flags": 0,
+            "Name": "FpvArms",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "Sandbox.ModelRenderer",
+                "__guid": "33333333-d000-2110-0000-000000000001",
+                "BodyGroups": 18446744073709551615,
+                "Model": "models/fps_arms.vmdl",
+                "RenderType": "On",
+                "Tint": "0.4,0.4,0.5,1"
+              },
+              {
+                "__type": "DroneVsPlayers.FpvArms",
+                "__guid": "33333333-d000-2200-0000-000000000001",
+                "ArmsRenderer": {
+                  "_type": "component",
+                  "component_id": "33333333-d000-2110-0000-000000000001",
+                  "go": "33333333-d000-2100-0000-000000000001",
+                  "component_type": "ModelRenderer"
+                },
+                "HipOffset": "0,-2,-4",
+                "HipRotationOffset": "0,0,0",
+                "AdsOffset": "-6,-2,2",
+                "AdsRotationOffset": "0,0,0",
+                "SwayLerpRate": 18
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Pilot (Ground)",
+  "MenuIcon": "settings_remote",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

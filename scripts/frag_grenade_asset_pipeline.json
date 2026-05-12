@@ -1,0 +1,27 @@
+{
+  "source_blend": "weapons_model.blend/frag_grenade.blend",
+  "root_object": "Frag_Grenade",
+  "target_fbx": "Assets/models/frag_grenade.fbx",
+  "target_vmdl": "Assets/models/frag_grenade.vmdl",
+  "model_resource_path": "models/frag_grenade.vmdl",
+  "visual_object": "Visual",
+  "visual_scale": "1,1,1",
+  "visual_tint": "1,1,1,1",
+  "clear_visual_children": false,
+  "verify_fbx": true,
+  "required_object": [
+    "FragGrenadeMesh"
+  ],
+  "object_type": [
+    "MESH"
+  ],
+  "combine_meshes": true,
+  "combined_object_name": "FragGrenadeMesh",
+  "material_remap": {
+    "Grenade_Body": "materials/grenade_body.vmat",
+    "Grenade_Pin": "materials/grenade_pin.vmat"
+  },
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z"
+}

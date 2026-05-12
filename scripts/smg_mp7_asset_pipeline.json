@@ -1,0 +1,25 @@
+{
+  "source_blend": "weapons_model.blend/smg_mp7.blend",
+  "root_object": "SMG_MP7",
+  "target_fbx": "Assets/models/weapons/smg_mp7.fbx",
+  "target_vmdl": "Assets/models/weapons/smg_mp7.vmdl",
+  "model_resource_path": "models/weapons/smg_mp7.vmdl",
+  "visual_object": "Visual",
+  "visual_scale": "1,1,1",
+  "visual_tint": "1,1,1,1",
+  "clear_visual_children": false,
+  "verify_fbx": true,
+  "required_object": [ "SMG_MP7" ],
+  "object_type": [ "MESH" ],
+  "combine_meshes": true,
+  "combined_object_name": "SMG_MP7",
+  "material_remap": {
+    "SMG_Polymer": "materials/weapons/smg_polymer.vmat",
+    "SMG_Metal": "materials/weapons/smg_metal.vmat",
+    "SMG_Accent": "materials/weapons/smg_accent.vmat",
+    "SMG_Sights": "materials/weapons/smg_sights.vmat"
+  },
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z"
+}

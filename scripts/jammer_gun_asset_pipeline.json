@@ -1,0 +1,28 @@
+{
+  "source_blend": "weapons_model.blend/jammer_gun.blend",
+  "root_object": "Jammer_Gun",
+  "target_fbx": "Assets/models/jammer_gun.fbx",
+  "target_vmdl": "Assets/models/jammer_gun.vmdl",
+  "model_resource_path": "models/jammer_gun.vmdl",
+  "visual_object": "Visual",
+  "visual_scale": "1,1,1",
+  "visual_tint": "1,1,1,1",
+  "clear_visual_children": false,
+  "verify_fbx": true,
+  "required_object": [
+    "JammerGunMesh"
+  ],
+  "object_type": [
+    "MESH"
+  ],
+  "combine_meshes": true,
+  "combined_object_name": "JammerGunMesh",
+  "material_remap": {
+    "Body_Tactical": "materials/jammer_body.vmat",
+    "Antenna_Metal": "materials/jammer_antenna.vmat",
+    "LED_Accent": "materials/jammer_led.vmat"
+  },
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z"
+}

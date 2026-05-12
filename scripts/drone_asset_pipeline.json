@@ -1,0 +1,29 @@
+{
+  "source_blend": "drone_model.blend/drone.blend.blend",
+  "root_object": "Drone",
+  "target_fbx": "Assets/models/drone_high.fbx",
+  "target_vmdl": "Assets/models/drone_high.vmdl",
+  "model_resource_path": "models/drone_high.vmdl",
+  "prefab": "Assets/prefabs/drone.prefab",
+  "visual_object": "Visual",
+  "visual_scale": "0.25,0.25,0.25",
+  "visual_tint": "1,1,1,1",
+  "clear_visual_children": false,
+  "verify_fbx": true,
+  "required_object": [
+    "DroneModel"
+  ],
+  "object_type": [
+    "MESH"
+  ],
+  "combine_meshes": true,
+  "combined_object_name": "DroneModel",
+  "material_remap": {
+    "Arm_Dark_Metal": "materials/default.vmat",
+    "BladeMaterial": "materials/default.vmat",
+    "DroneMaterial": "materials/default.vmat"
+  },
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z"
+}

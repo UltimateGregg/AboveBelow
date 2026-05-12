@@ -1,0 +1,115 @@
+@using Sandbox
+@using Sandbox.UI
+@using System
+@namespace DroneVsPlayers
+@inherits PanelComponent
+
+<root>
+    <div class="main-menu">
+        <div class="content">
+            <div class="copy-column">
+                <div class="brand">
+                    <div class="title">ABOVE <span class="slash">/</span> BELOW</div>
+                    <div class="subtitle">A vertical asymmetric shooter about drone pilots and ground hunters.</div>
+                </div>
+
+                <div class="description">
+                    <div class="kicker">One team owns the sky. One team owns the ground.</div>
+                    <div class="body-copy">
+                        Pilots launch drones, swap into the camera, and pressure the battlefield from above.
+                        Soldiers move through cover, track the pilot, and use class tools to shut drones down.
+                        Roles rotate round to round, so every player gets a turn at the controls.
+                    </div>
+                    <div class="feature-row">
+                        <div class="feature">
+                            <div class="feature-title pilot">ABOVE</div>
+                            <div class="feature-copy">GPS, FPV, and fiber-optic drone variants.</div>
+                        </div>
+                        <div class="feature">
+                            <div class="feature-title soldier">BELOW</div>
+                            <div class="feature-copy">Assault, Counter-UAV, and Heavy soldier classes.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <div class="menu-button primary" onclick=@Play>Play</div>
+                    <div class="menu-button" onclick=@Settings>Settings</div>
+                    <div class="menu-button quiet" onclick=@Quit>Quit</div>
+                </div>
+
+                @if ( !string.IsNullOrWhiteSpace( StatusLine ) )
+                {
+                    <div class="status">@StatusLine</div>
+                }
+            </div>
+
+            <div class="visual-panel">
+                <div class="sky-band">
+                    <div class="drone-mark">
+                        <div class="drone-body"></div>
+                        <div class="rotor rotor-a"></div>
+                        <div class="rotor rotor-b"></div>
+                        <div class="rotor rotor-c"></div>
+                        <div class="rotor rotor-d"></div>
+                    </div>
+                    <div class="signal-ring one"></div>
+                    <div class="signal-ring two"></div>
+                    <div class="sky-label">ABOVE</div>
+                </div>
+                <div class="horizon"></div>
+                <div class="ground-band">
+                    <div class="cover cover-left"></div>
+                    <div class="cover cover-right"></div>
+                    <div class="soldier-mark">
+                        <div class="soldier-head"></div>
+                        <div class="soldier-body"></div>
+                        <div class="soldier-rifle"></div>
+                    </div>
+                    <div class="ground-label">BELOW</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</root>
+
+@code
+{
+    string StatusLine { get; set; } = "";
+
+    void Play()
+    {
+        if ( TryLoadScene( "scenes/main.scene" ) )
+            return;
+
+        StatusLine = "Main scene not found.";
+        Log.Warning( "[MainMenu] Could not load scenes/main.scene." );
+    }
+
+    void Settings()
+    {
+        StatusLine = "Settings are not implemented yet.";
+        Log.Info( "[MainMenu] Settings clicked." );
+    }
+
+    void Quit()
+    {
+        Game.Close();
+    }
+
+    static bool TryLoadScene( string scenePath )
+    {
+        var options = new SceneLoadOptions
+        {
+            ShowLoadingScreen = true,
+            DeleteEverything = true,
+        };
+
+        if ( !options.SetScene( scenePath ) )
+            return false;
+
+        return Game.ChangeScene( options );
+    }
+
+    protected override int BuildHash() => HashCode.Combine( StatusLine );
+}

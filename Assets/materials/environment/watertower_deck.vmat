@@ -1,0 +1,13 @@
+"Layer0"
+{
+	"shader"		"shaders/complex.shader"
+	"TextureColor"		"materials/environment/watertower_deck_color.png"
+	"g_flModelTintAmount"		"1.000000"
+	"g_vColorTint"		"[1.000000 1.000000 1.000000 0.000000]"
+	"g_flMetalness"		"0.550000"
+	"g_flRoughness"		"0.600000"
+	"g_bFogEnabled"		"1"
+	"g_vTexCoordScale"		"[6.000 6.000]"
+	"g_vTexCoordOffset"		"[0.000 0.000]"
+	"g_vTexCoordScrollSpeed"		"[0.000 0.000]"
+}

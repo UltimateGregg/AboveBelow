@@ -1,0 +1,26 @@
+{
+  "source_blend": "weapons_model.blend/watertower.blend",
+  "target_fbx": "Assets/models/watertower.fbx",
+  "target_vmdl": "Assets/models/watertower.vmdl",
+  "model_resource_path": "models/watertower.vmdl",
+  "combine_meshes": true,
+  "combined_object_name": "WatertowerMesh",
+  "material_remap": {
+    "M_Tank": "materials/environment/watertower_tank.vmat",
+    "M_Roof": "materials/environment/watertower_roof.vmat",
+    "M_Frame": "materials/environment/watertower_frame.vmat",
+    "M_Deck": "materials/environment/watertower_deck.vmat",
+    "M_Ladder": "materials/environment/watertower_ladder.vmat"
+  },
+  "verify_fbx": true,
+  "required_object": [
+    "WatertowerMesh"
+  ],
+  "object_type": [
+    "EMPTY",
+    "MESH"
+  ],
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z"
+}

@@ -1,0 +1,60 @@
+{
+  "RootObject": {
+    "__guid": "099a0738-a645-461d-9507-c710e5a9ba5d",
+    "Flags": 0,
+    "Name": "Berm",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [],
+    "Children": [
+      {
+        "__guid": "248dbc9d-5e27-4425-85a3-65a2bcaf3489",
+        "Flags": 0,
+        "Name": "Berm_Box",
+        "Position": "0,0,24",
+        "Rotation": "0,0,0,1",
+        "Scale": "9.6,1.6,0.96",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "cf00e379-dfaf-48c9-9253-9f42b6ba5d36",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/grass_ground.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "04d41b2f-6d1b-4f29-b012-b9681e108181",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Environment/Berm",
+  "MenuIcon": "landscape",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

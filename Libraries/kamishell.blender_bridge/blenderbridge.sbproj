@@ -1,0 +1,31 @@
+{
+  "Title": "Blender Bridge",
+  "Type": "library",
+  "Org": "kamishell",
+  "Ident": "blender_bridge",
+  "Schema": 1,
+  "IncludeSourceFiles": false,
+  "Resources": null,
+  "PackageReferences": [],
+  "EditorReferences": null,
+  "Mounts": null,
+  "IsStandaloneOnly": false,
+  "Metadata": {
+    "Summary": "Bidirectional scene sync between Blender and s&box. Stream meshes, lights, materials, and transforms in real time.",
+    "Description": "Blender Bridge provides real-time bidirectional sync between Blender and the s&box editor.\n\nFeatures:\n- Stream mesh geometry with per-face PBR materials\n- Bidirectional transform sync (move in either editor)\n- Light sync (Point, Spot, Directional)\n- Chunked transfer for large meshes (no UI freeze)\n- Auto-reconnect with session recovery\n- Material caching and .vmat generation\n- Play mode persistence via binary mesh cache\n\nRequires the companion Blender addon (v2.0+).\nDownload: https://github.com/SanicTehHedgehog/blender-sbox-bridge/releases\n\nSetup:\n1. Install this library in your s&box project\n2. Install the Blender addon in Blender 5.1+\n3. Open the Blender Bridge panel in s&box (Editor > Blender Bridge)\n4. Connect from Blender's N-panel (View3D > s&box tab)",
+    "CsProjName": "",
+    "Compiler": {
+      "RootNamespace": "Sandbox",
+      "DefineConstants": "SANDBOX",
+      "NoWarn": "1701;1702;1591;",
+      "WarningsAsErrors": "",
+      "TreatWarningsAsErrors": false,
+      "Nullables": false,
+      "ReleaseMode": "Release",
+      "AssemblyReferences": [],
+      "ReplacementDirectives": {},
+      "IgnoreFolders": [],
+      "DistinctAssemblyReferences": []
+    }
+  }
+}

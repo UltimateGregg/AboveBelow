@@ -1,0 +1,89 @@
+{
+  "RootObject": {
+    "__guid": "ca406760-a02e-4237-b2c3-ff977ca36de1",
+    "Flags": 0,
+    "Name": "Hill",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [],
+    "Children": [
+      {
+        "__guid": "6cfca9e0-c9ca-45c9-9381-316a22daa70a",
+        "Flags": 0,
+        "Name": "Hill_Base",
+        "Position": "0,0,48",
+        "Rotation": "0,0,0,1",
+        "Scale": "12,12,1.92",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "c95e2a9a-e9b7-4310-9cf0-db4b95e3284a",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/grass_ground.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "b8d89571-4a33-4bc7-9bd6-7831477e5f5e",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "d219b912-dfa1-4b7d-829f-522a319a21e3",
+        "Flags": 0,
+        "Name": "Hill_Top",
+        "Position": "0,0,128",
+        "Rotation": "0,0,0,1",
+        "Scale": "8,8,1.28",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "57141a6a-f05c-45f7-ba0b-b8f2f76f414d",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/grass_ground.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "3c3cfc30-b338-4d92-836c-7e4d734cd27b",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Environment/Hill",
+  "MenuIcon": "terrain",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

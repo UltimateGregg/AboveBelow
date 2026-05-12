@@ -1,0 +1,30 @@
+{
+  "UI": false,
+  "Volume": "0.7",
+  "Pitch": "1",
+  "VolumeRandom": "0.1",
+  "PitchRandom": "0.08",
+  "Decibels": 58,
+  "SelectionMode": "Random",
+  "Sounds": [
+    "sounds/footstep_0.wav",
+    "sounds/footstep_1.wav",
+    "sounds/footstep_2.wav",
+    "sounds/footstep_3.wav"
+  ],
+  "Occlusion": true,
+  "Reflections": false,
+  "AirAbsorption": true,
+  "Transmission": false,
+  "OcclusionRadius": 16,
+  "DistanceAttenuation": true,
+  "Distance": 900,
+  "Falloff": [
+    { "x": 0, "y": 1, "in": 0, "out": -2, "mode": "Mirrored" },
+    { "x": 0.3, "y": 0.35, "in": 0, "out": -1, "mode": "Mirrored" },
+    { "x": 1, "y": 0, "in": 0, "out": 0, "mode": "Mirrored" }
+  ],
+  "DefaultMixer": { "Name": "unknown", "Id": "00000000-0000-0000-0000-000000000000" },
+  "__references": [],
+  "__version": 1
+}

@@ -1,0 +1,147 @@
+{
+  "RootObject": {
+    "__guid": "e9c81750-57f3-45a8-828c-741303e850f4",
+    "Flags": 0,
+    "Name": "TrenchSegment",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [],
+    "Children": [
+      {
+        "__guid": "b1cb9407-9740-429c-bbb4-2eea540e645e",
+        "Flags": 0,
+        "Name": "North_Berm",
+        "Position": "0,72,28",
+        "Rotation": "0,0,0,1",
+        "Scale": "9.6,1.28,1.12",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "ea26911d-1661-4525-9d7b-3f28ee6898a6",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/grass_ground.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "41476d7d-b42b-437a-913b-8d7cee7c2683",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "94954f11-f7bf-44a6-be89-3cc137116fca",
+        "Flags": 0,
+        "Name": "South_Berm",
+        "Position": "0,-72,28",
+        "Rotation": "0,0,0,1",
+        "Scale": "9.6,1.28,1.12",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "ec996ab5-d069-419a-9af4-40eb13f12e91",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/grass_ground.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "e56ad2be-20e5-4353-a554-b251aee0fe43",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "0135fb4d-549b-47ac-af59-ddd2beeacca7",
+        "Flags": 0,
+        "Name": "West_Endcap",
+        "Position": "-272,0,28",
+        "Rotation": "0,0,0,1",
+        "Scale": "1.28,4.16,1.12",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "ee231d93-32db-491f-b86f-55f741c02842",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/grass_ground.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "7e2fc9f1-75be-40cb-99ae-4d65c234261e",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "7f010e9d-94e5-4d84-95ff-bba44422b15c",
+        "Flags": 0,
+        "Name": "East_Endcap",
+        "Position": "272,0,28",
+        "Rotation": "0,0,0,1",
+        "Scale": "1.28,4.16,1.12",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "a520d084-9916-4a02-a2da-46d65edab665",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/grass_ground.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "23a60935-577f-4772-abc1-f148641e8955",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Environment/TrenchSegment",
+  "MenuIcon": "view_in_ar",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

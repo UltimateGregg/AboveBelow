@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Editor": {
+      "commandName": "Executable",
+      "executablePath": "D:/SteamLibrary/steamapps/common/sbox/sbox-dev.exe",
+      "commandLineArgs": "-project \u0022C:\\Programming\\S\u0026Box\\Libraries\\sboxskinsgg.claudebridge\\claudebridge.sbproj\u0022"
+    }
+  }
+}

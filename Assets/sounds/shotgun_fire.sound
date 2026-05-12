@@ -1,0 +1,24 @@
+{
+  "UI": false,
+  "Volume": "1.2",
+  "Pitch": "1",
+  "Decibels": 88,
+  "SelectionMode": "Random",
+  "Sounds": [ "sounds/shotgun_fire.wav" ],
+  "Occlusion": true,
+  "Reflections": true,
+  "AirAbsorption": true,
+  "Transmission": false,
+  "OcclusionRadius": 64,
+  "DistanceAttenuation": true,
+  "Distance": 6500,
+  "Falloff": [
+    { "x": 0, "y": 1, "in": 0, "out": -1.2, "mode": "Mirrored" },
+    { "x": 0.25, "y": 0.7, "in": 0, "out": -0.8, "mode": "Mirrored" },
+    { "x": 0.6, "y": 0.35, "in": 0, "out": -0.5, "mode": "Mirrored" },
+    { "x": 1, "y": 0.05, "in": 0, "out": 0, "mode": "Mirrored" }
+  ],
+  "DefaultMixer": { "Name": "unknown", "Id": "00000000-0000-0000-0000-000000000000" },
+  "__references": [],
+  "__version": 1
+}

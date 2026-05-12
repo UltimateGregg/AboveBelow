@@ -1,0 +1,306 @@
+{
+  "RootObject": {
+    "__guid": "22222222-c000-0000-0000-000000000001",
+    "Flags": 0,
+    "Name": "Drone (Fiber-Optic FPV)",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [
+      {
+        "__type": "Sandbox.Rigidbody",
+        "__guid": "22222222-c100-0000-0000-000000000001",
+        "AngularDamping": 10,
+        "Gravity": false,
+        "LinearDamping": 1.8,
+        "Locking": {},
+        "MassOverride": 1.7,
+        "MotionEnabled": true,
+        "RigidbodyFlags": 0,
+        "StartAsleep": false
+      },
+      {
+        "__type": "Sandbox.BoxCollider",
+        "__guid": "22222222-c200-0000-0000-000000000001",
+        "Center": "0,0,1.4",
+        "IsTrigger": false,
+        "Scale": "16,16,4",
+        "Static": false
+      },
+      {
+        "__type": "DroneVsPlayers.DroneController",
+        "__guid": "22222222-c300-0000-0000-000000000001",
+        "MaxSpeed": 1100,
+        "Acceleration": 12,
+        "Damping": 4,
+        "BoostMultiplier": 1.7,
+        "YawRateDegrees": 180,
+        "MouseLookDeadZone": 0.1,
+        "MouseYawSensitivity": 0.12,
+        "MousePitchSensitivity": 0.06,
+        "VisualTiltDegrees": 22,
+        "VisualTiltSmoothing": 7,
+        "PropellerSpinDegreesPerSecond": 2700,
+        "PropellerIdleSpinFraction": 0.4,
+        "PropellerBoostSpinMultiplier": 1.35,
+        "PropellerSound": "sounds/drone_hum.sound",
+        "PropellerSoundVolume": 0.4,
+        "PropellerIdlePitch": 0.95,
+        "PropellerMaxPitch": 1.55,
+        "Body": {
+          "_type": "component",
+          "component_id": "22222222-c100-0000-0000-000000000001",
+          "go": "22222222-c000-0000-0000-000000000001",
+          "component_type": "Rigidbody"
+        },
+        "EyeAngles": "0,0,0",
+        "BoostActive": false
+      },
+      {
+        "__type": "DroneVsPlayers.DroneCamera",
+        "__guid": "22222222-c400-0000-0000-000000000001",
+        "Drone": {
+          "_type": "component",
+          "component_id": "22222222-c300-0000-0000-000000000001",
+          "go": "22222222-c000-0000-0000-000000000001",
+          "component_type": "DroneController"
+        },
+        "FirstPerson": true,
+        "CameraToggleInput": "ToggleDroneCamera",
+        "ChaseDistance": 140,
+        "ChaseHeight": 40
+      },
+      {
+        "__type": "DroneVsPlayers.DroneWeapon",
+        "__guid": "22222222-c450-0000-0000-000000000001",
+        "Drone": {
+          "_type": "component",
+          "component_id": "22222222-c300-0000-0000-000000000001",
+          "go": "22222222-c000-0000-0000-000000000001",
+          "component_type": "DroneController"
+        },
+        "EnableHitscan": false,
+        "EnableKamikaze": true,
+        "KamikazeRadius": 320,
+        "KamikazeDamage": 200,
+        "KamikazeFalloff": 0.6
+      },
+      {
+        "__type": "DroneVsPlayers.Health",
+        "__guid": "22222222-c500-0000-0000-000000000001",
+        "MaxHealth": 45,
+        "CurrentHealth": 45,
+        "IsDead": false
+      },
+      {
+        "__type": "DroneVsPlayers.FiberOpticFpvDrone",
+        "__guid": "22222222-c600-0000-0000-000000000001",
+        "JamSusceptibility": 0,
+        "IsCrashing": false
+      },
+      {
+        "__type": "DroneVsPlayers.JammingReceiver",
+        "__guid": "22222222-c700-0000-0000-000000000001",
+        "Drone": {
+          "_type": "component",
+          "component_id": "22222222-c300-0000-0000-000000000001",
+          "go": "22222222-c000-0000-0000-000000000001",
+          "component_type": "DroneController"
+        },
+        "DroneBase": {
+          "_type": "component",
+          "component_id": "22222222-c600-0000-0000-000000000001",
+          "go": "22222222-c000-0000-0000-000000000001",
+          "component_type": "FiberOpticFpvDrone"
+        },
+        "IsJammed": false,
+        "IncomingStrength": 0
+      },
+      {
+        "__type": "DroneVsPlayers.PilotLink",
+        "__guid": "22222222-c800-0000-0000-000000000001",
+        "Drone": {
+          "_type": "component",
+          "component_id": "22222222-c300-0000-0000-000000000001",
+          "go": "22222222-c000-0000-0000-000000000001",
+          "component_type": "DroneController"
+        },
+        "DroneBase": {
+          "_type": "component",
+          "component_id": "22222222-c600-0000-0000-000000000001",
+          "go": "22222222-c000-0000-0000-000000000001",
+          "component_type": "FiberOpticFpvDrone"
+        },
+        "Body": {
+          "_type": "component",
+          "component_id": "22222222-c100-0000-0000-000000000001",
+          "go": "22222222-c000-0000-0000-000000000001",
+          "component_type": "Rigidbody"
+        },
+        "CrashTimeout": 5
+      },
+      {
+        "__type": "Sandbox.LineRenderer",
+        "__guid": "22222222-c900-0000-0000-000000000001",
+        "UseVectorPoints": true,
+        "Lighting": false,
+        "Color": {
+          "color": "0.62,0.64,0.66,1",
+          "useColor": true,
+          "useGradient": false
+        },
+        "Width": {
+          "useCurve": false,
+          "constant": 0.6
+        },
+        "EndCap": "None",
+        "Face": "Camera",
+        "BlendMode": "Normal"
+      },
+      {
+        "__type": "DroneVsPlayers.FiberCable",
+        "__guid": "22222222-ca00-0000-0000-000000000001",
+        "Link": {
+          "_type": "component",
+          "component_id": "22222222-c800-0000-0000-000000000001",
+          "go": "22222222-c000-0000-0000-000000000001",
+          "component_type": "PilotLink"
+        },
+        "Line": {
+          "_type": "component",
+          "component_id": "22222222-c900-0000-0000-000000000001",
+          "go": "22222222-c000-0000-0000-000000000001",
+          "component_type": "LineRenderer"
+        },
+        "TrailSegmentLength": 40,
+        "CableColor": "0.62,0.64,0.66,1",
+        "MaxTrailPoints": 256,
+        "GroundOffset": 0.5,
+        "MaxDropDistance": 2000
+      }
+    ],
+    "Children": [
+      {
+        "__guid": "22222222-c000-1000-0000-000000000001",
+        "Flags": 0,
+        "Name": "Visual",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "22222222-c000-1100-0000-000000000001",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/drone_fpv.vmdl",
+            "RenderType": "On",
+            "Tint": "1,0.95,0.7,1"
+          }
+        ]
+      },
+      {
+        "__guid": "22222222-c000-2000-0000-000000000001",
+        "Flags": 0,
+        "Name": "CameraSocket",
+        "Position": "4.11,0,1.67",
+        "Enabled": true,
+        "Components": []
+      },
+      {
+        "__guid": "22222222-c000-3000-0000-000000000001",
+        "Flags": 0,
+        "Name": "MuzzleSocket",
+        "Position": "4.17,0,-0.63",
+        "Enabled": true,
+        "Components": []
+      },
+      {
+        "__guid": "22222222-c000-4100-0000-000000000001",
+        "Flags": 0,
+        "Name": "Propeller_FL",
+        "Position": "6.71,6.71,1.80",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "22222222-c000-4101-0000-000000000001",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/drone_fpv_prop.vmdl",
+            "RenderType": "On",
+            "Tint": "1,0.95,0.7,1"
+          }
+        ]
+      },
+      {
+        "__guid": "22222222-c000-4200-0000-000000000001",
+        "Flags": 0,
+        "Name": "Propeller_FR",
+        "Position": "6.71,-6.71,1.80",
+        "Rotation": "0,180,0",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "22222222-c000-4201-0000-000000000001",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/drone_fpv_prop.vmdl",
+            "RenderType": "On",
+            "Tint": "1,0.95,0.7,1"
+          }
+        ]
+      },
+      {
+        "__guid": "22222222-c000-4300-0000-000000000001",
+        "Flags": 0,
+        "Name": "Propeller_BL",
+        "Position": "-6.71,6.71,1.80",
+        "Rotation": "0,180,0",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "22222222-c000-4301-0000-000000000001",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/drone_fpv_prop.vmdl",
+            "RenderType": "On",
+            "Tint": "1,0.95,0.7,1"
+          }
+        ]
+      },
+      {
+        "__guid": "22222222-c000-4400-0000-000000000001",
+        "Flags": 0,
+        "Name": "Propeller_BR",
+        "Position": "-6.71,-6.71,1.80",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "22222222-c000-4401-0000-000000000001",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/drone_fpv_prop.vmdl",
+            "RenderType": "On",
+            "Tint": "1,0.95,0.7,1"
+          }
+        ]
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Drone (Fiber FPV)",
+  "MenuIcon": "cable",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

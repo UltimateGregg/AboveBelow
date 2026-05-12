@@ -1,0 +1,87 @@
+{
+  "Title": "ABOVE / BELOW",
+  "Type": "game",
+  "Org": "ultimategregg",
+  "Ident": "dronevsplayers",
+  "Schema": 1,
+  "IncludeSourceFiles": false,
+  "Resources": "/fonts/*\n/UI/*\n/sounds/*\n/materials/*",
+  "PackageReferences": [
+    "semxy.bluecloudskybox",
+    "way.concrete_barrier3",
+    "way.concrete_barrier_post2",
+    "defqwop.militaryradio",
+    "pundalf.rock",
+    "fish.rock_a",
+    "fish.rock_e",
+    "fish.tent",
+    "fish.spruce_tree_a",
+    "fish.spruce_tree_b",
+    "fish.spruce_tree_d",
+    "titanovsky.low_poly_tree",
+    "facepunch.beech_shrub_wide_small",
+    "facepunch.pine_shrub_tall_b"
+  ],
+  "EditorReferences": [
+    "Libraries/sboxskinsgg.claudebridge"
+  ],
+  "Mounts": [
+    "Libraries/sboxskinsgg.claudebridge"
+  ],
+  "IsStandaloneOnly": false,
+  "Metadata": {
+    "MaxPlayers": 8,
+    "MinPlayers": 1,
+    "GameNetworkType": "Multiplayer",
+    "MapSelect": "Unrestricted",
+    "MapList": [
+      "facepunch.construct"
+    ],
+    "RankType": "None",
+    "PerMapRanking": false,
+    "LeaderboardType": "None",
+    "Physics": {
+      "SubSteps": 2,
+      "TimeScale": 1,
+      "Gravity": "0,0,-800",
+      "AirDensity": 1.2,
+      "SleepingEnabled": true,
+      "SimulationMode": "Continuous",
+      "PositionIterations": 2,
+      "VelocityIterations": 8,
+      "SoftBodyIterations": 1,
+      "SoftBodySubsteps": 1
+    },
+    "Compiler": {
+      "RootNamespace": "DroneVsPlayers",
+      "DefineConstants": "SANDBOX;ADDON;DEBUG",
+      "NoWarn": "1701;1702;1591;",
+      "WarningsAsErrors": "",
+      "ReleaseMode": "Debug",
+      "AssemblyReferences": [],
+      "IgnoreFolders": [],
+      "DistinctAssemblyReferences": []
+    },
+    "GameCategory": "Shooter",
+    "ControlModes": {
+      "Keyboard": true,
+      "Gamepad": true
+    },
+    "ParentPackage": "",
+    "PackageSettings": [],
+    "DefaultLeaderboards": [],
+    "GeneralExtensions": false,
+    "TargettedExtensions": true,
+    "ExtensionApiVersion": 1001,
+    "Summary": "Asymmetric drone-vs-infantry shooter. Fly above, fight below, and rotate roles each round.",
+    "Description": "ABOVE / BELOW is a vertical asymmetric PvP shooter. Drone pilots launch from vulnerable ground avatars, jump into the drone camera, and pressure the map from above. Soldiers fight through cover, hunt the pilots, and use class counters like rifles, jammers, EMP, and chaff to shut drones down. Roles rotate between rounds, so every player gets time in the sky and on the ground.",
+    "ReplaceTags": "shooter action multiplayer asymmetric vertical pvp drone infantry",
+    "Public": true,
+    "CsProjName": "",
+    "HttpAllowList": null,
+    "TickRate": 30,
+    "LaunchMode": "Normal",
+    "StartupScene": "scenes/main.scene",
+    "MapStartupScene": "scenes/main.scene"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "source_blend": "weapons_model.blend/chaff_grenade.blend",
+  "root_object": "Chaff_Grenade",
+  "target_fbx": "Assets/models/chaff_grenade.fbx",
+  "target_vmdl": "Assets/models/chaff_grenade.vmdl",
+  "model_resource_path": "models/chaff_grenade.vmdl",
+  "visual_object": "Visual",
+  "visual_scale": "1,1,1",
+  "visual_tint": "1,1,1,1",
+  "clear_visual_children": false,
+  "verify_fbx": true,
+  "required_object": [ "ChaffGrenadeMesh" ],
+  "object_type": [ "MESH" ],
+  "combine_meshes": true,
+  "combined_object_name": "ChaffGrenadeMesh",
+  "material_remap": {
+    "Chaff_Canister": "materials/chaff_canister.vmat",
+    "Chaff_Band": "materials/chaff_band.vmat",
+    "Grenade_Pin": "materials/grenade_pin.vmat"
+  },
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z"
+}

@@ -1,0 +1,24 @@
+{
+  "source_blend": "weapons_model.blend/rc_transmitter.blend",
+  "root_object": "RC_Transmitter",
+  "target_fbx": "Assets/models/weapons/rc_transmitter.fbx",
+  "target_vmdl": "Assets/models/weapons/rc_transmitter.vmdl",
+  "model_resource_path": "models/weapons/rc_transmitter.vmdl",
+  "visual_object": "Visual",
+  "visual_scale": "1,1,1",
+  "visual_tint": "1,1,1,1",
+  "clear_visual_children": false,
+  "verify_fbx": true,
+  "required_object": [ "RC_Transmitter" ],
+  "object_type": [ "MESH" ],
+  "combine_meshes": true,
+  "combined_object_name": "RC_Transmitter",
+  "material_remap": {
+    "RC_Polymer": "materials/weapons/rc_polymer.vmat",
+    "RC_Screen": "materials/weapons/rc_screen.vmat",
+    "RC_Antenna": "materials/weapons/rc_antenna.vmat"
+  },
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z"
+}

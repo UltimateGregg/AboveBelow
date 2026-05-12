@@ -1,0 +1,277 @@
+{
+  "RootObject": {
+    "__guid": "33333333-a000-0000-0000-000000000001",
+    "Flags": 0,
+    "Name": "Soldier (Assault)",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [
+      {
+        "__type": "Sandbox.CharacterController",
+        "__guid": "33333333-a100-0000-0000-000000000001",
+        "Acceleration": 10,
+        "Bounciness": 0,
+        "GroundAngle": 45,
+        "Height": 72,
+        "IgnoreLayers": "",
+        "Radius": 16,
+        "StepHeight": 18
+      },
+      {
+        "__type": "DroneVsPlayers.GroundPlayerController",
+        "__guid": "33333333-a200-0000-0000-000000000001",
+        "Gravity": "0,0,800",
+        "WalkSpeed": 110,
+        "SprintSpeed": 320,
+        "JumpStrength": 322,
+        "FirstPerson": true,
+        "EyeAngles": "0,0,0",
+        "IsSprinting": false,
+        "FootstepSound": "sounds/footstep.sound",
+        "JumpSound": "sounds/jump_grunt.sound",
+        "LandSound": "sounds/land_thud.sound"
+      },
+      {
+        "__type": "DroneVsPlayers.Health",
+        "__guid": "33333333-a300-0000-0000-000000000001",
+        "MaxHealth": 100,
+        "CurrentHealth": 100,
+        "IsDead": false
+      },
+      {
+        "__type": "DroneVsPlayers.AssaultSoldier",
+        "__guid": "33333333-a400-0000-0000-000000000001"
+      },
+      {
+        "__type": "DroneVsPlayers.SoldierLoadout",
+        "__guid": "33333333-a500-0000-0000-000000000001",
+        "SelectedSlot": 1
+      }
+    ],
+    "Children": [
+      {
+        "__guid": "33333333-a000-1000-0000-000000000001",
+        "Flags": 0,
+        "Name": "Body",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.SkinnedModelRenderer",
+            "__guid": "33333333-a000-1100-0000-000000000001",
+            "BodyGroups": 18446744073709551615,
+            "CreateBoneObjects": false,
+            "Model": "models/citizen/citizen.vmdl",
+            "RenderType": "On",
+            "Tint": "1,1,1,1",
+            "UseAnimGraph": true
+          },
+          {
+            "__type": "Sandbox.Citizen.CitizenAnimationHelper",
+            "__guid": "33333333-a000-1200-0000-000000000001",
+            "Target": {
+              "_type": "component",
+              "component_id": "33333333-a000-1100-0000-000000000001",
+              "go": "33333333-a000-1000-0000-000000000001",
+              "component_type": "SkinnedModelRenderer"
+            }
+          }
+        ],
+        "Children": [
+          {
+            "__guid": "33333333-a000-3000-0000-000000000001",
+            "Flags": 0,
+            "Name": "Weapon",
+            "Position": "20,15,55",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "DroneVsPlayers.HitscanWeapon",
+                "__guid": "33333333-a000-3100-0000-000000000001",
+                "Damage": 18,
+                "MaxRange": 8000,
+                "FireInterval": 0.12,
+                "RecoilDegrees": 0.4,
+                "MagazineSize": 30,
+                "StartingReserveAmmo": 120,
+                "ReloadSeconds": 1.65,
+                "MuzzleSocket": {
+                  "_type": "gameobject",
+                  "go": "33333333-a000-3200-0000-000000000001"
+                },
+                "WeaponVisual": {
+                  "_type": "gameobject",
+                  "go": "33333333-a000-3300-0000-000000000001"
+                },
+                "MuzzleFlash": {
+                  "_type": "component",
+                  "component_id": "33333333-a000-3210-0000-000000000001",
+                  "go": "33333333-a000-3210-1000-000000000001",
+                  "component_type": "PointLight"
+                },
+                "FireSound": "sounds/assault_rifle_fire.sound",
+                "FireSoundFirstPerson": "sounds/m4_fire_fp.sound",
+                "ReloadSound": "sounds/assault_rifle_reload.sound",
+                "MagDropSound": "sounds/mag_drop.sound",
+                "MagInsertSound": "sounds/mag_insert.sound",
+                "BoltRackSound": "sounds/bolt_rack.sound",
+                "EmptyClickSound": "sounds/empty_click.sound",
+                "TracerPrefab": {
+                  "_type": "gameobject",
+                  "prefab": "prefabs/tracer_default.prefab"
+                },
+                "MuzzleFlashSeconds": 0.045,
+                "FirstPersonOffset": "34,9,-12",
+                "FirstPersonRotationOffset": "0,0,0",
+                "ThirdPersonLocalPosition": "20,15,55",
+                "ThirdPersonLocalAngles": "0,0,0",
+                "AmmoInMagazine": 30,
+                "AmmoReserve": 120,
+                "IsReloading": false,
+                "ReloadFinishTime": 0
+              }
+            ],
+            "Children": [
+              {
+                "__guid": "33333333-a000-3300-0000-000000000001",
+                "Flags": 0,
+                "Name": "WeaponVisual",
+                "Position": "0,0,0",
+                "Rotation": "0,-90,0",
+                "Enabled": true,
+                "Components": [
+                  {
+                    "__type": "Sandbox.ModelRenderer",
+                    "__guid": "33333333-a000-3310-0000-000000000001",
+                    "BodyGroups": 18446744073709551615,
+                    "Model": "models/weapons/assault_rifle_m4.vmdl",
+                    "RenderType": "On",
+                    "Tint": "1,1,1,1"
+                  }
+                ]
+              },
+              {
+                "__guid": "33333333-a000-3200-0000-000000000001",
+                "Flags": 0,
+                "Name": "MuzzleSocket",
+                "Position": "20,0,0",
+                "Enabled": true,
+                "Components": [],
+                "Children": [
+                  {
+                    "__guid": "33333333-a000-3210-1000-000000000001",
+                    "Flags": 0,
+                    "Name": "MuzzleFlash",
+                    "Enabled": true,
+                    "Components": [
+                      {
+                        "__type": "Sandbox.PointLight",
+                        "__guid": "33333333-a000-3210-0000-000000000001",
+                        "LightColor": "1,0.68,0.28,1",
+                        "Radius": 120
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "__guid": "33333333-a000-4000-0000-000000000001",
+            "Flags": 0,
+            "Name": "Grenade",
+            "Position": "12,14,48",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "DroneVsPlayers.ChaffGrenade",
+                "__guid": "33333333-a000-4100-0000-000000000001",
+                "Radius": 600,
+                "JamDuration": 3,
+                "Strength": 1,
+                "FuseSeconds": 1.5,
+                "ThrowRange": 950,
+                "Cooldown": 4,
+                "ThrowInput": "Attack1",
+                "ThrowSound": "sounds/grenade_throw.sound",
+                "DetonateSound": "sounds/grenade_explosion.sound",
+                "Slot": 2,
+                "FirstPersonOffset": "28,8,-10",
+                "FirstPersonRotationOffset": "0,0,0",
+                "ThirdPersonLocalPosition": "12,14,48",
+                "ThirdPersonLocalAngles": "0,0,0"
+              },
+              {
+                "__type": "Sandbox.ModelRenderer",
+                "__guid": "33333333-a000-4110-0000-000000000001",
+                "BodyGroups": 18446744073709551615,
+                "Model": "models/chaff_grenade.vmdl",
+                "RenderType": "On",
+                "Tint": "1,1,1,1"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "__guid": "33333333-a000-2000-0000-000000000001",
+        "Flags": 0,
+        "Name": "Eye",
+        "Position": "0,0,64",
+        "Enabled": true,
+        "Components": [],
+        "Children": [
+          {
+            "__guid": "33333333-a000-2100-0000-000000000001",
+            "Flags": 0,
+            "Name": "FpvArms",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "Sandbox.ModelRenderer",
+                "__guid": "33333333-a000-2110-0000-000000000001",
+                "BodyGroups": 18446744073709551615,
+                "Model": "models/fps_arms.vmdl",
+                "RenderType": "On",
+                "Tint": "1,1,1,1"
+              },
+              {
+                "__type": "DroneVsPlayers.FpvArms",
+                "__guid": "33333333-a000-2200-0000-000000000001",
+                "ArmsRenderer": {
+                  "_type": "component",
+                  "component_id": "33333333-a000-2110-0000-000000000001",
+                  "go": "33333333-a000-2100-0000-000000000001",
+                  "component_type": "ModelRenderer"
+                },
+                "HipOffset": "0,-2,-4",
+                "HipRotationOffset": "0,0,0",
+                "AdsOffset": "-6,-2,2",
+                "AdsRotationOffset": "0,0,0",
+                "SwayLerpRate": 18
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Soldier (Assault)",
+  "MenuIcon": "military_tech",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

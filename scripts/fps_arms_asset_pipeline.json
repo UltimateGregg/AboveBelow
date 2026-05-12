@@ -1,0 +1,23 @@
+{
+  "source_blend": "weapons_model.blend/fps_arms.blend",
+  "root_object": "Fps_Arms",
+  "target_fbx": "Assets/models/fps_arms.fbx",
+  "target_vmdl": "Assets/models/fps_arms.vmdl",
+  "model_resource_path": "models/fps_arms.vmdl",
+  "visual_object": "Visual",
+  "visual_scale": "1,1,1",
+  "visual_tint": "1,1,1,1",
+  "clear_visual_children": false,
+  "verify_fbx": true,
+  "required_object": [ "FpsArmsMesh" ],
+  "object_type": [ "MESH" ],
+  "combine_meshes": true,
+  "combined_object_name": "FpsArmsMesh",
+  "material_remap": {
+    "Arms_Sleeve": "materials/fps_arms_sleeve.vmat",
+    "Arms_Glove": "materials/fps_arms_glove.vmat"
+  },
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z"
+}

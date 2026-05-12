@@ -1,0 +1,1005 @@
+@using Sandbox
+@using Sandbox.UI
+@using System
+@using System.Collections.Generic
+@using System.Linq
+@namespace DroneVsPlayers
+@inherits PanelComponent
+
+@*
+   In-game HUD. Attach this PanelComponent to a GameObject in main.scene
+   (typically the same GameManager object) so it renders for every client.
+
+   Shows:
+     - top center: round state and countdown timer
+     - top right: score (Pilot wins / Soldier wins) + kill feed
+     - center: crosshair, hitmarker flash, damage direction arcs
+     - bottom left: local health bar (only for your own pawn)
+     - bottom center: role indicator
+     - Tab: full scoreboard overlay
+     - low HP: vignette
+*@
+
+<root>
+    <div class="hud @VignetteClass">
+        @if ( ShowRolePicker )
+        {
+            <div class="role-select">
+                <div class="role-panel">
+                    <div class="title">Choose Team</div>
+                    <div class="subtitle">Pilots or soldiers.</div>
+                    <div class="team-choices">
+                        <div class="@TeamChoiceClass(PlayerRole.Pilot)" onclick=@(() => SelectLoadoutTeam(PlayerRole.Pilot))>
+                            <span class="label">PILOTS</span>
+                            <span class="desc">Fly drones from above</span>
+                        </div>
+                        <div class="@TeamChoiceClass(PlayerRole.Soldier)" onclick=@(() => SelectLoadoutTeam(PlayerRole.Soldier))>
+                            <span class="label">SOLDIERS</span>
+                            <span class="desc">Fight from below</span>
+                        </div>
+                    </div>
+
+                    @if ( SelectedLoadoutTeam == PlayerRole.Soldier )
+                    {
+                        <div class="loadout-section">
+                            <div class="section-title">Soldier Class</div>
+                            <div class="choices">
+                                <div class="choice soldier" onclick=@(() => Setup?.SelectLocalSoldier(SoldierClass.Assault))>
+                                    <span class="label">ASSAULT</span>
+                                    <span class="desc">Rifle answer to fiber</span>
+                                </div>
+                                <div class="choice soldier" onclick=@(() => Setup?.SelectLocalSoldier(SoldierClass.CounterUav))>
+                                    <span class="label">COUNTER-UAV</span>
+                                    <span class="desc">Jammer answer to GPS</span>
+                                </div>
+                                <div class="choice soldier" onclick=@(() => Setup?.SelectLocalSoldier(SoldierClass.Heavy))>
+                                    <span class="label">HEAVY</span>
+                                    <span class="desc">EMP answer to FPV</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if ( SelectedLoadoutTeam == PlayerRole.Pilot )
+                    {
+                        <div class="loadout-section">
+                            <div class="section-title">Pilot Class</div>
+                            <div class="choices">
+                                <div class="choice pilot" onclick=@(() => Setup?.SelectLocalDrone(DroneType.Gps))>
+                                    <span class="label">GPS DRONE</span>
+                                    <span class="desc">Long range vs heavy</span>
+                                </div>
+                                <div class="choice pilot" onclick=@(() => Setup?.SelectLocalDrone(DroneType.Fpv))>
+                                    <span class="label">FPV DRONE</span>
+                                    <span class="desc">Fast dive vs assault</span>
+                                </div>
+                                <div class="choice pilot" onclick=@(() => Setup?.SelectLocalDrone(DroneType.FiberOpticFpv))>
+                                    <span class="label">FIBER FPV</span>
+                                    <span class="desc">RF immune vs jammer</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if ( ShowJamWarning )
+        {
+            <div class="jam-warning">SIGNAL JAMMED</div>
+        }
+
+        @if ( SuppressionOpacity > 0.01f )
+        {
+            <div class="suppression-vignette" style="opacity: @SuppressionOpacity.ToString("0.00")"></div>
+        }
+
+        @if ( SunGlareOpacity > 0.01f )
+        {
+            <div class="sun-glare" style="opacity: @SunGlareOpacity.ToString("0.00")"></div>
+        }
+
+        @if ( EliminatedVisible )
+        {
+            <div class="eliminated-popup">
+                <div class="eliminated-label">ELIMINATED</div>
+                <div class="eliminated-name">@EliminatedName</div>
+            </div>
+        }
+
+        @if ( RoundEndVisible )
+        {
+            <div class="round-overlay @RoundWinnerClass">
+                <div class="round-winner-line">@RoundWinnerLabel</div>
+                <div class="round-winner-sub">wins the round</div>
+            </div>
+        }
+
+        @if ( ShowReticle )
+        {
+            <div class="reticle-stack">
+                <div class="crosshair @CrosshairClass">
+                    <div class="tick top"></div>
+                    <div class="tick bottom"></div>
+                    <div class="tick left"></div>
+                    <div class="tick right"></div>
+                    <div class="dot"></div>
+                </div>
+                <div class="hitmarker @HitmarkerClass"></div>
+
+                @foreach ( var arc in DamageArcs )
+                {
+                    <div class="damage-arc" style="transform: rotate(@(arc.AngleDeg.ToString("0"))deg); opacity: @arc.Opacity.ToString("0.00")"></div>
+                }
+            </div>
+        }
+
+        <div class="top-center">
+            @if ( Round is not null && (Round.State == RoundState.Countdown || Round.State == RoundState.Active) && LocalRole != PlayerRole.Spectator )
+            {
+                <div class="round-header">Round @(PilotWins + SoldierWins + 1) / You are <span class="role-tag @LocalRole.ToString().ToLower()">@(LocalRole == PlayerRole.Pilot ? "ABOVE" : "BELOW")</span></div>
+            }
+            <div class="state">@RoundLine</div>
+            @if ( ShowTimer )
+            {
+                <div class="timer">@TimerLine</div>
+            }
+        </div>
+
+        <div class="top-right">
+            <div class="score">
+                <span class="pilot">@PilotWins</span>
+                <span class="sep">vs</span>
+                <span class="soldier">@SoldierWins</span>
+            </div>
+
+            @if ( KillFeedEntries.Count > 0 )
+            {
+                <div class="kill-feed">
+                    @foreach ( var e in KillFeedEntries )
+                    {
+                        <div class="@KillFeedEntryClass(e)">
+                            <span class="attacker">@e.AttackerName</span>
+                            <span class="weapon">[@e.WeaponName]</span>
+                            <span class="victim">@e.VictimName</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        @if ( LocalHealth is not null )
+        {
+            <div class="bottom-left">
+                <div class="role @LocalRole.ToString().ToLower()">@(LocalRole == PlayerRole.Pilot ? "ABOVE" : LocalRole == PlayerRole.Soldier ? "BELOW" : "SPECTATOR")</div>
+                <div class="hp-bar">
+                    <div class="hp-fill" style="width: @HpFraction%"></div>
+                </div>
+                <div class="hp-text">@HpText</div>
+                @if ( ShowStamina )
+                {
+                    <div class="stamina-bar">
+                        <div class="stamina-fill" style="width: @StaminaPercent%"></div>
+                    </div>
+                }
+            </div>
+        }
+
+        @if ( ShowAmmoHud )
+        {
+            <div class="bottom-right-ammo @LocalRole.ToString().ToLower()">
+                <div class="ammo-label">@AmmoHudLabel</div>
+                <div class="ammo-value">@AmmoHudValue</div>
+                <div class="ammo-status">@AmmoHudStatus</div>
+            </div>
+        }
+
+        @if ( ShowLoadoutHud )
+        {
+            <div class="loadout-hud @LocalRole.ToString().ToLower()">
+                <div class="loadout-title">@LoadoutTitle</div>
+                <div class="loadout-slots">
+                    @foreach ( var slot in LoadoutSlots )
+                    {
+                        <div class="@LoadoutSlotClass(slot)">
+                            <div class="slot-main-row">
+                                <div class="slot-key">@slot.Number</div>
+                                <div class="slot-copy">
+                                    <div class="slot-name">@slot.Name</div>
+                                    <div class="slot-detail">@slot.Detail</div>
+                                </div>
+                                <div class="slot-action">@slot.Action</div>
+                            </div>
+                            <div class="slot-status-row">
+                                <div class="slot-status">@slot.Status</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if ( LocalRole == PlayerRole.Pilot )
+        {
+            <div class="pilot-controls">
+                <div class="control-row">
+                    <span class="key">WASD</span>
+                    <span>Move</span>
+                </div>
+                <div class="control-row">
+                    <span class="key">Space</span>
+                    <span>Ascend</span>
+                </div>
+                <div class="control-row">
+                    <span class="key">Ctrl</span>
+                    <span>Descend</span>
+                </div>
+                <div class="control-row">
+                    <span class="key">Shift</span>
+                    <span>Boost</span>
+                </div>
+                <div class="control-row emphasized">
+                    <span class="key">F</span>
+                    <span>Toggle drone control</span>
+                </div>
+                <div class="control-row">
+                    <span class="key">X</span>
+                    <span>@DroneCameraModeLabel</span>
+                </div>
+            </div>
+        }
+
+        @if ( ShowScoreboard )
+        {
+            <div class="scoreboard">
+                <div class="scoreboard-inner">
+                    <div class="scoreboard-title">SCOREBOARD</div>
+                    <div class="scoreboard-table">
+                        <div class="scoreboard-header">
+                            <span class="col-name">Player</span>
+                            <span class="col-k">K</span>
+                            <span class="col-d">D</span>
+                            <span class="col-s">Score</span>
+                        </div>
+                        @foreach ( var row in ScoreboardRows )
+                        {
+                            <div class="scoreboard-row">
+                                <span class="col-name">@row.Name</span>
+                                <span class="col-k">@row.Kills</span>
+                                <span class="col-d">@row.Deaths</span>
+                                <span class="col-s">@row.Score</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</root>
+
+@code
+{
+    RoundManager Round => Scene.GetAllComponents<RoundManager>().FirstOrDefault();
+    GameSetup Setup => Scene.GetAllComponents<GameSetup>().FirstOrDefault();
+    GameStats Stats => Scene.GetAllComponents<GameStats>().FirstOrDefault();
+    KillFeedTracker KillFeed => Scene.GetAllComponents<KillFeedTracker>().FirstOrDefault();
+
+    PlayerRole SelectedLoadoutTeam { get; set; } = PlayerRole.Spectator;
+    int SelectedLoadoutSlot { get; set; } = 1;
+
+    bool ShowRolePicker => Setup?.NeedsLocalRoleChoice() ?? false;
+    bool ShowLoadoutHud => !ShowRolePicker && LocalRole is PlayerRole.Pilot or PlayerRole.Soldier;
+    bool ShowReticle => !ShowRolePicker && LocalRole == PlayerRole.Soldier;
+    bool ShowScoreboard { get; set; }
+
+    // ---- Hitmarker + damage feedback state ----
+    float _lastHitTime = -10f;
+    float _lastKillTime = -10f;
+    readonly List<DamageArc> _damageArcs = new();
+    readonly HashSet<Health> _subscribedHealths = new();
+
+    // ---- ELIMINATED popup + round transition state ----
+    float _lastEliminatedTime = -10f;
+    string _lastEliminatedName = "";
+    RoundState _prevRoundState = RoundState.WaitingForPlayers;
+    int _prevWinnerInt = -1;
+    float _roundEndShownAt = -10f;       // when the win overlay should fade in
+
+    /// <summary>Per-frame snapshot of damage indicators, age-faded.</summary>
+    sealed class DamageArc
+    {
+        public float CreatedAt;
+        public float AngleDeg;        // 0 = front, +90 = right
+        public float Opacity;
+    }
+
+    record struct KillFeedRow( string AttackerName, string WeaponName, string VictimName, bool LocalIsAttacker, bool LocalIsVictim );
+
+    IReadOnlyList<KillFeedRow> KillFeedEntries
+    {
+        get
+        {
+            var feed = KillFeed;
+            if ( feed is null ) return Array.Empty<KillFeedRow>();
+            return feed.Entries
+                .Select( e => new KillFeedRow( e.AttackerName, e.WeaponName, e.VictimName, e.LocalIsAttacker, e.LocalIsVictim ) )
+                .ToList();
+        }
+    }
+
+    string KillFeedEntryClass( KillFeedRow e )
+    {
+        if ( e.LocalIsAttacker ) return "kill-feed-entry local-attacker";
+        if ( e.LocalIsVictim ) return "kill-feed-entry local-victim";
+        return "kill-feed-entry";
+    }
+
+    string CrosshairClass
+    {
+        get
+        {
+            var classes = new List<string>();
+            if ( Time.Now - _lastHitTime < 0.10f ) classes.Add( "firing" );
+            if ( SuppressionOpacity > 0.08f ) classes.Add( "suppressed" );
+            return string.Join( " ", classes );
+        }
+    }
+
+    string HitmarkerClass
+    {
+        get
+        {
+            if ( Time.Now - _lastKillTime < 0.30f ) return "active kill";
+            if ( Time.Now - _lastHitTime < 0.18f ) return "active";
+            return "";
+        }
+    }
+
+    string VignetteClass
+    {
+        get
+        {
+            var lowHp = LocalHealth is not null
+                && LocalHealth.MaxHealth > 0f
+                && (LocalHealth.CurrentHealth / LocalHealth.MaxHealth) < 0.25f;
+            return lowHp ? "low-hp" : "";
+        }
+    }
+
+    float SuppressionOpacity
+    {
+        get
+        {
+            var g = LocalGroundController;
+            if ( !g.IsValid() ) return 0f;
+            // Cap at 0.55 so the vignette never fully obscures the view.
+            return MathF.Min( 0.55f, g.SuppressionT * 0.65f );
+        }
+    }
+
+    bool EliminatedVisible => Time.Now - _lastEliminatedTime < 1.5f;
+    string EliminatedName => _lastEliminatedName;
+
+    bool RoundEndVisible
+    {
+        get
+        {
+            var round = Round;
+            if ( round is null ) return false;
+            if ( round.State != RoundState.Ended ) return false;
+            if ( _roundEndShownAt < 0f ) return false;
+            return (Time.Now - _roundEndShownAt) < 8f;
+        }
+    }
+
+    string RoundWinnerLabel => Round?.LastWinnerInt switch
+    {
+        0 => "ABOVE WINS",
+        1 => "BELOW WINS",
+        _ => "ROUND OVER",
+    };
+
+    string RoundWinnerClass => Round?.LastWinnerInt switch
+    {
+        0 => "winner-pilot",
+        1 => "winner-soldier",
+        _ => "",
+    };
+
+    IReadOnlyList<DamageArc> DamageArcs
+    {
+        get
+        {
+            var arcs = new List<DamageArc>();
+            for ( int i = _damageArcs.Count - 1; i >= 0; i-- )
+            {
+                var a = _damageArcs[i];
+                var age = Time.Now - a.CreatedAt;
+                if ( age > 2f )
+                {
+                    _damageArcs.RemoveAt( i );
+                    continue;
+                }
+                a.Opacity = MathX.Lerp( 0.9f, 0f, age / 2f );
+                arcs.Add( a );
+            }
+            return arcs;
+        }
+    }
+
+    protected override void OnUpdate()
+    {
+        var soldierLoadout = LocalSoldierComponent<SoldierLoadout>();
+        if ( soldierLoadout.IsValid() )
+            SelectedLoadoutSlot = soldierLoadout.SelectedSlot;
+
+        if ( !soldierLoadout.IsValid() )
+        {
+            if ( Input.Pressed( "Slot1" ) )
+                SelectedLoadoutSlot = 1;
+            if ( Input.Pressed( "Slot2" ) )
+                SelectedLoadoutSlot = 2;
+        }
+
+        ShowScoreboard = Input.Down( "Score" );
+
+        // Subscribe to any new Health components — for hitmarker (we attacked
+        // them) and damage-direction (we got hit).
+        foreach ( var h in Scene.GetAllComponents<Health>() )
+        {
+            if ( !h.IsValid() ) continue;
+            if ( _subscribedHealths.Contains( h ) ) continue;
+            _subscribedHealths.Add( h );
+            h.OnDamaged += info => OnAnyHealthDamaged( h, info );
+            h.OnKilled += info => OnAnyHealthKilled( h, info );
+        }
+
+        // Round-state transitions: play swell on Countdown → Active, capture
+        // round-end timestamp for the win overlay fade-in.
+        var round = Round;
+        if ( round is not null )
+        {
+            var state = round.State;
+            if ( _prevRoundState == RoundState.Countdown && state == RoundState.Active )
+                Sound.Play( "sounds/round_start_swell.sound" );
+
+            if ( state == RoundState.Ended && _prevRoundState != RoundState.Ended )
+                _roundEndShownAt = Time.Now;
+
+            // Catch host's LastWinnerInt change separately in case the state
+            // transition raced ahead.
+            if ( round.LastWinnerInt != _prevWinnerInt && round.LastWinnerInt >= 0 )
+            {
+                _roundEndShownAt = Time.Now;
+                _prevWinnerInt = round.LastWinnerInt;
+            }
+
+            _prevRoundState = state;
+        }
+    }
+
+    void OnAnyHealthDamaged( Health victim, DamageInfo info )
+    {
+        var localId = Connection.Local?.Id ?? default;
+        if ( localId == default ) return;
+
+        // We hit someone — hitmarker for the local attacker.
+        if ( info.AttackerId == localId && victim.GameObject.Network.Owner?.Id != localId )
+        {
+            _lastHitTime = Time.Now;
+            Sound.Play( "sounds/ui_hitmarker.sound" );
+        }
+
+        // We got hit — damage direction arc pointing at the attacker.
+        if ( victim.GameObject.Network.Owner?.Id == localId && info.AttackerId != localId )
+        {
+            var localPos = LocalCameraPosition;
+            var sourcePos = info.Position;
+            var toSource = (sourcePos - localPos).WithZ( 0 );
+            if ( toSource.IsNearZeroLength ) return;
+
+            // Angle clockwise from local forward (camera yaw).
+            var forward = LocalCameraForward.WithZ( 0 ).Normal;
+            var right = Vector3.Cross( Vector3.Up, forward ).Normal;
+            var dirN = toSource.Normal;
+            var angleRad = MathF.Atan2( Vector3.Dot( dirN, right ), Vector3.Dot( dirN, forward ) );
+            var angleDeg = angleRad * 180f / MathF.PI;
+
+            _damageArcs.Add( new DamageArc { CreatedAt = Time.Now, AngleDeg = angleDeg, Opacity = 0.9f } );
+            if ( _damageArcs.Count > 8 )
+                _damageArcs.RemoveAt( 0 );
+        }
+    }
+
+    void OnAnyHealthKilled( Health victim, DamageInfo info )
+    {
+        var localId = Connection.Local?.Id ?? default;
+        if ( localId == default ) return;
+
+        if ( info.AttackerId == localId && victim.GameObject.Network.Owner?.Id != localId )
+        {
+            _lastKillTime = Time.Now;
+            _lastEliminatedTime = Time.Now;
+            _lastEliminatedName = ResolveVictimName( victim );
+            Sound.Play( "sounds/ui_hitmarker_kill.sound" );
+        }
+    }
+
+    string ResolveVictimName( Health victim )
+    {
+        var connId = victim.GameObject.Network.Owner?.Id ?? default;
+        if ( connId == default ) return victim.GameObject.Name ?? "Target";
+
+        var stats = Stats;
+        if ( stats.IsValid() && stats.PlayerNames.TryGetValue( connId, out var name ) && !string.IsNullOrWhiteSpace( name ) )
+            return name;
+
+        var conn = Connection.All.FirstOrDefault( c => c.Id == connId );
+        return conn?.DisplayName ?? "Target";
+    }
+
+    Vector3 LocalCameraPosition
+    {
+        get
+        {
+            var cam = Scene.GetAllComponents<CameraComponent>().FirstOrDefault();
+            return cam.IsValid() ? cam.WorldPosition : Vector3.Zero;
+        }
+    }
+
+    Vector3 LocalCameraForward
+    {
+        get
+        {
+            var cam = Scene.GetAllComponents<CameraComponent>().FirstOrDefault();
+            return cam.IsValid() ? cam.WorldRotation.Forward : Vector3.Forward;
+        }
+    }
+
+    RemoteController LocalRemoteController =>
+        Scene.GetAllComponents<RemoteController>().FirstOrDefault( r => !r.IsProxy );
+
+    float SunGlareOpacity
+    {
+        get
+        {
+            var source = Scene.GetAllComponents<SunGlareSource>().FirstOrDefault( s => s.Enabled );
+            if ( !source.IsValid() )
+                return 0f;
+
+            var remote = LocalRemoteController;
+            var droneViewActive = remote.IsValid() && remote.DroneViewActive;
+
+            return source.GetGlareOpacity( LocalCameraPosition, LocalCameraForward, LocalRole, droneViewActive );
+        }
+    }
+
+    void SelectLoadoutTeam( PlayerRole team )
+    {
+        if ( team is not (PlayerRole.Pilot or PlayerRole.Soldier) )
+            return;
+
+        SelectedLoadoutTeam = team;
+    }
+
+    string TeamChoiceClass( PlayerRole team )
+    {
+        var className = team == PlayerRole.Pilot ? "team-choice pilot" : "team-choice soldier";
+        return SelectedLoadoutTeam == team ? $"{className} selected" : className;
+    }
+
+    LoadoutSlot[] LoadoutSlots => LocalRole switch
+    {
+        PlayerRole.Pilot => PilotLoadoutSlots(),
+        PlayerRole.Soldier => SoldierLoadoutSlots(),
+        _ => Array.Empty<LoadoutSlot>(),
+    };
+
+    string LoadoutTitle => LocalRole switch
+    {
+        PlayerRole.Pilot => $"{LocalDroneName} Loadout",
+        PlayerRole.Soldier => $"{LocalSoldierName} Loadout",
+        _ => "",
+    };
+
+    LoadoutSlot[] SoldierLoadoutSlots()
+    {
+        return new[]
+        {
+            SoldierPrimarySlot(),
+            SoldierEquipmentSlot(),
+        };
+    }
+
+    LoadoutSlot SoldierPrimarySlot()
+    {
+        var rifle = LocalSoldierComponent<HitscanWeapon>();
+        if ( rifle.IsValid() )
+        {
+            return new LoadoutSlot(
+                1,
+                "Assault Rifle",
+                $"{rifle.Damage:0} dmg / {rifle.MagazineSize} mag",
+                RifleStatus( rifle ),
+                "LMB",
+                rifle.AmmoDisplay,
+                rifle.ReadyFraction * 100f
+            );
+        }
+
+        var shotgun = LocalSoldierComponent<ShotgunWeapon>();
+        if ( shotgun.IsValid() )
+        {
+            return new LoadoutSlot(
+                1,
+                "Shotgun",
+                $"{shotgun.PelletCount} pellets / {shotgun.MaxRange / 1000f:0.0}k range",
+                CooldownStatus( shotgun.IsReady, shotgun.CooldownRemaining ),
+                "LMB",
+                "SHELLS INF",
+                shotgun.CooldownReadyFraction * 100f
+            );
+        }
+
+        var jammer = LocalSoldierComponent<DroneJammerGun>();
+        if ( jammer.IsValid() )
+        {
+            return new LoadoutSlot(
+                1,
+                "Drone Jammer",
+                $"{jammer.MaxRange / 1000f:0.0}k range / cone",
+                jammer.IsActive ? "ACTIVE" : "HOLD",
+                "LMB",
+                "ENERGY INF",
+                100f
+            );
+        }
+
+        return DisabledSlot( 1, "Primary", "No weapon found", "LMB" );
+    }
+
+    LoadoutSlot SoldierEquipmentSlot()
+    {
+        var grenade = LocalSoldierComponent<ThrowableGrenade>();
+        if ( !grenade.IsValid() )
+            return DisabledSlot( 2, "Equipment", "No equipment found", "LMB" );
+
+        var status = grenade.IsArmed
+            ? $"FUSE {grenade.FuseRemaining:0.0}s"
+            : CooldownStatus( grenade.IsReady, grenade.CooldownRemaining );
+
+        var ammo = grenade.IsArmed
+            ? "IN AIR"
+            : grenade.IsReady ? "CHARGE 1" : "RECHARGE";
+
+        return new LoadoutSlot(
+            2,
+            GrenadeName( grenade ),
+            GrenadeDetail( grenade ),
+            status,
+            "LMB",
+            ammo,
+            grenade.IsArmed ? 100f : grenade.CooldownReadyFraction * 100f
+        );
+    }
+
+    LoadoutSlot[] PilotLoadoutSlots()
+    {
+        var weapon = LocalDroneWeapon;
+        if ( !weapon.IsValid() )
+        {
+            return new[]
+            {
+                DisabledSlot( 1, "Primary", "No drone weapon found", "LMB" ),
+                DisabledSlot( 2, "Ability", "No drone ability found", "RMB" ),
+            };
+        }
+
+        var primary = weapon.EnableHitscan
+            ? new LoadoutSlot(
+                1,
+                LocalDroneBase.IsValid() && LocalDroneBase.Type == DroneType.Gps ? "GPS Beam" : "Drone Beam",
+                $"{weapon.HitscanDamage:0} dmg / {weapon.HitscanRange / 1000f:0.0}k range",
+                CooldownStatus( weapon.PrimaryReady, weapon.PrimaryCooldownRemaining ),
+                "LMB",
+                "AMMO INF",
+                weapon.PrimaryReadyFraction * 100f
+            )
+            : DisabledSlot( 1, "No Primary", "This drone uses slot 2", "LMB" );
+
+        var ability = weapon.EnableKamikaze
+            ? new LoadoutSlot(
+                2,
+                "Kamikaze Charge",
+                $"{weapon.KamikazeDamage:0} dmg / {weapon.KamikazeRadius:0} radius",
+                "ARMED",
+                "RMB",
+                "ONE USE",
+                100f
+            )
+            : DisabledSlot( 2, "No Payload", "Primary fire only", "RMB" );
+
+        return new[] { primary, ability };
+    }
+
+    T LocalSoldierComponent<T>() where T : Component
+    {
+        var ground = LocalGroundController;
+        return ground.IsValid()
+            ? ground.GameObject.Components.Get<T>( FindMode.EverythingInSelfAndDescendants )
+            : null;
+    }
+
+    GroundPlayerController LocalGroundController =>
+        Scene.GetAllComponents<GroundPlayerController>().FirstOrDefault( g => !g.IsProxy );
+
+    DroneController LocalDroneController =>
+        Scene.GetAllComponents<DroneController>().FirstOrDefault( d => !d.IsProxy );
+
+    DroneWeapon LocalDroneWeapon =>
+        LocalDroneController.IsValid() ? LocalDroneController.Components.Get<DroneWeapon>() : null;
+
+    string LocalSoldierName
+    {
+        get
+        {
+            var soldier = LocalSoldierComponent<SoldierBase>();
+            return soldier.IsValid() ? SoldierClassName( soldier.Class ) : "Soldier";
+        }
+    }
+
+    string LocalDroneName => LocalDroneBase.IsValid()
+        ? DroneVariantName( LocalDroneBase.Type )
+        : "Pilot";
+
+    static string CooldownStatus( bool ready, float remaining ) =>
+        ready ? "READY" : $"{remaining:0.0}s";
+
+    static string RifleStatus( HitscanWeapon rifle )
+    {
+        if ( rifle.IsReloading )
+            return "RELOADING";
+
+        if ( rifle.AmmoInMagazine <= 0 && rifle.AmmoReserve <= 0 )
+            return "EMPTY";
+
+        return CooldownStatus( rifle.IsReady, rifle.CooldownRemaining );
+    }
+
+    static string SoldierClassName( SoldierClass cls ) => cls switch
+    {
+        SoldierClass.Assault => "Assault",
+        SoldierClass.CounterUav => "Counter-UAV",
+        SoldierClass.Heavy => "Heavy",
+        _ => "Soldier",
+    };
+
+    static string DroneVariantName( DroneType type ) => type switch
+    {
+        DroneType.Gps => "GPS Drone",
+        DroneType.Fpv => "FPV Drone",
+        DroneType.FiberOpticFpv => "Fiber FPV",
+        _ => "Drone",
+    };
+
+    static string GrenadeName( ThrowableGrenade grenade ) => grenade switch
+    {
+        ChaffGrenade => "Chaff Grenade",
+        FragGrenade => "Frag Grenade",
+        EmpGrenade => "EMP Grenade",
+        _ => "Equipment",
+    };
+
+    static string GrenadeDetail( ThrowableGrenade grenade ) => grenade switch
+    {
+        ChaffGrenade chaff => $"{chaff.Radius:0} radius / {chaff.JamDuration:0}s jam",
+        FragGrenade frag => $"{frag.Damage:0} dmg / {frag.Radius:0} radius",
+        EmpGrenade emp => $"{emp.Radius:0} radius / {emp.JamDuration:0}s jam",
+        _ => "Throwable equipment",
+    };
+
+    static LoadoutSlot DisabledSlot( int number, string name, string detail, string action )
+    {
+        return new LoadoutSlot( number, name, detail, "EMPTY", action, "", 0f, true );
+    }
+
+    string LoadoutSlotClass( LoadoutSlot slot )
+    {
+        var className = "loadout-slot";
+        if ( slot.Number == SelectedLoadoutSlot )
+            className += " selected";
+        if ( slot.Disabled )
+            className += " disabled";
+
+        return className;
+    }
+
+    LoadoutSlot CurrentLoadoutSlot => LoadoutSlots.FirstOrDefault( s => s.Number == SelectedLoadoutSlot );
+
+    bool ShowAmmoHud => LocalRole == PlayerRole.Soldier
+        && ShowLoadoutHud
+        && CurrentLoadoutSlot is not null
+        && !CurrentLoadoutSlot.Disabled
+        && !string.IsNullOrWhiteSpace( CurrentLoadoutSlot.Ammo );
+
+    string AmmoHudLabel => CurrentLoadoutSlot?.Name?.ToUpperInvariant() ?? "";
+    string AmmoHudValue => CurrentLoadoutSlot?.Ammo ?? "";
+    string AmmoHudStatus => CurrentLoadoutSlot?.Status ?? "";
+
+    JammingReceiver LocalJammer
+    {
+        get
+        {
+            var drone = Scene.GetAllComponents<DroneController>().FirstOrDefault( d => !d.IsProxy );
+            return drone.IsValid() ? drone.Components.Get<JammingReceiver>() : null;
+        }
+    }
+
+    bool ShowJamWarning => LocalRole == PlayerRole.Pilot
+        && LocalJammer.IsValid()
+        && LocalJammer.IsJammed
+        && LocalDroneBase.IsValid()
+        && LocalDroneBase.JamSusceptibility > 0.01f;
+
+    DroneBase LocalDroneBase
+    {
+        get
+        {
+            var drone = Scene.GetAllComponents<DroneController>().FirstOrDefault( d => !d.IsProxy );
+            return drone.IsValid() ? drone.Components.Get<DroneBase>() : null;
+        }
+    }
+
+    Health LocalHealth
+    {
+        get
+        {
+            // Drone first, then ground player. Owner == not proxy == this client.
+            var drone = Scene.GetAllComponents<DroneController>().FirstOrDefault( d => !d.IsProxy );
+            if ( drone.IsValid() )
+                return drone.Components.Get<Health>() ?? drone.Components.GetInAncestors<Health>();
+
+            var ground = Scene.GetAllComponents<GroundPlayerController>().FirstOrDefault( g => !g.IsProxy );
+            if ( ground.IsValid() )
+                return ground.Components.Get<Health>() ?? ground.Components.GetInAncestors<Health>();
+
+            return null;
+        }
+    }
+
+    PlayerRole LocalRole
+    {
+        get
+        {
+            var drone = Scene.GetAllComponents<DroneController>().FirstOrDefault( d => !d.IsProxy );
+            if ( drone.IsValid() ) return PlayerRole.Pilot;
+
+            var ground = Scene.GetAllComponents<GroundPlayerController>().FirstOrDefault( g => !g.IsProxy );
+            if ( ground.IsValid() ) return PlayerRole.Soldier;
+
+            return PlayerRole.Spectator;
+        }
+    }
+
+    DroneCamera LocalDroneCamera =>
+        Scene.GetAllComponents<DroneCamera>().FirstOrDefault( c => !c.IsProxy );
+
+    string DroneCameraModeLabel =>
+        LocalDroneCamera.IsValid() && LocalDroneCamera.IsFirstPersonActive
+            ? "Camera: First person"
+            : "Camera: Third person";
+
+    int PilotWins => Round?.PilotWins ?? 0;
+    int SoldierWins => Round?.SoldierWins ?? 0;
+
+    string RoundLine => Round?.State switch
+    {
+        RoundState.WaitingForPlayers => "Waiting for players",
+        RoundState.Countdown => "Get ready",
+        RoundState.Active => LocalRole == PlayerRole.Pilot ? "Hunt below." : "Take down above.",
+        RoundState.Ended => "Round over",
+        _ => "",
+    };
+
+    bool ShowTimer => Round?.State is RoundState.Countdown or RoundState.Active or RoundState.Ended;
+
+    string TimerLine
+    {
+        get
+        {
+            if ( Round is null ) return "";
+            var remaining = Math.Max( 0, Round.StateSecondsRemaining );
+            var mins = remaining / 60;
+            var secs = remaining % 60;
+            return $"{mins:0}:{secs:00}";
+        }
+    }
+
+    int HpFraction
+    {
+        get
+        {
+            if ( LocalHealth is null ) return 0;
+            return (int)(LocalHealth.CurrentHealth / MathF.Max( 1, LocalHealth.MaxHealth ) * 100f);
+        }
+    }
+
+    string HpText => LocalHealth is null ? "" : $"{LocalHealth.CurrentHealth:0} / {LocalHealth.MaxHealth:0}";
+
+    bool ShowStamina => LocalRole == PlayerRole.Soldier && LocalGroundController.IsValid();
+
+    int StaminaPercent
+    {
+        get
+        {
+            var g = LocalGroundController;
+            if ( !g.IsValid() ) return 100;
+            return (int)(g.Stamina.Clamp( 0f, 1f ) * 100f);
+        }
+    }
+
+    record struct ScoreboardRow( string Name, int Kills, int Deaths, int Score );
+
+    IReadOnlyList<ScoreboardRow> ScoreboardRows
+    {
+        get
+        {
+            var stats = Stats;
+            if ( stats is null ) return Array.Empty<ScoreboardRow>();
+            return stats.GetScoreboard()
+                .Select( s => new ScoreboardRow( s.Name, s.Kills, s.Deaths, s.Score ) )
+                .ToList();
+        }
+    }
+
+    sealed class LoadoutSlot
+    {
+        public LoadoutSlot( int number, string name, string detail, string status, string action, string ammo, float readyPercent, bool disabled = false )
+        {
+            Number = number;
+            Name = name;
+            Detail = detail;
+            Status = status;
+            Action = action;
+            Ammo = ammo;
+            ReadyPercent = readyPercent.Clamp( 0f, 100f );
+            Disabled = disabled;
+        }
+
+        public int Number { get; }
+        public string Name { get; }
+        public string Detail { get; }
+        public string Status { get; }
+        public string Action { get; }
+        public string Ammo { get; }
+        public float ReadyPercent { get; }
+        public bool Disabled { get; }
+    }
+
+    /// <summary>
+    /// Re-render gate: panel rebuilds whenever any of these inputs change.
+    /// Includes time-quantized fields for hitmarker / damage arc animations.
+    /// </summary>
+    protected override int BuildHash() => HashCode.Combine(
+        HashCode.Combine(
+            Round?.State, PilotWins, SoldierWins,
+            LocalRole, HpFraction, ShowTimer, TimerLine, ShowRolePicker
+        ),
+        HashCode.Combine(
+            LocalDroneCamera.IsValid() && LocalDroneCamera.IsFirstPersonActive,
+            ShowJamWarning,
+            SelectedLoadoutTeam,
+            ShowScoreboard,
+            VignetteClass,
+            StaminaPercent,
+            Round?.LastWinnerInt ?? -1,
+            HashCode.Combine( RoundEndVisible, (int)(SunGlareOpacity * 100f) )
+        ),
+        HashCode.Combine(
+            ShowLoadoutHud,
+            SelectedLoadoutSlot,
+            // Animate hitmarker/crosshair/arcs/suppression at ~15 Hz
+            (int)(Time.Now * 15f),
+            KillFeed?.Entries.Count ?? 0
+        )
+    );
+}

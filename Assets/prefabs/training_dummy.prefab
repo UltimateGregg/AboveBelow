@@ -1,0 +1,83 @@
+{
+  "RootObject": {
+    "__guid": "55555555-0001-0000-0000-000000000001",
+    "Flags": 0,
+    "Name": "Training Dummy",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [
+      {
+        "__type": "Sandbox.CharacterController",
+        "__guid": "55555555-0001-0100-0000-000000000001",
+        "Acceleration": 10,
+        "Bounciness": 0,
+        "GroundAngle": 45,
+        "Height": 72,
+        "IgnoreLayers": "",
+        "Radius": 16,
+        "StepHeight": 18
+      },
+      {
+        "__type": "DroneVsPlayers.Health",
+        "__guid": "55555555-0001-0200-0000-000000000001",
+        "MaxHealth": 100,
+        "CurrentHealth": 100,
+        "IsDead": false
+      },
+      {
+        "__type": "DroneVsPlayers.TrainingDummy",
+        "__guid": "55555555-0001-0300-0000-000000000001",
+        "RespawnSeconds": 4
+      }
+    ],
+    "Children": [
+      {
+        "__guid": "55555555-0001-1000-0000-000000000001",
+        "Flags": 0,
+        "Name": "Body",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.SkinnedModelRenderer",
+            "__guid": "55555555-0001-1100-0000-000000000001",
+            "BodyGroups": 18446744073709551615,
+            "CreateBoneObjects": false,
+            "Model": "models/citizen/citizen.vmdl",
+            "RenderType": "On",
+            "Tint": "0.85,0.4,0.2,1",
+            "UseAnimGraph": true
+          },
+          {
+            "__type": "Sandbox.Citizen.CitizenAnimationHelper",
+            "__guid": "55555555-0001-1200-0000-000000000001",
+            "Target": {
+              "_type": "component",
+              "component_id": "55555555-0001-1100-0000-000000000001",
+              "go": "55555555-0001-1000-0000-000000000001",
+              "component_type": "SkinnedModelRenderer"
+            }
+          }
+        ]
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Training Dummy",
+  "MenuIcon": "accessibility_new",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

@@ -1,0 +1,118 @@
+{
+  "RootObject": {
+    "__guid": "8646b64d-6390-4016-bbc3-c863ce2cbdf8",
+    "Flags": 0,
+    "Name": "Plateau",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [],
+    "Children": [
+      {
+        "__guid": "3e66d1dc-52f3-455a-9637-d0c1ef6d190d",
+        "Flags": 0,
+        "Name": "Plateau_Base",
+        "Position": "0,0,32",
+        "Rotation": "0,0,0,1",
+        "Scale": "16,16,1.28",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "9065e280-f62c-488d-94a1-bfc0e37f6cc3",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/grass_ground.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "c9454bef-3223-4d9f-9a14-83068452b19f",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "baf88fc1-6269-45ec-b0b4-65721eeccfa2",
+        "Flags": 0,
+        "Name": "Plateau_Ramp_West",
+        "Position": "-545,0,32",
+        "Rotation": "0,-0.1305262,0,0.9914449",
+        "Scale": "6.4,1.92,1.28",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "870c7c98-81a0-40e5-88ef-feccbd46b7a9",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/grass_ground.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "010f34a2-460a-4e6c-9962-e3a2240bcaa5",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "4a35abcb-1444-42c5-8d45-34d445a30aaa",
+        "Flags": 0,
+        "Name": "Plateau_Ramp_East",
+        "Position": "545,0,32",
+        "Rotation": "0,0.1305262,0,0.9914449",
+        "Scale": "6.4,1.92,1.28",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "3efedcc6-7f3b-49cc-9e58-03d4292fa239",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/grass_ground.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "3c2fee54-9ab4-40e0-af85-429a143c7bb0",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Environment/Plateau",
+  "MenuIcon": "stairs",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

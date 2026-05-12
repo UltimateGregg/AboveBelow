@@ -1,0 +1,292 @@
+{
+  "RootObject": {
+    "__guid": "0d1510bd-debb-4491-9af2-8be224821961",
+    "Flags": 0,
+    "Name": "House_Small",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [],
+    "Children": [
+      {
+        "__guid": "569fbf7f-76f4-4c01-81bd-127c75748b01",
+        "Flags": 0,
+        "Name": "North_Wall",
+        "Position": "0,160,96",
+        "Rotation": "0,0,0,1",
+        "Scale": "6.4,0.32,3.84",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "744f89cb-0419-4f85-b220-6364b7631b91",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/concrete_wall.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "0cc9d3e2-16fa-4c6e-a9ea-00386b0ac9fe",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "af3dc457-05b5-43a4-a89a-595688c027e1",
+        "Flags": 0,
+        "Name": "South_Wall",
+        "Position": "0,-160,96",
+        "Rotation": "0,0,0,1",
+        "Scale": "6.4,0.32,3.84",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "ef84bf75-95d2-4013-a559-4449f154a193",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/concrete_wall.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "7b1c2872-a68f-4d6f-923c-1dec040622fd",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "413002a3-cf56-4f3b-b94d-465b36d01699",
+        "Flags": 0,
+        "Name": "West_Wall_North",
+        "Position": "-160,104,96",
+        "Rotation": "0,0,0,1",
+        "Scale": "0.32,2.24,3.84",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "253f4fad-6357-4f7c-b40a-5f37ae03ed1c",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/concrete_wall.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "90f55233-693d-4189-bf50-26e4cc30c7bc",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "f9b375de-6ce4-442e-87ee-7bc726063e5e",
+        "Flags": 0,
+        "Name": "West_Wall_South",
+        "Position": "-160,-104,96",
+        "Rotation": "0,0,0,1",
+        "Scale": "0.32,2.24,3.84",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "4df8d842-7178-4ab4-acdc-d7d98995d891",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/concrete_wall.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "ecd7dfb6-4e7d-45b1-8f20-42f5270684ed",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "80dfe603-4ca9-4c9a-ad0f-c1bd54fe82bc",
+        "Flags": 0,
+        "Name": "West_Door_Lintel",
+        "Position": "-160,0,160",
+        "Rotation": "0,0,0,1",
+        "Scale": "0.32,1.92,1.28",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "f68a3149-353b-4f68-95f5-a2648d828fb6",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/concrete_wall.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "71c03b94-2bfd-4f55-a7c0-d6751b9efa5b",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "0212dea2-8a8f-4fbf-89d4-b6e2256914f8",
+        "Flags": 0,
+        "Name": "East_Wall_North",
+        "Position": "160,104,96",
+        "Rotation": "0,0,0,1",
+        "Scale": "0.32,2.24,3.84",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "7a12a3c9-a143-4bfa-a704-bf9edecd6eca",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/concrete_wall.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "7d4ea67b-5fe0-4605-8017-c67d93d0995e",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "83dc2bff-fdbd-4f95-8aaf-0dbd6c5330be",
+        "Flags": 0,
+        "Name": "East_Wall_South",
+        "Position": "160,-104,96",
+        "Rotation": "0,0,0,1",
+        "Scale": "0.32,2.24,3.84",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "3e5e47da-e5d3-4293-a421-ca7330d96b86",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/concrete_wall.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "9aea50c4-eb0f-4dfd-be85-43bd51601249",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "0b1bc29c-a6e7-4ef3-a512-84dc6aedd9b6",
+        "Flags": 0,
+        "Name": "East_Door_Lintel",
+        "Position": "160,0,160",
+        "Rotation": "0,0,0,1",
+        "Scale": "0.32,1.92,1.28",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "b310a04b-1b08-4f80-82b1-f60383af63af",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/concrete_wall.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "18b85699-8289-4c4f-a081-63550cd66f0a",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "9e7b055c-d515-4282-8352-b0471bb4110c",
+        "Flags": 0,
+        "Name": "Roof",
+        "Position": "0,0,200",
+        "Rotation": "0,0,0,1",
+        "Scale": "6.4,6.4,0.32",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "2ca8f2fa-80c3-4833-b440-627c97054817",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/concrete_wall.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "a7e7b032-3b08-414b-b2a3-2dc13c860ca7",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Environment/House_Small",
+  "MenuIcon": "home",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

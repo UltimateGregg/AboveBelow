@@ -1,0 +1,28 @@
+{
+  "source_blend": "drone_model.blend/drone_fpv.blend",
+  "root_object": "Drone_FPV",
+  "target_fbx": "Assets/models/drone_fpv.fbx",
+  "target_vmdl": "Assets/models/drone_fpv.vmdl",
+  "model_resource_path": "models/drone_fpv.vmdl",
+  "visual_object": "Visual",
+  "visual_scale": "1,1,1",
+  "visual_tint": "1,1,1,1",
+  "clear_visual_children": false,
+  "verify_fbx": true,
+  "required_object": [
+    "DroneBody"
+  ],
+  "object_type": [
+    "MESH",
+    "EMPTY"
+  ],
+  "combine_meshes": true,
+  "combined_object_name": "DroneBody",
+  "material_remap": {
+    "Frame_Carbon": "materials/drone_fpv_frame.vmat",
+    "Motor_Aluminum": "materials/drone_fpv_motor.vmat"
+  },
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z"
+}

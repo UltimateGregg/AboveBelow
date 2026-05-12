@@ -1,0 +1,211 @@
+{
+  "RootObject": {
+    "__guid": "03fc5d0d-2712-4940-ac43-50d7768c8b39",
+    "Flags": 0,
+    "Name": "WaterTower",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [],
+    "Children": [
+      {
+        "__guid": "6f6ad6f2-3a84-4c75-91ea-6a3a15e47a2b",
+        "Flags": 0,
+        "Name": "Visual",
+        "Position": "0,0,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "72,72,72",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "983f183e-b10e-4ea0-96c6-4fe7665226b1",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/watertower.vmdl",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "18cf0e71-357a-4bbe-82f2-742800adf9e2",
+        "Flags": 0,
+        "Name": "Collision_Tank",
+        "Position": "0,0,700",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "ab1be574-651b-40db-a966-ac6356d64030",
+            "Center": "0,0,0",
+            "Scale": "660,660,230",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "73205efa-d7ed-42b7-b0b5-82c273ca9dd6",
+        "Flags": 0,
+        "Name": "Collision_Roof",
+        "Position": "0,0,845",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "80429d58-132f-4875-9668-c40a66770561",
+            "Center": "0,0,0",
+            "Scale": "600,600,80",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "1db94f95-2583-4d6d-ad8f-19512fba1224",
+        "Flags": 0,
+        "Name": "Collision_Platform",
+        "Position": "0,0,550",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "b9050bc6-c72e-480d-84f0-7d5f2aa2a617",
+            "Center": "0,0,0",
+            "Scale": "760,760,34",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "d34c61ad-16c7-4b70-a200-9478f1c1dad3",
+        "Flags": 0,
+        "Name": "Collision_Leg_NorthWest",
+        "Position": "-255,255,260",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "0b4bfb32-93c4-4434-bc61-2eb7f2c840fa",
+            "Center": "0,0,0",
+            "Scale": "36,36,520",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "296f337c-ae6a-4291-aa46-e0bf3eecc04e",
+        "Flags": 0,
+        "Name": "Collision_Leg_NorthEast",
+        "Position": "255,255,260",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "fa0eb7e5-96d6-4768-a76f-8755e19bc52d",
+            "Center": "0,0,0",
+            "Scale": "36,36,520",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "2267abb7-4a92-4c27-bd14-e6e28ab385ca",
+        "Flags": 0,
+        "Name": "Collision_Leg_SouthWest",
+        "Position": "-255,-255,260",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "81eb4222-a9b5-4114-9ea1-e196dd11d65c",
+            "Center": "0,0,0",
+            "Scale": "36,36,520",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "093d4e87-6907-4879-9e77-1ff629ead8ca",
+        "Flags": 0,
+        "Name": "Collision_Leg_SouthEast",
+        "Position": "255,-255,260",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "3fe3a1dc-38a1-49b2-b88a-a2c7ba0ad811",
+            "Center": "0,0,0",
+            "Scale": "36,36,520",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "69b48611-286b-49b0-8305-5967db050c6d",
+        "Flags": 0,
+        "Name": "Collision_Ladder",
+        "Position": "0,-370,320",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "73bdd042-42a0-449e-b79d-fb64d6ee1216",
+            "Center": "0,0,0",
+            "Scale": "90,30,640",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Environment/WaterTower",
+  "MenuIcon": "water_drop",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

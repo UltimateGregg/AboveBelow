@@ -1,0 +1,26 @@
+{
+  "source_blend": "drone_model.blend/drone_fpv_prop.blend",
+  "root_object": "Prop",
+  "target_fbx": "Assets/models/drone_fpv_prop.fbx",
+  "target_vmdl": "Assets/models/drone_fpv_prop.vmdl",
+  "model_resource_path": "models/drone_fpv_prop.vmdl",
+  "visual_object": "Visual",
+  "visual_scale": "1,1,1",
+  "visual_tint": "1,1,1,1",
+  "clear_visual_children": false,
+  "verify_fbx": true,
+  "required_object": [
+    "Propeller"
+  ],
+  "object_type": [
+    "MESH"
+  ],
+  "combine_meshes": true,
+  "combined_object_name": "Propeller",
+  "material_remap": {
+    "Propeller_Plastic": "materials/drone_fpv_propeller.vmat"
+  },
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z"
+}
