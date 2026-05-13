@@ -1,0 +1,30 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".\\.codex\\hooks\\sbox_session_start.ps1\"",
+            "timeout": 10,
+            "statusMessage": "Loading S&Box project context"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|shell_command|apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".\\.codex\\hooks\\sbox_pre_tool_guard.ps1\"",
+            "timeout": 10,
+            "statusMessage": "Checking S&Box workspace safety"
+          }
+        ]
+      }
+    ]
+  }
+}
