@@ -1,0 +1,90 @@
+{
+  "weapon": {
+    "display_name": "Weapon and Equipment",
+    "required_material_roles": [
+      "metal",
+      "polymer"
+    ],
+    "optional_texture_maps": [
+      "TextureNormal",
+      "TextureRoughness",
+      "TextureAmbientOcclusion"
+    ],
+    "required_name_hints": [
+      "muzzle",
+      "grip"
+    ],
+    "scale_note": "Confirm first-person and world scale against the owning weapon prefab.",
+    "acceptance_checks": [
+      "Muzzle or effect origin is documented when the asset fires or emits effects.",
+      "Grip and attachment orientation are documented for soldier mounting.",
+      "Standalone prefab target is recorded for attachable equipment."
+    ]
+  },
+  "drone": {
+    "display_name": "Drone",
+    "required_material_roles": [
+      "frame",
+      "motor",
+      "camera"
+    ],
+    "optional_texture_maps": [
+      "TextureNormal",
+      "TextureRoughness",
+      "TextureAmbientOcclusion"
+    ],
+    "required_name_hints": [
+      "prop",
+      "motor",
+      "camera"
+    ],
+    "scale_note": "Confirm visual bounds against DroneController prefab scale and flight readability.",
+    "acceptance_checks": [
+      "Silhouette is readable from gameplay distance.",
+      "Variant identity is distinct for GPS, FPV, or fiber FPV.",
+      "Collision and gameplay components remain owned by prefab/code."
+    ]
+  },
+  "character": {
+    "display_name": "Soldier and Character",
+    "required_material_roles": [
+      "body",
+      "gear"
+    ],
+    "optional_texture_maps": [
+      "TextureNormal",
+      "TextureRoughness",
+      "TextureAmbientOcclusion"
+    ],
+    "required_name_hints": [
+      "root",
+      "body"
+    ],
+    "scale_note": "Confirm proportions against existing GroundPlayerController and first-person visibility assumptions.",
+    "acceptance_checks": [
+      "Rig, armature, or attachment readiness is documented when animation is expected.",
+      "Class or team material groups are documented when relevant.",
+      "Existing SoldierBase prefab identities remain unchanged."
+    ]
+  },
+  "environment": {
+    "display_name": "Environment and Prop",
+    "required_material_roles": [
+      "surface"
+    ],
+    "optional_texture_maps": [
+      "TextureNormal",
+      "TextureRoughness",
+      "TextureAmbientOcclusion"
+    ],
+    "required_name_hints": [
+      "root"
+    ],
+    "scale_note": "Confirm origin and dimensions are sensible for scene placement.",
+    "acceptance_checks": [
+      "Collision expectations are documented separately from visual mesh export.",
+      "Repeated props have stable names and avoid giant bounds.",
+      "Blockout dev-box collider sync remains a separate workflow."
+    ]
+  }
+}
