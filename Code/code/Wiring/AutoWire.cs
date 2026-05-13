@@ -29,6 +29,8 @@ public class AutoWireHelper : Component
 
 		var setup = gameManager.Components.Get<GameSetup>();
 		var roundMgr = gameManager.Components.Get<RoundManager>();
+		var rules = gameManager.Components.Get<GameRules>();
+		var stats = gameManager.Components.Get<GameStats>();
 
 		if ( setup != null && roundMgr != null )
 		{
@@ -46,7 +48,10 @@ public class AutoWireHelper : Component
 			setup.FiberOpticFpvDronePrefab = GameObject.GetPrefab( "prefabs/drone_fpv_fiber.prefab" );
 
 			setup.Round = roundMgr;
+			setup.Rules = rules;
 			roundMgr.Setup = setup;
+			roundMgr.Rules = rules;
+			roundMgr.Stats = stats;
 			Log.Info( "GameManager wiring complete!" );
 		}
 	}
@@ -79,6 +84,7 @@ public class AutoWireHelper : Component
 		{
 			weapon.Drone = controller;
 			weapon.MuzzleSocket = root.Children.FirstOrDefault( x => x.Name == "MuzzleSocket" );
+			weapon.TracerPrefab = GameObject.GetPrefab( "prefabs/tracer_default.prefab" );
 			weapon.ExplosionPrefab = GameObject.GetPrefab( "models/effects/explosion_med.prefab" );
 		}
 

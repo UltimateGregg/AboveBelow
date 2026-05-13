@@ -20,7 +20,7 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": null,
+            "MaterialOverride": "materials/weapons/m4_full.vmat",
             "Materials": null,
             "Model": "models/weapons/assault_rifle_m4.vmdl",
             "RenderType": "On",

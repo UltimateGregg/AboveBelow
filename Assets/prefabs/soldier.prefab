@@ -145,6 +145,7 @@
                 "__guid": "33333333-5000-3300-0000-000000000001",
                 "Flags": 0,
                 "Name": "WeaponVisual",
+                "Rotation": "0,-90,0",
                 "Enabled": true,
                 "Components": [
                   {

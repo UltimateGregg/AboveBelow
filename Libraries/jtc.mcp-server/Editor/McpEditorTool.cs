@@ -84,7 +84,10 @@ public class McpServerDock : Widget
 
 		// Unsubscribe so post-destroy events don't try to update a dead widget.
 		if ( _server is not null )
+		{
+			_server.OnRequestCountChanged -= OnServerRequestCountChanged;
 			_server.OnClientCountChanged -= OnServerClientCountChanged;
+		}
 
 		// Don't dispose the server itself — it's a process-wide singleton that
 		// must survive hot-reloads. It tears down with the editor process.
@@ -217,9 +220,9 @@ public class McpServerDock : Widget
 
 		// Always read from the singleton — survives our local _server reference being null
 		// across hot-reloads / Stop+Start cycles.
-		var live = McpHttpServer.Instance;
+		var live = _server is { IsListening: true } ? _server : McpHttpServer.Instance;
 		var listening = live is { IsListening: true };
-		var requests = live?.RequestCount ?? 0;
+		var requests = Math.Max( live?.RequestCount ?? 0, CommandCount );
 
 		_toggleButton.Text = listening ? "Stop" : "Start";
 		_toggleButton.Icon = listening ? "stop" : "play_arrow";
@@ -229,10 +232,10 @@ public class McpServerDock : Widget
 			: "color: #e05252; font-size: 18px;" );
 
 		_statusText.Text = listening
-			? (requests > 0 ? $"Listening — {requests} request(s) handled" : "Listening — waiting for requests")
+			? (requests > 0 ? $"Listening - {requests} request(s) handled" : "Listening - waiting for requests")
 			: "Stopped";
 
-		_commandCountLabel.Text = (requests + CommandCount).ToString();
+		_commandCountLabel.Text = requests.ToString();
 		_portField.ReadOnly = listening;
 
 		if ( listening && _startedAt != default )
@@ -272,10 +275,17 @@ public class McpServerDock : Widget
 		try
 		{
 			// Attach to the process-wide singleton — survives hot-reloads.
+			if ( _server is not null )
+			{
+				_server.OnRequestCountChanged -= OnServerRequestCountChanged;
+				_server.OnClientCountChanged -= OnServerClientCountChanged;
+			}
+
 			_server = McpHttpServer.GetOrStart( _port );
 			_startedAt = DateTime.Now;
 
 			// Subscribe (idempotent re-subscribes are harmless — events fire once per real change).
+			_server.OnRequestCountChanged += OnServerRequestCountChanged;
 			_server.OnClientCountChanged += OnServerClientCountChanged;
 
 			AddLog( $"Listening on http://localhost:{_port}/mcp" );
@@ -287,6 +297,27 @@ public class McpServerDock : Widget
 			AddLog( $"Error: {ex.Message}" );
 			_server = null;
 		}
+	}
+
+	private void OnServerRequestCountChanged()
+	{
+		var server = _server;
+		if ( server is null ) return;
+
+		MainThread.Queue( () =>
+		{
+			try
+			{
+				var requests = Math.Max( server.RequestCount, CommandCount );
+
+				if ( _commandCountLabel.IsValid() )
+					_commandCountLabel.Text = requests.ToString();
+
+				if ( _statusText.IsValid() && server.IsListening )
+					_statusText.Text = $"Listening - {requests} request(s) handled";
+			}
+			catch { /* dock may be torn down */ }
+		} );
 	}
 
 	private void OnServerClientCountChanged()

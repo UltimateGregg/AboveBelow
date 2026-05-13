@@ -15,32 +15,32 @@
 						[
 
 							{
-								from = "M4_Accent"
+								from = "M4_Accent.vmat"
 								to = "materials/weapons/m4_accent.vmat"
 							},
 
 							{
-								from = "M4_BareMetal"
+								from = "M4_BareMetal.vmat"
 								to = "materials/weapons/m4_bare_metal.vmat"
 							},
 
 							{
-								from = "M4_Markings"
+								from = "M4_Markings.vmat"
 								to = "materials/weapons/m4_markings.vmat"
 							},
 
 							{
-								from = "M4_Polymer"
+								from = "M4_Polymer.vmat"
 								to = "materials/weapons/m4_polymer.vmat"
 							},
 
 							{
-								from = "M4_Receiver"
+								from = "M4_Receiver.vmat"
 								to = "materials/weapons/m4_receiver.vmat"
 							},
 
 							{
-								from = "M4_Rubber"
+								from = "M4_Rubber.vmat"
 								to = "materials/weapons/m4_rubber.vmat"
 							},
 						]

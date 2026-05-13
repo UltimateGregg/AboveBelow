@@ -92,7 +92,7 @@ public sealed class DroneController : Component
 	{
 		var localControlActive = RemoteController.IsLocalDroneViewActive( Scene );
 
-		if ( !IsProxy && InputEnabled && localControlActive )
+		if ( !IsProxy && InputEnabled && localControlActive && !LocalOptionsState.ConsumesGameplayInput )
 		{
 			// Mouse drives yaw + camera pitch. Pitch is decoupled from movement.
 			var mouse = Input.MouseDelta;
@@ -100,8 +100,8 @@ public sealed class DroneController : Component
 			var mouseY = MathF.Abs( mouse.y ) >= MouseLookDeadZone ? mouse.y : 0f;
 
 			var ee = EyeAngles;
-			ee.yaw -= mouseX * MouseYawSensitivity;
-			ee.pitch += mouseY * MousePitchSensitivity;
+			ee.yaw -= mouseX * MouseYawSensitivity * LocalOptionsState.LookSensitivity;
+			ee.pitch += mouseY * MousePitchSensitivity * LocalOptionsState.LookSensitivity;
 			ee.pitch = ee.pitch.Clamp( -75f, 35f );
 			ee.roll = 0;
 			EyeAngles = ee;
@@ -138,7 +138,7 @@ public sealed class DroneController : Component
 		// existing velocity with damping — no thrust applied. Same goes for
 		// when the local pilot has toggled out of drone view.
 		var localControlActive = RemoteController.IsLocalDroneViewActive( Scene );
-		var inputActive = InputEnabled && localControlActive;
+		var inputActive = InputEnabled && localControlActive && !LocalOptionsState.ConsumesGameplayInput;
 		Vector3 move = inputActive ? Input.AnalogMove : Vector3.Zero;
 		float vertical = 0f;
 		if ( inputActive )

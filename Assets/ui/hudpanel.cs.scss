@@ -191,6 +191,31 @@ HudPanel {
             flex-direction: column;
             text-shadow: 0 2px 4px rgba(black, 0.8);
 
+            .round-header {
+                font-size: 14px;
+                font-weight: 700;
+                letter-spacing: 0;
+                text-transform: uppercase;
+                color: rgba(white, 0.78);
+                margin-bottom: 4px;
+                flex-direction: row;
+                gap: 4px;
+
+                .role-tag {
+                    font-weight: 900;
+
+                    &.pilot {
+                        color: #4dd2ff;
+                    }
+                    &.soldier {
+                        color: #ff9b36;
+                    }
+                    &.spectator {
+                        color: rgba(white, 0.6);
+                    }
+                }
+            }
+
             .state {
                 font-size: 28px;
                 font-weight: 700;
@@ -279,6 +304,63 @@ HudPanel {
                 font-weight: 600;
                 color: rgba(white, 0.85);
             }
+
+            .stamina-bar {
+                width: 100%;
+                height: 5px;
+                margin-top: 4px;
+                background-color: rgba(black, 0.55);
+                border: 1px solid rgba(white, 0.18);
+                border-radius: 2px;
+                overflow: hidden;
+
+                .stamina-fill {
+                    height: 100%;
+                    background-color: #6fcf6b;
+                    transition: width 0.1s ease-out;
+                }
+            }
+        }
+
+        .bottom-right-ammo {
+            position: absolute;
+            right: 32px;
+            bottom: 28px;
+            width: 260px;
+            min-height: 72px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            background-color: rgba(black, 0.52);
+            border: 1px solid rgba(white, 0.18);
+            flex-direction: column;
+            justify-content: center;
+            gap: 2px;
+            text-shadow: 0 2px 4px rgba(black, 0.8);
+
+            &.soldier {
+                border-color: rgba(255, 155, 54, 0.56);
+                box-shadow: 0 0 18px rgba(255, 122, 32, 0.12);
+            }
+
+            .ammo-label {
+                font-size: 12px;
+                font-weight: 900;
+                letter-spacing: 0;
+                text-transform: uppercase;
+                color: rgba(white, 0.64);
+            }
+
+            .ammo-value {
+                font-size: 30px;
+                font-weight: 900;
+                color: white;
+            }
+
+            .ammo-status {
+                font-size: 12px;
+                font-weight: 800;
+                color: rgba(white, 0.72);
+            }
         }
 
         .loadout-hud {
@@ -349,8 +431,7 @@ HudPanel {
             }
 
             .slot-status-row {
-                justify-content: space-between;
-                gap: 8px;
+                justify-content: flex-start;
             }
 
             .slot-key {
@@ -402,34 +483,6 @@ HudPanel {
                 font-weight: 900;
                 color: rgba(white, 0.94);
             }
-
-            .slot-ammo {
-                font-size: 10px;
-                font-weight: 800;
-                color: rgba(white, 0.58);
-            }
-
-            .slot-meter {
-                width: 100%;
-                height: 4px;
-                border-radius: 2px;
-                background-color: rgba(white, 0.12);
-                overflow: hidden;
-            }
-
-            .slot-meter-fill {
-                height: 100%;
-                background-color: #d6d6d6;
-                transition: width 0.12s ease-out;
-            }
-
-            &.pilot .slot-meter-fill {
-                background-color: #4dd2ff;
-            }
-
-            &.soldier .slot-meter-fill {
-                background-color: #ff9b36;
-            }
         }
 
         .pilot-controls {
@@ -472,5 +525,459 @@ HudPanel {
                 text-align: center;
             }
         }
+
+        // ─────── Reticle / crosshair / hitmarker / damage arcs ───────
+        .reticle-stack {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 0;
+            height: 0;
+        }
+
+        .crosshair {
+            position: absolute;
+            left: -16px;
+            top: -16px;
+            width: 32px;
+            height: 32px;
+
+            .tick {
+                position: absolute;
+                background-color: rgba(white, 0.92);
+                box-shadow: 0 0 2px rgba(black, 0.7);
+            }
+            .tick.top    { left: 15px; top: 0;  width: 2px; height: 7px; }
+            .tick.bottom { left: 15px; bottom: 0; width: 2px; height: 7px; }
+            .tick.left   { top: 15px; left: 0;  width: 7px; height: 2px; }
+            .tick.right  { top: 15px; right: 0; width: 7px; height: 2px; }
+            .dot {
+                position: absolute;
+                left: 14px;
+                top: 14px;
+                width: 4px;
+                height: 4px;
+                border-radius: 4px;
+                background-color: rgba(white, 0.9);
+                box-shadow: 0 0 2px rgba(black, 0.7);
+            }
+
+            &.firing {
+                .tick.top    { top: -2px; }
+                .tick.bottom { bottom: -2px; }
+                .tick.left   { left: -2px; }
+                .tick.right  { right: -2px; }
+            }
+
+            &.pilot {
+                .tick {
+                    background-color: rgba(77, 210, 255, 0.96);
+                    box-shadow: 0 0 5px rgba(77, 210, 255, 0.45), 0 0 2px rgba(black, 0.8);
+                }
+
+                .dot {
+                    background-color: rgba(77, 210, 255, 0.96);
+                    box-shadow: 0 0 6px rgba(77, 210, 255, 0.55), 0 0 2px rgba(black, 0.8);
+                }
+            }
+
+            &.soldier {
+                .tick {
+                    background-color: rgba(255, 245, 224, 0.94);
+                }
+            }
+        }
+
+        .hitmarker {
+            position: absolute;
+            left: -14px;
+            top: -14px;
+            width: 28px;
+            height: 28px;
+            opacity: 0;
+            transition: opacity 0.06s;
+
+            // Hitmarker X — drawn with two crossed lines via box-shadow tricks.
+            // Use ::before / ::after if supported; otherwise we render as colored
+            // overlays on the existing crosshair via class only.
+            background-color: rgba(white, 0);
+            border: 2px solid rgba(white, 0);
+
+            &.active {
+                opacity: 1;
+                border-color: rgba(white, 0.95);
+                transform: rotate(45deg);
+            }
+            &.active.kill {
+                border-color: rgba(255, 80, 80, 0.98);
+                width: 36px;
+                height: 36px;
+                left: -18px;
+                top: -18px;
+            }
+        }
+
+        .damage-arc {
+            position: absolute;
+            left: -120px;
+            top: -120px;
+            width: 240px;
+            height: 240px;
+            transform-origin: 120px 120px;
+            border: 4px solid rgba(255, 60, 60, 0.85);
+            border-radius: 120px;
+            // Mask: only show the top portion (an arc).
+            clip: rect(0, 240px, 60px, 0);
+            pointer-events: none;
+        }
+
+        // ─────── Low HP vignette ───────
+        &.low-hp {
+            background-image: radial-gradient(transparent 55%, rgba(140, 0, 0, 0.55) 100%);
+            animation: low-hp-pulse 1.1s infinite;
+        }
+
+        // ─────── Kill feed (top-right, below score) ───────
+        .top-right .kill-feed {
+            margin-top: 8px;
+            flex-direction: column;
+            gap: 4px;
+            align-items: flex-end;
+
+            .kill-feed-entry {
+                padding: 4px 8px;
+                background-color: rgba(0, 0, 0, 0.55);
+                border-left: 3px solid rgba(white, 0.55);
+                font-size: 13px;
+                color: rgba(white, 0.92);
+                gap: 6px;
+
+                .attacker { font-weight: 700; }
+                .weapon   { color: rgba(white, 0.62); font-style: italic; }
+                .victim   { font-weight: 700; color: rgba(255, 200, 180, 0.95); }
+            }
+            .kill-feed-entry.local-attacker {
+                border-left-color: rgba(120, 200, 255, 0.95);
+                background-color: rgba(15, 35, 60, 0.7);
+            }
+            .kill-feed-entry.local-victim {
+                border-left-color: rgba(255, 80, 80, 0.95);
+                background-color: rgba(50, 12, 12, 0.7);
+            }
+        }
+
+        // ─────── Scoreboard (Tab overlay) ───────
+        .scoreboard {
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background-color: rgba(0, 0, 0, 0.55);
+            justify-content: center;
+            align-items: center;
+
+            .scoreboard-inner {
+                width: 720px;
+                max-width: 90%;
+                padding: 24px;
+                border-radius: 8px;
+                background-color: rgba(18, 22, 24, 0.94);
+                border: 1px solid rgba(white, 0.18);
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .scoreboard-title {
+                font-size: 22px;
+                font-weight: 800;
+                letter-spacing: 2px;
+                color: white;
+                text-align: center;
+            }
+
+            .scoreboard-table {
+                flex-direction: column;
+                gap: 4px;
+
+                .scoreboard-header, .scoreboard-row {
+                    padding: 6px 12px;
+                    flex-direction: row;
+                    gap: 8px;
+                }
+                .scoreboard-header {
+                    color: rgba(white, 0.6);
+                    font-weight: 700;
+                    border-bottom: 1px solid rgba(white, 0.15);
+                }
+                .scoreboard-row {
+                    color: rgba(white, 0.92);
+                    background-color: rgba(white, 0.05);
+                    border-radius: 4px;
+                }
+
+                .col-name { width: 60%; }
+                .col-k, .col-d, .col-s { width: 13%; text-align: right; }
+            }
+        }
+        // ─────── Suppression vignette (BF-style) ───────
+        .options-overlay {
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            z-index: 50;
+            pointer-events: all;
+            background-color: rgba(0, 0, 0, 0.62);
+            justify-content: center;
+            align-items: center;
+
+            .options-panel {
+                width: 560px;
+                max-width: 88%;
+                padding: 22px;
+                border-radius: 8px;
+                background-color: rgba(18, 22, 24, 0.96);
+                border: 1px solid rgba(white, 0.18);
+                box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .options-header {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .options-title {
+                font-size: 30px;
+                font-weight: 900;
+                color: white;
+            }
+
+            .options-subtitle {
+                font-size: 13px;
+                font-weight: 700;
+                color: rgba(white, 0.58);
+                text-transform: uppercase;
+            }
+
+            .options-list {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .option-row {
+                min-height: 70px;
+                padding: 12px;
+                border-radius: 6px;
+                background-color: rgba(white, 0.055);
+                border: 1px solid rgba(white, 0.1);
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+            }
+
+            .option-copy {
+                min-width: 0;
+                flex-grow: 1;
+                flex-direction: column;
+                gap: 3px;
+            }
+
+            .option-name {
+                font-size: 16px;
+                font-weight: 900;
+                color: white;
+            }
+
+            .option-value {
+                font-size: 13px;
+                font-weight: 700;
+                color: rgba(white, 0.68);
+            }
+
+            .scale-control,
+            .stepper-control,
+            .options-actions {
+                flex-direction: row;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .scale-control {
+                width: 260px;
+            }
+
+            .scale-track {
+                flex-grow: 1;
+                height: 8px;
+                border-radius: 4px;
+                background-color: rgba(black, 0.45);
+                border: 1px solid rgba(white, 0.12);
+                overflow: hidden;
+            }
+
+            .scale-fill {
+                height: 100%;
+                background-color: #4dd2ff;
+            }
+
+            .options-actions {
+                justify-content: flex-end;
+                flex-wrap: wrap;
+            }
+
+            .option-button {
+                pointer-events: all;
+                min-width: 96px;
+                min-height: 36px;
+                padding: 8px 12px;
+                border-radius: 6px;
+                background-color: rgba(white, 0.11);
+                border: 1px solid rgba(white, 0.18);
+                color: rgba(white, 0.92);
+                font-size: 13px;
+                font-weight: 900;
+                text-align: center;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: rgba(white, 0.18);
+                    border-color: rgba(white, 0.34);
+                }
+
+                &.small {
+                    min-width: 38px;
+                    width: 38px;
+                    min-height: 34px;
+                    padding: 6px 0;
+                    font-size: 20px;
+                }
+
+                &.primary {
+                    background-color: rgba(7, 92, 136, 0.92);
+                    border-color: rgba(77, 210, 255, 0.7);
+                }
+
+                &.danger {
+                    background-color: rgba(116, 32, 32, 0.82);
+                    border-color: rgba(255, 105, 105, 0.44);
+                }
+
+                &.quiet {
+                    min-width: 68px;
+                    color: rgba(white, 0.7);
+                }
+            }
+        }
+
+        .suppression-vignette {
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background-image: radial-gradient(transparent 35%, rgba(40, 40, 50, 0.95) 100%);
+            pointer-events: none;
+        }
+
+        .sun-glare {
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background-image:
+                radial-gradient(rgba(255, 255, 255, 0.98) 0%, rgba(255, 250, 215, 0.9) 14%, rgba(255, 220, 120, 0.42) 34%, rgba(255, 190, 70, 0.13) 58%, transparent 78%),
+                linear-gradient(90deg, transparent 0%, rgba(255, 238, 180, 0.22) 47%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 238, 180, 0.22) 53%, transparent 100%);
+            pointer-events: none;
+        }
+
+        // Crosshair bloom while suppressed — tick spread.
+        .crosshair.suppressed {
+            .tick.top    { top: -4px; }
+            .tick.bottom { bottom: -4px; }
+            .tick.left   { left: -4px; }
+            .tick.right  { right: -4px; }
+        }
+
+        // ─────── ELIMINATED popup ───────
+        .eliminated-popup {
+            position: absolute;
+            left: 50%;
+            top: 22%;
+            width: 360px;
+            margin-left: -180px;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            animation: eliminated-flash 1.5s ease-out;
+            pointer-events: none;
+
+            .eliminated-label {
+                font-size: 16px;
+                font-weight: 900;
+                letter-spacing: 4px;
+                color: rgba(255, 80, 80, 0.95);
+                text-shadow: 0 2px 4px rgba(black, 0.7);
+            }
+
+            .eliminated-name {
+                font-size: 28px;
+                font-weight: 800;
+                letter-spacing: 1px;
+                color: white;
+                text-shadow: 0 2px 6px rgba(black, 0.85);
+            }
+        }
+
+        // ─────── Round end overlay ───────
+        .round-overlay {
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 12px;
+            background-color: rgba(0, 0, 0, 0.35);
+            pointer-events: none;
+            animation: round-overlay-in 0.6s ease-out;
+
+            .round-winner-line {
+                font-size: 56px;
+                font-weight: 900;
+                letter-spacing: 8px;
+                color: white;
+                text-shadow: 0 4px 12px rgba(black, 0.85);
+            }
+            .round-winner-sub {
+                font-size: 18px;
+                font-weight: 600;
+                letter-spacing: 4px;
+                color: rgba(white, 0.75);
+            }
+
+            &.winner-pilot {
+                background-color: rgba(8, 24, 48, 0.55);
+                .round-winner-line { color: rgba(120, 200, 255, 1.0); }
+            }
+            &.winner-soldier {
+                background-color: rgba(48, 8, 8, 0.55);
+                .round-winner-line { color: rgba(255, 120, 120, 1.0); }
+            }
+        }
     }
+}
+
+@keyframes low-hp-pulse {
+    0%   { opacity: 0.85; }
+    50%  { opacity: 1.0; }
+    100% { opacity: 0.85; }
+}
+
+@keyframes eliminated-flash {
+    0%   { transform: scale(0.6); opacity: 0; }
+    15%  { transform: scale(1.1); opacity: 1; }
+    30%  { transform: scale(1.0); opacity: 1; }
+    80%  { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes round-overlay-in {
+    0%   { opacity: 0; }
+    100% { opacity: 1; }
 }

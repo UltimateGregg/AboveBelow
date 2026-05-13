@@ -46,14 +46,14 @@ public sealed class DroneJammerGun : Component
 	protected override void OnStart()
 	{
 		ResolvePrefabReferences();
+		ApplySelectionVisualState();
 	}
 
 	protected override void OnUpdate()
 	{
 		ResolvePrefabReferences();
 
-		WeaponPose.SetVisibility( GameObject, WeaponVisual, IsSelected );
-		if ( IsSelected )
+		if ( ApplySelectionVisualState() )
 		{
 			// Jammer doesn't have a traditional sight, but ADS still pulls
 			// it in for a tighter "aimed cone" feel and tightens FOV slightly.
@@ -61,7 +61,7 @@ public sealed class DroneJammerGun : Component
 			{
 				var pc = Components.GetInAncestors<GroundPlayerController>();
 				if ( pc.IsValid() )
-					pc.SetAdsTarget( Input.Down( "Attack2" ), AdsFovDegrees );
+					pc.SetAdsTarget( !LocalOptionsState.ConsumesGameplayInput && Input.Down( "Attack2" ), AdsFovDegrees );
 			}
 
 			WeaponPose.UpdateViewmodel(
@@ -74,7 +74,7 @@ public sealed class DroneJammerGun : Component
 		if ( IsProxy ) { IsActive = false; UpdateLoopSound( false ); return; }
 
 		// Holstered? force-stop the loop and bail before reading input.
-		if ( !IsSelected )
+		if ( !IsSelected || LocalOptionsState.ConsumesGameplayInput )
 		{
 			IsActive = false;
 			UpdateLoopSound( false );
@@ -96,6 +96,19 @@ public sealed class DroneJammerGun : Component
 	{
 		IsActive = false;
 		UpdateLoopSound( false );
+	}
+
+	internal bool ApplySelectionVisualState()
+	{
+		var selected = IsSelected;
+		WeaponPose.SetVisibility( GameObject, selected );
+		if ( !selected )
+		{
+			IsActive = false;
+			UpdateLoopSound( false );
+		}
+
+		return selected;
 	}
 
 	void EmitPulse()

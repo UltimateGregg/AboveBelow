@@ -2,12 +2,15 @@
 {
 	"shader"		"shaders/complex.shader"
 	"TextureColor"		"materials/environment/watertower_tank_color.png"
+	"TextureNormal"		"materials/environment/watertower_flat_normal.png"
+	"TextureRoughness"		"materials/environment/watertower_tank_rough.png"
+	"TextureAmbientOcclusion"		"materials/environment/watertower_ao.png"
 	"g_flModelTintAmount"		"1.000000"
 	"g_vColorTint"		"[1.000000 1.000000 1.000000 0.000000]"
 	"g_flMetalness"		"0.650000"
 	"g_flRoughness"		"0.520000"
 	"g_bFogEnabled"		"1"
-	"g_vTexCoordScale"		"[3.000 2.000]"
+	"g_vTexCoordScale"		"[1.000 1.000]"
 	"g_vTexCoordOffset"		"[0.000 0.000]"
 	"g_vTexCoordScrollSpeed"		"[0.000 0.000]"
 }

@@ -17,6 +17,7 @@
      - bottom left: local health bar (only for your own pawn)
      - bottom center: role indicator
      - Tab: full scoreboard overlay
+     - Escape: local options overlay
      - low HP: vignette
 *@
 
@@ -189,7 +190,6 @@
             <div class="bottom-right-ammo @LocalRole.ToString().ToLower()">
                 <div class="ammo-label">@AmmoHudLabel</div>
                 <div class="ammo-value">@AmmoHudValue</div>
-                <div class="ammo-status">@AmmoHudStatus</div>
             </div>
         }
 
@@ -208,9 +208,6 @@
                                     <div class="slot-detail">@slot.Detail</div>
                                 </div>
                                 <div class="slot-action">@slot.Action</div>
-                            </div>
-                            <div class="slot-status-row">
-                                <div class="slot-status">@slot.Status</div>
                             </div>
                         </div>
                     }
@@ -273,6 +270,52 @@
                 </div>
             </div>
         }
+
+        @if ( OptionsMenuOpen )
+        {
+            <div class="options-overlay">
+                <div class="options-panel">
+                    <div class="options-header">
+                        <div class="options-title">Options</div>
+                        <div class="options-subtitle">Local settings</div>
+                    </div>
+
+                    <div class="options-list">
+                        <div class="option-row">
+                            <div class="option-copy">
+                                <div class="option-name">UI Scale</div>
+                                <div class="option-value">@UiScaleDisplay</div>
+                            </div>
+                            <div class="scale-control">
+                                <div class="option-button small" onclick=@DecreaseUiScale>-</div>
+                                <div class="scale-track">
+                                    <div class="scale-fill" style="width: @UiScaleFillWidth"></div>
+                                </div>
+                                <div class="option-button small" onclick=@IncreaseUiScale>+</div>
+                            </div>
+                        </div>
+
+                        <div class="option-row">
+                            <div class="option-copy">
+                                <div class="option-name">Look Sensitivity</div>
+                                <div class="option-value">@LookSensitivityDisplay</div>
+                            </div>
+                            <div class="stepper-control">
+                                <div class="option-button small" onclick=@DecreaseLookSensitivity>-</div>
+                                <div class="option-button small" onclick=@IncreaseLookSensitivity>+</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="options-actions">
+                        <div class="option-button primary" onclick=@ResumeOptions>Resume</div>
+                        <div class="option-button" onclick=@ResetUiScale>Reset UI</div>
+                        <div class="option-button danger" onclick=@LeaveMatch>Leave Match</div>
+                        <div class="option-button quiet" onclick=@QuitGame>Quit</div>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </root>
 
@@ -286,16 +329,30 @@
     PlayerRole SelectedLoadoutTeam { get; set; } = PlayerRole.Spectator;
     int SelectedLoadoutSlot { get; set; } = 1;
 
+    bool OptionsMenuOpen => LocalOptionsState.IsOpen;
     bool ShowRolePicker => Setup?.NeedsLocalRoleChoice() ?? false;
     bool ShowLoadoutHud => !ShowRolePicker && LocalRole is PlayerRole.Pilot or PlayerRole.Soldier;
-    bool ShowReticle => !ShowRolePicker && LocalRole == PlayerRole.Soldier;
+    bool ShowReticle => !ShowRolePicker && LocalRole is PlayerRole.Pilot or PlayerRole.Soldier;
     bool ShowScoreboard { get; set; }
+
+    string UiScaleDisplay => $"{LocalOptionsState.UiScalePercent}%";
+    string UiScaleFillWidth
+    {
+        get
+        {
+            var range = LocalOptionsState.MaxUiScale - LocalOptionsState.MinUiScale;
+            var t = range <= 0f ? 1f : (LocalOptionsState.UiScale - LocalOptionsState.MinUiScale) / range;
+            return $"{Math.Clamp( t, 0f, 1f ) * 100f:0}%";
+        }
+    }
+
+    string LookSensitivityDisplay => $"{LocalOptionsState.LookSensitivity:0.00}";
 
     // ---- Hitmarker + damage feedback state ----
     float _lastHitTime = -10f;
     float _lastKillTime = -10f;
     readonly List<DamageArc> _damageArcs = new();
-    readonly HashSet<Health> _subscribedHealths = new();
+    readonly Dictionary<Health, HealthEventHandlers> _healthHandlers = new();
 
     // ---- ELIMINATED popup + round transition state ----
     float _lastEliminatedTime = -10f;
@@ -310,6 +367,12 @@
         public float CreatedAt;
         public float AngleDeg;        // 0 = front, +90 = right
         public float Opacity;
+    }
+
+    sealed class HealthEventHandlers
+    {
+        public Action<DamageInfo> Damaged { get; init; }
+        public Action<DamageInfo> Killed { get; init; }
     }
 
     record struct KillFeedRow( string AttackerName, string WeaponName, string VictimName, bool LocalIsAttacker, bool LocalIsVictim );
@@ -337,7 +400,11 @@
     {
         get
         {
-            var classes = new List<string>();
+            var classes = new List<string>
+            {
+                LocalRole == PlayerRole.Pilot ? "pilot" : "soldier"
+            };
+
             if ( Time.Now - _lastHitTime < 0.10f ) classes.Add( "firing" );
             if ( SuppressionOpacity > 0.08f ) classes.Add( "suppressed" );
             return string.Join( " ", classes );
@@ -428,11 +495,20 @@
 
     protected override void OnUpdate()
     {
+        HandleOptionsInput();
+        LocalOptionsState.ApplyTo( Components.Get<ScreenPanel>() );
+        Mouse.Visibility = OptionsMenuOpen || ShowRolePicker
+            ? MouseVisibility.Visible
+            : MouseVisibility.Auto;
+
+        if ( OptionsMenuOpen )
+            LocalOptionsState.ClearGameplayActions();
+
         var soldierLoadout = LocalSoldierComponent<SoldierLoadout>();
         if ( soldierLoadout.IsValid() )
-            SelectedLoadoutSlot = soldierLoadout.SelectedSlot;
+            SelectedLoadoutSlot = soldierLoadout.ActiveSlot;
 
-        if ( !soldierLoadout.IsValid() )
+        if ( !OptionsMenuOpen && !soldierLoadout.IsValid() )
         {
             if ( Input.Pressed( "Slot1" ) )
                 SelectedLoadoutSlot = 1;
@@ -440,18 +516,28 @@
                 SelectedLoadoutSlot = 2;
         }
 
-        ShowScoreboard = Input.Down( "Score" );
+        ShowScoreboard = !OptionsMenuOpen && Input.Down( "Score" );
 
         // Subscribe to any new Health components — for hitmarker (we attacked
         // them) and damage-direction (we got hit).
         foreach ( var h in Scene.GetAllComponents<Health>() )
         {
             if ( !h.IsValid() ) continue;
-            if ( _subscribedHealths.Contains( h ) ) continue;
-            _subscribedHealths.Add( h );
-            h.OnDamaged += info => OnAnyHealthDamaged( h, info );
-            h.OnKilled += info => OnAnyHealthKilled( h, info );
+            if ( _healthHandlers.ContainsKey( h ) ) continue;
+
+            var victim = h;
+            var handlers = new HealthEventHandlers
+            {
+                Damaged = info => OnAnyHealthDamaged( victim, info ),
+                Killed = info => OnAnyHealthKilled( victim, info )
+            };
+
+            h.OnDamaged += handlers.Damaged;
+            h.OnKilled += handlers.Killed;
+            _healthHandlers[h] = handlers;
         }
+
+        PruneHealthHandlers();
 
         // Round-state transitions: play swell on Countdown → Active, capture
         // round-end timestamp for the win overlay fade-in.
@@ -475,6 +561,75 @@
 
             _prevRoundState = state;
         }
+    }
+
+    void HandleOptionsInput()
+    {
+        var escapePressed = Input.Keyboard.Pressed( "Escape" );
+        var menuPressed = escapePressed || Input.Pressed( "Menu" );
+        if ( menuPressed )
+            LocalOptionsState.ToggleOpen();
+    }
+
+    void ResumeOptions()
+    {
+        LocalOptionsState.SetOpen( false );
+    }
+
+    void IncreaseUiScale()
+    {
+        LocalOptionsState.AdjustUiScale( LocalOptionsState.UiScaleStep );
+    }
+
+    void DecreaseUiScale()
+    {
+        LocalOptionsState.AdjustUiScale( -LocalOptionsState.UiScaleStep );
+    }
+
+    void ResetUiScale()
+    {
+        LocalOptionsState.ResetUiScale();
+    }
+
+    void IncreaseLookSensitivity()
+    {
+        LocalOptionsState.AdjustLookSensitivity( LocalOptionsState.LookSensitivityStep );
+    }
+
+    void DecreaseLookSensitivity()
+    {
+        LocalOptionsState.AdjustLookSensitivity( -LocalOptionsState.LookSensitivityStep );
+    }
+
+    void LeaveMatch()
+    {
+        LocalOptionsState.SetOpen( false );
+        Game.Disconnect();
+    }
+
+    void QuitGame()
+    {
+        LocalOptionsState.SetOpen( false );
+        Game.Close();
+    }
+
+    protected override void OnDestroy()
+    {
+        foreach ( var (health, handlers) in _healthHandlers )
+        {
+            if ( !health.IsValid() ) continue;
+            health.OnDamaged -= handlers.Damaged;
+            health.OnKilled -= handlers.Killed;
+        }
+
+        _healthHandlers.Clear();
+    }
+
+    void PruneHealthHandlers()
+    {
+        var stale = _healthHandlers.Keys.Where( h => !h.IsValid() ).ToList();
+        foreach ( var health in stale )
+            _healthHandlers.Remove( health );
     }
 
     void OnAnyHealthDamaged( Health victim, DamageInfo info )
@@ -619,10 +774,7 @@
                 1,
                 "Assault Rifle",
                 $"{rifle.Damage:0} dmg / {rifle.MagazineSize} mag",
-                RifleStatus( rifle ),
-                "LMB",
-                rifle.AmmoDisplay,
-                rifle.ReadyFraction * 100f
+                "LMB"
             );
         }
 
@@ -633,10 +785,7 @@
                 1,
                 "Shotgun",
                 $"{shotgun.PelletCount} pellets / {shotgun.MaxRange / 1000f:0.0}k range",
-                CooldownStatus( shotgun.IsReady, shotgun.CooldownRemaining ),
-                "LMB",
-                "SHELLS INF",
-                shotgun.CooldownReadyFraction * 100f
+                "LMB"
             );
         }
 
@@ -647,10 +796,7 @@
                 1,
                 "Drone Jammer",
                 $"{jammer.MaxRange / 1000f:0.0}k range / cone",
-                jammer.IsActive ? "ACTIVE" : "HOLD",
-                "LMB",
-                "ENERGY INF",
-                100f
+                "LMB"
             );
         }
 
@@ -663,28 +809,21 @@
         if ( !grenade.IsValid() )
             return DisabledSlot( 2, "Equipment", "No equipment found", "LMB" );
 
-        var status = grenade.IsArmed
-            ? $"FUSE {grenade.FuseRemaining:0.0}s"
-            : CooldownStatus( grenade.IsReady, grenade.CooldownRemaining );
-
-        var ammo = grenade.IsArmed
-            ? "IN AIR"
-            : grenade.IsReady ? "CHARGE 1" : "RECHARGE";
-
         return new LoadoutSlot(
             2,
             GrenadeName( grenade ),
             GrenadeDetail( grenade ),
-            status,
-            "LMB",
-            ammo,
-            grenade.IsArmed ? 100f : grenade.CooldownReadyFraction * 100f
+            "LMB"
         );
     }
 
     LoadoutSlot[] PilotLoadoutSlots()
     {
         var weapon = LocalDroneWeapon;
+        var remote = LocalRemoteController;
+        if ( !remote.IsValid() || !remote.DroneViewActive )
+            return PilotGroundLoadoutSlots();
+
         if ( !weapon.IsValid() )
         {
             return new[]
@@ -699,10 +838,7 @@
                 1,
                 LocalDroneBase.IsValid() && LocalDroneBase.Type == DroneType.Gps ? "GPS Beam" : "Drone Beam",
                 $"{weapon.HitscanDamage:0} dmg / {weapon.HitscanRange / 1000f:0.0}k range",
-                CooldownStatus( weapon.PrimaryReady, weapon.PrimaryCooldownRemaining ),
-                "LMB",
-                "AMMO INF",
-                weapon.PrimaryReadyFraction * 100f
+                "LMB"
             )
             : DisabledSlot( 1, "No Primary", "This drone uses slot 2", "LMB" );
 
@@ -711,14 +847,36 @@
                 2,
                 "Kamikaze Charge",
                 $"{weapon.KamikazeDamage:0} dmg / {weapon.KamikazeRadius:0} radius",
-                "ARMED",
-                "RMB",
-                "ONE USE",
-                100f
+                "RMB"
             )
             : DisabledSlot( 2, "No Payload", "Primary fire only", "RMB" );
 
         return new[] { primary, ability };
+    }
+
+    LoadoutSlot[] PilotGroundLoadoutSlots()
+    {
+        var deployer = LocalSoldierComponent<DroneDeployer>();
+        var primary = deployer.IsValid()
+            ? new LoadoutSlot(
+                1,
+                LocalDroneName,
+                deployer.DroneInFlight ? "Drone airborne" : "Deploy drone",
+                deployer.DroneInFlight ? "F" : "LMB"
+            )
+            : DisabledSlot( 1, "Drone", "No deployer found", "LMB" );
+
+        var backup = LocalSoldierComponent<HitscanWeapon>();
+        var secondary = backup.IsValid()
+            ? new LoadoutSlot(
+                2,
+                backup.WeaponDisplayName,
+                $"{backup.Damage:0} dmg / {backup.MagazineSize} mag",
+                "LMB"
+            )
+            : DisabledSlot( 2, "Sidearm", "No backup weapon found", "LMB" );
+
+        return new[] { primary, secondary };
     }
 
     T LocalSoldierComponent<T>() where T : Component
@@ -731,6 +889,9 @@
 
     GroundPlayerController LocalGroundController =>
         Scene.GetAllComponents<GroundPlayerController>().FirstOrDefault( g => !g.IsProxy );
+
+    PilotSoldier LocalPilotSoldier =>
+        Scene.GetAllComponents<PilotSoldier>().FirstOrDefault( p => !p.IsProxy );
 
     DroneController LocalDroneController =>
         Scene.GetAllComponents<DroneController>().FirstOrDefault( d => !d.IsProxy );
@@ -747,22 +908,16 @@
         }
     }
 
-    string LocalDroneName => LocalDroneBase.IsValid()
-        ? DroneVariantName( LocalDroneBase.Type )
-        : "Pilot";
-
-    static string CooldownStatus( bool ready, float remaining ) =>
-        ready ? "READY" : $"{remaining:0.0}s";
-
-    static string RifleStatus( HitscanWeapon rifle )
+    string LocalDroneName
     {
-        if ( rifle.IsReloading )
-            return "RELOADING";
+        get
+        {
+            if ( LocalDroneBase.IsValid() )
+                return DroneVariantName( LocalDroneBase.Type );
 
-        if ( rifle.AmmoInMagazine <= 0 && rifle.AmmoReserve <= 0 )
-            return "EMPTY";
-
-        return CooldownStatus( rifle.IsReady, rifle.CooldownRemaining );
+            var pilot = LocalPilotSoldier;
+            return pilot.IsValid() ? DroneVariantName( pilot.ChosenDrone ) : "Pilot";
+        }
     }
 
     static string SoldierClassName( SoldierClass cls ) => cls switch
@@ -799,7 +954,7 @@
 
     static LoadoutSlot DisabledSlot( int number, string name, string detail, string action )
     {
-        return new LoadoutSlot( number, name, detail, "EMPTY", action, "", 0f, true );
+        return new LoadoutSlot( number, name, detail, action, true );
     }
 
     string LoadoutSlotClass( LoadoutSlot slot )
@@ -813,17 +968,45 @@
         return className;
     }
 
-    LoadoutSlot CurrentLoadoutSlot => LoadoutSlots.FirstOrDefault( s => s.Number == SelectedLoadoutSlot );
+    HitscanWeapon CurrentAmmoWeapon
+    {
+        get
+        {
+            var ground = LocalGroundController;
+            if ( !ground.IsValid() )
+                return null;
 
-    bool ShowAmmoHud => LocalRole == PlayerRole.Soldier
-        && ShowLoadoutHud
-        && CurrentLoadoutSlot is not null
-        && !CurrentLoadoutSlot.Disabled
-        && !string.IsNullOrWhiteSpace( CurrentLoadoutSlot.Ammo );
+            var selectedSlot = SelectedLoadoutSlot;
+            var loadout = ground.GameObject.Components.Get<SoldierLoadout>( FindMode.EverythingInSelfAndDescendants );
+            if ( loadout.IsValid() )
+                selectedSlot = loadout.ActiveSlot;
 
-    string AmmoHudLabel => CurrentLoadoutSlot?.Name?.ToUpperInvariant() ?? "";
-    string AmmoHudValue => CurrentLoadoutSlot?.Ammo ?? "";
-    string AmmoHudStatus => CurrentLoadoutSlot?.Status ?? "";
+            return ground.GameObject.Components
+                .GetAll<HitscanWeapon>( FindMode.EverythingInSelfAndDescendants )
+                .FirstOrDefault( weapon => weapon.IsValid() && weapon.Slot == selectedSlot );
+        }
+    }
+
+    bool ShowAmmoHud => ShowLoadoutHud
+        && CurrentAmmoWeapon.IsValid()
+        && !LocalDroneViewActive;
+
+    string AmmoHudLabel => CurrentAmmoWeapon.IsValid()
+        ? (CurrentAmmoWeapon.WeaponDisplayName ?? "Ammo").ToUpperInvariant()
+        : "";
+
+    string AmmoHudValue => CurrentAmmoWeapon.IsValid()
+        ? $"{CurrentAmmoWeapon.AmmoInMagazine} / {CurrentAmmoWeapon.AmmoReserve}"
+        : "";
+
+    bool LocalDroneViewActive
+    {
+        get
+        {
+            var remote = LocalRemoteController;
+            return remote.IsValid() && remote.DroneViewActive;
+        }
+    }
 
     JammingReceiver LocalJammer
     {
@@ -872,6 +1055,9 @@
         {
             var drone = Scene.GetAllComponents<DroneController>().FirstOrDefault( d => !d.IsProxy );
             if ( drone.IsValid() ) return PlayerRole.Pilot;
+
+            var pilot = LocalPilotSoldier;
+            if ( pilot.IsValid() ) return PlayerRole.Pilot;
 
             var ground = Scene.GetAllComponents<GroundPlayerController>().FirstOrDefault( g => !g.IsProxy );
             if ( ground.IsValid() ) return PlayerRole.Soldier;
@@ -953,25 +1139,19 @@
 
     sealed class LoadoutSlot
     {
-        public LoadoutSlot( int number, string name, string detail, string status, string action, string ammo, float readyPercent, bool disabled = false )
+        public LoadoutSlot( int number, string name, string detail, string action, bool disabled = false )
         {
             Number = number;
             Name = name;
             Detail = detail;
-            Status = status;
             Action = action;
-            Ammo = ammo;
-            ReadyPercent = readyPercent.Clamp( 0f, 100f );
             Disabled = disabled;
         }
 
         public int Number { get; }
         public string Name { get; }
         public string Detail { get; }
-        public string Status { get; }
         public string Action { get; }
-        public string Ammo { get; }
-        public float ReadyPercent { get; }
         public bool Disabled { get; }
     }
 
@@ -979,27 +1159,39 @@
     /// Re-render gate: panel rebuilds whenever any of these inputs change.
     /// Includes time-quantized fields for hitmarker / damage arc animations.
     /// </summary>
-    protected override int BuildHash() => HashCode.Combine(
-        HashCode.Combine(
-            Round?.State, PilotWins, SoldierWins,
-            LocalRole, HpFraction, ShowTimer, TimerLine, ShowRolePicker
-        ),
-        HashCode.Combine(
-            LocalDroneCamera.IsValid() && LocalDroneCamera.IsFirstPersonActive,
-            ShowJamWarning,
-            SelectedLoadoutTeam,
-            ShowScoreboard,
-            VignetteClass,
-            StaminaPercent,
-            Round?.LastWinnerInt ?? -1,
-            HashCode.Combine( RoundEndVisible, (int)(SunGlareOpacity * 100f) )
-        ),
-        HashCode.Combine(
-            ShowLoadoutHud,
-            SelectedLoadoutSlot,
-            // Animate hitmarker/crosshair/arcs/suppression at ~15 Hz
-            (int)(Time.Now * 15f),
-            KillFeed?.Entries.Count ?? 0
-        )
-    );
+    protected override int BuildHash()
+    {
+        var ammoWeapon = CurrentAmmoWeapon;
+
+        return HashCode.Combine(
+            HashCode.Combine(
+                Round?.State, PilotWins, SoldierWins,
+                LocalRole, HpFraction, ShowTimer, TimerLine, ShowRolePicker
+            ),
+            HashCode.Combine(
+                LocalDroneCamera.IsValid() && LocalDroneCamera.IsFirstPersonActive,
+                ShowJamWarning,
+                SelectedLoadoutTeam,
+                ShowScoreboard,
+                VignetteClass,
+                StaminaPercent,
+                Round?.LastWinnerInt ?? -1,
+                HashCode.Combine( RoundEndVisible, (int)(SunGlareOpacity * 100f), OptionsMenuOpen )
+            ),
+            HashCode.Combine(
+                ShowLoadoutHud,
+                SelectedLoadoutSlot,
+                ShowAmmoHud,
+                ammoWeapon.IsValid() ? ammoWeapon.AmmoInMagazine : -1,
+                ammoWeapon.IsValid() ? ammoWeapon.AmmoReserve : -1,
+                LocalOptionsState.UiScalePercent,
+                (int)(LocalOptionsState.LookSensitivity * 100f),
+                HashCode.Combine(
+                    // Animate hitmarker/crosshair/arcs/suppression at ~15 Hz
+                    (int)(Time.Now * 15f),
+                    KillFeed?.Entries.Count ?? 0
+                )
+            )
+        );
+    }
 }

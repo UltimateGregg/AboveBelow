@@ -90,6 +90,11 @@
           "_type": "gameobject",
           "go": "22222222-d000-3000-0000-000000000001"
         },
+        "TracerPrefab": {
+          "_type": "gameobject",
+          "prefab": "prefabs/tracer_default.prefab"
+        },
+        "FireSound": "sounds/drone_beam.sound",
         "EnableHitscan": true,
         "HitscanDamage": 8,
         "HitscanRange": 5000,

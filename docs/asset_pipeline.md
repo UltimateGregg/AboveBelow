@@ -46,6 +46,28 @@ For another asset, copy `scripts/drone_asset_pipeline.json` and change:
 The script creates timestamped backups before replacing FBX or prefab files.
 Backups are stored under `.tmpbuild/asset_backups` so the S&Box asset browser does not import them as real game assets.
 
+## Texture Validation
+
+Configured `material_remap` entries are validated before export. For each remapped `.vmat`, the pipeline now checks that:
+
+- the remapped material file exists,
+- its `TextureColor` image exists, and
+- it is not still using `materials/default/default_color.tga`.
+
+When `verify_fbx` is enabled, the pipeline also imports the exported FBX back into Blender and confirms every `material_remap` source name still exists as an exported material slot. This catches renamed Blender materials before S&Box falls back to the global default material.
+
+This catches the common Blender-to-game mismatch where a model looks assigned in the source file but compiles in S&Box as flat grey because the remapped `.vmat` still points at the shared default color texture. If a placeholder material is intentional, set `allow_default_color_texture: true` in that asset's config or pass `--allow-default-color-texture`.
+
+On real exports, the pipeline also clears generated compiled caches for remapped `.vmat` files and their local texture images. This forces S&Box to rebuild stale material outputs after texture edits instead of keeping an older compiled material in game.
+
+If a model's compiled material remaps are not reliable, set `material_override` in the asset config to apply a renderer-wide material on the generated prefab. This is the same material path used by the arena blockout renderers and is visible in playtest.
+
+For textured assets, keep the names aligned through the whole chain:
+
+- Blender material slot: `Body_Tactical`
+- pipeline remap: `"Body_Tactical": "materials/jammer_body.vmat"`; the generated `.vmdl` writes this as `from = "Body_Tactical.vmat"` because S&Box's model compiler matches source material names with the `.vmat` suffix
+- VMAT color image: `"TextureColor" "materials/jammer_body_color.png"`
+
 Run a different config:
 
 ```powershell
@@ -77,7 +99,7 @@ python .\scripts\asset_pipeline.py --help
 ## Weapon Asset Example
 
 `scripts/assault_rifle_m4_asset_pipeline.json` is the first weapon-specific
-config. It exports `weapon_model.blend/assault_rifle_m4.blend` to
+config. It exports `weapons_model.blend/assault_rifle_m4.blend` to
 `Assets/models/weapons/assault_rifle_m4.fbx`, writes the matching `.vmdl`, and
 updates the standalone `Assets/prefabs/assault_rifle_m4.prefab` visual renderer.
 

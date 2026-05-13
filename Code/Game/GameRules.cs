@@ -30,8 +30,8 @@ public sealed class GameRules : Component
 	/// <summary>Match duration in seconds before pilots auto-win</summary>
 	[Property, Sync] public int RoundTimeSeconds { get; set; } = 300;
 
-	/// <summary>Players needed to start (including host)</summary>
-	[Property, Sync] public int MinPlayersToStart { get; set; } = 2;
+	/// <summary>Players needed to start (including host). Keep at 1 so solo smoke tests exercise the full round loop.</summary>
+	[Property, Sync] public int MinPlayersToStart { get; set; } = 1;
 
 	/// <summary>Damage per hitscan shot from drone</summary>
 	[Property, Sync] public int DroneHitscanDamage { get; set; } = 8;

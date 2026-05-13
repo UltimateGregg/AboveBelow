@@ -14,7 +14,7 @@ import bpy
 from mathutils import Vector
 
 PROJECT_ROOT = Path(r"C:\Programming\S&Box")
-BLEND_PATH = PROJECT_ROOT / "weapon_model.blend" / "assault_rifle_m4.blend"
+BLEND_PATH = PROJECT_ROOT / "weapons_model.blend" / "assault_rifle_m4.blend"
 PREVIEW_PATH = PROJECT_ROOT / "screenshots" / "assault_rifle_m4_preview.png"
 
 

@@ -176,10 +176,10 @@ The HUD is one big Razor panel that includes role picker, jam warning, crosshair
 
 ## Pilot / drone control flow
 
-Pilots have a ground avatar (`pilot_ground.prefab` with `PilotSoldier` + `RemoteController` + `GroundPlayerController`) **and** a drone, spawned together by `GameSetup.SpawnPilotPawn`. The `RemoteController.DroneViewActive` flag toggles which one the local player drives:
+Pilots spawn as a ground avatar (`pilot_ground.prefab` with `PilotSoldier` + `RemoteController` + `GroundPlayerController`) holding a `DroneDeployer`. Launching the deployer creates the selected drone variant and writes `PilotSoldier.LinkedDroneId`. The `RemoteController.DroneViewActive` flag toggles which pawn the local player drives after a drone is airborne:
 
-- `false` (default at spawn): ground avatar takes input, scene camera follows pilot's `Eye`, drone hovers
-- `true`: ground controller is disabled, `DroneCamera` drives the scene camera, `DroneController` reads input
+- `false` (default at spawn): ground avatar takes input and the scene camera follows the pilot's `Eye`
+- `true`: ground controller is disabled, `DroneCamera` drives the scene camera, and `DroneController` reads input
 
 `DroneCamera` and `DroneController` both gate on `RemoteController.IsLocalDroneViewActive(Scene)` — a static helper. If no `RemoteController` exists in the scene (editor playtest with a hand-placed drone), it returns true so the drone is testable in isolation.
 

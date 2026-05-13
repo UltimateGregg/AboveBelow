@@ -104,6 +104,7 @@
                 "__guid": "33333333-b000-3110-0000-000000000001",
                 "BodyGroups": 18446744073709551615,
                 "Model": "models/jammer_gun.vmdl",
+                "MaterialOverride": "materials/jammer_body.vmat",
                 "RenderType": "On",
                 "Tint": "1,1,1,1"
               }

@@ -49,6 +49,9 @@ public sealed class RoundManager : Component
 
 	protected override void OnStart()
 	{
+		if ( !Setup.IsValid() )
+			Setup = Components.Get<GameSetup>() ?? Scene.GetAllComponents<GameSetup>().FirstOrDefault();
+
 		// Auto-wire GameRules and GameStats if not set in inspector
 		if ( !Rules.IsValid() )
 		{
@@ -56,6 +59,8 @@ public sealed class RoundManager : Component
 			if ( !Rules.IsValid() )
 				Log.Warning( "[RoundManager] GameRules component not found. Game balance settings will be unavailable." );
 		}
+
+		ApplyRules();
 
 		if ( !Stats.IsValid() )
 		{
@@ -203,6 +208,10 @@ public sealed class RoundManager : Component
 
 	void EnterCountdown()
 	{
+		ApplyRules();
+		if ( Stats.IsValid() )
+			Stats.CachePlayerNames();
+
 		State = RoundState.Countdown;
 		StateEndsAt = Time.Now + CountdownSeconds;
 		UpdateStateTimer();
@@ -210,6 +219,10 @@ public sealed class RoundManager : Component
 
 	void EnterActive()
 	{
+		ApplyRules();
+		if ( Stats.IsValid() )
+			Stats.CachePlayerNames();
+
 		State = RoundState.Active;
 		StateEndsAt = Time.Now + RoundLengthSeconds;
 		UpdateStateTimer();
@@ -259,7 +272,8 @@ public sealed class RoundManager : Component
 	void EndRound( WinningSide winner )
 	{
 		State = RoundState.Ended;
-		StateEndsAt = Time.Now + 8f;
+		var endScreenSeconds = Rules.IsValid() ? Rules.RoundEndScreenSeconds : 8f;
+		StateEndsAt = Time.Now + MathF.Max( 0.1f, endScreenSeconds );
 		UpdateStateTimer();
 
 		if ( winner == WinningSide.Pilot ) PilotWins++;
@@ -271,6 +285,9 @@ public sealed class RoundManager : Component
 
 	void ResetForNextRound()
 	{
+		if ( Stats.IsValid() )
+			Stats.ResetRound();
+
 		// Rotate the pilot role - simplest fairness: pilot becomes soldier,
 		// next connection in line becomes pilot. Replace with skill / random
 		// later if you want.
@@ -286,19 +303,29 @@ public sealed class RoundManager : Component
 			var idx = allConns.FindIndex( c => c.Id == Setup.PilotConnectionId );
 			var nextIdx = (idx + 1) % allConns.Count;
 			var newPilotId = allConns[nextIdx].Id;
+			var oldPilotId = Setup.PilotConnectionId;
 
 			// Respawn current soldiers (the new and old pilots are handled by PromotePilot below).
 			foreach ( var conn in allConns )
 			{
-				if ( conn.Id == Setup.PilotConnectionId ) continue; // current pilot, will be demoted
+				if ( conn.Id == oldPilotId ) continue;              // current pilot, will be demoted
 				if ( conn.Id == newPilotId ) continue;              // about to be promoted
-				Setup.SpawnPawnFor( conn, PlayerRole.Soldier );
+				Setup.RespawnWithSelectedLoadout( conn, PlayerRole.Soldier );
 			}
 
 			Setup.PromotePilot( newPilotId );
 		}
 
 		EnterCountdown();
+	}
+
+	void ApplyRules()
+	{
+		if ( !Rules.IsValid() ) return;
+
+		CountdownSeconds = Rules.CountdownSeconds;
+		RoundLengthSeconds = Rules.RoundTimeSeconds;
+		MinPlayers = Math.Max( 1, Rules.MinPlayersToStart );
 	}
 
 	[Rpc.Broadcast]

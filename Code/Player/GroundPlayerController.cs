@@ -83,6 +83,12 @@ public sealed class GroundPlayerController : Component
 	[Property, Range( 1f, 30f )] public float StaminaRefillSeconds { get; set; } = 4f;
 	[Property, Range( 0f, 1f )]  public float StaminaMinToSprint { get; set; } = 0.10f;
 
+	// ---- Ladders ----
+	[Property, Range( 40f, 260f )] public float LadderClimbSpeed { get; set; } = 150f;
+	[Property, Range( 0f, 240f )] public float LadderStickSpeed { get; set; } = 90f;
+	[Property, Range( 0f, 260f )] public float LadderJumpOffPush { get; set; } = 120f;
+	[Property, Range( 0.05f, 1f )] public float LadderDetachCooldownSeconds { get; set; } = 0.25f;
+
 	public Vector3 WishVelocity { get; private set; }
 
 	[Sync] public Angles EyeAngles { get; set; }
@@ -90,6 +96,7 @@ public sealed class GroundPlayerController : Component
 	[Sync] public float Stamina { get; set; } = 1f;          // 0..1, replicated for HUD
 	[Sync] public bool IsCrouched { get; set; }              // for animgraph / observers
 	[Sync] public bool IsSliding { get; set; }
+	[Sync] public bool IsClimbingLadder { get; set; }
 
 	private CameraComponent _cachedCamera;
 
@@ -118,6 +125,7 @@ public sealed class GroundPlayerController : Component
 	float _slideTimeLeft;
 	Vector3 _slideDirection;
 	bool _prevDuckDown;
+	float _ladderDetachCooldown;
 
 	// Suppression state (local-only). Set by HitscanWeapon when a bullet
 	// passes nearby; decays each frame. Dampens look sensitivity + drives
@@ -176,12 +184,20 @@ public sealed class GroundPlayerController : Component
 
 		if ( !IsProxy )
 		{
-			try { HandleLook(); } catch ( System.Exception e ) { Log.Warning( $"HandleLook error: {e.Message}" ); }
+			if ( LocalOptionsState.ConsumesGameplayInput )
+			{
+				IsSprinting = false;
+				_adsRequested = false;
+			}
+			else
+			{
+				try { HandleLook(); } catch ( System.Exception e ) { Log.Warning( $"HandleLook error: {e.Message}" ); }
 
-			// Sprint requested? Gate on stamina (only if locally-owned).
-			var wantsSprint = Input.Down( "Run" );
-			var hasStamina = Stamina > StaminaMinToSprint;
-			IsSprinting = wantsSprint && hasStamina && !IsCrouched && !IsSliding;
+				// Sprint requested? Gate on stamina (only if locally-owned).
+				var wantsSprint = Input.Down( "Run" );
+				var hasStamina = Stamina > StaminaMinToSprint;
+				IsSprinting = wantsSprint && hasStamina && !IsCrouched && !IsSliding && !IsClimbingLadder;
+			}
 		}
 
 		try { UpdateBodyAndAnims(); } catch ( System.Exception e ) { Log.Warning( $"UpdateBodyAndAnims error: {e.Message}" ); }
@@ -193,7 +209,7 @@ public sealed class GroundPlayerController : Component
 		// suppression, sensitivity drops to (1 - SuppressionLookDampening).
 		var lookScale = 0.5f * MathX.Lerp( 1f, 1f - SuppressionLookDampening, _suppressionT );
 		var ee = EyeAngles;
-		ee += Input.AnalogLook * lookScale;
+		ee += Input.AnalogLook * lookScale * LocalOptionsState.LookSensitivity;
 		ee.pitch = ee.pitch.Clamp( -89f, 89f );
 		ee.roll = 0;
 		EyeAngles = ee;
@@ -213,7 +229,7 @@ public sealed class GroundPlayerController : Component
 		_recoilOffset.yaw   = MathX.Lerp( _recoilOffset.yaw,   0f, recoilDecay );
 
 		// ADS lerp. Sprinting / sliding forces ADS off.
-		var wantsAds = _adsRequested && !IsSprinting && !IsSliding;
+		var wantsAds = _adsRequested && !IsSprinting && !IsSliding && !IsClimbingLadder;
 		_adsT = MathX.Lerp( _adsT, wantsAds ? 1f : 0f, 1f - MathF.Exp( -AdsLerpRate * Time.Delta ) );
 		_adsRequested = false;
 
@@ -229,7 +245,7 @@ public sealed class GroundPlayerController : Component
 			1f - MathF.Exp( -LandingDipDecay * Time.Delta ) );
 
 		// Crouch lerp. Crouch input held OR sliding → target = 1.
-		var wantsCrouch = (Input.Down( "Duck" ) || IsSliding) && !IsProxy;
+		var wantsCrouch = (Input.Down( "Duck" ) || IsSliding) && !IsProxy && !IsClimbingLadder;
 		var crouchTarget = wantsCrouch ? 1f : 0f;
 		_crouchT = MathX.Lerp( _crouchT, crouchTarget,
 			1f - MathF.Exp( -CrouchLerpRate * Time.Delta ) );
@@ -323,7 +339,7 @@ public sealed class GroundPlayerController : Component
 		{
 			AnimationHelper.WithVelocity( cc.Velocity );
 			AnimationHelper.WithWishVelocity( WishVelocity );
-			AnimationHelper.IsGrounded = cc.IsOnGround;
+			AnimationHelper.IsGrounded = cc.IsOnGround || IsClimbingLadder;
 			AnimationHelper.MoveRotationSpeed = moveRotationSpeed;
 			AnimationHelper.WithLook( EyeAngles.Forward, 1, 1, 1f );
 			AnimationHelper.DuckLevel = _crouchT;
@@ -337,7 +353,17 @@ public sealed class GroundPlayerController : Component
 	{
 		if ( IsProxy ) return;
 
-		BuildWishVelocity();
+		var inputBlocked = LocalOptionsState.ConsumesGameplayInput;
+		if ( inputBlocked )
+		{
+			WishVelocity = Vector3.Zero;
+			IsSprinting = false;
+			_prevDuckDown = false;
+		}
+		else
+		{
+			BuildWishVelocity();
+		}
 
 		var cc = Components.Get<CharacterController>();
 		if ( !cc.IsValid() ) return;
@@ -345,8 +371,24 @@ public sealed class GroundPlayerController : Component
 		// Lerp CharacterController height between standing and crouched.
 		cc.Height = MathX.Lerp( StandingHeight, CrouchHeight, _crouchT );
 
+		_ladderDetachCooldown = Math.Max( 0f, _ladderDetachCooldown - Time.Delta );
+		if ( inputBlocked )
+		{
+			ClearLadderState();
+		}
+		else if ( TryMoveOnLadder( cc ) )
+		{
+			Stamina = Math.Min( 1f, Stamina + Time.Delta / Math.Max( 0.1f, StaminaRefillSeconds ) );
+			_wasOnGround = false;
+			return;
+		}
+		else if ( IsClimbingLadder )
+		{
+			ClearLadderState();
+		}
+
 		// Slide entry: sprinting + grounded + moving + Duck pressed THIS frame.
-		var duckDown = Input.Down( "Duck" );
+		var duckDown = !inputBlocked && Input.Down( "Duck" );
 		var duckPressed = duckDown && !_prevDuckDown;
 		_prevDuckDown = duckDown;
 
@@ -364,7 +406,7 @@ public sealed class GroundPlayerController : Component
 			}
 		}
 
-		if ( cc.IsOnGround && Input.Down( "Jump" ) && !IsSliding )
+		if ( !inputBlocked && cc.IsOnGround && Input.Down( "Jump" ) && !IsSliding )
 		{
 			cc.Punch( Vector3.Up * JumpStrength );
 			OnJump();
@@ -440,8 +482,81 @@ public sealed class GroundPlayerController : Component
 		_wasOnGround = cc.IsOnGround;
 	}
 
+	bool TryMoveOnLadder( CharacterController cc )
+	{
+		if ( _ladderDetachCooldown > 0f || IsSliding )
+			return false;
+
+		var ladder = LadderVolume.FindForPlayer( this, cc );
+		if ( !ladder.IsValid() )
+			return false;
+
+		var climbInput = Input.AnalogMove.x.Clamp( -1f, 1f );
+		var shouldAttach = IsClimbingLadder || !cc.IsOnGround || MathF.Abs( climbInput ) > 0.05f;
+		if ( !shouldAttach )
+			return false;
+
+		IsClimbingLadder = true;
+		IsSprinting = false;
+		IsSliding = false;
+		WishVelocity = Vector3.Zero;
+
+		if ( Input.Down( "Jump" ) )
+		{
+			var push = EyeAngles.ToRotation().Forward.WithZ( 0f );
+			if ( push.IsNearZeroLength )
+				push = Vector3.Forward;
+
+			cc.Velocity = push.Normal * LadderJumpOffPush + Vector3.Up * (JumpStrength * 0.35f);
+			ClearLadderState( true );
+			OnJump();
+			return true;
+		}
+
+		var bounds = ladder.GetClimbBounds();
+		if ( climbInput < -0.05f && WorldPosition.z <= bounds.Mins.z + ladder.GrabPadding + ladder.BottomExitTriggerDistance )
+		{
+			cc.Velocity = Vector3.Zero;
+			ClearLadderState( true );
+			return true;
+		}
+
+		var centerPull = (bounds.Center - WorldPosition).WithZ( 0f );
+		if ( !centerPull.IsNearZeroLength )
+			centerPull = centerPull.ClampLength( LadderStickSpeed );
+
+		cc.Velocity = centerPull + Vector3.Up * (climbInput * LadderClimbSpeed);
+		cc.Move();
+
+		if ( ladder.UseTopExit && climbInput > 0.05f )
+		{
+			var topExit = ladder.GetTopExitWorldPosition();
+			if ( WorldPosition.z >= topExit.z - ladder.TopExitTriggerDistance )
+			{
+				cc.MoveTo( topExit, false );
+				cc.Velocity = Vector3.Zero;
+				ClearLadderState( true );
+			}
+		}
+
+		return true;
+	}
+
+	void ClearLadderState( bool startCooldown = false )
+	{
+		IsClimbingLadder = false;
+		if ( startCooldown )
+			_ladderDetachCooldown = LadderDetachCooldownSeconds;
+	}
+
 	void BuildWishVelocity()
 	{
+		if ( IsClimbingLadder )
+		{
+			WishVelocity = Vector3.Zero;
+			return;
+		}
+
 		if ( IsSliding )
 		{
 			// During slide, ignore input — the slide locks direction.

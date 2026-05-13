@@ -59,7 +59,7 @@ public sealed class DroneCamera : Component
 			return;
 		}
 
-		if ( !string.IsNullOrWhiteSpace( CameraToggleInput ) && Input.Pressed( CameraToggleInput ) )
+		if ( !LocalOptionsState.ConsumesGameplayInput && !string.IsNullOrWhiteSpace( CameraToggleInput ) && Input.Pressed( CameraToggleInput ) )
 			_firstPersonActive = !_firstPersonActive;
 
 		var cam = Scene.GetAllComponents<CameraComponent>().FirstOrDefault();

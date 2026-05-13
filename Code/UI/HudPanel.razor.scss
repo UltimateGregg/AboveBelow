@@ -342,6 +342,12 @@ HudPanel {
                 box-shadow: 0 0 18px rgba(255, 122, 32, 0.12);
             }
 
+            &.pilot {
+                bottom: 112px;
+                border-color: rgba(77, 210, 255, 0.56);
+                box-shadow: 0 0 18px rgba(32, 175, 255, 0.12);
+            }
+
             .ammo-label {
                 font-size: 12px;
                 font-weight: 900;
@@ -354,12 +360,6 @@ HudPanel {
                 font-size: 30px;
                 font-weight: 900;
                 color: white;
-            }
-
-            .ammo-status {
-                font-size: 12px;
-                font-weight: 800;
-                color: rgba(white, 0.72);
             }
         }
 
@@ -420,18 +420,13 @@ HudPanel {
                 box-shadow: 0 0 18px rgba(255, 122, 32, 0.16);
             }
 
-            .slot-main-row,
-            .slot-status-row {
+            .slot-main-row {
                 flex-direction: row;
                 align-items: center;
             }
 
             .slot-main-row {
                 gap: 8px;
-            }
-
-            .slot-status-row {
-                justify-content: flex-start;
             }
 
             .slot-key {
@@ -478,11 +473,6 @@ HudPanel {
                 text-align: center;
             }
 
-            .slot-status {
-                font-size: 12px;
-                font-weight: 900;
-                color: rgba(white, 0.94);
-            }
         }
 
         .pilot-controls {
@@ -567,6 +557,24 @@ HudPanel {
                 .tick.bottom { bottom: -2px; }
                 .tick.left   { left: -2px; }
                 .tick.right  { right: -2px; }
+            }
+
+            &.pilot {
+                .tick {
+                    background-color: rgba(77, 210, 255, 0.96);
+                    box-shadow: 0 0 5px rgba(77, 210, 255, 0.45), 0 0 2px rgba(black, 0.8);
+                }
+
+                .dot {
+                    background-color: rgba(77, 210, 255, 0.96);
+                    box-shadow: 0 0 6px rgba(77, 210, 255, 0.55), 0 0 2px rgba(black, 0.8);
+                }
+            }
+
+            &.soldier {
+                .tick {
+                    background-color: rgba(255, 245, 224, 0.94);
+                }
             }
         }
 
@@ -699,7 +707,160 @@ HudPanel {
                 .col-name { width: 60%; }
                 .col-k, .col-d, .col-s { width: 13%; text-align: right; }
             }
+        }
         // ─────── Suppression vignette (BF-style) ───────
+        .options-overlay {
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            z-index: 50;
+            pointer-events: all;
+            background-color: rgba(0, 0, 0, 0.62);
+            justify-content: center;
+            align-items: center;
+
+            .options-panel {
+                width: 560px;
+                max-width: 88%;
+                padding: 22px;
+                border-radius: 8px;
+                background-color: rgba(18, 22, 24, 0.96);
+                border: 1px solid rgba(white, 0.18);
+                box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .options-header {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .options-title {
+                font-size: 30px;
+                font-weight: 900;
+                color: white;
+            }
+
+            .options-subtitle {
+                font-size: 13px;
+                font-weight: 700;
+                color: rgba(white, 0.58);
+                text-transform: uppercase;
+            }
+
+            .options-list {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .option-row {
+                min-height: 70px;
+                padding: 12px;
+                border-radius: 6px;
+                background-color: rgba(white, 0.055);
+                border: 1px solid rgba(white, 0.1);
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+            }
+
+            .option-copy {
+                min-width: 0;
+                flex-grow: 1;
+                flex-direction: column;
+                gap: 3px;
+            }
+
+            .option-name {
+                font-size: 16px;
+                font-weight: 900;
+                color: white;
+            }
+
+            .option-value {
+                font-size: 13px;
+                font-weight: 700;
+                color: rgba(white, 0.68);
+            }
+
+            .scale-control,
+            .stepper-control,
+            .options-actions {
+                flex-direction: row;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .scale-control {
+                width: 260px;
+            }
+
+            .scale-track {
+                flex-grow: 1;
+                height: 8px;
+                border-radius: 4px;
+                background-color: rgba(black, 0.45);
+                border: 1px solid rgba(white, 0.12);
+                overflow: hidden;
+            }
+
+            .scale-fill {
+                height: 100%;
+                background-color: #4dd2ff;
+            }
+
+            .options-actions {
+                justify-content: flex-end;
+                flex-wrap: wrap;
+            }
+
+            .option-button {
+                pointer-events: all;
+                min-width: 96px;
+                min-height: 36px;
+                padding: 8px 12px;
+                border-radius: 6px;
+                background-color: rgba(white, 0.11);
+                border: 1px solid rgba(white, 0.18);
+                color: rgba(white, 0.92);
+                font-size: 13px;
+                font-weight: 900;
+                text-align: center;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: rgba(white, 0.18);
+                    border-color: rgba(white, 0.34);
+                }
+
+                &.small {
+                    min-width: 38px;
+                    width: 38px;
+                    min-height: 34px;
+                    padding: 6px 0;
+                    font-size: 20px;
+                }
+
+                &.primary {
+                    background-color: rgba(7, 92, 136, 0.92);
+                    border-color: rgba(77, 210, 255, 0.7);
+                }
+
+                &.danger {
+                    background-color: rgba(116, 32, 32, 0.82);
+                    border-color: rgba(255, 105, 105, 0.44);
+                }
+
+                &.quiet {
+                    min-width: 68px;
+                    color: rgba(white, 0.7);
+                }
+            }
+        }
+
         .suppression-vignette {
             position: absolute;
             top: 0; right: 0; bottom: 0; left: 0;
@@ -711,7 +872,7 @@ HudPanel {
             position: absolute;
             top: 0; right: 0; bottom: 0; left: 0;
             background-image:
-                radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 250, 215, 0.9) 14%, rgba(255, 220, 120, 0.42) 34%, rgba(255, 190, 70, 0.13) 58%, transparent 78%),
+                radial-gradient(rgba(255, 255, 255, 0.98) 0%, rgba(255, 250, 215, 0.9) 14%, rgba(255, 220, 120, 0.42) 34%, rgba(255, 190, 70, 0.13) 58%, transparent 78%),
                 linear-gradient(90deg, transparent 0%, rgba(255, 238, 180, 0.22) 47%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 238, 180, 0.22) 53%, transparent 100%);
             pointer-events: none;
         }

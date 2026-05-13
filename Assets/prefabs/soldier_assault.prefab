@@ -122,6 +122,9 @@
                 "MuzzleFlashSeconds": 0.045,
                 "FirstPersonOffset": "34,9,-12",
                 "FirstPersonRotationOffset": "0,0,0",
+                "AdsOffset": "28,0,-14",
+                "AdsRotationOffset": "0,0,0",
+                "AdsFovDegrees": 55,
                 "ThirdPersonLocalPosition": "20,15,55",
                 "ThirdPersonLocalAngles": "0,0,0",
                 "AmmoInMagazine": 30,
@@ -144,6 +147,7 @@
                     "__guid": "33333333-a000-3310-0000-000000000001",
                     "BodyGroups": 18446744073709551615,
                     "Model": "models/weapons/assault_rifle_m4.vmdl",
+                    "MaterialOverride": "materials/weapons/m4_full.vmat",
                     "RenderType": "On",
                     "Tint": "1,1,1,1"
                   }

@@ -1,0 +1,24 @@
+{
+  "UI": false,
+  "Volume": "0.8",
+  "Pitch": "1",
+  "PitchRandom": "0.03",
+  "Decibels": 68,
+  "SelectionMode": "Random",
+  "Sounds": [ "sounds/drone_beam.wav" ],
+  "Occlusion": true,
+  "Reflections": false,
+  "AirAbsorption": true,
+  "Transmission": false,
+  "OcclusionRadius": 32,
+  "DistanceAttenuation": true,
+  "Distance": 4200,
+  "Falloff": [
+    { "x": 0, "y": 1, "in": 0, "out": -1.2, "mode": "Mirrored" },
+    { "x": 0.4, "y": 0.45, "in": 0, "out": -0.7, "mode": "Mirrored" },
+    { "x": 1, "y": 0.02, "in": 0, "out": 0, "mode": "Mirrored" }
+  ],
+  "DefaultMixer": { "Name": "unknown", "Id": "00000000-0000-0000-0000-000000000000" },
+  "__references": [],
+  "__version": 1
+}

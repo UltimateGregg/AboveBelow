@@ -74,7 +74,7 @@ public sealed class RemoteController : Component
 		if ( DroneViewActive && !HasLinkedDrone() )
 			SetDroneViewActive( false );
 
-		if ( Input.Pressed( ToggleInput ) )
+		if ( !LocalOptionsState.ConsumesGameplayInput && Input.Pressed( ToggleInput ) )
 			SetDroneViewActive( !DroneViewActive );
 
 		// Remote camera placement: when drone view is active, hide the ground

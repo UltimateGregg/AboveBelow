@@ -15,17 +15,17 @@
 						[
 
 							{
-								from = "Antenna_Metal"
+								from = "Antenna_Metal.vmat"
 								to = "materials/jammer_antenna.vmat"
 							},
 
 							{
-								from = "Body_Tactical"
+								from = "Body_Tactical.vmat"
 								to = "materials/jammer_body.vmat"
 							},
 
 							{
-								from = "LED_Accent"
+								from = "LED_Accent.vmat"
 								to = "materials/jammer_led.vmat"
 							},
 						]

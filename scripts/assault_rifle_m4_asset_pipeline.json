@@ -1,5 +1,5 @@
 {
-  "source_blend": "weapon_model.blend/assault_rifle_m4.blend",
+  "source_blend": "weapons_model.blend/assault_rifle_m4.blend",
   "root_object": "AssaultRifle_M4",
   "target_fbx": "Assets/models/weapons/assault_rifle_m4.fbx",
   "target_vmdl": "Assets/models/weapons/assault_rifle_m4.vmdl",
@@ -8,6 +8,7 @@
   "visual_object": "Visual",
   "visual_scale": "1,1,1",
   "visual_tint": "1,1,1,1",
+  "material_override": "materials/weapons/m4_full.vmat",
   "clear_visual_children": false,
   "verify_fbx": true,
   "required_object": [
@@ -26,7 +27,7 @@
     "M4_Receiver": "materials/weapons/m4_receiver.vmat",
     "M4_Rubber": "materials/weapons/m4_rubber.vmat"
   },
-  "global_scale": 1.0,
+  "global_scale": 0.0254,
   "axis_forward": "-Y",
   "axis_up": "Z"
 }

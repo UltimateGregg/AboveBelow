@@ -73,7 +73,7 @@ public sealed class GameStats : Component
 	public int GetPlayerScore( Guid connectionId )
 	{
 		var kills = PlayerKills.ContainsKey( connectionId ) ? PlayerKills[connectionId] : 0;
-		var deaths = PlayerDeaths.ContainsKey( connectionId ) ? PlayerDeaths[connectionId] : 1; // avoid div by zero
+		var deaths = PlayerDeaths.ContainsKey( connectionId ) ? PlayerDeaths[connectionId] : 0;
 
 		return kills - deaths;
 	}
@@ -82,13 +82,25 @@ public sealed class GameStats : Component
 	public List<(Guid ConnectionId, string Name, int Kills, int Deaths, int Score)> GetScoreboard()
 	{
 		var scores = new List<(Guid ConnectionId, string Name, int Kills, int Deaths, int Score)>();
+		var connectionIds = new HashSet<Guid>();
 
-		foreach ( var killEntry in PlayerKills )
+		foreach ( var conn in Connection.All )
+			connectionIds.Add( conn.Id );
+
+		foreach ( var connId in PlayerNames.Keys )
+			connectionIds.Add( connId );
+
+		foreach ( var connId in PlayerKills.Keys )
+			connectionIds.Add( connId );
+
+		foreach ( var connId in PlayerDeaths.Keys )
+			connectionIds.Add( connId );
+
+		foreach ( var connId in connectionIds )
 		{
-			var connId = killEntry.Key;
-			var kills = killEntry.Value;
+			var kills = PlayerKills.ContainsKey( connId ) ? PlayerKills[connId] : 0;
 			var deaths = PlayerDeaths.ContainsKey( connId ) ? PlayerDeaths[connId] : 0;
-			var name = PlayerNames.ContainsKey( connId ) ? PlayerNames[connId] : "Unknown";
+			var name = PlayerNames.ContainsKey( connId ) ? PlayerNames[connId] : ResolveLiveName( connId );
 			var score = GetPlayerScore( connId );
 
 			scores.Add( (connId, name, kills, deaths, score) );
@@ -96,6 +108,12 @@ public sealed class GameStats : Component
 
 		// Sort by score descending
 		return scores.OrderByDescending( s => s.Score ).ToList();
+	}
+
+	static string ResolveLiveName( Guid connectionId )
+	{
+		var conn = Connection.All.FirstOrDefault( c => c.Id == connectionId );
+		return conn?.DisplayName ?? "Unknown";
 	}
 
 	/// <summary>Reset stats for next round</summary>

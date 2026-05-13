@@ -7,7 +7,7 @@ A vertical asymmetric shooter. **Pilot team** flies drones from the ground; **So
 ## Game Overview
 
 **Genre:** Asymmetric team PvP
-**Players:** 2-8 (default 3 pilots vs 4 soldiers, configurable in `GameRules`)
+**Players:** 1-8. Solo smoke tests start with one local player; intended team play defaults to 3 pilots vs 4 soldiers through `GameRules`.
 **Platform:** S&Box
 **Status:** Class system implemented. Rock-paper-scissors balance design is documented; tuning and art pass pending.
 
@@ -65,7 +65,7 @@ Core counter triangle: **Counter-UAV beats GPS**, **Heavy beats FPV**, **Assault
 - X — Toggle camera between FPV and chase
 
 **Pilot (ground POV — Remote Controller):**
-- T — Toggle between drone view and ground view
+- F — Toggle between drone view and ground view
 - Standard ground movement otherwise
 
 ## Project Structure

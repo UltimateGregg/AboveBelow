@@ -81,7 +81,7 @@ public sealed class PilotLink : Component
 
 		var droneHealth = Components.Get<Health>() ?? Components.GetInAncestors<Health>();
 		if ( droneHealth.IsValid() )
-			droneHealth.RequestDamage( 9999f, GameObject.Id, WorldPosition );
+			droneHealth.RequestDamage( 9999f, default, WorldPosition );
 	}
 
 	[Rpc.Broadcast]

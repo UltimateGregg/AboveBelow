@@ -21,7 +21,7 @@ public sealed class FragGrenade : ThrowableGrenade
 	protected override void OnDetonate( Vector3 worldPos )
 	{
 		BroadcastExplosionFx( worldPos );
-		RequestExplosion( worldPos, Radius, Damage, Falloff, GameObject.Id, WeaponDisplayName );
+		RequestExplosion( worldPos, Radius, Damage, Falloff, DamageAttribution.OwnerConnectionId( this ), WeaponDisplayName );
 	}
 
 	[Rpc.Broadcast]

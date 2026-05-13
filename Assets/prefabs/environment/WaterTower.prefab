@@ -5,7 +5,15 @@
     "Name": "WaterTower",
     "Enabled": true,
     "NetworkMode": 2,
-    "Components": [],
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.SelectedHierarchyColliderViewer",
+        "__guid": "2e57ef8d-2f4d-48d3-ad5b-1f6237525c61",
+        "IncludeTriggers": true,
+        "SolidColliderColor": "1,0.55,0.12,1",
+        "TriggerColliderColor": "0.25,0.75,1,1"
+      }
+    ],
     "Children": [
       {
         "__guid": "6f6ad6f2-3a84-4c75-91ea-6a3a15e47a2b",
@@ -21,6 +29,7 @@
             "__guid": "983f183e-b10e-4ea0-96c6-4fe7665226b1",
             "BodyGroups": 18446744073709551615,
             "Model": "models/watertower.vmdl",
+            "MaterialOverride": "materials/environment/watertower_tank.vmat",
             "RenderType": "On",
             "Tint": "1,1,1,1"
           }
@@ -171,7 +180,7 @@
         "__guid": "69b48611-286b-49b0-8305-5967db050c6d",
         "Flags": 0,
         "Name": "Collision_Ladder",
-        "Position": "0,-370,320",
+        "Position": "0,-420,300",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
@@ -180,9 +189,19 @@
             "__type": "Sandbox.BoxCollider",
             "__guid": "73bdd042-42a0-449e-b79d-fb64d6ee1216",
             "Center": "0,0,0",
-            "Scale": "90,30,640",
+            "Scale": "110,80,600",
             "Static": true,
-            "IsTrigger": false
+            "IsTrigger": true
+          },
+          {
+            "__type": "DroneVsPlayers.LadderVolume",
+            "__guid": "0d24440f-50c0-44cf-a204-5ec9b696c061",
+            "AutoConfigureCollider": true,
+            "GrabPadding": 18,
+            "UseTopExit": true,
+            "TopExitLocalOffset": "0,60,272",
+            "TopExitTriggerDistance": 28,
+            "BottomExitTriggerDistance": 8
           }
         ],
         "Children": []

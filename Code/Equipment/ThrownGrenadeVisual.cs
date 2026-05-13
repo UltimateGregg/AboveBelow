@@ -4,9 +4,8 @@ using System;
 namespace DroneVsPlayers;
 
 /// <summary>
-/// Client-side visual for the current grenade implementation. Gameplay still
-/// resolves from <see cref="ThrowableGrenade"/>; this component only animates a
-/// temporary model so the throw visibly leaves the player's hand.
+/// Lightweight client-side arc animator kept for non-authoritative throw FX.
+/// Live grenade gameplay now uses <see cref="ThrownGrenadeProjectile"/>.
 /// </summary>
 [Title( "Thrown Grenade Visual" )]
 [Category( "Drone vs Players/Equipment" )]
@@ -24,8 +23,8 @@ public sealed class ThrownGrenadeVisual : Component
 	bool _configured;
 
 	/// <summary>
-	/// Starts the visual-only grenade arc. The object destroys itself when the
-	/// arc reaches the cached detonation position.
+	/// Starts a visual-only grenade arc. The object destroys itself when the
+	/// arc reaches its configured end point.
 	/// </summary>
 	public void Configure( Vector3 start, Vector3 end, float duration, float arcHeight )
 	{

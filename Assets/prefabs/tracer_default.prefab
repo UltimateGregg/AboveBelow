@@ -12,13 +12,13 @@
         "UseVectorPoints": true,
         "Lighting": false,
         "Color": {
-          "color": "1,0.92,0.55,1",
+          "color": "1,0.9,0.28,0.95",
           "useColor": true,
           "useGradient": false
         },
         "Width": {
           "useCurve": false,
-          "constant": 0.8
+          "constant": 0.28
         },
         "EndCap": "None",
         "Face": "Camera",
@@ -27,7 +27,13 @@
       {
         "__type": "DroneVsPlayers.TracerLifetime",
         "__guid": "44444444-0001-0002-0000-000000000001",
-        "Lifetime": 0.08
+        "Lifetime": 0.08,
+        "TracerLength": 70,
+        "TravelSeconds": 0.055,
+        "TailColor": "1,0.55,0.05,0.15",
+        "HotColor": "1,0.9,0.28,0.95",
+        "BulletGlowSize": "5,5",
+        "BulletGlowTexturePath": "materials/skybox/blinding_sun_glow.png"
       }
     ],
     "Children": [],

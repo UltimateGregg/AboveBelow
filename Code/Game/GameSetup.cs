@@ -70,6 +70,8 @@ public sealed class GameSetup : Component, Component.INetworkListener
 	// Map connections -> spawned pawn (and pilot -> drone) for cleanup / role swaps.
 	readonly Dictionary<Guid, GameObject> _pawns = new();
 	readonly Dictionary<Guid, GameObject> _drones = new();
+	readonly Dictionary<Guid, SoldierClass> _selectedSoldierClasses = new();
+	readonly Dictionary<Guid, DroneType> _selectedDroneTypes = new();
 	readonly List<GameObject> _soloTrainingDummies = new();
 	readonly List<TrainingDummySpawnPoint> _trainingDummySpawnPoints = new();
 
@@ -99,12 +101,14 @@ public sealed class GameSetup : Component, Component.INetworkListener
 	protected override void OnStart()
 	{
 		if ( Scene.IsEditor ) return;
+		ResolveManagerRefs();
 		CaptureTrainingDummySpawnPoints();
 	}
 
 	protected override void OnUpdate()
 	{
 		if ( Scene.IsEditor ) return;
+		ResolveManagerRefs();
 
 		if ( Networking.IsHost && _timeSinceTrainingDummyCheck > 1f )
 		{
@@ -245,6 +249,11 @@ public sealed class GameSetup : Component, Component.INetworkListener
 			return;
 		}
 
+		if ( role == PlayerRole.Pilot )
+			_selectedDroneTypes[connId] = type;
+		else if ( role == PlayerRole.Soldier )
+			_selectedSoldierClasses[connId] = cls;
+
 		AssignConnectionToTeam( connId, role );
 
 		if ( role == PlayerRole.Pilot )
@@ -269,6 +278,7 @@ public sealed class GameSetup : Component, Component.INetworkListener
 	{
 		if ( !CanHostSpawn( channel ) ) return;
 
+		_selectedDroneTypes[channel.Id] = type;
 		DespawnPawn( channel.Id );
 
 		// Pilot's ground avatar.
@@ -299,6 +309,7 @@ public sealed class GameSetup : Component, Component.INetworkListener
 	{
 		if ( !CanHostSpawn( channel ) ) return;
 
+		_selectedSoldierClasses[channel.Id] = cls;
 		DespawnPawn( channel.Id );
 
 		var prefab = ResolveSoldierPrefab( cls );
@@ -586,24 +597,62 @@ public sealed class GameSetup : Component, Component.INetworkListener
 	}
 
 	// ── Legacy: kept so RoundManager + HUD continue to compile while we
-	// migrate. Promotes a pilot in the old single-pilot model. Now a no-op
-	// against the team list — round rotation is driven by player choice.
+	// migrate. Promotes a pilot in the old single-pilot model while preserving
+	// each connection's latest selected class / drone variant.
 	[Rpc.Broadcast]
 	public void PromotePilot( Guid newPilotId )
 	{
 		if ( !Networking.IsHost ) return;
+
+		var newPilot = Connection.All.FirstOrDefault( c => c.Id == newPilotId );
+		if ( newPilot is null )
+			return;
+
+		var previousPilots = PilotTeam.ToList();
+		foreach ( var pilotId in previousPilots )
+		{
+			if ( pilotId == newPilotId ) continue;
+
+			var previousPilot = Connection.All.FirstOrDefault( c => c.Id == pilotId );
+			if ( previousPilot is null ) continue;
+
+			AssignConnectionToTeam( pilotId, PlayerRole.Soldier );
+			SpawnSoldierPawn( previousPilot, GetSelectedSoldierClass( pilotId ) );
+		}
+
+		AssignConnectionToTeam( newPilotId, PlayerRole.Pilot );
 		PilotConnectionId = newPilotId;
+		SpawnPilotPawn( newPilot, GetSelectedDroneType( newPilotId ) );
 	}
 
-	// Legacy single-prefab spawn helper — preserved so RoundManager's role
-	// rotation in ResetForNextRound keeps compiling. New code should call
-	// SpawnPilotPawn / SpawnSoldierPawn directly.
+	// Role-only respawn helper for round rotation and legacy callers.
+	public void RespawnWithSelectedLoadout( Connection channel, PlayerRole role )
+	{
+		if ( channel is null ) return;
+
+		if ( role == PlayerRole.Pilot )
+			SpawnPilotPawn( channel, GetSelectedDroneType( channel.Id ) );
+		else if ( role == PlayerRole.Soldier )
+			SpawnSoldierPawn( channel, GetSelectedSoldierClass( channel.Id ) );
+	}
+
+	SoldierClass GetSelectedSoldierClass( Guid connId )
+	{
+		return _selectedSoldierClasses.TryGetValue( connId, out var cls )
+			? cls
+			: SoldierClass.Assault;
+	}
+
+	DroneType GetSelectedDroneType( Guid connId )
+	{
+		return _selectedDroneTypes.TryGetValue( connId, out var type )
+			? type
+			: DroneType.Gps;
+	}
+
 	public void SpawnPawnFor( Connection channel, PlayerRole role )
 	{
-		if ( role == PlayerRole.Pilot )
-			SpawnPilotPawn( channel, DroneType.Gps );
-		else if ( role == PlayerRole.Soldier )
-			SpawnSoldierPawn( channel, SoldierClass.Assault );
+		RespawnWithSelectedLoadout( channel, role );
 	}
 
 	// Legacy: HudPanel calls this for the old "BELOW / ABOVE" picker. We
@@ -614,5 +663,14 @@ public sealed class GameSetup : Component, Component.INetworkListener
 			SelectLocalDrone( DroneType.Gps );
 		else if ( role == PlayerRole.Soldier )
 			SelectLocalSoldier( SoldierClass.Assault );
+	}
+
+	void ResolveManagerRefs()
+	{
+		if ( !Rules.IsValid() )
+			Rules = Components.Get<GameRules>() ?? Scene.GetAllComponents<GameRules>().FirstOrDefault();
+
+		if ( !Round.IsValid() )
+			Round = Components.Get<RoundManager>() ?? Scene.GetAllComponents<RoundManager>().FirstOrDefault();
 	}
 }

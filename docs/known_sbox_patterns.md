@@ -151,6 +151,16 @@ if (!_cachedRules.IsValid())
 - Use explicit prefab references, not prefab variants
 - Keep prefab structure flat (avoid deep hierarchies)
 
+### Held Equipment Visibility
+
+**Pattern:** Held weapons, grenades, and pilot equipment should stay enabled for input, cooldowns, and networking, but their renderers must be turned fully off when their loadout slot is not selected.
+
+**Workflow:**
+- Put slot ownership on the item component (`Slot = 1` for primary, `Slot = 2` for equipment).
+- Have the item call `WeaponPose.SetVisibility()` from startup and update paths.
+- Let `SoldierLoadout` run the central held-item visibility sweep every frame so startup, proxy, and slot-change ordering cannot leave an unselected item visible.
+- Use `ModelRenderer.ShadowRenderType.Off` for hidden held items so stowed equipment does not cast shadows around the player.
+
 ## Physics & Collision Quirks
 
 ### Dev Box Collider Scale
@@ -196,6 +206,24 @@ Body.Gravity = false;  // Custom hover physics
 - Soldiers use CharacterController (predictable, responsive)
 - Drone uses Rigidbody (custom velocity control)
 - Don't mix both on same GameObject
+
+### Climbable Ladder Volumes
+
+**Pattern:** Use a non-blocking `BoxCollider` trigger with `LadderVolume` for climbable ladders, and let `GroundPlayerController` own the movement mode.
+
+**Workflow:**
+- Keep the ladder collider as `IsTrigger = true`; solid ladder boxes block the character controller before climb movement can attach.
+- Place the climb volume just outside blocking deck/platform collision, then set `TopExitLocalOffset` onto a nearby solid walking surface.
+- Keep nearby tank/deck collision explicit and simple; the top exit should not place the player inside adjacent blocking colliders.
+
+### Selected Hierarchy Collider Gizmos
+
+**Pattern:** For composed props with collision on child GameObjects, add `SelectedHierarchyColliderViewer` to the root so selecting the root or visual child draws the whole prop's collider stack.
+
+**Workflow:**
+- Put the viewer on the root that owns the collision children, not on a separate manager object.
+- Use solid-color wireframes for blocking colliders and trigger-color wireframes for trigger volumes.
+- Keep the visual transform at the root/prefab origin when possible; if a scene instance needs scaling or rotation, apply it to the root so visual and collision children stay aligned.
 
 ## Event & Callback Quirks
 
@@ -336,7 +364,55 @@ public void TakeDamage(DamageInfo info)
 - Test with 2+ clients to catch multiplayer bugs
 - Use if (!Networking.IsHost) guards to find permission issues
 
+### MCP Bridge Diagnostics
+
+**Pattern:** The in-editor MCP bridge reports tool-call failures in the bridge panel, but `editor_console_output` can return an empty line list even when the panel log shows recent MCP entries.
+
+**Workflow:**
+- Treat every MCP tool JSON result as the real-time source of truth; read failed tool responses immediately instead of assuming the panel log is available through `editor_console_output`.
+- Call `component_list` before `component_get` or `component_set`. The bridge often expects short component names such as `ModelRenderer`, not full type names such as `Sandbox.ModelRenderer`.
+- Use `get_server_status` to confirm the bridge is listening and request counts are changing.
+- Still call `editor_console_output` after risky editor operations, but if it returns `[]`, rely on the MCP call result plus the visible editor console/panel.
+
+### Native MCP Tool Exposure
+
+**Pattern:** The project-level `.mcp.json` is the right place to advertise editor MCP servers to clients that load local MCP manifests. The S&Box editor MCP Server dock listens at `http://localhost:29015/mcp`; ClaudeBridge is a separate file-based IPC bridge and should not be treated as the primary scene/component mutation path.
+
+**Workflow:**
+- Keep the S&Box MCP Server dock running in the editor.
+- Register the HTTP MCP endpoint in `.mcp.json` under `mcpServers.sbox`.
+- Start a new Codex/agent session after changing `.mcp.json`; native tools are usually loaded at session start.
+- If native `mcp__sbox__...` tools are not exposed in a session, use the HTTP JSON-RPC fallback against `http://localhost:29015/mcp`.
+- Use ClaudeBridge only as a fallback after checking its handler surface for the exact operation needed.
+
+### ModelRenderer Material Overrides
+
+**Pattern:** Renderer-level `MaterialOverride` paths are reliable in playtest and are already used by the arena blockout renderers. Generated ModelDoc material remaps may compile down to `materials/default.vmat` if the model compiler does not match the source FBX material names exactly.
+
+**Workflow:**
+- For quick visible in-game texture validation, put an explicit `MaterialOverride` on the `ModelRenderer`.
+- For live editor scenes, set the override on the currently loaded object with the bridge and then save only after confirming no runtime transform drift is being persisted.
+- Check the live component with `component_get` and expect `MaterialOverride` to show as `Material:<name>` when the override is loaded.
+
+### Held-Item Slot Visibility
+
+**Pattern:** Every visible held-item renderer needs to be hidden at the item root when its loadout slot is not selected. Hiding only a named visual child can leave extra mesh children visible or casting shadows.
+
+**Workflow:**
+- Soldier classes keep primary weapons in slot 1 and grenades/equipment in slot 2.
+- Pilot ground avatars currently keep the drone controller/deployer in slot 1 and the MP7 in slot 2.
+- Held-item components should call the shared `WeaponPose.SetVisibility(GameObject, selected)` root helper when stowed.
+- Run `.\scripts\check_loadout_slots.ps1` after prefab slot edits to catch duplicate or reversed slot assignments before playtesting.
+
+### MCP Component Value Conversion
+
+**Pattern:** MCP `component_set` must know how to parse every simple inspector value type it edits. Missing converters can make a property look editable in the inspector but fail through automation.
+
+**Workflow:**
+- `Vector2`, `Vector3`, `Angles`, `Color`, primitive values, models, and materials should be supported by the MCP component setter.
+- If an editor property fails with an invalid cast, add the converter in `Libraries/jtc.mcp-server/Editor/Handlers/ComponentHandler.cs` before working around it manually.
+
 ---
 
-Last Updated: May 6, 2026
-Version: 1.0 - Standardized Patterns
+Last Updated: May 12, 2026
+Version: 1.2 - Added held-item slot checks and MCP value conversion notes

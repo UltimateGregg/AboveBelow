@@ -51,20 +51,20 @@ public sealed class ShotgunWeapon : Component
 	protected override void OnStart()
 	{
 		ResolvePrefabReferences();
+		ApplySelectionVisualState();
 	}
 
 	protected override void OnUpdate()
 	{
 		ResolvePrefabReferences();
 
-		WeaponPose.SetVisibility( GameObject, WeaponVisual, IsSelected );
-		if ( IsSelected )
+		if ( ApplySelectionVisualState() )
 		{
 			if ( !IsProxy )
 			{
 				var pc = Components.GetInAncestors<GroundPlayerController>();
 				if ( pc.IsValid() )
-					pc.SetAdsTarget( Input.Down( "Attack2" ), AdsFovDegrees );
+					pc.SetAdsTarget( !LocalOptionsState.ConsumesGameplayInput && Input.Down( "Attack2" ), AdsFovDegrees );
 			}
 
 			WeaponPose.UpdateViewmodel(
@@ -76,6 +76,7 @@ public sealed class ShotgunWeapon : Component
 
 		if ( IsProxy ) return;
 		if ( !IsSelected ) return;
+		if ( LocalOptionsState.ConsumesGameplayInput ) return;
 
 		if ( Input.Pressed( "Attack1" ) && _timeSinceFire >= FireInterval )
 		{
@@ -85,6 +86,13 @@ public sealed class ShotgunWeapon : Component
 				pc.AddRecoil( RecoilDegrees, Random.Shared.Float( -RecoilDegrees * 0.25f, RecoilDegrees * 0.25f ) );
 			_timeSinceFire = 0f;
 		}
+	}
+
+	internal bool ApplySelectionVisualState()
+	{
+		var selected = IsSelected;
+		WeaponPose.SetVisibility( GameObject, selected );
+		return selected;
 	}
 
 	void ResolvePrefabReferences()
@@ -103,10 +111,10 @@ public sealed class ShotgunWeapon : Component
 
 		var lookRot = pc.EyeAngles.ToRotation();
 		var origin = MuzzleSocket.IsValid() ? MuzzleSocket.WorldPosition : pc.Eye?.WorldPosition ?? WorldPosition;
-		var attackerId = pc.GameObject.Id;
+		var attackerId = DamageAttribution.OwnerConnectionId( pc.GameObject );
 		var shotRotation = Random.Shared.Float( 0f, 360f );
 
-		PlayFireSound( origin );
+		PlayFireFx( origin, lookRot.Forward );
 
 		for ( int i = 0; i < PelletCount; i++ )
 		{
@@ -175,10 +183,12 @@ public sealed class ShotgunWeapon : Component
 	}
 
 	[Rpc.Broadcast]
-	void PlayFireSound( Vector3 from )
+	void PlayFireFx( Vector3 from, Vector3 direction )
 	{
 		if ( FireSound is not null )
 			Sound.Play( FireSound, from );
+
+		MuzzleFlashVisual.Spawn( from, direction, 1.2f );
 	}
 
 	[Rpc.Broadcast]
@@ -186,9 +196,15 @@ public sealed class ShotgunWeapon : Component
 	{
 		if ( TracerPrefab.IsValid() )
 		{
-			var tracerGo = TracerPrefab.Clone( from, Rotation.LookAt( (to - from).Normal ) );
+			var path = to - from;
+			var shotDirection = path.IsNearZeroLength ? Vector3.Forward : path.Normal;
+			var tracerGo = TracerPrefab.Clone( from, Rotation.LookAt( shotDirection ) );
+			var tracer = tracerGo.Components.Get<TracerLifetime>( FindMode.EverythingInSelfAndDescendants );
+			if ( tracer.IsValid() )
+				tracer.Configure( from, to );
+
 			var line = tracerGo.Components.Get<LineRenderer>( FindMode.EverythingInSelfAndDescendants );
-			if ( line.IsValid() )
+			if ( line.IsValid() && !tracer.IsValid() )
 			{
 				line.UseVectorPoints = true;
 				line.VectorPoints = new System.Collections.Generic.List<Vector3> { from, to };

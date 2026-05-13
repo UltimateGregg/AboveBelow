@@ -7,10 +7,10 @@ namespace DroneVsPlayers;
 /// Shared helpers for "held item" components (weapons + thrown equipment) so
 /// the M4, shotgun, drone jammer, and grenades all use the exact same FPS
 /// viewmodel pose, third-person fallback, slot-selection check, ADS lerping,
-/// view-inertia smoothing, and shadows-only hide-when-stowed behaviour.
+/// view-inertia smoothing, and hide-when-stowed behaviour.
 ///
 /// Each consumer adds a <c>Slot</c> property plus hip/ADS viewmodel offset
-/// properties and calls the viewmodel update helpers plus <see cref="SetVisibility"/>
+/// properties and calls the viewmodel update helpers plus the visibility helpers
 /// every frame in <c>OnUpdate</c>.
 /// </summary>
 public static class WeaponPose
@@ -23,8 +23,27 @@ public static class WeaponPose
 	public static bool IsSlotSelected( Component owner, int slot )
 	{
 		if ( owner is null ) return true;
+		var loadout = FindLoadout( owner );
+		return !loadout.IsValid() || loadout.ActiveSlot == slot;
+	}
+
+	static SoldierLoadout FindLoadout( Component owner )
+	{
 		var loadout = owner.Components.GetInAncestors<SoldierLoadout>();
-		return !loadout.IsValid() || loadout.SelectedSlot == slot;
+		if ( loadout.IsValid() )
+			return loadout;
+
+		var current = owner.GameObject;
+		while ( current.IsValid() )
+		{
+			loadout = current.Components.Get<SoldierLoadout>();
+			if ( loadout.IsValid() )
+				return loadout;
+
+			current = current.Parent;
+		}
+
+		return null;
 	}
 
 	/// <summary>
@@ -113,10 +132,16 @@ public static class WeaponPose
 	}
 
 	/// <summary>
-	/// Hides the held item without removing it from the scene — uses
-	/// <c>ShadowsOnly</c> so colliders / sound parents stay valid. If a
-	/// <paramref name="visualOverride"/> is supplied, only that subtree is
-	/// hidden; otherwise we walk the whole item GameObject.
+	/// Hides the held item without removing it from the scene. Renderers are
+	/// turned fully off while hidden so stowed equipment cannot cast shadows.
+	/// </summary>
+	public static void SetVisibility( GameObject root, bool visible )
+	{
+		SetVisibility( root, null, visible );
+	}
+
+	/// <summary>
+	/// Hides one visual subtree without removing it from the scene.
 	/// </summary>
 	public static void SetVisibility( GameObject root, GameObject visualOverride, bool visible )
 	{
@@ -125,9 +150,12 @@ public static class WeaponPose
 
 		var renderType = visible
 			? ModelRenderer.ShadowRenderType.On
-			: ModelRenderer.ShadowRenderType.ShadowsOnly;
+			: ModelRenderer.ShadowRenderType.Off;
 
 		foreach ( var renderer in renderRoot.Components.GetAll<ModelRenderer>( FindMode.EverythingInSelfAndDescendants ) )
+			renderer.RenderType = renderType;
+
+		foreach ( var renderer in renderRoot.Components.GetAll<SkinnedModelRenderer>( FindMode.EverythingInSelfAndDescendants ) )
 			renderer.RenderType = renderType;
 	}
 }

@@ -203,6 +203,13 @@ public static class ComponentHandler
 		if ( typeName == "Color" )
 			return Color.Parse( rawValue ) ?? Color.White;
 
+		if ( typeName == "Vector2" )
+		{
+			var parts = rawValue.Split( ',' );
+			if ( parts.Length == 2 )
+				return new Vector2( float.Parse( parts[0].Trim() ), float.Parse( parts[1].Trim() ) );
+		}
+
 		if ( typeName == "Vector3" )
 		{
 			var parts = rawValue.Split( ',' );

@@ -83,6 +83,7 @@ public sealed class HitscanWeapon : Component
 		if ( CanMutateState() )
 			ResetAmmo();
 		SetMuzzleFlashVisible( false );
+		ApplySelectionVisualState();
 	}
 
 	protected override void OnUpdate()
@@ -95,6 +96,7 @@ public sealed class HitscanWeapon : Component
 
 		if ( IsProxy ) return;
 		if ( !IsSelected ) return;
+		if ( LocalOptionsState.ConsumesGameplayInput ) return;
 
 		// Empty-mag click — local-only audio feedback on a fresh press when
 		// the magazine is dry. Forces the player to release+repress to retry
@@ -248,8 +250,7 @@ public sealed class HitscanWeapon : Component
 
 	void UpdateWeaponPose()
 	{
-		WeaponPose.SetVisibility( GameObject, WeaponVisual, IsSelected );
-		if ( !IsSelected ) return;
+		if ( !ApplySelectionVisualState() ) return;
 
 		// Request ADS from the controller while right-click is held (only
 		// when this weapon is selected — grenade's Attack2 throw is gated
@@ -258,7 +259,7 @@ public sealed class HitscanWeapon : Component
 		{
 			var pc = Components.GetInAncestors<GroundPlayerController>();
 			if ( pc.IsValid() )
-				pc.SetAdsTarget( Input.Down( "Attack2" ), AdsFovDegrees );
+				pc.SetAdsTarget( !LocalOptionsState.ConsumesGameplayInput && Input.Down( "Attack2" ), AdsFovDegrees );
 		}
 
 		WeaponPose.UpdateViewmodel(
@@ -266,6 +267,16 @@ public sealed class HitscanWeapon : Component
 			FirstPersonOffset, FirstPersonRotationOffset,
 			AdsOffset, AdsRotationOffset,
 			ThirdPersonLocalPosition, ThirdPersonLocalAngles );
+	}
+
+	internal bool ApplySelectionVisualState()
+	{
+		var selected = IsSelected;
+		WeaponPose.SetVisibility( GameObject, selected );
+		if ( !selected )
+			SetMuzzleFlashVisible( false );
+
+		return selected;
 	}
 
 	static bool CanMutateState() => !Networking.IsActive || Networking.IsHost;
@@ -328,7 +339,7 @@ public sealed class HitscanWeapon : Component
 		var health = FindHealth( tr.GameObject );
 		if ( health.IsValid() )
 		{
-			var attackerId = pc.GameObject.Id;
+			var attackerId = DamageAttribution.OwnerConnectionId( pc.GameObject );
 			health.RequestDamageNamed( Damage, attackerId, tr.HitPosition, WeaponDisplayName );
 			BroadcastImpact( tr.HitPosition, (int)ImpactEffects.SurfaceKind.Flesh );
 		}
@@ -415,6 +426,9 @@ public sealed class HitscanWeapon : Component
 	[Rpc.Broadcast]
 	void PlayFireFx( Vector3 from, Vector3 to )
 	{
+		var path = to - from;
+		var shotDirection = path.IsNearZeroLength ? Vector3.Forward : path.Normal;
+
 		// Open-air "boom" everyone hears at distance.
 		if ( FireSound is not null )
 			Sound.Play( FireSound, from );
@@ -426,12 +440,17 @@ public sealed class HitscanWeapon : Component
 
 		_timeSinceMuzzleFlash = 0f;
 		SetMuzzleFlashVisible( true );
+		MuzzleFlashVisual.Spawn( from, shotDirection );
 
 		if ( TracerPrefab.IsValid() )
 		{
-			var tracerGo = TracerPrefab.Clone( from, Rotation.LookAt( (to - from).Normal ) );
+			var tracerGo = TracerPrefab.Clone( from, Rotation.LookAt( shotDirection ) );
+			var tracer = tracerGo.Components.Get<TracerLifetime>( FindMode.EverythingInSelfAndDescendants );
+			if ( tracer.IsValid() )
+				tracer.Configure( from, to );
+
 			var line = tracerGo.Components.Get<LineRenderer>( FindMode.EverythingInSelfAndDescendants );
-			if ( line.IsValid() )
+			if ( line.IsValid() && !tracer.IsValid() )
 			{
 				line.UseVectorPoints = true;
 				line.VectorPoints = new System.Collections.Generic.List<Vector3> { from, to };

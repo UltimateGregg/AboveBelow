@@ -15,27 +15,27 @@
 						[
 
 							{
-								from = "M_Deck"
+								from = "M_Deck.vmat"
 								to = "materials/environment/watertower_deck.vmat"
 							},
 
 							{
-								from = "M_Frame"
+								from = "M_Frame.vmat"
 								to = "materials/environment/watertower_frame.vmat"
 							},
 
 							{
-								from = "M_Ladder"
+								from = "M_Ladder.vmat"
 								to = "materials/environment/watertower_ladder.vmat"
 							},
 
 							{
-								from = "M_Roof"
+								from = "M_Roof.vmat"
 								to = "materials/environment/watertower_roof.vmat"
 							},
 
 							{
-								from = "M_Tank"
+								from = "M_Tank.vmat"
 								to = "materials/environment/watertower_tank.vmat"
 							},
 						]

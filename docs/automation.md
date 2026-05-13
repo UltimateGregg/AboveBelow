@@ -8,6 +8,17 @@ Claude Code hooks are declarative automation triggers that respond to file chang
 
 **Benefit:** ~35-second time savings per asset iteration (eliminates manual `asset_pipeline.ps1` invocation + context switching)
 
+## Codex Lifecycle Hooks
+
+Codex lifecycle hooks live under `.codex/` and run during Codex sessions rather than on file-save events.
+
+- `.codex/config.toml` enables lifecycle hooks for this project with `[features].hooks = true`.
+- `.codex/hooks.json` registers the project hooks shown in the Codex app Hooks settings page.
+- `.codex/hooks/sbox_session_start.ps1` injects a short S&Box project reminder when a session starts, resumes, or clears.
+- `.codex/hooks/sbox_pre_tool_guard.ps1` blocks broad destructive cleanup commands such as `git reset --hard`, `git clean`, recursive deletes, and path reverts unless the workflow is changed explicitly.
+
+These hooks are intentionally conservative. They do not compile the project, mutate prefabs, or auto-approve permission requests.
+
 ## Primary Hook: Asset Auto-Export (Any .blend File)
 
 ### Configuration

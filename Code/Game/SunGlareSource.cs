@@ -36,6 +36,9 @@ public sealed class SunGlareSource : Component
 
 	public float GetGlareOpacity( Vector3 cameraPosition, Vector3 cameraForward, PlayerRole localRole, bool droneViewActive )
 	{
+		if ( localRole is not (PlayerRole.Pilot or PlayerRole.Soldier) )
+			return 0f;
+
 		if ( AffectsPilotsOnly && localRole != PlayerRole.Pilot )
 			return 0f;
 

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -20,6 +21,9 @@ from typing import Any
 
 
 DEFAULT_BLENDER = r"C:\Program Files\Blender Foundation\Blender 5.1\blender.exe"
+DEFAULT_COLOR_TEXTURE = "materials/default/default_color.tga"
+TEXTURE_COLOR_RE = re.compile(r'"TextureColor"\s*"([^"]+)"')
+TEXTURE_RE = re.compile(r'"Texture[^"]*"\s*"([^"]+)"')
 
 
 def project_root() -> Path:
@@ -60,6 +64,105 @@ def resolve_path(value: str | None, root: Path) -> Path | None:
     return path if path.is_absolute() else root / path
 
 
+def resolve_asset_resource_path(value: str, root: Path) -> Path:
+    path = Path(value)
+    if path.is_absolute():
+        return path
+    if path.parts and path.parts[0].lower() == "assets":
+        return root / path
+    return root / "Assets" / path
+
+
+def normalize_resource_path(value: str) -> str:
+    return value.replace("\\", "/").lower()
+
+
+def modeldoc_material_source_name(name: str) -> str:
+    return name if name.lower().endswith(".vmat") else f"{name}.vmat"
+
+
+def texture_color_from_vmat(path: Path) -> str | None:
+    match = TEXTURE_COLOR_RE.search(path.read_text(encoding="utf-8"))
+    return match.group(1) if match else None
+
+
+def texture_paths_from_vmat(path: Path) -> list[str]:
+    return TEXTURE_RE.findall(path.read_text(encoding="utf-8"))
+
+
+def compiled_texture_glob(texture_path: Path) -> str:
+    suffix = texture_path.suffix.lstrip(".")
+    if not suffix:
+        return texture_path.name + "_*.generated.vtex_c"
+    return f"{texture_path.stem}_{suffix}_*.generated.vtex_c"
+
+
+def validate_material_remaps(
+    material_remaps: dict[str, str] | None,
+    root: Path,
+    allow_default_color_texture: bool = False,
+) -> None:
+    remaps = material_remaps or {}
+    if not remaps:
+        return
+
+    for source, target in sorted(remaps.items()):
+        material_path = resolve_asset_resource_path(target, root)
+        if not material_path.exists():
+            raise FileNotFoundError(
+                f"Material remap for {source!r} points to missing material: {target}"
+            )
+
+        texture_color = texture_color_from_vmat(material_path)
+        if not texture_color:
+            print(f"Warning: {target} has no TextureColor entry")
+            continue
+
+        normalized_texture = normalize_resource_path(texture_color)
+        if normalized_texture == DEFAULT_COLOR_TEXTURE and not allow_default_color_texture:
+            raise ValueError(
+                f"Material remap for {source!r} uses {DEFAULT_COLOR_TEXTURE}. "
+                "Create an asset-specific color texture or set "
+                "allow_default_color_texture only for intentional placeholders."
+            )
+
+        texture_path = resolve_asset_resource_path(texture_color, root)
+        if not texture_path.exists():
+            raise FileNotFoundError(
+                f"Material {target} points to missing TextureColor image: {texture_color}"
+            )
+
+    print(f"Validated material remaps: {len(remaps)} material(s)")
+
+
+def clear_material_compiled_caches(material_remaps: dict[str, str] | None, root: Path) -> int:
+    remaps = material_remaps or {}
+    removed = 0
+    for target in sorted(set(remaps.values())):
+        material_path = resolve_asset_resource_path(target, root)
+        if not material_path.exists():
+            continue
+
+        compiled_material = Path(str(material_path) + "_c")
+        if compiled_material.exists():
+            compiled_material.unlink()
+            removed += 1
+
+        for texture in texture_paths_from_vmat(material_path):
+            texture_path = resolve_asset_resource_path(texture, root)
+            if not texture_path.exists():
+                continue
+
+            for compiled_texture in texture_path.parent.glob(compiled_texture_glob(texture_path)):
+                compiled_texture.unlink()
+                removed += 1
+
+    if removed:
+        print(f"Cleared material compiled cache: {removed} file(s)")
+    return removed
+
+
+
 def timestamp() -> str:
     return datetime.now().strftime("%Y%m%d-%H%M%S")
 
@@ -93,10 +196,11 @@ def write_vmdl(path: Path, fbx_resource_path: str, material_remaps: dict[str, st
     remaps = material_remaps or {}
     remap_blocks = []
     for source, target in sorted(remaps.items()):
+        source_name = modeldoc_material_source_name(source)
         remap_blocks.append(
             f"""
 \t\t\t\t\t\t\t{{
-\t\t\t\t\t\t\t\tfrom = "{source}"
+\t\t\t\t\t\t\t\tfrom = "{source_name}"
 \t\t\t\t\t\t\t\tto = "{target}"
 \t\t\t\t\t\t\t}},
 """.rstrip()
@@ -172,6 +276,7 @@ config = json.loads(Path(r"{config_path}").read_text(encoding="utf-8"))
 target = Path(config["target_fbx"])
 target.parent.mkdir(parents=True, exist_ok=True)
 result_path = Path(config["result_path"])
+material_remaps = config.get("material_remap", {{}})
 
 root_name = config.get("root_object")
 root = bpy.data.objects.get(root_name) if root_name else None
@@ -274,6 +379,21 @@ if config.get("verify_fbx", False):
         "missing_required": missing,
     }}
 
+    if material_remaps:
+        material_names = sorted({{
+            slot.material.name
+            for obj in new_objects
+            if obj.type == "MESH"
+            for slot in obj.material_slots
+            if slot.material is not None
+        }})
+        missing_materials = [
+            name for name in sorted(material_remaps)
+            if not any(slot == name or slot.startswith(name + ".") for slot in material_names)
+        ]
+        result["verify"]["material_names"] = material_names
+        result["verify"]["missing_materials"] = missing_materials
+
     for obj in list(new_objects):
         bpy.data.objects.remove(obj, do_unlink=True)
     bpy.data.collections.remove(temp_collection)
@@ -315,6 +435,7 @@ def run_blender_export(args: argparse.Namespace, root: Path) -> dict[str, Any]:
         "global_scale": args.global_scale,
         "axis_forward": args.axis_forward,
         "axis_up": args.axis_up,
+        "material_remap": args.material_remap or {},
     }
     config_path.write_text(json.dumps(config, indent=2), encoding="utf-8")
     write_blender_export_script(script_path, config_path)
@@ -341,6 +462,13 @@ def run_blender_export(args: argparse.Namespace, root: Path) -> dict[str, Any]:
     if isinstance(verify, dict) and verify.get("missing_required"):
         missing = ", ".join(verify["missing_required"])
         raise RuntimeError(f"FBX verification failed; missing required objects: {missing}")
+    if isinstance(verify, dict) and verify.get("missing_materials"):
+        missing = ", ".join(verify["missing_materials"])
+        names = ", ".join(verify.get("material_names", [])) or "<none>"
+        raise RuntimeError(
+            f"FBX verification failed; missing remapped material slots: {missing}. "
+            f"Exported material slots: {names}"
+        )
 
     print(f"Exported: {result['exported_to']} ({result['bytes']} bytes)")
     return result
@@ -381,6 +509,8 @@ def update_prefab(args: argparse.Namespace, root: Path, model_resource_path: str
         raise ValueError(f"{args.visual_object!r} does not have a Sandbox.ModelRenderer")
 
     renderer["Model"] = model_resource_path
+    if args.material_override:
+        renderer["MaterialOverride"] = args.material_override
     if args.visual_tint:
         renderer["Tint"] = args.visual_tint
     if args.visual_scale:
@@ -435,8 +565,15 @@ def build_parser(defaults: dict[str, Any]) -> argparse.ArgumentParser:
     parser.add_argument("--visual-scale", default=defaults.get("visual_scale"), help="Optional scale string for the visual GameObject, e.g. 1,1,1.")
     parser.add_argument("--visual-tint", default=defaults.get("visual_tint"), help="Optional renderer tint string, e.g. 1,1,1,1.")
     parser.add_argument("--material-remap", dest="material_remap", default=defaults.get("material_remap", {}), help="Material remap dictionary. Prefer setting this in JSON config.")
+    parser.add_argument("--material-override", default=defaults.get("material_override"), help="Optional renderer-wide material override for the updated prefab ModelRenderer.")
     parser.add_argument("--clear-visual-children", action="store_true", default=defaults.get("clear_visual_children", False))
     parser.add_argument("--remove-compiled-cache", action="store_true", default=defaults.get("remove_compiled_cache", False))
+    parser.add_argument(
+        "--allow-default-color-texture",
+        action="store_true",
+        default=defaults.get("allow_default_color_texture", False),
+        help="Allow remapped materials to keep materials/default/default_color.tga as TextureColor.",
+    )
     parser.add_argument("--verify-fbx", action="store_true", default=defaults.get("verify_fbx", False))
     parser.add_argument("--required-object", action="append", default=defaults.get("required_object", []))
     parser.add_argument("--object-type", action="append", default=defaults.get("object_type", ["EMPTY", "MESH"]))
@@ -489,6 +626,13 @@ def main(argv: list[str]) -> int:
         model_resource_path = resource_path_for(target_vmdl or target_fbx, root)
 
     fbx_resource_path = resource_path_for(target_fbx, root)
+    validate_material_remaps(
+        args.material_remap,
+        root,
+        bool(args.allow_default_color_texture),
+    )
+    if not args.dry_run:
+        clear_material_compiled_caches(args.material_remap, root)
 
     if not args.skip_export and not args.dry_run:
         run_blender_export(args, root)

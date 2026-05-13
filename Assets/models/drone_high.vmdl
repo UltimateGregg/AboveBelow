@@ -15,18 +15,53 @@
 						[
 
 							{
-								from = "Arm_Dark_Metal"
-								to = "materials/default.vmat"
+								from = "CameraBlack"
+								to = "materials/drone_camera_black.vmat"
 							},
 
 							{
-								from = "BladeMaterial"
-								to = "materials/default.vmat"
+								from = "DarkGrey"
+								to = "materials/drone_dark_grey.vmat"
 							},
 
 							{
-								from = "DroneMaterial"
-								to = "materials/default.vmat"
+								from = "DroneWhite"
+								to = "materials/drone_shell_white.vmat"
+							},
+
+							{
+								from = "GlossyBlack"
+								to = "materials/drone_glossy_black.vmat"
+							},
+
+							{
+								from = "LED_Front_Mat"
+								to = "materials/drone_led_front.vmat"
+							},
+
+							{
+								from = "LED_Rear_Mat"
+								to = "materials/drone_led_rear.vmat"
+							},
+
+							{
+								from = "LensGloss"
+								to = "materials/drone_lens_gloss.vmat"
+							},
+
+							{
+								from = "MatteBlack"
+								to = "materials/drone_matte_black.vmat"
+							},
+
+							{
+								from = "PropellerGrey"
+								to = "materials/drone_propeller.vmat"
+							},
+
+							{
+								from = "PropellerOrange"
+								to = "materials/drone_propeller_orange.vmat"
 							},
 						]
 						use_global_default = true

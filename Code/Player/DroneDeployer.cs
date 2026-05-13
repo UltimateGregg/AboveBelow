@@ -55,23 +55,33 @@ public sealed class DroneDeployer : Component
 	public bool CanLaunch => IsSelected && !DroneInFlight && Time.Now >= LaunchReadyAt;
 	public float CooldownRemaining => MathF.Max( 0f, LaunchReadyAt - Time.Now );
 
+	protected override void OnStart()
+	{
+		ResolvePrefabReferences();
+		ApplySelectionVisualState();
+	}
+
 	protected override void OnUpdate()
 	{
+		ResolvePrefabReferences();
+
 		var pc = Components.GetInAncestors<GroundPlayerController>();
 		var remote = Components.GetInAncestors<RemoteController>();
 		var droneViewActive = remote.IsValid() && !remote.IsProxy && remote.DroneViewActive;
 
-		WeaponPose.SetVisibility( GameObject, LeftHandVisual, IsSelected );
-		WeaponPose.SetVisibility( GameObject, RightHandVisual, IsSelected && !DroneInFlight && !droneViewActive );
+		var selected = ApplySelectionVisualState( droneViewActive );
 
-		UpdateHandVisual( LeftHandVisual, pc, droneViewActive, LeftHandFpOffset, LeftHandFpRotation, LeftHandTpLocalPos, LeftHandTpLocalAngles );
-		UpdateHandVisual( RightHandVisual, pc, droneViewActive, RightHandFpOffset, RightHandFpRotation, RightHandTpLocalPos, RightHandTpLocalAngles );
+		if ( selected )
+		{
+			UpdateHandVisual( LeftHandVisual, pc, droneViewActive, LeftHandFpOffset, LeftHandFpRotation, LeftHandTpLocalPos, LeftHandTpLocalAngles );
+			UpdateHandVisual( RightHandVisual, pc, droneViewActive, RightHandFpOffset, RightHandFpRotation, RightHandTpLocalPos, RightHandTpLocalAngles );
+		}
 		UpdateCitizenHands( pc, droneViewActive );
 
 		if ( CanMutateState() )
 			UpdateDroneAliveState();
 
-		if ( !IsProxy && IsSelected && Input.Pressed( "Attack1" ) )
+		if ( !IsProxy && IsSelected && !LocalOptionsState.ConsumesGameplayInput && Input.Pressed( "Attack1" ) )
 		{
 			if ( remote.IsValid() && remote.DroneViewActive )
 				return;
@@ -81,6 +91,42 @@ public sealed class DroneDeployer : Component
 			else if ( DroneInFlight )
 				EnterDroneView( remote );
 		}
+	}
+
+	internal bool ApplySelectionVisualState()
+	{
+		return ApplySelectionVisualState( IsDroneViewActive() );
+	}
+
+	bool ApplySelectionVisualState( bool droneViewActive )
+	{
+		var selected = IsSelected;
+		WeaponPose.SetVisibility( GameObject, false );
+
+		if ( !selected || droneViewActive )
+			return false;
+
+		WeaponPose.SetVisibility( LeftHandVisual, true );
+		WeaponPose.SetVisibility( RightHandVisual, !DroneInFlight );
+		return true;
+	}
+
+	bool IsDroneViewActive()
+	{
+		var remote = Components.GetInAncestors<RemoteController>();
+		return remote.IsValid() && remote.DroneViewActive;
+	}
+
+	void ResolvePrefabReferences()
+	{
+		if ( !LeftHandVisual.IsValid() )
+			LeftHandVisual = GameObject.Children.FirstOrDefault( x => x.Name == "LeftHand" );
+		if ( !RightHandVisual.IsValid() )
+			RightHandVisual = GameObject.Children.FirstOrDefault( x => x.Name == "RightHand" );
+		if ( !LeftHandIkTarget.IsValid() )
+			LeftHandIkTarget = GameObject.Children.FirstOrDefault( x => x.Name == "LeftHandIk" );
+		if ( !RightHandIkTarget.IsValid() )
+			RightHandIkTarget = GameObject.Children.FirstOrDefault( x => x.Name == "RightHandIk" );
 	}
 
 	void UpdateHandVisual( GameObject visual, GroundPlayerController pc, bool forceThirdPerson,

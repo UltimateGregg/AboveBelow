@@ -27,6 +27,11 @@ OnFixedUpdate (30 Hz)
 
 ## Soldier Gameplay Loop
 
+Solo smoke tests start with one local player so the class picker, spawn path,
+round timer, and training dummies can be verified without a second client. Team
+balance remains configured separately through `GameRules.PilotTeamSize` and
+`GameRules.SoldierTeamSize`.
+
 Each soldier picks one of three classes from the HUD picker on first spawn:
 
 | Class | Primary | Secondary |
@@ -52,7 +57,7 @@ Every Frame:
 - Slot1 selects the primary weapon through `SoldierLoadout`
 - Primary weapon (Attack1): hitscan / pellet spread / jam pulse
 - Assault rifle uses a 30-round magazine, synced reserve ammo, and `Reload` (`R`) to refill from reserve
-- Grenade (Attack2): ThrowableGrenade.BeginThrow → FuseSeconds → OnDetonate
+- Grenade (Attack2): ThrowableGrenade.BeginThrow -> host-spawned ThrownGrenadeProjectile -> live landing/fuse detonation -> OnDetonate
 - HudPanel: Display health, timer, jam warning, scoreboard, and numbered loadout slots
 ```
 
@@ -90,7 +95,7 @@ Balance role summary:
 ```
 Pilot's Ground Avatar:
 - WASD/Space/Shift to walk (slightly slower than soldiers, lower HP)
-- RemoteController.ToggleInput (`TogglePilotControl`, T by default) flips between ground POV and drone POV
+- RemoteController.ToggleInput (`TogglePilotControl`, F by default) flips between ground POV and drone POV
 
 Pilot's Drone (POV active):
 - WASD: Translate (yaw-only frame)
@@ -128,8 +133,9 @@ Counter-UAV soldier holds Drone Jammer Gun:
 - The receiver decays sources by Time.Now and re-publishes IsJammed
 
 Soldier throws Chaff or EMP:
-- ThrowableGrenade caches detonation position; runs fuse
-- On fuse expiry, AoE-iterates all JammingReceiver in radius
+- ThrowableGrenade spawns a live grenade projectile on the host
+- The projectile traces/bounces through the scene and detonates from its current world position
+- On detonation, AoE-iterates all JammingReceiver in radius
 - ApplyJam with the grenade's tuned strength + duration
 
 A drone with non-zero JamSusceptibility freezes input until jam decays.
@@ -159,8 +165,8 @@ recommended next tuning.
 ```
 Soldiers Win: All PilotSoldier ground avatars IsDead   OR   round timer expires
 Pilots Win:   All SoldierBase soldiers IsDead
-Round End:    8-second victory screen
-Next Round:   Currently re-uses legacy auto-respawn rotation; future work re-prompts the class picker
+Round End:    5-second victory screen by default
+Next Round:   Respawns players with their latest selected soldier class / drone variant
 ```
 
 ## Statistics Tracking
@@ -181,7 +187,7 @@ Player A shoots Player B for N damage:
 |-------|---------|------------|
 | Countdown | 5 s | `GameRules.CountdownSeconds` |
 | Active round | 300 s | `GameRules.RoundTimeSeconds` |
-| Round end screen | 8 s | hard-coded in `RoundManager.EndRound` |
+| Round end screen | 5 s | `GameRules.RoundEndScreenSeconds` |
 | Pilot crash timeout | 5 s | `GameRules.DroneCrashTimeout` / `PilotLink.CrashTimeout` |
 | Drone Jammer Gun pulse | 0.3 s, every 0.1 s | `DroneJammerGun.PulseDuration`, `TickInterval` |
 | Assault rifle reload | 1.65 s, 30-round magazine | `HitscanWeapon.ReloadSeconds`, `MagazineSize` |

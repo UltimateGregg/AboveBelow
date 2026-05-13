@@ -8,9 +8,8 @@ namespace DroneVsPlayers;
 /// Visual-only tether between a fiber-optic FPV drone and its pilot. The fiber
 /// is modeled as a thin trail of points laid on the ground as the drone flies,
 /// emulating real-world fiber-optic FPV drones that unspool fiber from the
-/// drone, leaving it on the terrain behind. The cable goes:
-///   pilot position → laid trail points (history of drone's ground projection)
-///   → straight up to drone
+/// drone and pilot, leaving it on the terrain behind them. The cable goes:
+///   pilot position -> pilot's walked trail -> drone's laid trail -> drone
 ///
 /// Visual styling is enforced here so prefab/editor defaults cannot make the
 /// cable inherit the bright blue LineRenderer color.
@@ -32,8 +31,7 @@ public sealed class FiberCable : Component
 
 	/// <summary>
 	/// Hard cap on trail point count to keep the LineRenderer cheap on long
-	/// flights. Older points get dropped from the drone end (closest to drone)
-	/// once the cap is hit, simulating fiber being reeled in from the slack.
+	/// flights. Applied separately to pilot and drone trails.
 	/// </summary>
 	[Property, Range( 16, 1024 )] public int MaxTrailPoints { get; set; } = 256;
 
@@ -49,17 +47,22 @@ public sealed class FiberCable : Component
 	/// </summary>
 	[Property] public float MaxDropDistance { get; set; } = 2000f;
 
-	readonly List<Vector3> _trail = new();
+	readonly List<Vector3> _droneTrail = new();
+	readonly List<Vector3> _pilotTrail = new();
 	readonly List<Vector3> _renderPoints = new();
-	Vector3 _lastTrailPoint;
-	bool _hasLastTrailPoint;
+	Vector3 _lastDroneTrailPoint;
+	Vector3 _lastPilotTrailPoint;
+	bool _hasLastDroneTrailPoint;
+	bool _hasLastPilotTrailPoint;
 
 	protected override void OnStart()
 	{
 		ResolveRefs();
 		ApplyLineStyle();
-		_trail.Clear();
-		_hasLastTrailPoint = false;
+		_droneTrail.Clear();
+		_pilotTrail.Clear();
+		_hasLastDroneTrailPoint = false;
+		_hasLastPilotTrailPoint = false;
 	}
 
 	protected override void OnUpdate()
@@ -68,8 +71,8 @@ public sealed class FiberCable : Component
 		if ( !Line.IsValid() ) return;
 		ApplyLineStyle();
 
-		var pilotPos = ResolvePilotPosition();
-		if ( !pilotPos.HasValue )
+		var pilotPawn = ResolvePilotPawn();
+		if ( !pilotPawn.IsValid() )
 		{
 			Line.Enabled = false;
 			return;
@@ -77,52 +80,72 @@ public sealed class FiberCable : Component
 
 		Line.Enabled = true;
 
+		var pilotPos = pilotPawn.WorldPosition;
+		var groundUnderPilot = SampleGroundBelow( pilotPos, pilotPawn.GameObject );
+
 		// Sample ground beneath the drone for this frame's "where is the cable
 		// touching the ground" point.
 		var dronePos = WorldPosition;
-		var groundUnderDrone = SampleGroundBelow( dronePos );
+		var groundUnderDrone = SampleGroundBelow( dronePos, GameObject );
 
-		// Add to trail when the drone's ground projection has moved enough
-		// from the last laid point. First sample always seeds the trail.
-		if ( !_hasLastTrailPoint || _lastTrailPoint.Distance( groundUnderDrone ) >= TrailSegmentLength )
-		{
-			_trail.Add( groundUnderDrone );
-			_lastTrailPoint = groundUnderDrone;
-			_hasLastTrailPoint = true;
+		AddTrailPoint( _pilotTrail, groundUnderPilot, ref _lastPilotTrailPoint, ref _hasLastPilotTrailPoint );
+		AddTrailPoint( _droneTrail, groundUnderDrone, ref _lastDroneTrailPoint, ref _hasLastDroneTrailPoint );
 
-			// Cap from the front — the point closest to the pilot is "fiber
-			// already paid out", oldest data, safe to drop. Drone-end stays.
-			if ( _trail.Count > MaxTrailPoints )
-				_trail.RemoveAt( 0 );
-		}
-
-		// Build polyline: pilot at one end, trail points in the order they
-		// were laid (oldest → newest), straight segment up to the drone.
+		// Build polyline from live pilot to live drone. Pilot trail is walked
+		// backward from newest to oldest, then drone trail continues oldest to
+		// newest toward the drone.
 		_renderPoints.Clear();
-		_renderPoints.Add( pilotPos.Value );
-		for ( int i = 0; i < _trail.Count; i++ )
-			_renderPoints.Add( _trail[i] );
-		_renderPoints.Add( dronePos );
+		AddRenderPoint( pilotPos );
+		AddRenderPoint( groundUnderPilot );
+		for ( int i = _pilotTrail.Count - 1; i >= 0; i-- )
+			AddRenderPoint( _pilotTrail[i] );
+		for ( int i = 0; i < _droneTrail.Count; i++ )
+			AddRenderPoint( _droneTrail[i] );
+		AddRenderPoint( dronePos );
 
 		Line.UseVectorPoints = true;
 		Line.VectorPoints = _renderPoints;
 	}
 
-	Vector3? ResolvePilotPosition()
+	PilotSoldier ResolvePilotPawn()
 	{
 		if ( !Link.IsValid() || Link.PilotId == default ) return null;
-		var pilotPawn = Scene.GetAllComponents<PilotSoldier>()
+		return Scene.GetAllComponents<PilotSoldier>()
 			.FirstOrDefault( p => p.GameObject.Network.Owner?.Id == Link.PilotId );
-		return pilotPawn.IsValid() ? pilotPawn.WorldPosition : null;
 	}
 
-	Vector3 SampleGroundBelow( Vector3 from )
+	void AddTrailPoint( List<Vector3> trail, Vector3 point, ref Vector3 lastPoint, ref bool hasLastPoint )
 	{
-		// Trace straight down, ignoring this drone hierarchy so we don't hit
-		// our own body collider.
-		var trace = Scene.Trace.Ray( from, from + Vector3.Down * MaxDropDistance )
-			.IgnoreGameObjectHierarchy( GameObject )
-			.Run();
+		if ( hasLastPoint && lastPoint.Distance( point ) < TrailSegmentLength )
+			return;
+
+		trail.Add( point );
+		lastPoint = point;
+		hasLastPoint = true;
+
+		if ( trail.Count > MaxTrailPoints )
+			trail.RemoveAt( 0 );
+	}
+
+	void AddRenderPoint( Vector3 point )
+	{
+		if ( _renderPoints.Count > 0 && _renderPoints[_renderPoints.Count - 1].Distance( point ) < 0.1f )
+			return;
+
+		_renderPoints.Add( point );
+	}
+
+	Vector3 SampleGroundBelow( Vector3 from, GameObject ignore )
+	{
+		// Trace straight down, ignoring actor hierarchies so we don't hit the
+		// drone or pilot body collider while finding the ground.
+		var query = Scene.Trace.Ray( from, from + Vector3.Down * MaxDropDistance )
+			.IgnoreGameObjectHierarchy( GameObject );
+
+		if ( ignore.IsValid() && ignore != GameObject )
+			query = query.IgnoreGameObjectHierarchy( ignore );
+
+		var trace = query.Run();
 
 		if ( trace.Hit )
 			return trace.HitPosition + Vector3.Up * GroundOffset;

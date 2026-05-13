@@ -37,14 +37,15 @@
 | **JammingReceiver** | Sits on every drone; tracks active `JamSource` records, exposes `[Sync] IsJammed`, gates `DroneController.InputEnabled` based on effective jam (= incoming × susceptibility) |
 | **PilotLink** | Binds drone to pilot connection; subscribes to pilot `Health.OnKilled` and triggers crash cascade |
 | **FiberCable** | Visual-only line renderer between fiber-optic FPV and its pilot |
-| **ThrowableGrenade** (abstract) | Base for thrown items; handles fuse + cooldown, dispatches `OnDetonate` |
-| **ChaffGrenade / EmpGrenade / FragGrenade** | Concrete throwables — chaff and EMP apply jam in radius, frag deals damage in radius |
+| **ThrowableGrenade** (abstract) | Base for thrown items; handles cooldown, host projectile spawn, fuse state, and `OnDetonate` dispatch |
+| **ThrownGrenadeProjectile** | Host-simulated grenade body; traces movement, bounces/settles on collision, and detonates from its live world position |
+| **ChaffGrenade / EmpGrenade / FragGrenade** | Concrete throwables - chaff and EMP apply jam in radius, frag deals damage in radius |
 
 ### UI Systems
 | Component | Purpose | Parent |
 |-----------|---------|--------|
 | **ScreenPanel** | Base UI container in `main.scene` | Scene UI |
-| **HudPanel** | In-game role picker, health, timer, scoreboard, kill feed | ScreenPanel |
+| **HudPanel** | In-game role picker, health, timer, scoreboard, kill feed, Escape options | ScreenPanel |
 | **MainMenuPanel** | Optional standalone menu panel, not used by startup scene | ScreenPanel |
 
 ## Network Architecture
@@ -156,7 +157,7 @@ public void PromotePilot( Guid newPilotId )
 
 ```
 WaitingForPlayers
-  ↓ (When 2+ players connected)
+  ↓ (When `GameRules.MinPlayersToStart` is met; default is 1 for solo smoke tests)
 Countdown (5 seconds)
   ↓ (Countdown expires)
 Active (300 seconds / 5 minutes)
@@ -166,11 +167,11 @@ Active (300 seconds / 5 minutes)
   │  └─ (Legacy fallback if no PilotSoldier in scene: all DroneController dead → Soldiers win)
   └─ Timer expires? → Soldiers win (pilot timeout)
   ↓ (Win condition met)
-Ended (8 seconds victory screen)
+Ended (`GameRules.RoundEndScreenSeconds`, 5 seconds by default)
   ↓ (Screen expires)
 ResetForNextRound()
-  ├─ Currently uses legacy single-pilot rotation as a respawn fallback
-  └─ Future: re-prompt class picker
+  ├─ Rotates the pilot role through the connected players
+  └─ Respawns each player with their latest selected class or drone variant
   ↓
 Countdown (5 seconds) [back to top]
 ```
@@ -199,8 +200,8 @@ Detonate():
 ```
 Soldier triggers a jamming tool
   ├─ DroneJammerGun (held)        — directional cone, ApplyJam every TickInterval
-  ├─ ChaffGrenade  (on detonate)  — small AoE, ApplyJam to drones in radius
-  └─ EmpGrenade    (on detonate)  — large AoE, longer ApplyJam
+  ├─ ChaffGrenade  (projectile detonate)  — small AoE, ApplyJam to drones in radius
+  └─ EmpGrenade    (projectile detonate)  — large AoE, longer ApplyJam
   ↓
 JammingReceiver.ApplyJam(sourceId, strength, duration)  [Rpc.Broadcast, host applies]
   ↓

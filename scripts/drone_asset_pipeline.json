@@ -19,9 +19,16 @@
   "combine_meshes": true,
   "combined_object_name": "DroneModel",
   "material_remap": {
-    "Arm_Dark_Metal": "materials/default.vmat",
-    "BladeMaterial": "materials/default.vmat",
-    "DroneMaterial": "materials/default.vmat"
+    "CameraBlack": "materials/drone_camera_black.vmat",
+    "DarkGrey": "materials/drone_dark_grey.vmat",
+    "DroneWhite": "materials/drone_shell_white.vmat",
+    "GlossyBlack": "materials/drone_glossy_black.vmat",
+    "LED_Front_Mat": "materials/drone_led_front.vmat",
+    "LED_Rear_Mat": "materials/drone_led_rear.vmat",
+    "LensGloss": "materials/drone_lens_gloss.vmat",
+    "MatteBlack": "materials/drone_matte_black.vmat",
+    "PropellerGrey": "materials/drone_propeller.vmat",
+    "PropellerOrange": "materials/drone_propeller_orange.vmat"
   },
   "global_scale": 0.0254,
   "axis_forward": "-Y",

@@ -19,6 +19,10 @@ public sealed class DroneWeapon : Component
 {
 	[Property] public DroneController Drone { get; set; }
 	[Property] public GameObject MuzzleSocket { get; set; }
+	[Property] public GameObject TracerPrefab { get; set; }
+	[Property] public SoundEvent FireSound { get; set; }
+	[Property] public string WeaponDisplayName { get; set; } = "Drone Beam";
+	[Property] public string KamikazeDisplayName { get; set; } = "Kamikaze";
 
 	[Property] public bool EnableHitscan { get; set; } = true;
 	[Property] public float HitscanDamage { get; set; } = 8f;
@@ -51,6 +55,9 @@ public sealed class DroneWeapon : Component
 		ResolvePrefabReferences();
 
 		if ( !RemoteController.IsLocalDroneViewActive( Scene ) )
+			return;
+
+		if ( LocalOptionsState.ConsumesGameplayInput )
 			return;
 
 		if ( EnableHitscan && Input.Down( "Attack1" ) && _timeSinceFire >= HitscanInterval )
@@ -93,7 +100,14 @@ public sealed class DroneWeapon : Component
 		if ( !tr.Hit ) return;
 		var health = FindHealth( tr.GameObject );
 		if ( health.IsValid() )
-			health.RequestDamage( HitscanDamage, GameObject.Id, tr.HitPosition );
+		{
+			health.RequestDamageNamed( HitscanDamage, DamageAttribution.OwnerConnectionId( this ), tr.HitPosition, WeaponDisplayName );
+			BroadcastImpact( tr.HitPosition, (int)ImpactEffects.SurfaceKind.Flesh );
+		}
+		else
+		{
+			BroadcastImpactFromTrace( tr.HitPosition, tr.Surface?.ResourceName ?? "" );
+		}
 	}
 
 	void Detonate()
@@ -107,7 +121,7 @@ public sealed class DroneWeapon : Component
 		// Kill the drone (so the pilot can't keep flying after detonating).
 		var droneHealth = Components.Get<Health>() ?? Components.GetInAncestors<Health>();
 		if ( droneHealth.IsValid() )
-			droneHealth.RequestDamage( 9999f, GameObject.Id, WorldPosition );
+			droneHealth.RequestDamage( 9999f, default, WorldPosition );
 	}
 
 	static Health FindHealth( GameObject go )
@@ -122,6 +136,9 @@ public sealed class DroneWeapon : Component
 	{
 		if ( !Networking.IsHost ) return;
 
+		var attackerId = DamageAttribution.OwnerConnectionId( this );
+		var ownHealth = Components.Get<Health>() ?? Components.GetInAncestors<Health>();
+
 		// Iterate every Health component in the scene and check distance.
 		// More allocation-friendly than a physics query for ~dozens of pawns,
 		// and avoids relying on physics-overlap APIs that may shift between
@@ -129,6 +146,7 @@ public sealed class DroneWeapon : Component
 		foreach ( var h in Scene.GetAllComponents<Health>() )
 		{
 			if ( !h.IsValid() ) continue;
+			if ( ownHealth.IsValid() && h == ownHealth ) continue;
 
 			var dist = (h.WorldPosition - center).Length;
 			if ( dist > KamikazeRadius ) continue;
@@ -144,7 +162,13 @@ public sealed class DroneWeapon : Component
 
 			var t = (dist / KamikazeRadius).Clamp( 0f, 1f );
 			var dmg = KamikazeDamage * (1f - t * KamikazeFalloff);
-			h.TakeDamage( new DamageInfo { Amount = dmg, AttackerId = GameObject.Id, Position = center } );
+			h.TakeDamage( new DamageInfo
+			{
+				Amount = dmg,
+				AttackerId = attackerId,
+				Position = center,
+				WeaponName = KamikazeDisplayName
+			} );
 		}
 	}
 
@@ -158,6 +182,44 @@ public sealed class DroneWeapon : Component
 	[Rpc.Broadcast]
 	void PlayHitscanFx( Vector3 from, Vector3 to )
 	{
-		// Hook up muzzle flash / tracer particle here
+		var path = to - from;
+		var shotDirection = path.IsNearZeroLength ? Vector3.Forward : path.Normal;
+
+		if ( FireSound is not null )
+			Sound.Play( FireSound, from );
+
+		MuzzleFlashVisual.Spawn( from, shotDirection, 0.65f );
+
+		if ( TracerPrefab.IsValid() )
+		{
+			var tracerGo = TracerPrefab.Clone( from, Rotation.LookAt( shotDirection ) );
+			var tracer = tracerGo.Components.Get<TracerLifetime>( FindMode.EverythingInSelfAndDescendants );
+			if ( tracer.IsValid() )
+				tracer.Configure( from, to );
+
+			var line = tracerGo.Components.Get<LineRenderer>( FindMode.EverythingInSelfAndDescendants );
+			if ( line.IsValid() && !tracer.IsValid() )
+			{
+				line.UseVectorPoints = true;
+				line.VectorPoints = new System.Collections.Generic.List<Vector3> { from, to };
+			}
+		}
+	}
+
+	[Rpc.Broadcast]
+	void BroadcastImpact( Vector3 position, int surfaceKindInt )
+	{
+		ImpactEffects.Spawn( position, (ImpactEffects.SurfaceKind)surfaceKindInt );
+	}
+
+	[Rpc.Broadcast]
+	void BroadcastImpactFromTrace( Vector3 position, string surfaceName )
+	{
+		var kind = ImpactEffects.SurfaceKind.Default;
+		var n = surfaceName?.ToLowerInvariant() ?? "";
+		if ( n.Contains( "metal" ) || n.Contains( "steel" ) || n.Contains( "alum" ) ) kind = ImpactEffects.SurfaceKind.Metal;
+		else if ( n.Contains( "wood" ) ) kind = ImpactEffects.SurfaceKind.Wood;
+		else if ( n.Contains( "concrete" ) || n.Contains( "stone" ) || n.Contains( "brick" ) ) kind = ImpactEffects.SurfaceKind.Concrete;
+		ImpactEffects.Spawn( position, kind );
 	}
 }
