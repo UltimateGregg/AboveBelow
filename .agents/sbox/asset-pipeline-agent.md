@@ -22,6 +22,8 @@ Validate Blender to S&Box asset pipeline inputs and outputs.
 - Use asset-specific configs when scale, material remaps, or target paths differ from the generic convention.
 - Keep generated outputs under normal S&Box asset folders.
 - Material remaps must point to existing `.vmat` files.
+- Material remap source names must be verified at the `.vmdl` layer, not just in Blender. If S&Box renders a remapped model with the wrong/default material, compare the exported FBX source material names, the config `material_remap` keys, and the generated `.vmdl` `from` values before changing geometry.
+- Use `vmdl_material_source_suffix` per asset when the model compiler expects raw FBX names instead of suffixed names. Set `strict_vmdl_material_sources: true` on assets where a mismatch should block handoff.
 - Do not manually edit generated `.fbx` files.
 - When collider blockout changes use `models/dev/box.vmdl`, consider the manual collider sync workflow in `docs/automation.md`.
 
@@ -34,4 +36,4 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 
 ## Output Shape
 
-Report config errors, missing source blends, missing material remaps, and target path drift. Separate pipeline validation from visual/editor validation.
+Report config errors, missing source blends, missing material remaps, target path drift, and `.vmdl` remap source drift. Separate pipeline validation from visual/editor validation; a Blender preview is not proof that S&Box compiled and displayed the intended material.

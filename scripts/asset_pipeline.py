@@ -77,8 +77,22 @@ def normalize_resource_path(value: str) -> str:
     return value.replace("\\", "/").lower()
 
 
-def modeldoc_material_source_name(name: str) -> str:
-    return name if name.lower().endswith(".vmat") else f"{name}.vmat"
+def normalize_modeldoc_material_source_suffix(value: Any) -> str:
+    if value is None or value is False:
+        return ""
+    if value is True:
+        return ".vmat"
+    suffix = str(value)
+    if suffix.lower() in {"false", "none", "null"}:
+        return ""
+    return suffix
+
+
+def modeldoc_material_source_name(name: str, suffix: Any = ".vmat") -> str:
+    suffix = normalize_modeldoc_material_source_suffix(suffix)
+    if not suffix:
+        return name
+    return name if name.lower().endswith(suffix.lower()) else f"{name}{suffix}"
 
 
 def texture_color_from_vmat(path: Path) -> str | None:
@@ -192,11 +206,16 @@ def resource_path_for(asset_path: Path, root: Path) -> str:
         raise ValueError(f"Asset path must be inside {assets_root}: {asset_path}") from exc
 
 
-def write_vmdl(path: Path, fbx_resource_path: str, material_remaps: dict[str, str] | None = None) -> None:
+def write_vmdl(
+    path: Path,
+    fbx_resource_path: str,
+    material_remaps: dict[str, str] | None = None,
+    material_source_suffix: Any = ".vmat",
+) -> None:
     remaps = material_remaps or {}
     remap_blocks = []
     for source, target in sorted(remaps.items()):
-        source_name = modeldoc_material_source_name(source)
+        source_name = modeldoc_material_source_name(source, material_source_suffix)
         remap_blocks.append(
             f"""
 \t\t\t\t\t\t\t{{
@@ -544,7 +563,12 @@ def update_vmdl(args: argparse.Namespace, root: Path, fbx_resource_path: str) ->
         return target_vmdl
 
     backup(target_vmdl, "asset-pipeline-vmdl", root)
-    write_vmdl(target_vmdl, fbx_resource_path, args.material_remap or {})
+    write_vmdl(
+        target_vmdl,
+        fbx_resource_path,
+        args.material_remap or {},
+        args.vmdl_material_source_suffix,
+    )
     print(f"Updated model document: {target_vmdl}")
     return target_vmdl
 
@@ -565,6 +589,15 @@ def build_parser(defaults: dict[str, Any]) -> argparse.ArgumentParser:
     parser.add_argument("--visual-scale", default=defaults.get("visual_scale"), help="Optional scale string for the visual GameObject, e.g. 1,1,1.")
     parser.add_argument("--visual-tint", default=defaults.get("visual_tint"), help="Optional renderer tint string, e.g. 1,1,1,1.")
     parser.add_argument("--material-remap", dest="material_remap", default=defaults.get("material_remap", {}), help="Material remap dictionary. Prefer setting this in JSON config.")
+    parser.add_argument(
+        "--vmdl-material-source-suffix",
+        default=defaults.get("vmdl_material_source_suffix", ".vmat"),
+        help=(
+            "Suffix appended to material_remap source names when writing .vmdl "
+            "from values. Set to an empty string in JSON config when S&Box "
+            "must match the raw FBX material names."
+        ),
+    )
     parser.add_argument("--material-override", default=defaults.get("material_override"), help="Optional renderer-wide material override for the updated prefab ModelRenderer.")
     parser.add_argument("--clear-visual-children", action="store_true", default=defaults.get("clear_visual_children", False))
     parser.add_argument("--remove-compiled-cache", action="store_true", default=defaults.get("remove_compiled_cache", False))

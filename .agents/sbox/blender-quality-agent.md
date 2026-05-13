@@ -20,6 +20,7 @@ Audit Blender source files for production asset readiness before export into S&B
 - Treat unapplied scale or rotation as warnings until the artist confirms it is intentional.
 - Meshes with material slots should have UV layers.
 - Multi-mesh assets should have a clear root empty when they are not a single joined mesh.
+- When working in the visible Blender window, keep the handoff scene readable. Large forests of parent relationship lines should be avoided by combining source meshes for export or by organizing/hiding helper relationships before asking for visual approval.
 - Category-specific assets should include required naming hints from `scripts/asset_quality_profiles.json`.
 - Flag dimensions below `0.01` or above `10000` on any axis for scale review.
 - Keep visual asset validation separate from prefab wiring, gameplay, UI, and networking checks.

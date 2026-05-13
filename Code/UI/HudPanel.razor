@@ -23,6 +23,34 @@
 
 <root>
     <div class="hud @VignetteClass">
+        @if ( ShowMainMenu )
+        {
+            <div class="role-select main-menu-startup">
+                <div class="role-panel">
+                    <div class="title">ABOVE / BELOW</div>
+                    <div class="subtitle">Drone pilots against ground hunters.</div>
+
+                    <div class="loadout-section">
+                        <div class="section-title">Main Menu</div>
+                        <div class="choices">
+                            <div class="choice pilot" onclick=@StartFromMainMenu>
+                                <span class="label">PLAY</span>
+                                <span class="desc">Choose team and loadout</span>
+                            </div>
+                            <div class="choice soldier" onclick=@OpenMainMenuOptions>
+                                <span class="label">OPTIONS</span>
+                                <span class="desc">Local settings</span>
+                            </div>
+                            <div class="choice" onclick=@QuitGame>
+                                <span class="label">QUIT</span>
+                                <span class="desc">Close the game</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
         @if ( ShowRolePicker )
         {
             <div class="role-select">
@@ -84,22 +112,22 @@
             </div>
         }
 
-        @if ( ShowJamWarning )
+        @if ( !GameplayUiBlocked && ShowJamWarning )
         {
             <div class="jam-warning">SIGNAL JAMMED</div>
         }
 
-        @if ( SuppressionOpacity > 0.01f )
+        @if ( !GameplayUiBlocked && SuppressionOpacity > 0.01f )
         {
             <div class="suppression-vignette" style="opacity: @SuppressionOpacity.ToString("0.00")"></div>
         }
 
-        @if ( SunGlareOpacity > 0.01f )
+        @if ( !GameplayUiBlocked && SunGlareOpacity > 0.01f )
         {
             <div class="sun-glare" style="opacity: @SunGlareOpacity.ToString("0.00")"></div>
         }
 
-        @if ( EliminatedVisible )
+        @if ( !GameplayUiBlocked && EliminatedVisible )
         {
             <div class="eliminated-popup">
                 <div class="eliminated-label">ELIMINATED</div>
@@ -107,7 +135,7 @@
             </div>
         }
 
-        @if ( RoundEndVisible )
+        @if ( !GameplayUiBlocked && RoundEndVisible )
         {
             <div class="round-overlay @RoundWinnerClass">
                 <div class="round-winner-line">@RoundWinnerLabel</div>
@@ -134,41 +162,44 @@
             </div>
         }
 
-        <div class="top-center">
-            @if ( Round is not null && (Round.State == RoundState.Countdown || Round.State == RoundState.Active) && LocalRole != PlayerRole.Spectator )
-            {
-                <div class="round-header">Round @(PilotWins + SoldierWins + 1) / You are <span class="role-tag @LocalRole.ToString().ToLower()">@(LocalRole == PlayerRole.Pilot ? "ABOVE" : "BELOW")</span></div>
-            }
-            <div class="state">@RoundLine</div>
-            @if ( ShowTimer )
-            {
-                <div class="timer">@TimerLine</div>
-            }
-        </div>
-
-        <div class="top-right">
-            <div class="score">
-                <span class="pilot">@PilotWins</span>
-                <span class="sep">vs</span>
-                <span class="soldier">@SoldierWins</span>
+        @if ( !GameplayUiBlocked )
+        {
+            <div class="top-center">
+                @if ( Round is not null && (Round.State == RoundState.Countdown || Round.State == RoundState.Active) && LocalRole != PlayerRole.Spectator )
+                {
+                    <div class="round-header">Round @(PilotWins + SoldierWins + 1) / You are <span class="role-tag @LocalRole.ToString().ToLower()">@(LocalRole == PlayerRole.Pilot ? "ABOVE" : "BELOW")</span></div>
+                }
+                <div class="state">@RoundLine</div>
+                @if ( ShowTimer )
+                {
+                    <div class="timer">@TimerLine</div>
+                }
             </div>
 
-            @if ( KillFeedEntries.Count > 0 )
-            {
-                <div class="kill-feed">
-                    @foreach ( var e in KillFeedEntries )
-                    {
-                        <div class="@KillFeedEntryClass(e)">
-                            <span class="attacker">@e.AttackerName</span>
-                            <span class="weapon">[@e.WeaponName]</span>
-                            <span class="victim">@e.VictimName</span>
-                        </div>
-                    }
+            <div class="top-right">
+                <div class="score">
+                    <span class="pilot">@PilotWins</span>
+                    <span class="sep">vs</span>
+                    <span class="soldier">@SoldierWins</span>
                 </div>
-            }
-        </div>
 
-        @if ( LocalHealth is not null )
+                @if ( KillFeedEntries.Count > 0 )
+                {
+                    <div class="kill-feed">
+                        @foreach ( var e in KillFeedEntries )
+                        {
+                            <div class="@KillFeedEntryClass(e)">
+                                <span class="attacker">@e.AttackerName</span>
+                                <span class="weapon">[@e.WeaponName]</span>
+                                <span class="victim">@e.VictimName</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        @if ( !GameplayUiBlocked && LocalHealth is not null )
         {
             <div class="bottom-left">
                 <div class="role @LocalRole.ToString().ToLower()">@(LocalRole == PlayerRole.Pilot ? "ABOVE" : LocalRole == PlayerRole.Soldier ? "BELOW" : "SPECTATOR")</div>
@@ -215,7 +246,7 @@
             </div>
         }
 
-        @if ( LocalRole == PlayerRole.Pilot )
+        @if ( !GameplayUiBlocked && LocalRole == PlayerRole.Pilot )
         {
             <div class="pilot-controls">
                 <div class="control-row">
@@ -245,7 +276,7 @@
             </div>
         }
 
-        @if ( ShowScoreboard )
+        @if ( !GameplayUiBlocked && ShowScoreboard )
         {
             <div class="scoreboard">
                 <div class="scoreboard-inner">
@@ -328,11 +359,15 @@
 
     PlayerRole SelectedLoadoutTeam { get; set; } = PlayerRole.Spectator;
     int SelectedLoadoutSlot { get; set; } = 1;
+    bool MainMenuOpen { get; set; } = true;
 
     bool OptionsMenuOpen => LocalOptionsState.IsOpen;
-    bool ShowRolePicker => Setup?.NeedsLocalRoleChoice() ?? false;
-    bool ShowLoadoutHud => !ShowRolePicker && LocalRole is PlayerRole.Pilot or PlayerRole.Soldier;
-    bool ShowReticle => !ShowRolePicker && LocalRole is PlayerRole.Pilot or PlayerRole.Soldier;
+    bool NeedsRoleChoice => Setup?.NeedsLocalRoleChoice() ?? false;
+    bool ShowMainMenu => MainMenuOpen && NeedsRoleChoice;
+    bool ShowRolePicker => !ShowMainMenu && NeedsRoleChoice;
+    bool GameplayUiBlocked => ShowMainMenu || ShowRolePicker;
+    bool ShowLoadoutHud => !GameplayUiBlocked && LocalRole is PlayerRole.Pilot or PlayerRole.Soldier;
+    bool ShowReticle => !GameplayUiBlocked && LocalRole is PlayerRole.Pilot or PlayerRole.Soldier;
     bool ShowScoreboard { get; set; }
 
     string UiScaleDisplay => $"{LocalOptionsState.UiScalePercent}%";
@@ -497,11 +532,14 @@
     {
         HandleOptionsInput();
         LocalOptionsState.ApplyTo( Components.Get<ScreenPanel>() );
-        Mouse.Visibility = OptionsMenuOpen || ShowRolePicker
+        if ( MainMenuOpen && !NeedsRoleChoice )
+            MainMenuOpen = false;
+
+        Mouse.Visibility = OptionsMenuOpen || ShowMainMenu || ShowRolePicker
             ? MouseVisibility.Visible
             : MouseVisibility.Auto;
 
-        if ( OptionsMenuOpen )
+        if ( OptionsMenuOpen || ShowMainMenu )
             LocalOptionsState.ClearGameplayActions();
 
         var soldierLoadout = LocalSoldierComponent<SoldierLoadout>();
@@ -516,7 +554,7 @@
                 SelectedLoadoutSlot = 2;
         }
 
-        ShowScoreboard = !OptionsMenuOpen && Input.Down( "Score" );
+        ShowScoreboard = !OptionsMenuOpen && !ShowMainMenu && Input.Down( "Score" );
 
         // Subscribe to any new Health components — for hitmarker (we attacked
         // them) and damage-direction (we got hit).
@@ -569,6 +607,18 @@
         var menuPressed = escapePressed || Input.Pressed( "Menu" );
         if ( menuPressed )
             LocalOptionsState.ToggleOpen();
+    }
+
+    void StartFromMainMenu()
+    {
+        MainMenuOpen = false;
+        SelectedLoadoutTeam = PlayerRole.Spectator;
+        LocalOptionsState.SetOpen( false );
+    }
+
+    void OpenMainMenuOptions()
+    {
+        LocalOptionsState.SetOpen( true );
     }
 
     void ResumeOptions()
@@ -1176,7 +1226,7 @@
                 VignetteClass,
                 StaminaPercent,
                 Round?.LastWinnerInt ?? -1,
-                HashCode.Combine( RoundEndVisible, (int)(SunGlareOpacity * 100f), OptionsMenuOpen )
+                HashCode.Combine( RoundEndVisible, (int)(SunGlareOpacity * 100f), OptionsMenuOpen, ShowMainMenu )
             ),
             HashCode.Combine(
                 ShowLoadoutHud,

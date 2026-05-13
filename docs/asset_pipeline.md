@@ -17,8 +17,9 @@ For simple visual assets, set `combine_meshes: true` in the config. This bakes t
 2. Audit the Blender source scene.
 3. Audit materials and textures.
 4. Export through the existing save hook or asset_pipeline.ps1.
-5. Run the asset-production suite.
-6. Perform S&Box editor visual acceptance.
+5. For alpha-cutout assets such as foliage cards, generate a texture contact sheet and review the color, mask, and checkerboard composite.
+6. Run the asset-production suite.
+7. Perform S&Box editor visual acceptance.
 
 ## Drone Example
 
@@ -71,11 +72,31 @@ On real exports, the pipeline also clears generated compiled caches for remapped
 
 If a model's compiled material remaps are not reliable, set `material_override` in the asset config to apply a renderer-wide material on the generated prefab. This is the same material path used by the arena blockout renderers and is visible in playtest.
 
+The `.vmdl` `from` value must match the material source name style S&Box sees for that FBX. The pipeline defaults to appending `.vmat` for existing generated assets, but an asset config can set:
+
+```json
+{
+  "vmdl_material_source_suffix": "",
+  "strict_vmdl_material_sources": true
+}
+```
+
+Use this when the exported FBX material slot is the raw Blender material name, such as `TerrainPineBark`, and S&Box is not applying remaps written as `TerrainPineBark.vmat`. The asset pipeline audit checks generated `.vmdl` remap sources against this config.
+
 For textured assets, keep the names aligned through the whole chain:
 
 - Blender material slot: `Body_Tactical`
-- pipeline remap: `"Body_Tactical": "materials/jammer_body.vmat"`; the generated `.vmdl` writes this as `from = "Body_Tactical.vmat"` because S&Box's model compiler matches source material names with the `.vmat` suffix
+- pipeline remap: `"Body_Tactical": "materials/jammer_body.vmat"`
+- generated `.vmdl` source: either `from = "Body_Tactical.vmat"` or `from = "Body_Tactical"` depending on the asset's verified `vmdl_material_source_suffix`
 - VMAT color image: `"TextureColor" "materials/jammer_body_color.png"`
+
+For foliage cards, keep the transparent background visible in review:
+
+```powershell
+python .\scripts\texture_contact_sheet.py --config .\scripts\terrain_pine_asset_pipeline.json --out .\screenshots\asset_previews\terrain_pine_texture_sheet.png
+```
+
+The contact sheet shows the composited cutout over a checkerboard, the raw color texture, and the translucency mask. Do this before judging the tree model in Blender, then verify the imported result in the S&Box editor.
 
 Run a different config:
 

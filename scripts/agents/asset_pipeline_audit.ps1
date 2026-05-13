@@ -52,6 +52,126 @@ function Test-RelativeOutputPath {
     }
 }
 
+function Get-JsonBool {
+    param(
+        [object]$Json,
+        [string]$Name
+    )
+
+    if ($null -eq $Json -or -not ($Json.PSObject.Properties.Name -contains $Name)) {
+        return $false
+    }
+
+    return [bool]$Json.$Name
+}
+
+function Get-VmdlMaterialSourceSuffix {
+    param([object]$Json)
+
+    if ($null -eq $Json -or -not ($Json.PSObject.Properties.Name -contains "vmdl_material_source_suffix")) {
+        return ".vmat"
+    }
+
+    $value = $Json.vmdl_material_source_suffix
+    if ($null -eq $value -or $value -eq $false) {
+        return ""
+    }
+
+    $text = [string]$value
+    if ($text.Equals("false", [System.StringComparison]::OrdinalIgnoreCase) -or
+        $text.Equals("none", [System.StringComparison]::OrdinalIgnoreCase) -or
+        $text.Equals("null", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return ""
+    }
+
+    return $text
+}
+
+function Get-ExpectedVmdlMaterialSource {
+    param(
+        [string]$SourceName,
+        [string]$Suffix
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Suffix)) {
+        return $SourceName
+    }
+
+    if ($SourceName.EndsWith($Suffix, [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $SourceName
+    }
+
+    return "$SourceName$Suffix"
+}
+
+function Get-VmdlRemapSources {
+    param([string]$Path)
+
+    $raw = Get-Content -LiteralPath $Path -Raw
+    $sources = New-Object System.Collections.Generic.List[string]
+    foreach ($match in [regex]::Matches($raw, 'from\s*=\s*"(?<source>[^"]+)"')) {
+        $sources.Add($match.Groups["source"].Value)
+    }
+    return @($sources)
+}
+
+function Test-VmdlMaterialSources {
+    param(
+        [string]$ConfigPath,
+        [object]$Json
+    )
+
+    if (-not ($Json.PSObject.Properties.Name -contains "material_remap") -or $null -eq $Json.material_remap) {
+        return
+    }
+
+    $hasConfiguredSourceStyle = ($Json.PSObject.Properties.Name -contains "vmdl_material_source_suffix") -or
+        ($Json.PSObject.Properties.Name -contains "strict_vmdl_material_sources")
+    if (-not $hasConfiguredSourceStyle) {
+        return
+    }
+
+    $targetVmdl = [string]$Json.target_vmdl
+    if ([string]::IsNullOrWhiteSpace($targetVmdl) -or $targetVmdl -match "\$\{") {
+        return
+    }
+
+    $targetVmdlFull = Join-Path $Root $targetVmdl
+    if (-not (Test-Path -LiteralPath $targetVmdlFull)) {
+        return
+    }
+
+    $suffix = Get-VmdlMaterialSourceSuffix -Json $Json
+    $expected = New-Object System.Collections.Generic.HashSet[string]
+    foreach ($property in $Json.material_remap.PSObject.Properties) {
+        [void]$expected.Add((Get-ExpectedVmdlMaterialSource -SourceName ([string]$property.Name) -Suffix $suffix))
+    }
+
+    $actual = New-Object System.Collections.Generic.HashSet[string]
+    foreach ($source in @(Get-VmdlRemapSources -Path $targetVmdlFull)) {
+        [void]$actual.Add($source)
+    }
+
+    $missing = @($expected | Where-Object { -not $actual.Contains($_) })
+    $unexpected = @($actual | Where-Object { -not $expected.Contains($_) })
+    if ($missing.Count -eq 0 -and $unexpected.Count -eq 0) {
+        Add-AgentIssue $issues "Info" "VMDL Material Sources" $ConfigPath "VMDL remap sources match the configured source-name style."
+        return
+    }
+
+    $strict = Get-JsonBool -Json $Json -Name "strict_vmdl_material_sources"
+    $severity = if ($strict) { "Error" } else { "Warning" }
+    $parts = New-Object System.Collections.Generic.List[string]
+    if ($missing.Count -gt 0) {
+        $parts.Add("missing expected: $($missing -join ', ')")
+    }
+    if ($unexpected.Count -gt 0) {
+        $parts.Add("unexpected existing: $($unexpected -join ', ')")
+    }
+
+    Add-AgentIssue $issues $severity "VMDL Material Sources" $ConfigPath "Generated VMDL remap sources do not match the config ($($parts -join '; '))." "Re-export with asset_pipeline.py or set vmdl_material_source_suffix to the style S&Box actually matches for this FBX."
+}
+
 Write-AgentSection "Asset Pipeline Audit"
 Write-Host "Root: $Root"
 
@@ -136,6 +256,8 @@ foreach ($config in $configFiles) {
             }
         }
     }
+
+    Test-VmdlMaterialSources -ConfigPath $relative -Json $json
 }
 
 if ($blendFiles.Count -eq 0) {

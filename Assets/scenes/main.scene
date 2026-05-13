@@ -9936,7 +9936,7 @@
                     "AfterUILayer": false
                   },
                   "RenderType": "On",
-                  "Tint": "0,0.27059,0.11373,1"
+                  "Tint": "1,1,1,1"
                 }
               ],
               "Children": []
@@ -9982,7 +9982,7 @@
                     "AfterUILayer": false
                   },
                   "RenderType": "On",
-                  "Tint": "0,0.27059,0.11373,1"
+                  "Tint": "1,1,1,1"
                 }
               ],
               "Children": []
@@ -10028,7 +10028,7 @@
                     "AfterUILayer": false
                   },
                   "RenderType": "On",
-                  "Tint": "0,0.27059,0.11373,1"
+                  "Tint": "1,1,1,1"
                 }
               ],
               "Children": []
@@ -10074,7 +10074,7 @@
                     "AfterUILayer": false
                   },
                   "RenderType": "On",
-                  "Tint": "0,0.27059,0.11373,1"
+                  "Tint": "1,1,1,1"
                 }
               ],
               "Children": []
@@ -10105,11 +10105,7 @@
                   "LodOverride": null,
                   "MaterialGroup": null,
                   "MaterialOverride": null,
-                  "Materials": {
-                    "indexed": {
-                      "0": "materials/default.vmat"
-                    }
-                  },
+                  "Materials": null,
                   "Model": "models/terrain_pine.vmdl",
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
@@ -10124,7 +10120,7 @@
                     "AfterUILayer": false
                   },
                   "RenderType": "On",
-                  "Tint": "0,0.27059,0.11373,1"
+                  "Tint": "1,1,1,1"
                 }
               ],
               "Children": []
@@ -10170,7 +10166,7 @@
                     "AfterUILayer": false
                   },
                   "RenderType": "On",
-                  "Tint": "0,0.27059,0.11373,1"
+                  "Tint": "1,1,1,1"
                 }
               ],
               "Children": []
@@ -10216,7 +10212,7 @@
                     "AfterUILayer": false
                   },
                   "RenderType": "On",
-                  "Tint": "0,0.27059,0.11373,1"
+                  "Tint": "1,1,1,1"
                 }
               ],
               "Children": []
@@ -10262,7 +10258,7 @@
                     "AfterUILayer": false
                   },
                   "RenderType": "On",
-                  "Tint": "0,0.27059,0.11373,1"
+                  "Tint": "1,1,1,1"
                 }
               ],
               "Children": []
@@ -10308,7 +10304,7 @@
                     "AfterUILayer": false
                   },
                   "RenderType": "On",
-                  "Tint": "0,0.27059,0.11373,1"
+                  "Tint": "1,1,1,1"
                 }
               ],
               "Children": []
@@ -10354,7 +10350,7 @@
                     "AfterUILayer": false
                   },
                   "RenderType": "On",
-                  "Tint": "0,0.27059,0.11373,1"
+                  "Tint": "1,1,1,1"
                 }
               ],
               "Children": []
@@ -10400,7 +10396,7 @@
                     "AfterUILayer": false
                   },
                   "RenderType": "On",
-                  "Tint": "0,0.27059,0.11373,1"
+                  "Tint": "1,1,1,1"
                 }
               ],
               "Children": []
@@ -10446,7 +10442,7 @@
                     "AfterUILayer": false
                   },
                   "RenderType": "On",
-                  "Tint": "0,0.27059,0.11373,1"
+                  "Tint": "1,1,1,1"
                 }
               ],
               "Children": []
@@ -10492,7 +10488,7 @@
                     "AfterUILayer": false
                   },
                   "RenderType": "On",
-                  "Tint": "0,0.27059,0.11373,1"
+                  "Tint": "1,1,1,1"
                 }
               ],
               "Children": []
@@ -10538,7 +10534,7 @@
                     "AfterUILayer": false
                   },
                   "RenderType": "On",
-                  "Tint": "0,0.27059,0.11373,1"
+                  "Tint": "1,1,1,1"
                 }
               ],
               "Children": []
@@ -15297,7 +15293,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -15343,7 +15339,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -15389,7 +15385,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -15435,7 +15431,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -15481,7 +15477,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -15527,7 +15523,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -15573,7 +15569,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -15619,7 +15615,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -15665,7 +15661,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.26977,0.1169,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -15711,7 +15707,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.26977,0.1169,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -15757,7 +15753,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.26977,0.1169,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -15803,7 +15799,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.26977,0.1169,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -15849,7 +15845,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.26977,0.1169,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -15895,7 +15891,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.26977,0.1169,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -15941,7 +15937,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -15987,7 +15983,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -16033,7 +16029,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -16079,7 +16075,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -16125,7 +16121,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -16171,7 +16167,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -16217,7 +16213,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -16263,7 +16259,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.26977,0.1169,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -16309,7 +16305,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -16355,7 +16351,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -16401,7 +16397,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -16447,7 +16443,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -16493,7 +16489,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -16539,7 +16535,7 @@
             "AfterUILayer": false
           },
           "RenderType": "On",
-          "Tint": "0,0.27059,0.11373,1"
+          "Tint": "1,1,1,1"
         }
       ],
       "Children": []
@@ -16568,17 +16564,17 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.SelectionSetsSystem": {
-        "Data": {
-          "SelectionSets": []
-        }
-      },
       "Sandbox.MovieMaker.MovieRecorderSystem": {
         "DisableClientRecording": false
       },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
           "$blob": "d72447d5-234d-4c1b-90c6-42bdf3024182"
+        }
+      },
+      "Sandbox.SelectionSetsSystem": {
+        "Data": {
+          "SelectionSets": []
         }
       }
     }

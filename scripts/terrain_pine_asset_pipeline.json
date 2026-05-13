@@ -1,0 +1,28 @@
+{
+  "source_blend": "environment_model.blend/terrain_assets.blend",
+  "root_object": "TerrainPine_Root",
+  "target_fbx": "Assets/models/terrain_pine.fbx",
+  "target_vmdl": "Assets/models/terrain_pine.vmdl",
+  "model_resource_path": "models/terrain_pine.vmdl",
+  "skip_prefab": true,
+  "combine_meshes": true,
+  "combined_object_name": "TerrainPineMesh",
+  "verify_fbx": true,
+  "vmdl_material_source_suffix": "",
+  "strict_vmdl_material_sources": true,
+  "required_object": [
+    "TerrainPineMesh"
+  ],
+  "object_type": [
+    "EMPTY",
+    "MESH"
+  ],
+  "material_remap": {
+    "TerrainPineBark": "materials/environment/terrain_pine_bark.vmat",
+    "TerrainPineNeedlesCardA": "materials/environment/terrain_pine_needles_card_a.vmat",
+    "TerrainPineNeedlesCardB": "materials/environment/terrain_pine_needles_card_b.vmat"
+  },
+  "global_scale": 1.0,
+  "axis_forward": "-Z",
+  "axis_up": "Y"
+}

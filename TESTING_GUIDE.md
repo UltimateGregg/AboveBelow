@@ -9,7 +9,9 @@
 3. Press Play (or F5)
 4. Expected:
    - Game loads without errors
-   - HUD panel appears with health/timer
+   - Main menu appears before the class picker
+   - Pressing Play reveals the role/class picker
+   - HUD panel appears with health/timer after spawning
    - No console errors or warnings
    - Game waits for players (WaitingForPlayers state)
 ```
@@ -51,6 +53,9 @@ If missing any, that's the problem - add them!
 
 **Tests:**
 1. **HUD Display**
+   - [ ] Main menu appears on initial load
+   - [ ] Play opens the class / drone variant picker
+   - [ ] Options opens local UI/look settings
    - [ ] Health shows current/max
    - [ ] Timer counts down (should show 5s countdown, then count to 300)
    - [ ] Role shows "Spectator" (no spawn yet)

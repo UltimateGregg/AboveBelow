@@ -16,12 +16,15 @@ Render local preview images for Blender source assets so reviewers can inspect a
 - Visual review renders do not edit or save `.blend` files.
 - Preview images and JSON sidecars are local review artifacts.
 - Preview artifacts are ignored through `screenshots/`.
+- For foliage cards or any alpha-tested material, generate a texture contact sheet before accepting the model preview. Review the color texture, the cutout mask, and the composited checkerboard preview together.
+- S&Box-facing material issues require an editor or playtest screenshot after import. Blender Workbench or material preview alone is insufficient for alpha, tint, and `.vmdl` remap proof.
 - Keep visual asset validation separate from prefab wiring, gameplay, UI, and networking checks.
 
 ## Evidence Command
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/asset_visual_review.ps1 -Blend weapons_model.blend/assault_rifle_m4.blend
+python scripts/texture_contact_sheet.py --config scripts/terrain_pine_asset_pipeline.json --out screenshots/asset_previews/terrain_pine_texture_sheet.png
 ```
 
 Useful options:

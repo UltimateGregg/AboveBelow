@@ -44,7 +44,7 @@ Core counter triangle: **Counter-UAV beats GPS**, **Heavy beats FPV**, **Assault
 ### Setup
 1. Open project in S&Box (`scenes/main.scene` is the default).
 2. Press Play in editor.
-3. Pick a class or drone type from the in-game HUD picker.
+3. Use the main menu's Play button, then pick a class or drone type from the in-game HUD picker.
 
 ### Key Controls
 

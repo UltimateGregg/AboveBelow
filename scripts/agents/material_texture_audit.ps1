@@ -269,6 +269,19 @@ foreach ($config in $configFiles) {
             Add-AgentIssue $issues "Error" "Material Texture" $materialRelative "TextureColor uses materials/default/default_color.tga." "Use a production color texture or set allow_default_color_texture: true in the asset config when intentional."
         }
 
+        $alphaTestEnabled = $materialText -match '"F_ALPHA_TEST"\s*"1"'
+        $foliageCardMaterial = $targetMaterial -match '(?i)(leaf|leaves|foliage|needle|needles|card)'
+
+        if ($alphaTestEnabled -and -not $texturesByKey.ContainsKey("TextureTranslucency")) {
+            Add-AgentIssue $issues "Error" "Material Texture" $materialRelative "Alpha-tested material is missing TextureTranslucency." "Assign a cutout mask so S&Box can render transparent background pixels."
+        }
+        elseif ($foliageCardMaterial -and -not $texturesByKey.ContainsKey("TextureTranslucency")) {
+            Add-AgentIssue $issues "Warning" "Material Texture" $materialRelative "Foliage/card material has no TextureTranslucency mask." "Transparent tree cards should have a color texture plus a cutout mask, then be reviewed in a texture contact sheet."
+        }
+        elseif ($texturesByKey.ContainsKey("TextureTranslucency") -and -not $alphaTestEnabled) {
+            Add-AgentIssue $issues "Warning" "Material Texture" $materialRelative "TextureTranslucency is set but F_ALPHA_TEST is not enabled." "Enable alpha testing or confirm this material uses a different transparency path."
+        }
+
         foreach ($mapName in @($optionalMaps)) {
             if (-not $texturesByKey.ContainsKey([string]$mapName)) {
                 $profileLabel = if ([string]::IsNullOrWhiteSpace($Category)) { ($profileCategories -join ", ") } else { $Category }

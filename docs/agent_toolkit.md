@@ -68,9 +68,12 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/new_asset_brief.ps1 -Nam
 powershell -ExecutionPolicy Bypass -File scripts/agents/blender_quality_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/material_texture_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/asset_visual_review.ps1 -Blend weapons_model.blend/assault_rifle_m4.blend
+python scripts/texture_contact_sheet.py --config scripts/terrain_pine_asset_pipeline.json --out screenshots/asset_previews/terrain_pine_texture_sheet.png
 powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production
 ```
+
+Use the texture contact sheet for alpha-cutout assets such as tree foliage cards before accepting a Blender render. The Blender preview confirms shape; the contact sheet and S&Box editor screenshot confirm the material and transparent background behavior.
 
 Blender visible MCP or add-on changes:
 
