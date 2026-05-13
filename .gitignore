@@ -9,6 +9,7 @@ Thumbs.db
 
 # Local agent/editor state
 .codex-tmp/
+.superpowers/
 .tmpbuild/
 .sbox/
 **/.sbox/

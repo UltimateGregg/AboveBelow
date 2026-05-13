@@ -1,0 +1,90 @@
+{
+  "weapon": {
+    "display_name": "Weapon and Equipment",
+    "required_material_roles": [
+      "metal",
+      "polymer"
+    ],
+    "optional_texture_maps": [
+      "TextureNormal",
+      "TextureRoughness",
+      "TextureAmbientOcclusion"
+    ],
+    "required_name_hints": [
+      "muzzle",
+      "grip"
+    ],
+    "scale_note": "Confirm first-person and world scale against the owning weapon prefab.",
+    "acceptance_checks": [
+      "muzzle/effect origin documented",
+      "grip/attachment orientation documented",
+      "standalone prefab target recorded"
+    ]
+  },
+  "drone": {
+    "display_name": "Drone",
+    "required_material_roles": [
+      "frame",
+      "motor",
+      "camera"
+    ],
+    "optional_texture_maps": [
+      "TextureNormal",
+      "TextureRoughness",
+      "TextureAmbientOcclusion"
+    ],
+    "required_name_hints": [
+      "prop",
+      "motor",
+      "camera"
+    ],
+    "scale_note": "Confirm visual bounds against DroneController prefab scale and flight readability.",
+    "acceptance_checks": [
+      "silhouette readable from gameplay distance",
+      "variant identity distinct for GPS/FPV/fiber FPV",
+      "collision/gameplay remain owned by prefab/code"
+    ]
+  },
+  "character": {
+    "display_name": "Soldier and Character",
+    "required_material_roles": [
+      "body",
+      "gear"
+    ],
+    "optional_texture_maps": [
+      "TextureNormal",
+      "TextureRoughness",
+      "TextureAmbientOcclusion"
+    ],
+    "required_name_hints": [
+      "root",
+      "body"
+    ],
+    "scale_note": "Confirm proportions against existing GroundPlayerController and first-person visibility assumptions.",
+    "acceptance_checks": [
+      "rig/armature/attachment readiness documented when animation expected",
+      "class/team material groups documented when relevant",
+      "existing SoldierBase prefab identities unchanged"
+    ]
+  },
+  "environment": {
+    "display_name": "Environment and Prop",
+    "required_material_roles": [
+      "surface"
+    ],
+    "optional_texture_maps": [
+      "TextureNormal",
+      "TextureRoughness",
+      "TextureAmbientOcclusion"
+    ],
+    "required_name_hints": [
+      "root"
+    ],
+    "scale_note": "Confirm origin and dimensions are sensible for scene placement.",
+    "acceptance_checks": [
+      "collision expectations documented separately from visual mesh export",
+      "repeated props stable names and avoid giant bounds",
+      "blockout dev-box collider sync remains separate workflow"
+    ]
+  }
+}
