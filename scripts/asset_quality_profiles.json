@@ -16,9 +16,9 @@
     ],
     "scale_note": "Confirm first-person and world scale against the owning weapon prefab.",
     "acceptance_checks": [
-      "muzzle/effect origin documented",
-      "grip/attachment orientation documented",
-      "standalone prefab target recorded"
+      "Muzzle or effect origin is documented when the asset fires or emits effects.",
+      "Grip and attachment orientation are documented for soldier mounting.",
+      "Standalone prefab target is recorded for attachable equipment."
     ]
   },
   "drone": {
@@ -40,9 +40,9 @@
     ],
     "scale_note": "Confirm visual bounds against DroneController prefab scale and flight readability.",
     "acceptance_checks": [
-      "silhouette readable from gameplay distance",
-      "variant identity distinct for GPS/FPV/fiber FPV",
-      "collision/gameplay remain owned by prefab/code"
+      "Silhouette is readable from gameplay distance.",
+      "Variant identity is distinct for GPS, FPV, or fiber FPV.",
+      "Collision and gameplay components remain owned by prefab/code."
     ]
   },
   "character": {
@@ -62,9 +62,9 @@
     ],
     "scale_note": "Confirm proportions against existing GroundPlayerController and first-person visibility assumptions.",
     "acceptance_checks": [
-      "rig/armature/attachment readiness documented when animation expected",
-      "class/team material groups documented when relevant",
-      "existing SoldierBase prefab identities unchanged"
+      "Rig, armature, or attachment readiness is documented when animation is expected.",
+      "Class or team material groups are documented when relevant.",
+      "Existing SoldierBase prefab identities remain unchanged."
     ]
   },
   "environment": {
@@ -82,9 +82,9 @@
     ],
     "scale_note": "Confirm origin and dimensions are sensible for scene placement.",
     "acceptance_checks": [
-      "collision expectations documented separately from visual mesh export",
-      "repeated props stable names and avoid giant bounds",
-      "blockout dev-box collider sync remains separate workflow"
+      "Collision expectations are documented separately from visual mesh export.",
+      "Repeated props have stable names and avoid giant bounds.",
+      "Blockout dev-box collider sync remains a separate workflow."
     ]
   }
 }

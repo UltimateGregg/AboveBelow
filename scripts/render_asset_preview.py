@@ -233,10 +233,10 @@ def relative_path(path: Path, root: Path) -> str:
 
 
 def preview_slug_for_blend(blend_path: Path, root: Path) -> str:
-    relative = relative_path(blend_path, root)
-    without_final_suffix = re.sub(r"\.blend$", "", relative, flags=re.IGNORECASE)
-    with_blend_markers = re.sub(r"\.blend(?=([/\\]|$))", "_blend", without_final_suffix, flags=re.IGNORECASE)
-    slug = re.sub(r"[^A-Za-z0-9]+", "_", with_blend_markers).strip("_").lower()
+    name = blend_path.name
+    while name.lower().endswith(".blend"):
+        name = name[:-len(".blend")]
+    slug = re.sub(r"[^A-Za-z0-9]+", "_", name).strip("_").lower()
     return slug or "asset"
 
 
