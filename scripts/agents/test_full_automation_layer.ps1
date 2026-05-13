@@ -19,7 +19,8 @@ $requiredScripts = @(
     "scripts/agents/feature_readiness_report.ps1",
     "scripts/agents/blender_quality_audit.ps1",
     "scripts/agents/material_texture_audit.ps1",
-    "scripts/agents/asset_visual_review.ps1"
+    "scripts/agents/asset_visual_review.ps1",
+    "scripts/agents/blender_live_toolkit_self_test.ps1"
 )
 
 foreach ($script in $requiredScripts) {
@@ -36,7 +37,7 @@ if (Test-Path -LiteralPath $runner) {
         Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner does not declare a ValidateSet for suites." "Restore suite validation on the Suite parameter."
     }
 
-    foreach ($suite in @("ui", "prefab-graph", "scene", "logs", "readiness", "asset-production")) {
+    foreach ($suite in @("ui", "prefab-graph", "scene", "logs", "readiness", "asset-production", "blender-live")) {
         $quotedSuite = '"' + [regex]::Escape($suite) + '"'
         if ($validateSetMatch.Success -and $validateSetMatch.Groups["values"].Value -notmatch $quotedSuite) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner ValidateSet does not expose suite '$suite'." "Add the suite to the Suite parameter ValidateSet."

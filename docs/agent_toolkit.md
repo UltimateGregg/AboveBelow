@@ -72,6 +72,21 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production
 ```
 
+Blender visible MCP or add-on changes:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite blender-live
+python -m py_compile blender_addons/sbox_asset_toolkit/__init__.py scripts/start_visible_blender_asset_toolkit.py
+node .\mcp\node_modules\typescript\bin\tsc -p .\mcp\tsconfig.json
+```
+
+The `S&Box Asset Toolkit` Blender add-on is the visible control surface for live
+Blender work. It can start the bridge inside the open Blender window, scaffold
+production roots/sockets/materials, create briefs, render previews, export to
+S&Box, and run the asset-production suite. The MCP side exposes the same visible
+workflow through tools such as `blender_sbox_setup_asset_scene`,
+`blender_sbox_add_socket`, and `blender_sbox_export_current_asset`.
+
 Balance changes:
 
 ```powershell

@@ -1,6 +1,6 @@
 param(
     [string]$Root = "",
-    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "scene", "asset", "asset-production", "networking", "docs", "balance", "playtest", "logs", "readiness", "self-test")]
+    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "scene", "asset", "asset-production", "blender-live", "networking", "docs", "balance", "playtest", "logs", "readiness", "self-test")]
     [string]$Suite = "quick",
     [switch]$ShowInfo,
     [switch]$FailOnWarning
@@ -95,6 +95,7 @@ switch ($Suite) {
             @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root, "-ShowFiles") }
         )
     }
+    "blender-live" { $scripts = @(@{ Name = "blender_live_toolkit_self_test.ps1"; Args = @("-Root", $Root) }) }
     "networking" { $scripts = @(@{ Name = "networking_review_audit.ps1"; Args = $commonArgs }) }
     "docs" { $scripts = @(@{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs }) }
     "balance" { $scripts = @(@{ Name = "balance_tuning_report.ps1"; Args = @("-Root", $Root) }) }
