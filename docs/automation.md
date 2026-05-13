@@ -79,7 +79,7 @@ These hooks are intentionally conservative. They do not compile the project, mut
    - Falls back to generic config (`asset_pipeline_generic.json`) if no specific config exists
    - Passes detected config to asset pipeline
 4. **Pipeline Execution**:
-   - PowerShell wrapper (`asset_pipeline.py`) uses detected config
+   - PowerShell wrapper (`asset_pipeline.ps1`) calls the Python pipeline (`asset_pipeline.py`) with the detected config
    - Python launches Blender in background mode (`blender --background`)
    - Blender exports asset geometry to FBX format
    - Python generates VMDL wrapper document (using variable substitution: `${ASSET_NAME}`, `${BLEND_FILE}`)
@@ -87,14 +87,20 @@ These hooks are intentionally conservative. They do not compile the project, mut
 5. **Notification**: Claude Code displays success or error notification in the UI
 6. **Auto-Reload**: S&Box editor detects `.vmdl` and `.prefab` changes and automatically reloads
 
+The `.blend` save hook remains export-focused. Production quality gates are run manually or through:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production
+```
+
 ### Developer Workflow
 
 #### Before (Manual)
 ```
-1. Edit any.blend in Blender
+1. Edit a configured or compatible `.blend` file in Blender
 2. Save file
 3. Switch to PowerShell terminal
-4. Run: .\scripts\asset_pipeline.ps1 --config .\scripts\some_config.json
+4. Run: .\scripts\asset_pipeline.ps1 -Config .\scripts\some_config.json
 5. Wait 10-30 seconds for Blender background export
 6. Switch back to S&Box editor
 7. Refresh asset browser or reload scene
@@ -104,7 +110,7 @@ These hooks are intentionally conservative. They do not compile the project, mut
 
 #### After (Automated)
 ```
-1. Edit any.blend in Blender
+1. Edit a configured or compatible `.blend` file in Blender
 2. Save file (Ctrl+S)
 3. See notification in Claude Code within 2-5 seconds: "Asset exported successfully"
 4. Stay in S&Box editor (assets already updated)
@@ -136,19 +142,18 @@ This step is intentionally manual rather than a scene-save hook so it does not f
 
 ## Setting Up New Assets
 
-### Quick Start: Use Generic Config
+### Quick Start: Use an Intentional Config
 
-For any new `.blend` file, just save it and the hook will automatically export using `asset_pipeline_generic.json`:
+The save hook can fall back to `asset_pipeline_generic.json` when no asset-specific config exists, but that path is only for existing or compatible generic targets. The generic config still writes to generated target paths, and the export can fail if the matching prefab target does not already exist.
 
-1. Create your Blender model in a new `.blend` file (e.g., `soldier_model.blend/soldier.blend`)
-2. Save the file
-3. Hook detects the save and exports:
-   - FBX → `Assets/models/soldier.fbx`
-   - VMDL → `Assets/models/soldier.vmdl`
-   - Prefab → `Assets/prefabs/soldier.prefab`
-4. S&Box automatically detects and loads the new assets
+For new production assets, do the setup deliberately:
 
-**No configuration needed** — the generic config handles it all.
+1. Create or review the asset brief.
+2. Create or scaffold the asset-specific config and prefab target.
+3. Save the `.blend` file or run the pipeline manually with `-Config`.
+4. Confirm the generated FBX/VMDL/prefab in S&Box.
+
+Use the generic fallback only when the target paths and prefab expectations are already compatible with the asset you are saving.
 
 ### Custom Config: Per-Asset Customization
 
@@ -354,7 +359,7 @@ Changes take effect immediately; no restart required.
 #### Export Fails
 
 1. **Check hook logs**: Claude Code stores logs of each hook execution (UI menu → View → Logs)
-2. **Run pipeline manually**: `.\scripts\asset_pipeline.ps1 --config .\scripts\drone_asset_pipeline.json`
+2. **Run pipeline manually**: `.\scripts\asset_pipeline.ps1 -Config .\scripts\drone_asset_pipeline.json`
 3. **Verify Blender is installed**: Hook relies on `blender` command in PATH
 4. **Check Blender version**: Must be a version that supports `--background` flag (4.0+)
 5. **Inspect asset pipeline output**: Run script directly to see detailed error messages

@@ -11,6 +11,15 @@ The script does three repeatable jobs:
 
 For simple visual assets, set `combine_meshes: true` in the config. This bakes the selected Blender hierarchy into one exported mesh, which makes S&Box source-FBX previews and thumbnails much more reliable.
 
+## Production Asset Workflow
+
+1. Create or review an asset brief.
+2. Audit the Blender source scene.
+3. Audit materials and textures.
+4. Export through the existing save hook or asset_pipeline.ps1.
+5. Run the asset-production suite.
+6. Perform S&Box editor visual acceptance.
+
 ## Drone Example
 
 From the project root:
