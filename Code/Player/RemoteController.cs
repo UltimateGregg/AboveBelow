@@ -50,8 +50,7 @@ public sealed class RemoteController : Component
 		ResolveRefs();
 		if ( !_pilot.IsValid() || _pilot.LinkedDroneId == default ) return false;
 
-		return Scene.GetAllComponents<DroneBase>()
-			.Any( d => d.GameObject.Id == _pilot.LinkedDroneId );
+		return _pilot.ResolveDrone().IsValid();
 	}
 
 	GroundPlayerController _groundController;

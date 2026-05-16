@@ -41,6 +41,56 @@
           "level": "error"
         }
       }
+    },
+    {
+      "id": "drone-control-regression-check",
+      "name": "Drone Control Regression Check",
+      "description": "Runs focused gameplay checks when drone input, pilot control, HUD loadout, or drone prefab files change",
+      "enabled": true,
+      "trigger": {
+        "type": "file_pattern_change",
+        "patterns": [
+          "Code/Drone/DroneWeapon.cs",
+          "Code/Player/DroneDeployer.cs",
+          "Code/Player/PilotSoldier.cs",
+          "Code/Player/RemoteController.cs",
+          "Code/UI/HudPanel.razor",
+          "Assets/prefabs/drone_fpv.prefab",
+          "Assets/prefabs/drone_fpv_fiber.prefab",
+          "Assets/prefabs/pilot_ground.prefab",
+          "scripts/check_drone_kamikaze_primary.ps1",
+          "scripts/check_loadout_slots.ps1",
+          "scripts/agents/gameplay_regression_guard.ps1"
+        ],
+        "events": ["modified", "saved"],
+        "debounce_ms": 1000
+      },
+      "action": {
+        "type": "script",
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          ".\\scripts\\agents\\gameplay_regression_guard.ps1",
+          "-Root",
+          "${WORKSPACE_ROOT}"
+        ],
+        "cwd": "${WORKSPACE_ROOT}",
+        "timeout_seconds": 90,
+        "capture_output": true,
+        "on_success": {
+          "notify": true,
+          "message": "Drone control checks passed",
+          "level": "info"
+        },
+        "on_failure": {
+          "notify": true,
+          "message": "Drone control regression check failed",
+          "level": "error"
+        }
+      }
     }
   ]
 }

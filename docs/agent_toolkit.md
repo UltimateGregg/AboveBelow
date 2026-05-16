@@ -22,10 +22,12 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 |---|---|---|
 | Build and Log Sentinel | Compile and check fresh logs | `scripts/agents/build_log_sentinel.ps1` |
 | Gameplay Systems Agent | Review gameplay architecture fit | Uses build and networking audits |
+| Gameplay Regression Guard | Run focused slot and drone-control regression checks | `scripts/agents/gameplay_regression_guard.ps1` |
 | Prefab and Wiring Agent | Validate prefab shape and AutoWire references | `scripts/agents/prefab_wiring_audit.ps1` |
 | Prefab Graph Audit | Validate GUID refs, component refs, prefab refs, and resource paths | `scripts/agents/prefab_graph_audit.ps1` |
 | Scene Integrity Audit | Validate main scene managers, spawns, and collider patterns | `scripts/agents/scene_integrity_audit.ps1` |
 | Asset Pipeline Agent | Validate `.blend` configs, targets, and material remaps | `scripts/agents/asset_pipeline_audit.ps1` |
+| ModelDoc Agent | Validate `.vmdl` source meshes, material targets, and config drift | `scripts/agents/modeldoc_audit.ps1` |
 | UI Flow Agent | Catch interactive-looking Razor UI without click behavior | `scripts/agents/ui_flow_audit.ps1` |
 | Networking Review Agent | Surface authority and replication risks | `scripts/agents/networking_review_audit.ps1` |
 | Playtest QA Agent | Generate editor and multiplayer checklists | `scripts/agents/playtest_checklist.ps1` |
@@ -50,8 +52,18 @@ Gameplay or C# changes:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/build_log_sentinel.ps1
+powershell -ExecutionPolicy Bypass -File scripts/agents/gameplay_regression_guard.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/networking_review_audit.ps1
 ```
+
+Drone input, pilot control, or drone HUD loadout changes:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/gameplay_regression_guard.ps1
+powershell -ExecutionPolicy Bypass -File scripts/agents/playtest_checklist.ps1 -ChangeArea Gameplay
+```
+
+The `drone-control-regression-check` Claude hook runs the same guard when `DroneWeapon`, `DroneDeployer`, `RemoteController`, `PilotSoldier`, the drone HUD, or FPV/pilot prefabs change.
 
 Prefab or scene changes:
 
@@ -68,12 +80,22 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/new_asset_brief.ps1 -Nam
 powershell -ExecutionPolicy Bypass -File scripts/agents/blender_quality_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/material_texture_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/asset_visual_review.ps1 -Blend weapons_model.blend/assault_rifle_m4.blend
-python scripts/texture_contact_sheet.py --config scripts/terrain_pine_asset_pipeline.json --out screenshots/asset_previews/terrain_pine_texture_sheet.png
+python scripts/texture_contact_sheet.py --config scripts/terrain_assets_asset_pipeline.json --out screenshots/asset_previews/terrain_assets_texture_sheet.png
 powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1
+powershell -ExecutionPolicy Bypass -File scripts/agents/modeldoc_audit.ps1 -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production
 ```
 
 Use the texture contact sheet for alpha-cutout assets such as tree foliage cards before accepting a Blender render. The Blender preview confirms shape; the contact sheet and S&Box editor screenshot confirm the material and transparent background behavior.
+
+ModelDoc or VMDL changes:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/modeldoc_audit.ps1 -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite modeldoc
+```
+
+The ModelDoc audit checks source mesh references, material remap targets, config-to-VMDL drift, and strict material source naming rules. It does not replace Blender visual review, prefab wiring checks, or an editor playtest.
 
 Blender visible MCP or add-on changes:
 

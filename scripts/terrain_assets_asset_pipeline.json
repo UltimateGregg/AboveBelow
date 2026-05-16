@@ -1,17 +1,18 @@
 {
   "source_blend": "environment_model.blend/terrain_assets.blend",
   "root_object": "TerrainPine_Root",
-  "target_fbx": "Assets/models/terrain_pine.fbx",
-  "target_vmdl": "Assets/models/terrain_pine.vmdl",
-  "model_resource_path": "models/terrain_pine.vmdl",
+  "target_fbx": "Assets/models/terrain_assets.fbx",
+  "target_vmdl": "Assets/models/terrain_assets.vmdl",
+  "model_resource_path": "models/terrain_assets.vmdl",
   "skip_prefab": true,
   "combine_meshes": true,
-  "combined_object_name": "TerrainPineMesh",
+  "combined_object_name": "TerrainAssetsMesh",
   "verify_fbx": true,
   "vmdl_material_source_suffix": "",
+  "vmdl_use_global_default": false,
   "strict_vmdl_material_sources": true,
   "required_object": [
-    "TerrainPineMesh"
+    "TerrainAssetsMesh"
   ],
   "object_type": [
     "EMPTY",

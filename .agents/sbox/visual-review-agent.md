@@ -24,7 +24,7 @@ Render local preview images for Blender source assets so reviewers can inspect a
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/asset_visual_review.ps1 -Blend weapons_model.blend/assault_rifle_m4.blend
-python scripts/texture_contact_sheet.py --config scripts/terrain_pine_asset_pipeline.json --out screenshots/asset_previews/terrain_pine_texture_sheet.png
+python scripts/texture_contact_sheet.py --config scripts/terrain_assets_asset_pipeline.json --out screenshots/asset_previews/terrain_assets_texture_sheet.png
 ```
 
 Useful options:

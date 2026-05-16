@@ -112,6 +112,7 @@ This project uses Claude Code hooks to automate the Blender → S&Box asset expo
 4. Smart export script runs in background:
    - Detects which asset was saved
    - Checks for asset-specific config (e.g., `drone_asset_pipeline.json` for `drone.blend`)
+   - If no filename-matched config exists, checks for exactly one config whose `source_blend` points at the saved `.blend`
    - Falls back to generic config if specific config doesn't exist
    - Launches Blender with `--background` flag (invisible)
    - Exports FBX to `Assets/models/{asset_name}.fbx`
@@ -131,6 +132,10 @@ This project uses Claude Code hooks to automate the Blender → S&Box asset expo
 | `props_model.blend/barrel.blend` | `Assets/models/barrel.fbx`, `barrel.vmdl`, `barrel.prefab` |
 
 For assets that need custom settings (material remaps, scale overrides), create an asset-specific config: `scripts/{asset_name}_asset_pipeline.json`. See `docs/automation.md` for details.
+
+**Asset naming rule:** the filename, config name, and editor-visible model name should match by default. For example, `environment_model.blend/terrain_assets.blend` uses `scripts/terrain_assets_asset_pipeline.json` and writes `Assets/models/terrain_assets.vmdl`. Do not point a newly named Blender file at an old model name such as `terrain_pine.vmdl` unless the user explicitly asks for a legacy alias.
+
+**Terrain assets material rule:** `terrain_assets` is a strict multi-material foliage asset. Its config must keep raw FBX material source names with `"vmdl_material_source_suffix": ""`, `"vmdl_use_global_default": false`, and `"strict_vmdl_material_sources": true`. Do not fix this model with scene `MaterialOverride` or `Materials.indexed`; that can collapse bark and foliage cards to one material. After export, run `.\scripts\agents\fbx_material_slot_audit.ps1 -Config .\scripts\terrain_assets_asset_pipeline.json` or the `modeldoc` suite.
 
 **No manual script execution needed.** The asset pipeline runs automatically on every `.blend` save, for any asset.
 

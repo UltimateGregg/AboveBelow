@@ -157,7 +157,9 @@
 
                 @foreach ( var arc in DamageArcs )
                 {
-                    <div class="damage-arc" style="transform: rotate(@(arc.AngleDeg.ToString("0"))deg); opacity: @arc.Opacity.ToString("0.00")"></div>
+                    <div class="damage-arc" style="transform: rotate(@(arc.AngleDeg.ToString("0"))deg); opacity: @arc.Opacity.ToString("0.00")">
+                        <div class="damage-arc-ring"></div>
+                    </div>
                 }
             </div>
         }
@@ -881,6 +883,19 @@
                 DisabledSlot( 1, "Primary", "No drone weapon found", "LMB" ),
                 DisabledSlot( 2, "Ability", "No drone ability found", "RMB" ),
             };
+        }
+
+        if ( weapon.PrimaryUsesKamikaze )
+        {
+            var kamikazePrimary = new LoadoutSlot(
+                1,
+                "Kamikaze Charge",
+                $"{weapon.KamikazeDamage:0} dmg / {weapon.KamikazeRadius:0} radius",
+                "LMB"
+            );
+
+            var noSecondary = DisabledSlot( 2, "No Secondary", "Primary fire detonates", "" );
+            return new[] { kamikazePrimary, noSecondary };
         }
 
         var primary = weapon.EnableHitscan

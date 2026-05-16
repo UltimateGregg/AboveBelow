@@ -216,6 +216,46 @@ function Get-AgentChangedFiles {
     return $files
 }
 
+function Get-AgentSboxLogDirectories {
+    param([string]$Root)
+
+    $dirs = New-Object System.Collections.Generic.List[string]
+
+    $project = if ([string]::IsNullOrWhiteSpace($Root)) {
+        $null
+    }
+    else {
+        Join-Path $Root "Code\dronevsplayers.csproj"
+    }
+
+    if ($project -and (Test-Path -LiteralPath $project)) {
+        $projectText = Get-Content -LiteralPath $project -Raw
+        $matches = [regex]::Matches($projectText, '[A-Z]:[/\\][^"<>|]*?steamapps[/\\]common[/\\]sbox', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+        foreach ($match in $matches) {
+            $dirs.Add((Join-Path $match.Value.Replace("/", "\") "logs"))
+        }
+    }
+
+    $programFiles = [Environment]::GetFolderPath("ProgramFiles")
+    $programFilesX86 = [Environment]::GetFolderPath("ProgramFilesX86")
+    foreach ($base in @($programFiles, $programFilesX86, "D:\SteamLibrary", "C:\SteamLibrary")) {
+        if ([string]::IsNullOrWhiteSpace($base)) {
+            continue
+        }
+
+        if ($base.EndsWith("SteamLibrary", [System.StringComparison]::OrdinalIgnoreCase)) {
+            $dirs.Add((Join-Path $base "steamapps\common\sbox\logs"))
+        }
+        else {
+            $dirs.Add((Join-Path $base "Steam\steamapps\common\sbox\logs"))
+        }
+    }
+
+    return @($dirs | Where-Object {
+        -not [string]::IsNullOrWhiteSpace($_) -and (Test-Path -LiteralPath $_)
+    } | Select-Object -Unique)
+}
+
 function Get-AgentFiles {
     param(
         [string]$Root,

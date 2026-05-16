@@ -26,6 +26,7 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/feature_readiness_report
 
 - Run the specialist audit that matches the change.
 - Run the build/log sentinel after meaningful C# or prefab-facing edits.
+- Run `gameplay_regression_guard.ps1` after gameplay, drone-control, pilot-control, or HUD loadout edits.
 - Run graph, scene, and readiness reports before broad handoff.
 - Run `ui_flow_audit.ps1` and the UI playtest checklist after UI/startup-flow changes.
 - Summarize changed files by responsibility.

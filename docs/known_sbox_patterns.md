@@ -161,6 +161,16 @@ if (!_cachedRules.IsValid())
 - Let `SoldierLoadout` run the central held-item visibility sweep every frame so startup, proxy, and slot-change ordering cannot leave an unselected item visible.
 - Use `ModelRenderer.ShadowRenderType.Off` for hidden held items so stowed equipment does not cast shadows around the player.
 
+### Pilot Ground Controls vs Drone-View Controls
+
+**Pattern:** Pilot ground input and drone-view input share the same physical buttons, but they are different control modes. Do not move a drone-view action into `DroneDeployer` unless the desired behavior is explicitly ground-side.
+
+**Workflow:**
+- `DroneDeployer` owns ground-side slot 1: first LMB launches the selected drone; second LMB or `F` enters drone control once the drone is airborne.
+- `DroneWeapon` owns drone-view combat input: FPV and Fiber FPV are kamikaze-only, so slot 1/LMB detonates only while the pilot is already in drone view.
+- `RemoteController.HasLinkedDrone()` and `PilotSoldier.ResolveDrone()` should treat dead linked drones as unavailable so the deployer can start cooldown and return to the ground-side flow.
+- Run `.\scripts\agents\gameplay_regression_guard.ps1` after touching `DroneWeapon`, `DroneDeployer`, `RemoteController`, `PilotSoldier`, the pilot/drone HUD loadout, or FPV drone prefabs.
+
 ## Physics & Collision Quirks
 
 ### Dev Box Collider Scale
@@ -387,10 +397,11 @@ public void TakeDamage(DamageInfo info)
 
 ### ModelRenderer Material Overrides
 
-**Pattern:** Renderer-level `MaterialOverride` paths are reliable in playtest and are already used by the arena blockout renderers. Generated ModelDoc material remaps may compile down to `materials/default.vmat` if the model compiler does not match the source FBX material names exactly.
+**Pattern:** Renderer-level `MaterialOverride` paths are reliable for single-material blockout props and playtest spot checks. They are unsafe as a durable fix for multi-material foliage: overriding the renderer can collapse bark and foliage card slots to one material. Generated ModelDoc material remaps may compile down to `materials/default.vmat` if the model compiler does not match the source FBX material names exactly.
 
 **Workflow:**
-- For quick visible in-game texture validation, put an explicit `MaterialOverride` on the `ModelRenderer`.
+- For quick visible in-game texture validation on a single-material prop, put an explicit `MaterialOverride` on the `ModelRenderer`.
+- For multi-material foliage, fix the Blender material names, exported FBX slots, asset config, and `.vmdl` remaps instead of adding scene `MaterialOverride` or `Materials.indexed`.
 - For live editor scenes, set the override on the currently loaded object with the bridge and then save only after confirming no runtime transform drift is being persisted.
 - Check the live component with `component_get` and expect `MaterialOverride` to show as `Material:<name>` when the override is loaded.
 
@@ -414,5 +425,5 @@ public void TakeDamage(DamageInfo info)
 
 ---
 
-Last Updated: May 12, 2026
-Version: 1.2 - Added held-item slot checks and MCP value conversion notes
+Last Updated: May 14, 2026
+Version: 1.3 - Added drone control-mode regression workflow

@@ -76,7 +76,8 @@ These hooks are intentionally conservative. They do not compile the project, mut
 3. **Smart Config Detection**: Invokes `smart_asset_export.ps1` which:
    - Detects which `.blend` file changed
    - Checks for asset-specific config (e.g., `drone_asset_pipeline.json` for `drone.blend`)
-   - Falls back to generic config (`asset_pipeline_generic.json`) if no specific config exists
+   - If no filename-matched config exists, checks for exactly one config whose `source_blend` points at the saved `.blend`
+   - Falls back to generic config (`asset_pipeline_generic.json`) only when no specific or `source_blend` config exists
    - Passes detected config to asset pipeline
 4. **Pipeline Execution**:
    - PowerShell wrapper (`asset_pipeline.ps1`) calls the Python pipeline (`asset_pipeline.py`) with the detected config
@@ -154,6 +155,36 @@ For new production assets, do the setup deliberately:
 4. Confirm the generated FBX/VMDL/prefab in S&Box.
 
 Use the generic fallback only when the target paths and prefab expectations are already compatible with the asset you are saving.
+
+### Naming Rule: What You Save Is What S&Box Shows
+
+The default workflow should produce the editor-visible asset with the same base name as the saved `.blend` file:
+
+| Blender source | Export config | Expected model output |
+| --- | --- | --- |
+| `environment_model.blend/terrain_assets.blend` | `scripts/terrain_assets_asset_pipeline.json` | `Assets/models/terrain_assets.vmdl` |
+| `weapons_model.blend/shotgun.blend` | `scripts/shotgun_asset_pipeline.json` | `Assets/models/shotgun.vmdl` |
+
+Do not target an old or alternate model name from a new `.blend` file unless the user explicitly asks for that alias. If the editor picker should show `terrain_assets`, the config must write `Assets/models/terrain_assets.fbx` and `Assets/models/terrain_assets.vmdl`, and scene or prefab `ModelRenderer` references must use `models/terrain_assets.vmdl`.
+
+For `terrain_assets`, keep material binding strict and raw:
+
+```json
+{
+  "vmdl_material_source_suffix": "",
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true
+}
+```
+
+The exported FBX material slots, `material_remap` keys, and generated `.vmdl` `from` values must all use the raw Blender material names (`TerrainPineBark`, `TerrainPineNeedlesCardA`, `TerrainPineNeedlesCardB`). Do not use scene `MaterialOverride` or `Materials.indexed` to fix this model; those can collapse multi-material foliage to one material.
+
+Run this after asset-pipeline edits to catch duplicate source configs or stale model paths:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1 -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/fbx_material_slot_audit.ps1 -ShowInfo
+```
 
 ### Custom Config: Per-Asset Customization
 

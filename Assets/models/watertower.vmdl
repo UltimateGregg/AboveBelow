@@ -15,31 +15,31 @@
 						[
 
 							{
-								from = "M_Deck.vmat"
+								from = "M_Deck"
 								to = "materials/environment/watertower_deck.vmat"
 							},
 
 							{
-								from = "M_Frame.vmat"
+								from = "M_Frame"
 								to = "materials/environment/watertower_frame.vmat"
 							},
 
 							{
-								from = "M_Ladder.vmat"
+								from = "M_Ladder"
 								to = "materials/environment/watertower_ladder.vmat"
 							},
 
 							{
-								from = "M_Roof.vmat"
+								from = "M_Roof"
 								to = "materials/environment/watertower_roof.vmat"
 							},
 
 							{
-								from = "M_Tank.vmat"
+								from = "M_Tank"
 								to = "materials/environment/watertower_tank.vmat"
 							},
 						]
-						use_global_default = true
+						use_global_default = false
 						global_default_material = "materials/default.vmat"
 					},
 				]

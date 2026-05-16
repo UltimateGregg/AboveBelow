@@ -20,6 +20,36 @@ if (-not (Test-Path $BlendFilePath)) {
 # Extract asset name from blend file (e.g., drone.blend → drone)
 $blendFileName = [System.IO.Path]::GetFileNameWithoutExtension([System.IO.Path]::GetFileNameWithoutExtension($BlendFilePath))
 $blendDir = Split-Path $BlendFilePath -Parent
+$projectRoot = (Get-Location).Path
+$normalizedBlendFile = [System.IO.Path]::GetFullPath($BlendFilePath)
+
+function Resolve-ConfigSourceBlend {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ConfigPath
+    )
+
+    try {
+        $config = Get-Content -Path $ConfigPath -Raw | ConvertFrom-Json
+    } catch {
+        return $null
+    }
+
+    if (-not $config.source_blend) {
+        return $null
+    }
+
+    $sourceBlend = [string]$config.source_blend
+    if ($sourceBlend.Contains('$')) {
+        return $null
+    }
+
+    if ([System.IO.Path]::IsPathRooted($sourceBlend)) {
+        return [System.IO.Path]::GetFullPath($sourceBlend)
+    }
+
+    return [System.IO.Path]::GetFullPath((Join-Path $projectRoot $sourceBlend))
+}
 
 # Check for asset-specific config (e.g., drone_asset_pipeline.json)
 $assetSpecificConfig = Join-Path $PSScriptRoot "${blendFileName}_asset_pipeline.json"
@@ -28,10 +58,30 @@ $genericConfig = Join-Path $PSScriptRoot "asset_pipeline_generic.json"
 if (Test-Path $assetSpecificConfig) {
     Write-Host "Using asset-specific config: $assetSpecificConfig" -ForegroundColor Green
     $configPath = $assetSpecificConfig
-} elseif (Test-Path $genericConfig) {
+} else {
+    $sourceBlendConfigs = @(
+        Get-ChildItem -Path $PSScriptRoot -Filter "*_asset_pipeline.json" |
+            Where-Object { $_.FullName -ne $assetSpecificConfig } |
+            Where-Object {
+                $configSource = Resolve-ConfigSourceBlend -ConfigPath $_.FullName
+                $configSource -and [string]::Equals($configSource, $normalizedBlendFile, [System.StringComparison]::OrdinalIgnoreCase)
+            }
+    )
+
+    if ($sourceBlendConfigs.Count -eq 1) {
+        $configPath = $sourceBlendConfigs[0].FullName
+        Write-Host "Using source_blend config: $configPath" -ForegroundColor Green
+    } elseif ($sourceBlendConfigs.Count -gt 1) {
+        $matches = ($sourceBlendConfigs | ForEach-Object { $_.FullName }) -join "`n  - "
+        Write-Error "Multiple asset configs point at ${BlendFilePath}:`n  - $matches"
+        exit 1
+    }
+}
+
+if (-not $configPath -and (Test-Path $genericConfig)) {
     Write-Host "Using generic config: $genericConfig" -ForegroundColor Yellow
     $configPath = $genericConfig
-} else {
+} elseif (-not $configPath) {
     # No per-asset config and no generic fallback. Auto-scaffold a config
     # from the .blend so newly modeled assets reach s&box without a manual
     # bootstrap step. The scaffolder refuses to overwrite an existing config,
@@ -84,3 +134,15 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Asset export completed successfully: $blendFileName" -ForegroundColor Green
+
+if (-not $DryRun) {
+    $materialSlotAudit = Join-Path $PSScriptRoot "agents\fbx_material_slot_audit.ps1"
+    if (Test-Path $materialSlotAudit) {
+        Write-Host "Running changed-asset material slot audit: $blendFileName"
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $materialSlotAudit -Root $projectRoot -Config $configPath
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Changed-asset material slot audit failed with exit code $LASTEXITCODE"
+            exit $LASTEXITCODE
+        }
+    }
+}

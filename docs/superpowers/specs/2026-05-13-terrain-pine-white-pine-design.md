@@ -2,15 +2,15 @@
 
 ## Status
 
-Approved by the user on 2026-05-13.
+Approved by the user on 2026-05-13. Updated after editor validation to use the editor-visible `terrain_assets` model path instead of the legacy `terrain_pine` alias.
 
 ## Goal
 
-Replace the current basic cone-stack `terrain_pine` with a tall, thin pine whose foliage is concentrated in the upper third and whose branches resemble the supplied white pine reference.
+Replace the current basic cone-stack tree asset with a tall, thin pine whose foliage is concentrated in the upper third and whose branches resemble the supplied white pine reference.
 
 ## Scope
 
-- Preserve the existing S&Box model path: `Assets/models/terrain_pine.vmdl`.
+- Use the S&Box model path that matches the Blender source name: `Assets/models/terrain_assets.vmdl`.
 - Preserve existing scene placements in `Assets/scenes/main.scene`.
 - Keep this as static environment asset work only. No gameplay, UI, networking, or prefab hierarchy changes.
 - Keep the existing bark and needle material slots so current material remaps continue to work.
@@ -23,7 +23,7 @@ The silhouette should be readable at gameplay distance: sparse enough to show re
 
 ## Asset Pipeline
 
-The source of truth remains `scripts/create_environment_proxy_assets.py` and `environment_model.blend/terrain_assets.blend`. A dedicated `scripts/terrain_pine_asset_pipeline.json` may export the `TerrainPine_Root` hierarchy to `Assets/models/terrain_pine.fbx` and regenerate `Assets/models/terrain_pine.vmdl`.
+The source of truth remains `scripts/create_environment_proxy_assets.py` and `environment_model.blend/terrain_assets.blend`. The dedicated `scripts/terrain_assets_asset_pipeline.json` exports the `TerrainPine_Root` hierarchy to `Assets/models/terrain_assets.fbx` and regenerates `Assets/models/terrain_assets.vmdl`.
 
 ## Verification
 

@@ -36,14 +36,15 @@ $candidateDirs = @(
     (Join-Path $env:LOCALAPPDATA "Sandbox"),
     (Join-Path $env:LOCALAPPDATA "Facepunch")
 )
+$candidateDirs += @(Get-AgentSboxLogDirectories -Root $Root)
 
 foreach ($dir in $candidateDirs) {
     if ([string]::IsNullOrWhiteSpace($dir) -or -not (Test-Path -LiteralPath $dir)) {
         continue
     }
 
-    Get-ChildItem -LiteralPath $dir -Recurse -File -Include "*.log", "*.txt" -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -ne "agent-build.log" -and $_.LastWriteTime -ge $cutoff } |
+    Get-ChildItem -LiteralPath $dir -Recurse -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.Extension -in @(".log", ".txt") -and $_.Name -ne "agent-build.log" -and $_.LastWriteTime -ge $cutoff } |
         ForEach-Object { $logPaths.Add($_.FullName) }
 }
 

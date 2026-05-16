@@ -304,7 +304,7 @@ def write_vmat(
     )
 
 
-def write_vmdl(path: Path, mesh: str, remaps: list[tuple[str, str]]) -> None:
+def write_vmdl(path: Path, mesh: str, remaps: list[tuple[str, str]], use_global_default: bool = True) -> None:
     remap_lines: list[str] = []
     for source, target in remaps:
         remap_lines.extend(
@@ -337,7 +337,7 @@ def write_vmdl(path: Path, mesh: str, remaps: list[tuple[str, str]]) -> None:
                 "\t\t\t\t\t\t[",
                 *remap_lines,
                 "\t\t\t\t\t\t]",
-                "\t\t\t\t\t\tuse_global_default = true",
+                f"\t\t\t\t\t\tuse_global_default = {str(use_global_default).lower()}",
                 '\t\t\t\t\t\tglobal_default_material = "materials/default.vmat"',
                 "\t\t\t\t\t},",
                 "\t\t\t\t]",
@@ -785,6 +785,7 @@ def main() -> None:
         MODELS / "terrain_rock.vmdl",
         "models/terrain_rock.fbx",
         [("TerrainRock", "materials/environment/terrain_rock.vmat")],
+        use_global_default=False,
     )
 
     bpy.ops.wm.save_as_mainfile(filepath=str(BLEND_DIR / "terrain_assets.blend"))

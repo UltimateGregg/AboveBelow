@@ -7,7 +7,7 @@
 	"g_flMetalness"		"0.300000"
 	"g_flRoughness"		"0.560000"
 	"g_bFogEnabled"		"1"
-	"g_vTexCoordScale"		"[4.000 4.000]"
+	"g_vTexCoordScale"		"[1.000 1.000]"
 	"g_vTexCoordOffset"		"[0.000 0.000]"
 	"g_vTexCoordScrollSpeed"		"[0.000 0.000]"
 }

@@ -197,14 +197,7 @@ public sealed class DroneDeployer : Component
 		if ( !pilot.IsValid() ) return;
 
 		// Drone was never recorded, or has been removed from the scene.
-		var droneStillAlive = false;
-		if ( pilot.LinkedDroneId != default )
-		{
-			droneStillAlive = Scene.GetAllComponents<DroneBase>()
-				.Any( d => d.GameObject.Id == pilot.LinkedDroneId );
-		}
-
-		if ( droneStillAlive ) return;
+		if ( pilot.ResolveDrone().IsValid() ) return;
 
 		DroneInFlight = false;
 		LaunchReadyAt = Time.Now + LaunchCooldown;

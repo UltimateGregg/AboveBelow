@@ -1,6 +1,6 @@
 param(
     [string]$Root = "",
-    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "scene", "asset", "asset-production", "blender-live", "networking", "docs", "balance", "playtest", "logs", "readiness", "self-test")]
+    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "scene", "asset", "asset-production", "modeldoc", "blender-live", "networking", "gameplay-regression", "docs", "balance", "playtest", "logs", "readiness", "self-test")]
     [string]$Suite = "quick",
     [switch]$ShowInfo,
     [switch]$FailOnWarning
@@ -46,10 +46,12 @@ switch ($Suite) {
     "quick" {
         $scripts = @(
             @{ Name = "build_log_sentinel.ps1"; Args = $commonArgs },
+            @{ Name = "gameplay_regression_guard.ps1"; Args = $commonArgs },
             @{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs },
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
+            @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
             @{ Name = "ui_flow_audit.ps1"; Args = $commonArgs },
             @{ Name = "networking_review_audit.ps1"; Args = $commonArgs },
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
@@ -61,10 +63,13 @@ switch ($Suite) {
         $scripts = @(
             @{ Name = "test_full_automation_layer.ps1"; Args = @("-Root", $Root) },
             @{ Name = "build_log_sentinel.ps1"; Args = $commonArgs },
+            @{ Name = "gameplay_regression_guard.ps1"; Args = $commonArgs },
             @{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs },
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
+            @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
+            @{ Name = "fbx_material_slot_audit.ps1"; Args = $commonArgs },
             @{ Name = "ui_flow_audit.ps1"; Args = $commonArgs },
             @{ Name = "networking_review_audit.ps1"; Args = $commonArgs },
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
@@ -85,18 +90,32 @@ switch ($Suite) {
     "prefab" { $scripts = @(@{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs }) }
     "prefab-graph" { $scripts = @(@{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs }) }
     "scene" { $scripts = @(@{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs }) }
-    "asset" { $scripts = @(@{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs }) }
+    "asset" {
+        $scripts = @(
+            @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
+            @{ Name = "fbx_material_slot_audit.ps1"; Args = $commonArgs }
+        )
+    }
+    "modeldoc" {
+        $scripts = @(
+            @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
+            @{ Name = "fbx_material_slot_audit.ps1"; Args = $commonArgs }
+        )
+    }
     "asset-production" {
         $scripts = @(
             @{ Name = "blender_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "material_texture_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
+            @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
+            @{ Name = "fbx_material_slot_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs },
             @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root, "-ShowFiles") }
         )
     }
     "blender-live" { $scripts = @(@{ Name = "blender_live_toolkit_self_test.ps1"; Args = @("-Root", $Root) }) }
     "networking" { $scripts = @(@{ Name = "networking_review_audit.ps1"; Args = $commonArgs }) }
+    "gameplay-regression" { $scripts = @(@{ Name = "gameplay_regression_guard.ps1"; Args = $commonArgs }) }
     "docs" { $scripts = @(@{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs }) }
     "balance" { $scripts = @(@{ Name = "balance_tuning_report.ps1"; Args = @("-Root", $Root) }) }
     "playtest" { $scripts = @(@{ Name = "playtest_checklist.ps1"; Args = @("-Root", $Root, "-ChangeArea", "All") }) }

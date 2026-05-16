@@ -22,6 +22,32 @@ function Get-AssetNameFromBlend {
     return [System.IO.Path]::GetFileNameWithoutExtension($name)
 }
 
+function Resolve-ConfigSourceBlend {
+    param([string]$ConfigPath)
+
+    try {
+        $json = Read-AgentJson -Path $ConfigPath
+    }
+    catch {
+        return $null
+    }
+
+    if (-not ($json.PSObject.Properties.Name -contains "source_blend")) {
+        return $null
+    }
+
+    $source = [string]$json.source_blend
+    if ([string]::IsNullOrWhiteSpace($source) -or $source -match "\$\{") {
+        return $null
+    }
+
+    if ([System.IO.Path]::IsPathRooted($source)) {
+        return [System.IO.Path]::GetFullPath($source)
+    }
+
+    return [System.IO.Path]::GetFullPath((Join-Path $Root $source))
+}
+
 function Test-RelativeOutputPath {
     param(
         [string]$ConfigPath,
@@ -63,6 +89,37 @@ function Get-JsonBool {
     }
 
     return [bool]$Json.$Name
+}
+
+function Get-JsonBoolOption {
+    param(
+        [object]$Json,
+        [string]$Name,
+        [Nullable[bool]]$Default = $null
+    )
+
+    if ($null -eq $Json -or -not ($Json.PSObject.Properties.Name -contains $Name)) {
+        return $Default
+    }
+
+    $value = $Json.$Name
+    if ($null -eq $value) {
+        return $Default
+    }
+
+    if ($value -is [bool]) {
+        return [bool]$value
+    }
+
+    $text = ([string]$value).Trim()
+    if ($text.Equals("true", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $true
+    }
+    if ($text.Equals("false", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $false
+    }
+
+    return [bool]$value
 }
 
 function Get-VmdlMaterialSourceSuffix {
@@ -113,6 +170,53 @@ function Get-VmdlRemapSources {
         $sources.Add($match.Groups["source"].Value)
     }
     return @($sources)
+}
+
+function Get-VmdlUseGlobalDefault {
+    param([string]$Path)
+
+    $raw = Get-Content -LiteralPath $Path -Raw
+    $match = [regex]::Match($raw, '(?m)\buse_global_default\s*=\s*(?<value>true|false)', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    if (-not $match.Success) {
+        return $null
+    }
+
+    return $match.Groups["value"].Value.Equals("true", [System.StringComparison]::OrdinalIgnoreCase)
+}
+
+function Test-VmdlGlobalDefault {
+    param(
+        [string]$ConfigPath,
+        [object]$Json
+    )
+
+    $expected = Get-JsonBoolOption -Json $Json -Name "vmdl_use_global_default"
+    if ($null -eq $expected) {
+        return
+    }
+
+    $targetVmdl = [string]$Json.target_vmdl
+    if ([string]::IsNullOrWhiteSpace($targetVmdl) -or $targetVmdl -match "\$\{") {
+        return
+    }
+
+    $targetVmdlFull = Join-Path $Root $targetVmdl
+    if (-not (Test-Path -LiteralPath $targetVmdlFull)) {
+        return
+    }
+
+    $actual = Get-VmdlUseGlobalDefault -Path $targetVmdlFull
+    if ($null -eq $actual) {
+        Add-AgentIssue $issues "Error" "VMDL Global Default" $ConfigPath "Config declares vmdl_use_global_default but generated VMDL has no use_global_default assignment." "Re-export with asset_pipeline.py so ModelDoc fallback behavior is reproducible."
+        return
+    }
+
+    if ([bool]$actual -ne [bool]$expected) {
+        Add-AgentIssue $issues "Error" "VMDL Global Default" $ConfigPath "Generated VMDL use_global_default is '$actual' but config expects '$expected'." "Re-export with asset_pipeline.py or update vmdl_use_global_default if this fallback is intentional."
+        return
+    }
+
+    Add-AgentIssue $issues "Info" "VMDL Global Default" $ConfigPath "VMDL use_global_default matches the config."
 }
 
 function Test-VmdlMaterialSources {
@@ -198,19 +302,60 @@ foreach ($file in $blendFiles) {
     $assetName = Get-AssetNameFromBlend -Path $file.FullName
     $relative = ConvertTo-AgentRelativePath -Path $file.FullName -Root $Root
     $specific = Join-Path $Root "scripts\${assetName}_asset_pipeline.json"
+    $normalizedBlend = [System.IO.Path]::GetFullPath($file.FullName)
 
     if (Test-Path -LiteralPath $specific) {
         Add-AgentIssue $issues "Info" "Blend Config" $relative "Uses asset-specific config scripts/${assetName}_asset_pipeline.json."
     }
-    elseif (Test-Path -LiteralPath $genericConfig) {
-        Add-AgentIssue $issues "Info" "Blend Config" $relative "Uses generic fallback config."
-    }
     else {
-        Add-AgentIssue $issues "Error" "Blend Config" $relative "No specific config and no generic fallback exist." "Add scripts/${assetName}_asset_pipeline.json or restore asset_pipeline_generic.json."
+        $sourceBlendConfigs = @(
+            Get-ChildItem -LiteralPath (Join-Path $Root "scripts") -File -Filter "*_asset_pipeline.json" -ErrorAction SilentlyContinue |
+                Where-Object {
+                    $configSource = Resolve-ConfigSourceBlend -ConfigPath $_.FullName
+                    $configSource -and [string]::Equals($configSource, $normalizedBlend, [System.StringComparison]::OrdinalIgnoreCase)
+                }
+        )
+
+        if ($sourceBlendConfigs.Count -eq 1) {
+            $configRelative = ConvertTo-AgentRelativePath -Path $sourceBlendConfigs[0].FullName -Root $Root
+            Add-AgentIssue $issues "Info" "Blend Config" $relative "Uses source_blend config $configRelative."
+        }
+        elseif ($sourceBlendConfigs.Count -gt 1) {
+            $matches = @($sourceBlendConfigs | ForEach-Object { ConvertTo-AgentRelativePath -Path $_.FullName -Root $Root }) -join ", "
+            Add-AgentIssue $issues "Error" "Blend Config" $relative "Multiple configs point at this blend: $matches" "Keep only one auto-export config per .blend source or make the hook disambiguate them."
+        }
+        elseif (Test-Path -LiteralPath $genericConfig) {
+            Add-AgentIssue $issues "Info" "Blend Config" $relative "Uses generic fallback config."
+        }
+        else {
+            Add-AgentIssue $issues "Error" "Blend Config" $relative "No specific config and no generic fallback exist." "Add scripts/${assetName}_asset_pipeline.json or restore asset_pipeline_generic.json."
+        }
     }
 }
 
 $configFiles = @(Get-ChildItem -LiteralPath (Join-Path $Root "scripts") -File -Filter "*_asset_pipeline.json" -ErrorAction SilentlyContinue)
+$configsBySourceBlend = @{}
+foreach ($config in $configFiles) {
+    $sourceBlend = Resolve-ConfigSourceBlend -ConfigPath $config.FullName
+    if ([string]::IsNullOrWhiteSpace($sourceBlend)) {
+        continue
+    }
+
+    if (-not $configsBySourceBlend.ContainsKey($sourceBlend)) {
+        $configsBySourceBlend[$sourceBlend] = New-Object System.Collections.Generic.List[string]
+    }
+    $configsBySourceBlend[$sourceBlend].Add((ConvertTo-AgentRelativePath -Path $config.FullName -Root $Root))
+}
+
+foreach ($entry in $configsBySourceBlend.GetEnumerator()) {
+    if ($entry.Value.Count -le 1) {
+        continue
+    }
+
+    $blendRelative = ConvertTo-AgentRelativePath -Path $entry.Key -Root $Root
+    Add-AgentIssue $issues "Error" "Blend Config" $blendRelative "Multiple asset pipeline configs point at the same source blend: $($entry.Value -join ', ')." "Keep one auto-export config per .blend so saving the file produces the expected asset-browser name and folder output."
+}
+
 foreach ($config in $configFiles) {
     $relative = ConvertTo-AgentRelativePath -Path $config.FullName -Root $Root
     try {
@@ -258,6 +403,7 @@ foreach ($config in $configFiles) {
     }
 
     Test-VmdlMaterialSources -ConfigPath $relative -Json $json
+    Test-VmdlGlobalDefault -ConfigPath $relative -Json $json
 }
 
 if ($blendFiles.Count -eq 0) {

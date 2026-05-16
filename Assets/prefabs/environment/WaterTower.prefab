@@ -29,7 +29,6 @@
             "__guid": "983f183e-b10e-4ea0-96c6-4fe7665226b1",
             "BodyGroups": 18446744073709551615,
             "Model": "models/watertower.vmdl",
-            "MaterialOverride": "materials/environment/watertower_tank.vmat",
             "RenderType": "On",
             "Tint": "1,1,1,1"
           }

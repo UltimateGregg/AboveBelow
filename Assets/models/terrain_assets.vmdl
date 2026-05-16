@@ -15,8 +15,18 @@
 						[
 
 							{
-								from = "TerrainRock"
-								to = "materials/environment/terrain_rock.vmat"
+								from = "TerrainPineBark"
+								to = "materials/environment/terrain_pine_bark.vmat"
+							},
+
+							{
+								from = "TerrainPineNeedlesCardA"
+								to = "materials/environment/terrain_pine_needles_card_a.vmat"
+							},
+
+							{
+								from = "TerrainPineNeedlesCardB"
+								to = "materials/environment/terrain_pine_needles_card_b.vmat"
 							},
 						]
 						use_global_default = false
@@ -31,7 +41,7 @@
 					{
 						_class = "RenderMeshFile"
 						name = "LOD0"
-						filename = "models/terrain_rock.fbx"
+						filename = "models/terrain_assets.fbx"
 						import_translation = [ 0.0, 0.0, 0.0 ]
 						import_rotation = [ 0.0, 0.0, 0.0 ]
 						import_scale = 1.0

@@ -73,6 +73,7 @@ $possibleLogDirs = @(
     (Join-Path $env:LOCALAPPDATA "sbox\logs"),
     (Join-Path $env:LOCALAPPDATA "s&box\logs")
 )
+$possibleLogDirs += @(Get-AgentSboxLogDirectories -Root $Root)
 
 foreach ($dir in $possibleLogDirs) {
     if ([string]::IsNullOrWhiteSpace($dir) -or -not (Test-Path -LiteralPath $dir)) {

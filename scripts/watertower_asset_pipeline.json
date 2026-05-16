@@ -12,6 +12,9 @@
     "M_Deck": "materials/environment/watertower_deck.vmat",
     "M_Ladder": "materials/environment/watertower_ladder.vmat"
   },
+  "vmdl_material_source_suffix": "",
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
   "verify_fbx": true,
   "required_object": [
     "WatertowerMesh"

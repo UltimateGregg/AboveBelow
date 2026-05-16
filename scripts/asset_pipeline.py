@@ -211,6 +211,8 @@ def write_vmdl(
     fbx_resource_path: str,
     material_remaps: dict[str, str] | None = None,
     material_source_suffix: Any = ".vmat",
+    use_global_default: bool = True,
+    global_default_material: str = "materials/default.vmat",
 ) -> None:
     remaps = material_remaps or {}
     remap_blocks = []
@@ -244,8 +246,8 @@ def write_vmdl(
 \t\t\t\t\t\t[
 {remap_text}
 \t\t\t\t\t\t]
-\t\t\t\t\t\tuse_global_default = true
-\t\t\t\t\t\tglobal_default_material = "materials/default.vmat"
+\t\t\t\t\t\tuse_global_default = {str(bool(use_global_default)).lower()}
+\t\t\t\t\t\tglobal_default_material = "{global_default_material}"
 \t\t\t\t\t}},
 \t\t\t\t]
 \t\t\t}},
@@ -568,6 +570,8 @@ def update_vmdl(args: argparse.Namespace, root: Path, fbx_resource_path: str) ->
         fbx_resource_path,
         args.material_remap or {},
         args.vmdl_material_source_suffix,
+        args.vmdl_use_global_default,
+        args.vmdl_global_default_material,
     )
     print(f"Updated model document: {target_vmdl}")
     return target_vmdl
@@ -597,6 +601,21 @@ def build_parser(defaults: dict[str, Any]) -> argparse.ArgumentParser:
             "from values. Set to an empty string in JSON config when S&Box "
             "must match the raw FBX material names."
         ),
+    )
+    parser.add_argument(
+        "--vmdl-use-global-default",
+        action=argparse.BooleanOptionalAction,
+        default=defaults.get("vmdl_use_global_default", True),
+        help=(
+            "Write ModelDoc use_global_default. Disable per config for multi-material "
+            "assets where S&Box should preserve source material assignments instead "
+            "of falling back to materials/default.vmat."
+        ),
+    )
+    parser.add_argument(
+        "--vmdl-global-default-material",
+        default=defaults.get("vmdl_global_default_material", "materials/default.vmat"),
+        help="ModelDoc global_default_material resource used when vmdl_use_global_default is enabled.",
     )
     parser.add_argument("--material-override", default=defaults.get("material_override"), help="Optional renderer-wide material override for the updated prefab ModelRenderer.")
     parser.add_argument("--clear-visual-children", action="store_true", default=defaults.get("clear_visual_children", False))

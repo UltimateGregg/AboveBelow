@@ -27,6 +27,7 @@ $areas = [ordered]@{
     Networking = New-Object System.Collections.Generic.List[string]
     PrefabScene = New-Object System.Collections.Generic.List[string]
     AssetPipeline = New-Object System.Collections.Generic.List[string]
+    ModelDoc = New-Object System.Collections.Generic.List[string]
     UI = New-Object System.Collections.Generic.List[string]
     Balance = New-Object System.Collections.Generic.List[string]
     Docs = New-Object System.Collections.Generic.List[string]
@@ -38,11 +39,15 @@ foreach ($file in $changed) {
     $isAgentTooling = $path -match "^scripts/agents/|^\.agents/|^\.codex/|^docs/agent_toolkit\.md$"
     $isProductionAssetTool = $path -match "^scripts/blender_asset_audit\.py$|^scripts/render_asset_preview\.py$|^scripts/asset_quality_profiles\.json$|^scripts/agents/(blender_quality_audit|material_texture_audit|asset_visual_review|new_asset_brief)\.ps1$"
     $isAssetPipelineDoc = $path -match "^docs/(asset_pipeline|automation)\.md$"
+    $isModelDocTooling = $path -match "^scripts/agents/modeldoc_audit\.ps1$|^\.agents/sbox/modeldoc-|^docs/agent_toolkit\.md$"
 
     if ($isAgentTooling) {
         $areas.Tooling.Add($path)
         if ($isProductionAssetTool) {
             $areas.AssetPipeline.Add($path)
+        }
+        if ($isModelDocTooling) {
+            $areas.ModelDoc.Add($path)
         }
         if ($path -match "\.md$|^docs/") {
             $areas.Docs.Add($path)
@@ -62,6 +67,9 @@ foreach ($file in $changed) {
     if ($path -match "\.blend" -or $path -match "^Assets/(models|materials|sounds)/" -or $path -match "^scripts/.*asset_pipeline.*\.json$|^scripts/(asset_pipeline|smart_asset_export|scaffold_asset_config)" -or $isAssetPipelineDoc) {
         $areas.AssetPipeline.Add($path)
     }
+    if ($path -match "^Assets/models/.*\.vmdl$" -or $isModelDocTooling) {
+        $areas.ModelDoc.Add($path)
+    }
     if ($isProductionAssetTool) {
         $areas.AssetPipeline.Add($path)
         $areas.Tooling.Add($path)
@@ -76,6 +84,10 @@ foreach ($file in $changed) {
         $areas.Docs.Add($path)
     }
 }
+
+$touchesDroneControlFlow = @($changed | Where-Object {
+    $_.Path -match "^(Code/(Drone/DroneWeapon|Player/(DroneDeployer|PilotSoldier|RemoteController))\.cs|Code/UI/HudPanel\.razor|Assets/prefabs/(drone_fpv|drone_fpv_fiber|pilot_ground)\.prefab|scripts/(check_drone_kamikaze_primary|check_loadout_slots)\.ps1)"
+}).Count -gt 0
 
 $lines = New-Object System.Collections.Generic.List[string]
 Add-Line $lines "# Feature Readiness Report"
@@ -112,6 +124,10 @@ Add-Line $lines "## Required Checks"
 Add-Line $lines ""
 Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/build_log_sentinel.ps1`'
 
+if ($areas.Gameplay.Count -gt 0 -or $touchesDroneControlFlow) {
+    Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/gameplay_regression_guard.ps1`'
+}
+
 if ($areas.PrefabScene.Count -gt 0) {
     Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_wiring_audit.ps1`'
     Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_graph_audit.ps1`'
@@ -119,7 +135,12 @@ if ($areas.PrefabScene.Count -gt 0) {
 }
 if ($areas.AssetPipeline.Count -gt 0) {
     Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1`'
+    Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/fbx_material_slot_audit.ps1 -ShowInfo`'
     Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production`'
+}
+if ($areas.ModelDoc.Count -gt 0) {
+    Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/modeldoc_audit.ps1 -ShowInfo`'
+    Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite modeldoc`'
 }
 if ($areas.UI.Count -gt 0) {
     Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/ui_flow_audit.ps1`'
@@ -143,6 +164,9 @@ Add-Line $lines ""
 if ($areas.Gameplay.Count -gt 0) {
     Add-Line $lines "- Gameplay: class/variant selection, combat path touched by the change, round-end behavior."
 }
+if ($touchesDroneControlFlow) {
+    Add-Line $lines "- Drone controls: FPV and Fiber FPV launch on ground-side LMB, second ground-side LMB or F enters drone view, and only drone-view LMB detonates."
+}
 if ($areas.Networking.Count -gt 0) {
     Add-Line $lines "- Networking: host-only mutations, replicated state, remote client visuals/notifications."
 }
@@ -151,6 +175,10 @@ if ($areas.PrefabScene.Count -gt 0) {
 }
 if ($areas.AssetPipeline.Count -gt 0) {
     Add-Line $lines "- Assets: save/export loop, model/material reload, missing/error material check."
+    Add-Line $lines "- Multi-material foliage: editor inspector shows the intended model, no default material fallback, and no scene `MaterialOverride` or `Materials.indexed` on tree instances."
+}
+if ($areas.ModelDoc.Count -gt 0) {
+    Add-Line $lines "- ModelDoc: source mesh path, material remap, owning config drift, FBX material slots, and `use_global_default` fallback."
 }
 if ($areas.UI.Count -gt 0) {
     Add-Line $lines "- UI: startup flow, only-live menu actions, 1280x720 HUD fit, class picker, scoreboard, kill feed, loadout state."

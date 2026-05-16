@@ -1,8 +1,8 @@
-﻿# terrain_pine
+# terrain_assets
 
 ## Asset
 
-- Name: terrain_pine
+- Name: terrain_assets
 - Category: environment
 - Profile: Environment and Prop
 
@@ -21,8 +21,14 @@ Required name hints:
 
 ## S&Box Targets
 
-- Prefab: Assets/scenes/main.scene
-- Model: Assets/models/terrain_pine.vmdl
+- Source blend: `environment_model.blend/terrain_assets.blend`
+- Export config: `scripts/terrain_assets_asset_pipeline.json`
+- Model: `Assets/models/terrain_assets.vmdl`
+- Scene use: `Assets/scenes/main.scene` tree `ModelRenderer` components reference `models/terrain_assets.vmdl`
+
+## Workflow Rule
+
+The asset browser name must match the Blender source name unless the user explicitly asks for a legacy alias. For this asset, saving `terrain_assets.blend` must produce `terrain_assets.fbx` and `terrain_assets.vmdl` in `Assets/models/`; it must not silently refresh `terrain_pine.vmdl`.
 
 ## Reference Notes
 
@@ -51,3 +57,4 @@ Confirm origin and dimensions are sensible for scene placement.
 - [ ] Collision expectations are documented separately from visual mesh export.
 - [ ] Repeated props have stable names and avoid giant bounds.
 - [ ] Blockout dev-box collider sync remains a separate workflow.
+- [ ] The S&Box inspector shows `terrain_assets` for placed trees, not a legacy alias such as `terrain_pine`.

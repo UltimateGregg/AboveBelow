@@ -27,6 +27,7 @@ screenshots/
 *.blend.before-*
 
 # .NET build output
+.codex-dotnet/
 bin/
 obj/
 **/.bin/

@@ -18,8 +18,9 @@ For simple visual assets, set `combine_meshes: true` in the config. This bakes t
 3. Audit materials and textures.
 4. Export through the existing save hook or asset_pipeline.ps1.
 5. For alpha-cutout assets such as foliage cards, generate a texture contact sheet and review the color, mask, and checkerboard composite.
-6. Run the asset-production suite.
-7. Perform S&Box editor visual acceptance.
+6. Run the ModelDoc audit for the generated `.vmdl`.
+7. Run the asset-production suite.
+8. Perform S&Box editor visual acceptance.
 
 ## Drone Example
 
@@ -53,6 +54,8 @@ For another asset, copy `scripts/drone_asset_pipeline.json` and change:
 - `combined_object_name`
 - `material_remap`
 
+For editor-visible assets, keep the saved `.blend` base name, config base name, and generated model base name aligned. For example, `environment_model.blend/terrain_assets.blend` should use `scripts/terrain_assets_asset_pipeline.json` and write `Assets/models/terrain_assets.vmdl`. Only target a legacy model name when the user explicitly asks for that alias and the scene/prefab references are meant to keep using it.
+
 The script creates timestamped backups before replacing FBX or prefab files.
 Backups are stored under `.tmpbuild/asset_backups` so the S&Box asset browser does not import them as real game assets.
 
@@ -83,6 +86,28 @@ The `.vmdl` `from` value must match the material source name style S&Box sees fo
 
 Use this when the exported FBX material slot is the raw Blender material name, such as `TerrainPineBark`, and S&Box is not applying remaps written as `TerrainPineBark.vmat`. The asset pipeline audit checks generated `.vmdl` remap sources against this config.
 
+For strict multi-material foliage, also disable the ModelDoc global default fallback so a missed material source does not flatten the whole model to `materials/default.vmat`:
+
+```json
+{
+  "vmdl_material_source_suffix": "",
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true
+}
+```
+
+`terrain_assets` uses this form. Its Blender material slots, `material_remap` keys, and `.vmdl` `from` values are the raw names `TerrainPineBark`, `TerrainPineNeedlesCardA`, and `TerrainPineNeedlesCardB`; scene instances should not use `MaterialOverride` or `Materials.indexed` for this model.
+
+Run the ModelDoc audit when a `.vmdl`, source FBX path, or material remap changes:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/modeldoc_audit.ps1 -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/fbx_material_slot_audit.ps1 -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite modeldoc
+```
+
+The audits validate ModelDoc headers, `RenderMeshFile` source files, material target paths, duplicate remap sources, owning asset configs, strict material source naming rules, ModelDoc global-default fallback settings, and actual exported FBX material slots. They still do not replace a final visual check in the S&Box editor.
+
 For textured assets, keep the names aligned through the whole chain:
 
 - Blender material slot: `Body_Tactical`
@@ -93,7 +118,7 @@ For textured assets, keep the names aligned through the whole chain:
 For foliage cards, keep the transparent background visible in review:
 
 ```powershell
-python .\scripts\texture_contact_sheet.py --config .\scripts\terrain_pine_asset_pipeline.json --out .\screenshots\asset_previews\terrain_pine_texture_sheet.png
+python .\scripts\texture_contact_sheet.py --config .\scripts\terrain_assets_asset_pipeline.json --out .\screenshots\asset_previews\terrain_assets_texture_sheet.png
 ```
 
 The contact sheet shows the composited cutout over a checkerboard, the raw color texture, and the translucency mask. Do this before judging the tree model in Blender, then verify the imported result in the S&Box editor.

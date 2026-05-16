@@ -45,6 +45,8 @@ if (Include-Area "Gameplay") {
     Add-Line $lines "- [ ] Assault, Counter-UAV, Heavy, GPS, FPV, and Fiber FPV can each be selected."
     Add-Line $lines "- [ ] Soldier movement, sprint, jump, crouch/slide, and ladder movement still respond."
     Add-Line $lines "- [ ] Pilot ground avatar can deploy or control the selected drone."
+    Add-Line $lines "- [ ] FPV and Fiber FPV: first ground-side LMB launches, second ground-side LMB or F enters drone control, and LMB while in drone view detonates."
+    Add-Line $lines "- [ ] FPV and Fiber FPV detonation starts redeploy cooldown and does not prematurely end the round before the intended drone death state is reached."
     Add-Line $lines "- [ ] Killing all members of one team ends the round with the expected winner."
     Add-Line $lines ""
 }
@@ -74,9 +76,11 @@ if (Include-Area "Asset") {
     Add-Line $lines "## Assets"
     Add-Line $lines ""
     Add-Line $lines '- [ ] `scripts\agents\asset_pipeline_audit.ps1` passes.'
+    Add-Line $lines '- [ ] `scripts\agents\fbx_material_slot_audit.ps1 -ShowInfo` passes for strict material configs.'
     Add-Line $lines '- [ ] Saving the edited `.blend` runs the configured export pipeline or a manual dry run succeeds.'
     Add-Line $lines '- [ ] Exported `.fbx`, `.vmdl`, `.vmat`, and `.prefab` paths are under the expected `Assets/` folders.'
     Add-Line $lines "- [ ] S&Box editor reloads the changed asset without a missing model or error material."
+    Add-Line $lines "- [ ] Multi-material foliage has no scene `MaterialOverride` or `Materials.indexed`, and the editor inspector does not show `materials/default.vmat_c` for the tree model."
     Add-Line $lines ""
 }
 

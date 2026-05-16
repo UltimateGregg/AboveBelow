@@ -5,9 +5,8 @@ using System.Linq;
 namespace DroneVsPlayers;
 
 /// <summary>
-/// Drone offensive ability. Two options stubbed in here:
-///   Attack1 (LMB): forward-firing hitscan beam (low damage, fast cadence)
-///   Attack2 (RMB): kamikaze proximity detonation (high damage, kills drone)
+/// Drone offensive ability. Hitscan drones use Attack1 for the beam and
+/// Attack2 for kamikaze. Kamikaze-only drones use Attack1 for detonation.
 /// Pick one or both. The kamikaze mode is great for the asymmetric loop
 /// because it forces the pilot to commit and gives ground players a
 /// satisfying counter-window.
@@ -38,10 +37,15 @@ public sealed class DroneWeapon : Component
 	TimeSince _timeSinceFire = 10f;
 
 	public bool PrimaryReady => PrimaryCooldownRemaining <= 0f;
-	public float PrimaryCooldownRemaining => MathF.Max( 0f, HitscanInterval - _timeSinceFire );
-	public float PrimaryReadyFraction => HitscanInterval <= 0f
+	public float PrimaryCooldownRemaining => PrimaryUsesKamikaze
+		? 0f
+		: MathF.Max( 0f, HitscanInterval - _timeSinceFire );
+	public float PrimaryReadyFraction => PrimaryUsesKamikaze || HitscanInterval <= 0f
 		? 1f
 		: (1f - PrimaryCooldownRemaining / HitscanInterval).Clamp( 0f, 1f );
+
+	/// <summary>True when the primary drone action is kamikaze detonation instead of hitscan fire.</summary>
+	public bool PrimaryUsesKamikaze => EnableKamikaze && !EnableHitscan;
 
 	protected override void OnStart()
 	{
@@ -60,16 +64,35 @@ public sealed class DroneWeapon : Component
 		if ( LocalOptionsState.ConsumesGameplayInput )
 			return;
 
+		if ( PrimaryUsesKamikaze && Input.Pressed( "Attack1" ) )
+		{
+			RequestDetonate();
+			return;
+		}
+
 		if ( EnableHitscan && Input.Down( "Attack1" ) && _timeSinceFire >= HitscanInterval )
 		{
 			FireHitscan();
 			_timeSinceFire = 0f;
 		}
 
-		if ( EnableKamikaze && Input.Pressed( "Attack2" ) )
+		if ( !PrimaryUsesKamikaze && EnableKamikaze && Input.Pressed( "Attack2" ) )
 		{
-			Detonate();
+			RequestDetonate();
 		}
+	}
+
+	/// <summary>Triggers this drone's kamikaze detonation if the payload is available.</summary>
+	public void RequestDetonate()
+	{
+		if ( !EnableKamikaze )
+			return;
+
+		var droneHealth = Components.Get<Health>() ?? Components.GetInAncestors<Health>();
+		if ( droneHealth.IsValid() && droneHealth.IsDead )
+			return;
+
+		Detonate();
 	}
 
 	void ResolvePrefabReferences()

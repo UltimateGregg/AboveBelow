@@ -622,13 +622,20 @@ HudPanel {
             left: -120px;
             top: -120px;
             width: 240px;
-            height: 240px;
+            height: 60px;
             transform-origin: 120px 120px;
-            border: 4px solid rgba(255, 60, 60, 0.85);
-            border-radius: 120px;
-            // Mask: only show the top portion (an arc).
-            clip: rect(0, 240px, 60px, 0);
+            overflow: hidden;
             pointer-events: none;
+
+            .damage-arc-ring {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 240px;
+                height: 240px;
+                border: 4px solid rgba(255, 60, 60, 0.85);
+                border-radius: 120px;
+            }
         }
 
         // ─────── Low HP vignette ───────

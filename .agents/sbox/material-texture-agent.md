@@ -19,6 +19,8 @@ Audit S&Box material remaps and texture references before playtest. This catches
 - Every mapped material should have `TextureColor`.
 - `TextureColor` must not use `materials/default/default_color.tga` unless the owning config explicitly sets `allow_default_color_texture: true`.
 - Texture references should point to existing project files unless they are known engine/default resources skipped by shared agent path rules.
+- Blender procedural materials do not transfer as S&Box textures by themselves. When the Blender source uses procedural nodes for the visible look, bake color PNGs in background Blender and wire those PNGs into the mapped `.vmat` files.
+- Do not compensate for missing baked textures with renderer-wide `MaterialOverride`; that can hide the material slot problem and collapse multi-material models to one surface.
 - Alpha-tested materials must provide `TextureTranslucency`; foliage/card materials without a cutout mask should be treated as suspect until visually reviewed.
 - Missing optional maps from `optional_texture_maps` are warnings, not blocking errors.
 - Blank material remap source names are warnings because unstable source names make export remaps brittle.
@@ -27,6 +29,7 @@ Audit S&Box material remaps and texture references before playtest. This catches
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/material_texture_audit.ps1 -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_graph_audit.ps1 -ShowInfo
 ```
 
 Useful options:

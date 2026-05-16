@@ -10,14 +10,17 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 |---|---|---|
 | Final sanity pass after code changes | `pre-handoff-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite quick` |
 | Build and editor/runtime log pass | `build-log-sentinel.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/build_log_sentinel.ps1` |
-| Gameplay implementation review | `gameplay-systems-agent.md` | Build sentinel plus focused code inspection |
+| Gameplay implementation review | `gameplay-systems-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/gameplay_regression_guard.ps1` plus build sentinel |
 | Prefab, scene, or AutoWire review | `prefab-wiring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_wiring_audit.ps1` |
 | Deep prefab/reference graph review | `prefab-wiring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_graph_audit.ps1` |
 | Main scene/spawn/collider review | `prefab-wiring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/scene_integrity_audit.ps1` |
 | Blender or generated asset review | `asset-pipeline-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1` |
+| Designing the ModelDoc automation agent | `modeldoc-agent-builder.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite modeldoc` |
+| ModelDoc/VMDL validation | `modeldoc-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/modeldoc_audit.ps1 -ShowInfo` |
 | New asset request or source brief | `asset-brief-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/new_asset_brief.ps1 -Name my_asset -Category weapon` |
 | Blender source-scene production quality | `blender-quality-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/blender_quality_audit.ps1` |
 | Material and texture production quality | `material-texture-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/material_texture_audit.ps1` |
+| Blender procedural look needs to match in S&Box | `procedural-texture-transfer-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production` |
 | Visual preview review for a Blender asset | `visual-review-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/asset_visual_review.ps1 -Blend weapons_model.blend/assault_rifle_m4.blend` |
 | Full asset production readiness | `asset-pipeline-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production` |
 | UI/startup-flow interaction review | `ui-flow-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/ui_flow_audit.ps1` |
@@ -36,6 +39,7 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 - Use `[Sync]` for replicated state and RPCs for notifications or validated requests.
 - Extend `Code/code/Wiring/AutoWire.cs` when new prefab references need repeatable wiring.
 - After meaningful C# or scene/prefab edits, run the build/log sentinel and the most relevant specialist audit.
+- For Blender-to-S&Box texture transfer, inspect whether the Blender material is procedural or image-backed before editing `.vmat` files. Procedural looks need baked project textures and strict VMDL material-slot validation.
 - After UI or startup-flow edits, run the UI flow audit and an editor click-test checklist.
 - If runtime logs are stale or unavailable, say that directly and do not overclaim editor validation.
 - Static file audits do not replace an editor playtest or a 2-client multiplayer test when runtime behavior changed.

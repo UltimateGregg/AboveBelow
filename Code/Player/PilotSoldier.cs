@@ -25,6 +25,14 @@ public sealed class PilotSoldier : Component
 	{
 		if ( LinkedDroneId == default ) return null;
 		return Scene.GetAllComponents<DroneBase>()
-			.FirstOrDefault( d => d.GameObject.Id == LinkedDroneId );
+			.FirstOrDefault( d => d.GameObject.Id == LinkedDroneId && IsLinkedDroneAlive( d ) );
+	}
+
+	static bool IsLinkedDroneAlive( DroneBase drone )
+	{
+		if ( !drone.IsValid() ) return false;
+
+		var health = drone.Components.Get<Health>() ?? drone.Components.GetInAncestors<Health>();
+		return health.IsValid() && !health.IsDead;
 	}
 }
