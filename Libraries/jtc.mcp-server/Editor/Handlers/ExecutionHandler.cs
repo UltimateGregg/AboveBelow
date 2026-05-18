@@ -96,7 +96,7 @@ public static class ExecutionHandler
 
 	/// <summary>
 	/// Reflective adapter to <c>Microsoft.CodeAnalysis.CSharp.Scripting.CSharpScript</c>.
-	/// We can't take a hard reference because s&box doesn't expose the package as a
+	/// We can't take a hard reference because s&amp;box doesn't expose the package as a
 	/// project-level dependency, but the assembly is loaded into the editor's
 	/// AppDomain when the engine compiler is initialised.
 	/// </summary>

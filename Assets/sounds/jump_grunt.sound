@@ -5,7 +5,7 @@
   "Decibels": 60,
   "SelectionMode": "Random",
   "Sounds": [
-    "sounds/jump_grunt.vsnd"
+    "sounds/jump_grunt.wav"
   ],
   "Occlusion": true,
   "AirAbsorption": true,

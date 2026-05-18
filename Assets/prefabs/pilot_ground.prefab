@@ -65,9 +65,9 @@
             "__guid": "33333333-d000-1100-0000-000000000001",
             "BodyGroups": 18446744073709551615,
             "CreateBoneObjects": false,
-            "Model": "models/citizen/citizen.vmdl",
+            "Model": "models/citizen_human/citizen_human_male.vmdl",
             "RenderType": "On",
-            "Tint": "0.3,0.3,0.4,1",
+            "Tint": "1,1,1,1",
             "UseAnimGraph": true
           },
           {
@@ -229,7 +229,7 @@
                 "LaunchSpeed": 300,
                 "LaunchSpawnOffset": "60,0,-4",
                 "LeftHandFpOffset": "28,-6,-10",
-                "LeftHandFpRotation": "0,0,0",
+                "LeftHandFpRotation": "0,180,0",
                 "RightHandFpOffset": "26,6,-10",
                 "RightHandFpRotation": "0,0,0",
                 "LeftHandTpLocalPos": "20,0,47",

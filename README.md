@@ -2,7 +2,7 @@
 
 A vertical asymmetric shooter. **Pilot team** flies drones from the ground; **Soldier team** hunts pilots and intercepts drones. Pick a class each round, fight until one team is wiped.
 
-> Internal vocabulary: drone operators are **Pilots** (`PlayerRole.Pilot`), ground combatants are **Soldiers** (`PlayerRole.Soldier`). HUD labels still read **ABOVE** for pilots and **BELOW** for soldiers in places where flavor text is desirable.
+> Internal vocabulary: drone operators are **Pilots** (`PlayerRole.Pilot`), ground combatants are **Soldiers** (`PlayerRole.Soldier`). Player-facing team labels read **Drone Pilots** and **Soldiers**; keep **ABOVE / BELOW** as the project title.
 
 ## Game Overview
 

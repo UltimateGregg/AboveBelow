@@ -13,8 +13,15 @@
   "object_type": [ "MESH" ],
   "combine_meshes": true,
   "combined_object_name": "RC_Transmitter",
+  "vmdl_material_source_suffix": "",
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
   "material_remap": {
+    "RC_AccentBlue": "materials/weapons/rc_accent_blue.vmat",
     "RC_Polymer": "materials/weapons/rc_polymer.vmat",
+    "RC_Rubber": "materials/weapons/rc_rubber.vmat",
+    "RC_Metal": "materials/weapons/rc_metal.vmat",
+    "RC_LabelWhite": "materials/weapons/rc_label_white.vmat",
     "RC_Screen": "materials/weapons/rc_screen.vmat",
     "RC_Antenna": "materials/weapons/rc_antenna.vmat"
   },

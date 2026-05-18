@@ -26,9 +26,9 @@ public sealed class DroneJammerGun : Component
 	[Property] public GameObject WeaponVisual { get; set; }
 	[Property] public SoundEvent LoopSound { get; set; }
 
-	[Property] public Vector3 FirstPersonOffset { get; set; } = new( 30f, 8f, -10f );
+	[Property] public Vector3 FirstPersonOffset { get; set; } = new( 30f, 8f, -5f );
 	[Property] public Angles FirstPersonRotationOffset { get; set; } = new( 0f, 0f, 0f );
-	[Property] public Vector3 AdsOffset { get; set; } = new( 22f, 0f, -5f );
+	[Property] public Vector3 AdsOffset { get; set; } = new( 22f, 0f, -2f );
 	[Property] public Angles AdsRotationOffset { get; set; } = new( 0f, 0f, 0f );
 	[Property, Range( 30f, 90f )] public float AdsFovDegrees { get; set; } = 60f;
 	[Property] public Vector3 ThirdPersonLocalPosition { get; set; } = new( 20f, 15f, 55f );
@@ -148,10 +148,12 @@ public sealed class DroneJammerGun : Component
 	{
 		if ( holding && LoopSound is not null && (_loop is null || !_loop.IsValid || _loop.IsStopped) )
 		{
-			_loop = Sound.Play( LoopSound, WorldPosition, 0.15f );
-			_loop.Parent = GameObject;
+			_loop = SoundPlayback.PlayAttached( LoopSound, GameObject, WorldPosition, 0.15f );
 			return;
 		}
+
+		if ( holding && _loop is not null && _loop.IsValid )
+			SoundPlayback.UpdateAttached( _loop, GameObject, WorldPosition );
 
 		if ( !holding && _loop is not null && _loop.IsValid )
 		{

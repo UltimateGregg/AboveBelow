@@ -655,7 +655,7 @@ public sealed class GameSetup : Component, Component.INetworkListener
 		RespawnWithSelectedLoadout( channel, role );
 	}
 
-	// Legacy: HudPanel calls this for the old "BELOW / ABOVE" picker. We
+	// Legacy: HudPanel calls this for the old direct role picker. We
 	// route both options into the new selection flow with a default class.
 	public void SelectLocalRole( PlayerRole role )
 	{

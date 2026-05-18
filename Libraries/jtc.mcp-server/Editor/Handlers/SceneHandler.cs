@@ -573,7 +573,7 @@ public static class SceneHandler
 
 	/// <summary>
 	/// Returns the tag set for a GameObject as a plain string list.
-	/// TagSet implements IEnumerable&lt;string&gt; in s&box.
+	/// TagSet implements IEnumerable&lt;string&gt; in s&amp;box.
 	/// </summary>
 	private static List<string> GetTagList( GameObject go )
 	{

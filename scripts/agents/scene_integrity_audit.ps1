@@ -30,6 +30,14 @@ if ($null -eq $raw) {
     $raw = ""
 }
 
+$sceneJson = $null
+try {
+    $sceneJson = $raw | ConvertFrom-Json
+}
+catch {
+    Add-AgentIssue $issues "Warning" "Scene JSON" $relative "Could not parse scene JSON: $($_.Exception.Message)" "Fix scene JSON before relying on structured scene audits."
+}
+
 function Get-JsonBoolOption {
     param(
         [object]$Json,
@@ -183,6 +191,110 @@ function Test-MaterialOverridesOnObject {
     }
 }
 
+function Test-WaterTowerLadderAuthoringText {
+    param(
+        [string]$Text,
+        [string]$Path,
+        [string]$Context
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Text)) {
+        return
+    }
+
+    if ($Text -notmatch '"Name"\s*:\s*"WaterTower"') {
+        return
+    }
+
+    $pattern = '"Name"\s*:\s*"WaterTower"[\s\S]{0,70000}?"Name"\s*:\s*"Collision_Ladder"[\s\S]{0,3000}?"__type"\s*:\s*"Sandbox\.BoxCollider"[\s\S]{0,1000}?"IsTrigger"\s*:\s*true[\s\S]{0,2000}?"__type"\s*:\s*"DroneVsPlayers\.LadderVolume"'
+    if ($Text -notmatch $pattern) {
+        Add-AgentIssue $issues "Error" "Water Tower Ladder" $Path "$Context water tower has no Collision_Ladder child with a trigger BoxCollider and DroneVsPlayers.LadderVolume." "Add a Collision_Ladder child with a trigger BoxCollider and LadderVolume so soldiers can climb the tower."
+    }
+}
+
+function Test-WaterTowerSolidCollisionAuthoringText {
+    param(
+        [string]$Text,
+        [string]$Path,
+        [string]$Context
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Text) -or $Text -notmatch '"Name"\s*:\s*"WaterTower"') {
+        return
+    }
+
+    $requiredSolidColliders = @(
+        "Collision_Tank",
+        "Collision_Roof",
+        "Collision_Platform",
+        "Collision_Leg_NorthWest",
+        "Collision_Leg_NorthEast",
+        "Collision_Leg_SouthWest",
+        "Collision_Leg_SouthEast"
+    )
+
+    foreach ($colliderName in $requiredSolidColliders) {
+        $pattern = '"Name"\s*:\s*"' + [regex]::Escape($colliderName) + '"[\s\S]{0,2500}?"__type"\s*:\s*"Sandbox\.BoxCollider"[\s\S]{0,1000}?"IsTrigger"\s*:\s*false'
+        if ($Text -notmatch $pattern) {
+            Add-AgentIssue $issues "Error" "Water Tower Collision" $Path "$Context water tower is missing solid BoxCollider child '$colliderName'." "Keep tank, roof, platform, and leg collision as non-trigger BoxCollider children so the prop blocks soldiers and drones without closing the open base."
+        }
+    }
+}
+
+function Test-WaterTowerOpenBaseCollisionText {
+    param(
+        [string]$Text,
+        [string]$Path,
+        [string]$Context
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Text) -or $Text -notmatch '"Name"\s*:\s*"WaterTower"') {
+        return
+    }
+
+    $frameMatches = [regex]::Matches($Text, '"Name"\s*:\s*"(?<name>Collision_Frame_[^"]+)"[\s\S]{0,3500}?"__type"\s*:\s*"Sandbox\.BoxCollider"[\s\S]{0,1800}?"Scale"\s*:\s*"(?<scale>[^"]+)"')
+    foreach ($match in $frameMatches) {
+        $scaleParts = @($match.Groups["scale"].Value -split "," | ForEach-Object {
+            $parsed = 0.0
+            if ([double]::TryParse($_.Trim(), [Globalization.NumberStyles]::Float, [Globalization.CultureInfo]::InvariantCulture, [ref]$parsed)) {
+                $parsed
+            }
+        })
+
+        if ($scaleParts.Count -ne 3) {
+            continue
+        }
+
+        $x = [Math]::Abs($scaleParts[0])
+        $y = [Math]::Abs($scaleParts[1])
+        $z = [Math]::Abs($scaleParts[2])
+        $isBroadWall = (($x -ge 500 -and $y -ge 40) -or ($y -ge 500 -and $x -ge 40)) -and $z -ge 300
+        if ($isBroadWall) {
+            Add-AgentIssue $issues "Error" "Water Tower Collision" $Path "$Context water tower has broad lower-frame blocker '$($match.Groups["name"].Value)' with scale '$($match.Groups["scale"].Value)'." "Remove broad lower-frame wall colliders from the open base; keep only tank, platform, legs, and the ladder trigger unless a narrow visible brace collider is explicitly authored."
+        }
+    }
+}
+
+function Test-WaterTowerVisualAlignmentText {
+    param(
+        [string]$Text,
+        [string]$Path,
+        [string]$Context
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Text) -or $Text -notmatch '"Name"\s*:\s*"WaterTower"') {
+        return
+    }
+
+    $visualRotationMatches = [regex]::Matches($Text, '"Name"\s*:\s*"WaterTower"[\s\S]{0,5000}?"Name"\s*:\s*"Visual"[\s\S]{0,1000}?"Rotation"\s*:\s*"(?<rotation>[^"]+)"')
+    foreach ($match in $visualRotationMatches) {
+        $rotation = $match.Groups["rotation"].Value.Replace(" ", "")
+        if ($rotation -ne "0,0,0,1") {
+            Add-AgentIssue $issues "Error" "Water Tower Collision" $Path "$Context water tower Visual has local rotation '$($match.Groups["rotation"].Value)', so child collision no longer lines up with the rendered model." "Keep the Visual child at identity rotation and rotate the WaterTower root so collision, ladder, and render mesh share one transform."
+        }
+    }
+}
+
 $requiredComponents = @(
     "DroneVsPlayers.GameRules",
     "DroneVsPlayers.GameStats",
@@ -228,7 +340,7 @@ else {
     Add-AgentIssue $issues "Info" "Dev Box Colliders" $relative "No obvious dev-box collider scale drift found."
 }
 
-$ladderBlocks = [regex]::Matches($raw, '"__type"\s*:\s*"Sandbox\.BoxCollider"[\s\S]{0,700}?"IsTrigger"\s*:\s*(?<trigger>true|false)[\s\S]{0,1200}?"__type"\s*:\s*"DroneVsPlayers\.LadderVolume"')
+$ladderBlocks = [regex]::Matches($raw, '"Name"\s*:\s*"(?<name>[^"]*Ladder[^"]*)"[\s\S]{0,3000}?"__type"\s*:\s*"Sandbox\.BoxCollider"[\s\S]{0,1000}?"IsTrigger"\s*:\s*(?<trigger>true|false)[\s\S]{0,2000}?"__type"\s*:\s*"DroneVsPlayers\.LadderVolume"')
 $solidLadderVolumes = 0
 foreach ($match in $ladderBlocks) {
     if ($match.Groups["trigger"].Value -ne "true") {
@@ -239,17 +351,36 @@ if ($solidLadderVolumes -gt 0) {
     Add-AgentIssue $issues "Error" "Ladder Volumes" $relative "$solidLadderVolumes LadderVolume block(s) appear to use non-trigger colliders." "Ladder volumes should be trigger colliders so character movement can attach."
 }
 
+Test-WaterTowerLadderAuthoringText -Text $raw -Path $relative -Context "Scene"
+Test-WaterTowerSolidCollisionAuthoringText -Text $raw -Path $relative -Context "Scene"
+Test-WaterTowerOpenBaseCollisionText -Text $raw -Path $relative -Context "Scene"
+Test-WaterTowerVisualAlignmentText -Text $raw -Path $relative -Context "Scene"
+
+$waterTowerPrefabPath = Join-Path $Root "Assets\prefabs\environment\WaterTower.prefab"
+if (Test-Path -LiteralPath $waterTowerPrefabPath) {
+    $waterTowerPrefabRelative = ConvertTo-AgentRelativePath -Path $waterTowerPrefabPath -Root $Root
+    try {
+        $waterTowerPrefabText = Get-Content -LiteralPath $waterTowerPrefabPath -Raw
+        Test-WaterTowerLadderAuthoringText -Text $waterTowerPrefabText -Path $waterTowerPrefabRelative -Context "Prefab"
+        Test-WaterTowerSolidCollisionAuthoringText -Text $waterTowerPrefabText -Path $waterTowerPrefabRelative -Context "Prefab"
+        Test-WaterTowerOpenBaseCollisionText -Text $waterTowerPrefabText -Path $waterTowerPrefabRelative -Context "Prefab"
+        Test-WaterTowerVisualAlignmentText -Text $waterTowerPrefabText -Path $waterTowerPrefabRelative -Context "Prefab"
+    }
+    catch {
+        Add-AgentIssue $issues "Warning" "Water Tower Ladder" $waterTowerPrefabRelative "Could not read water tower prefab: $($_.Exception.Message)" "Fix prefab access before relying on water tower traversal checks."
+    }
+}
+
 $protectedModels = Get-MaterialProtectedModels -Root $Root
 if ($protectedModels.Count -gt 0) {
-    try {
-        $sceneJson = $raw | ConvertFrom-Json
+    if ($null -ne $sceneJson) {
         foreach ($object in @($sceneJson.GameObjects)) {
             Test-MaterialOverridesOnObject -Object $object -ProtectedModels $protectedModels
         }
         Add-AgentIssue $issues "Info" "Scene Material Overrides" $relative "Checked protected multi-material model(s): $($protectedModels.Keys -join ', ')."
     }
-    catch {
-        Add-AgentIssue $issues "Warning" "Scene Material Overrides" $relative "Could not parse scene JSON for protected material override checks: $($_.Exception.Message)" "Fix scene JSON before relying on material override safety checks."
+    else {
+        Add-AgentIssue $issues "Warning" "Scene Material Overrides" $relative "Could not parse scene JSON for protected material override checks." "Fix scene JSON before relying on material override safety checks."
     }
 }
 

@@ -66,7 +66,9 @@ if (Include-Area "Prefab") {
     Add-Line $lines "## Prefab and Scene"
     Add-Line $lines ""
     Add-Line $lines '- [ ] `scripts\agents\prefab_wiring_audit.ps1` passes.'
+    Add-Line $lines '- [ ] `scripts\agents\collision_authoring_agent.ps1` passes.'
     Add-Line $lines '- [ ] New or changed prefab references are either inspector-wired or handled by `Code/code/Wiring/AutoWire.cs`.'
+    Add-Line $lines "- [ ] Changed prop collision is visible with collider gizmos and blocks the player in the editor."
     Add-Line $lines "- [ ] Soldier prefabs have Body, Eye, Weapon or DroneDeployer, and expected held equipment children."
     Add-Line $lines "- [ ] Drone prefabs have Visual, CameraSocket, MuzzleSocket, and the correct variant identity component."
     Add-Line $lines ""
@@ -89,7 +91,7 @@ if (Include-Area "UI") {
     Add-Line $lines ""
     Add-Line $lines "- [ ] Main menu shows only live actions; no passive card looks clickable."
     Add-Line $lines "- [ ] `Play` opens the team/class picker."
-    Add-Line $lines "- [ ] Above/Below team choices appear only after `Play`, and both choices respond."
+    Add-Line $lines "- [ ] Drone Pilots/Soldiers team choices appear only after `Play`, and both choices respond."
     Add-Line $lines "- [ ] Every visible button or card that looks clickable has visible behavior when clicked."
     Add-Line $lines "- [ ] HUD text fits at 1280x720 and at the target desktop resolution."
     Add-Line $lines "- [ ] Class picker buttons, loadout slots, health, timer, scoreboard, and kill feed remain readable."

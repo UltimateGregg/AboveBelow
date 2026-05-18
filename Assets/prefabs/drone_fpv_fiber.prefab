@@ -143,11 +143,6 @@
         "__guid": "22222222-c900-0000-0000-000000000001",
         "UseVectorPoints": true,
         "Lighting": false,
-        "Color": {
-          "color": "0.62,0.64,0.66,1",
-          "useColor": true,
-          "useGradient": false
-        },
         "Width": {
           "useCurve": false,
           "constant": 0.6

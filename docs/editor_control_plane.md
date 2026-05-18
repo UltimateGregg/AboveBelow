@@ -1,0 +1,91 @@
+# S&Box Editor Control Plane
+
+This project uses the in-editor MCP server as the primary AI control plane for
+editor-native work. The endpoint is registered in `.mcp.json` as `sbox` and
+listens at:
+
+```text
+http://localhost:29015/mcp
+```
+
+Keep the S&Box MCP Server dock running in the editor. Prefer this native MCP
+server for scene, component, asset, docs, screenshot, play/stop, and sound work.
+Use the older CoworkBridge on `127.0.0.1:38080` only as a fallback when a needed
+operation is not exposed through the native MCP tools.
+
+If a newly built tool is missing from `tools/list`, restart or fully reload the
+S&Box editor MCP server. New tool classes can compile successfully while the
+running editor process still serves its previously loaded assembly.
+
+## Core Tool Domains
+
+- `control_plane_*`: server, scene, tool-domain, and workflow status.
+- `scene_*`: active scene and prefab hierarchy inspection/mutation.
+- `component_*`: component listing, adding, removal, and typed property setting.
+- `asset_*`: project and cloud asset search/browse/mount.
+- `editor_*`: selection, save, screenshot, play/stop, console output.
+- `sbox_*`: local S&Box docs and API search.
+- `sound_*`: SoundEvent inventory, inspection, preview, point placement, and hook discovery.
+
+## Sound Workflow
+
+1. Run the static sound suite:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite sound -ShowInfo
+```
+
+2. Inspect live editor readiness:
+
+```json
+{ "name": "control_plane_status", "arguments": {} }
+```
+
+3. List or inspect SoundEvents:
+
+```json
+{ "name": "sound_list", "arguments": {} }
+{ "name": "sound_inspect", "arguments": { "sound": "sounds/drone_hum.sound" } }
+{ "name": "sound_inspect", "arguments": { "sound": "sounds/assault_rifle_fire.sound" } }
+```
+
+4. Find editable SoundEvent hooks in the active scene:
+
+```json
+{ "name": "sound_find_hooks", "arguments": {} }
+```
+
+5. Preview before wiring or placing:
+
+```json
+{ "name": "sound_preview", "arguments": { "sound": "sounds/drone_hum.sound", "position": "0,0,200", "volume": 0.5 } }
+{ "name": "sound_preview", "arguments": { "sound": "sounds/round_start_swell.sound", "volume": 0.5 } }
+```
+
+6. Wire a component property through `component_set` or place an editor-visible
+   `SoundPointComponent` through `sound_place_point`.
+
+## Guardrails
+
+- Treat `.sound` files as the gameplay-facing assets. Raw audio files are source
+  data and should be referenced by `.sound` wrappers.
+- Search stock/editor audio for common weapons, movement, UI, wind, and
+  explosions before generating new WAV files, but do not commit direct mounted
+  package paths in gameplay code, prefabs, or scenes. Import or copy usable stock
+  source audio into `Assets/sounds/`, wrap it in a local `.sound`, and reference
+  `sounds/*.sound`.
+- When stock audio is unavailable or a project-specific cue is still needed, run
+  `python scripts/audio/generate_project_sounds.py --root .` instead of adding
+  one-off noise bursts by hand. The generator imports known stock WAVs first and
+  uses deterministic synthesis only as a fallback.
+- Use `component_list` and `component_get` before mutating component properties.
+- Verify successful scene/prefab opens with `editor_scene_info`; top-level tool
+  success is not enough when editor state can be stale.
+- After MCP source changes, build the editor project:
+
+```powershell
+dotnet build Libraries\jtc.mcp-server\Editor\mcp-server.editor.csproj --no-restore
+```
+
+- After live editor changes, run the relevant agent suite and check fresh editor
+  logs before claiming runtime/editor health.

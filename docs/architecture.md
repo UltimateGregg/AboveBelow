@@ -375,4 +375,4 @@ public sealed class Loadout
 ---
 
 **Architecture Last Reviewed:** May 6, 2026
-**Current Version:** 1.0 (Standardized). Player-facing role names rebranded to ABOVE / BELOW; internal `PlayerRole.Pilot`/`.Soldier` enum unchanged.
+**Current Version:** 1.0 (Standardized). Player-facing team labels use Drone Pilots and Soldiers; internal `PlayerRole.Pilot`/`.Soldier` enum unchanged.

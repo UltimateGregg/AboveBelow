@@ -15,8 +15,23 @@
 						[
 
 							{
+								from = "RC_AccentBlue"
+								to = "materials/weapons/rc_accent_blue.vmat"
+							},
+
+							{
 								from = "RC_Antenna"
 								to = "materials/weapons/rc_antenna.vmat"
+							},
+
+							{
+								from = "RC_LabelWhite"
+								to = "materials/weapons/rc_label_white.vmat"
+							},
+
+							{
+								from = "RC_Metal"
+								to = "materials/weapons/rc_metal.vmat"
 							},
 
 							{
@@ -25,11 +40,16 @@
 							},
 
 							{
+								from = "RC_Rubber"
+								to = "materials/weapons/rc_rubber.vmat"
+							},
+
+							{
 								from = "RC_Screen"
 								to = "materials/weapons/rc_screen.vmat"
 							},
 						]
-						use_global_default = true
+						use_global_default = false
 						global_default_material = "materials/default.vmat"
 					},
 				]

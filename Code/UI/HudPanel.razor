@@ -28,7 +28,7 @@
             <div class="role-select main-menu-startup">
                 <div class="role-panel">
                     <div class="title">ABOVE / BELOW</div>
-                    <div class="subtitle">Drone pilots against ground hunters.</div>
+                    <div class="subtitle">Drone Pilots against Soldiers.</div>
 
                     <div class="loadout-section">
                         <div class="section-title">Main Menu</div>
@@ -56,15 +56,15 @@
             <div class="role-select">
                 <div class="role-panel">
                     <div class="title">Choose Team</div>
-                    <div class="subtitle">Pilots or soldiers.</div>
+                    <div class="subtitle">Drone Pilots or Soldiers.</div>
                     <div class="team-choices">
                         <div class="@TeamChoiceClass(PlayerRole.Pilot)" onclick=@(() => SelectLoadoutTeam(PlayerRole.Pilot))>
-                            <span class="label">PILOTS</span>
-                            <span class="desc">Fly drones from above</span>
+                            <span class="label">DRONE PILOTS</span>
+                            <span class="desc">Fly drones as drone pilots</span>
                         </div>
                         <div class="@TeamChoiceClass(PlayerRole.Soldier)" onclick=@(() => SelectLoadoutTeam(PlayerRole.Soldier))>
                             <span class="label">SOLDIERS</span>
-                            <span class="desc">Fight from below</span>
+                            <span class="desc">Fight as soldiers</span>
                         </div>
                     </div>
 
@@ -91,7 +91,7 @@
                     else if ( SelectedLoadoutTeam == PlayerRole.Pilot )
                     {
                         <div class="loadout-section">
-                            <div class="section-title">Pilot Class</div>
+                            <div class="section-title">Drone Pilot Loadout</div>
                             <div class="choices">
                                 <div class="choice pilot" onclick=@(() => Setup?.SelectLocalDrone(DroneType.Gps))>
                                     <span class="label">GPS DRONE</span>
@@ -169,7 +169,7 @@
             <div class="top-center">
                 @if ( Round is not null && (Round.State == RoundState.Countdown || Round.State == RoundState.Active) && LocalRole != PlayerRole.Spectator )
                 {
-                    <div class="round-header">Round @(PilotWins + SoldierWins + 1) / You are <span class="role-tag @LocalRole.ToString().ToLower()">@(LocalRole == PlayerRole.Pilot ? "ABOVE" : "BELOW")</span></div>
+                    <div class="round-header">Round @(PilotWins + SoldierWins + 1) / You are <span class="role-tag @LocalRole.ToString().ToLower()">@(LocalRole == PlayerRole.Pilot ? "DRONE PILOTS" : "SOLDIERS")</span></div>
                 }
                 <div class="state">@RoundLine</div>
                 @if ( ShowTimer )
@@ -204,7 +204,7 @@
         @if ( !GameplayUiBlocked && LocalHealth is not null )
         {
             <div class="bottom-left">
-                <div class="role @LocalRole.ToString().ToLower()">@(LocalRole == PlayerRole.Pilot ? "ABOVE" : LocalRole == PlayerRole.Soldier ? "BELOW" : "SPECTATOR")</div>
+                <div class="role @LocalRole.ToString().ToLower()">@(LocalRole == PlayerRole.Pilot ? "DRONE PILOTS" : LocalRole == PlayerRole.Soldier ? "SOLDIERS" : "SPECTATOR")</div>
                 <div class="hp-bar">
                     <div class="hp-fill" style="width: @HpFraction%"></div>
                 </div>
@@ -497,8 +497,8 @@
 
     string RoundWinnerLabel => Round?.LastWinnerInt switch
     {
-        0 => "ABOVE WINS",
-        1 => "BELOW WINS",
+        0 => "DRONE PILOTS WIN",
+        1 => "SOLDIERS WIN",
         _ => "ROUND OVER",
     };
 
@@ -1146,7 +1146,7 @@
     {
         RoundState.WaitingForPlayers => "Waiting for players",
         RoundState.Countdown => "Get ready",
-        RoundState.Active => LocalRole == PlayerRole.Pilot ? "Hunt below." : "Take down above.",
+        RoundState.Active => LocalRole == PlayerRole.Pilot ? "Hunt soldiers." : "Take down drone pilots.",
         RoundState.Ended => "Round over",
         _ => "",
     };

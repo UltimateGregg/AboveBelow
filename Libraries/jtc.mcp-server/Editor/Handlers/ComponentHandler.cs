@@ -160,7 +160,7 @@ public static class ComponentHandler
 	// -------------------------------------------------------------------------
 
 	/// <summary>
-	/// Converts a raw string value to the target type, handling s&box resource types.
+	/// Converts a raw string value to the target type, handling s&amp;box resource types.
 	/// </summary>
 	private static async Task<object> ConvertValueAsync( string rawValue, Type targetType )
 	{
@@ -198,6 +198,16 @@ public static class ComponentHandler
 					return Material.Load( primary );
 			}
 			throw new InvalidOperationException( $"Could not load cloud material: {rawValue}" );
+		}
+
+		if ( typeName == "SoundEvent" )
+		{
+			var normalized = SoundHandler.NormalizeSoundResourcePath( rawValue );
+			var soundEvent = ResourceLibrary.Get<SoundEvent>( normalized );
+			if ( soundEvent is not null )
+				return soundEvent;
+
+			throw new InvalidOperationException( $"Could not load sound event: {rawValue}" );
 		}
 
 		if ( typeName == "Color" )

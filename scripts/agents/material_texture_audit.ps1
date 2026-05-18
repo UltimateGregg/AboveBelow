@@ -93,6 +93,7 @@ function Resolve-TexturePath {
         "textures/",
         "models/dev/",
         "models/citizen/",
+        "models/citizen_human/",
         "models/effects/",
         "models/sbox_props/"
     )

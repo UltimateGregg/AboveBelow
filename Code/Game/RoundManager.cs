@@ -332,8 +332,8 @@ public sealed class RoundManager : Component
 	void BroadcastRoundEnd( int winnerInt )
 	{
 		var winner = (WinningSide)winnerInt;
-		var label = winner == WinningSide.Pilot ? "ABOVE" : "BELOW";
-		Log.Info( $"[Round] {label} wins. Above {PilotWins} · Below {SoldierWins}" );
+		var label = winner == WinningSide.Pilot ? "Drone Pilots" : "Soldiers";
+		Log.Info( $"[Round] {label} win. Drone Pilots {PilotWins} · Soldiers {SoldierWins}" );
 	}
 
 	void UpdateStateTimer()

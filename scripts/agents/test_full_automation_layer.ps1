@@ -13,15 +13,23 @@ $issues = New-Object System.Collections.Generic.List[object]
 
 $requiredScripts = @(
     "scripts/agents/ui_flow_audit.ps1",
+    "scripts/agents/prefab_wiring_audit.ps1",
     "scripts/agents/prefab_graph_audit.ps1",
     "scripts/agents/scene_integrity_audit.ps1",
+    "scripts/agents/collision_authoring_agent.ps1",
+    "scripts/agents/collision_agent_chain_audit.ps1",
+    "scripts/agents/collision_chain_report.ps1",
     "scripts/agents/current_log_audit.ps1",
     "scripts/agents/feature_readiness_report.ps1",
+    "scripts/agents/post_task_training_agent.ps1",
     "scripts/agents/gameplay_regression_guard.ps1",
     "scripts/agents/blender_quality_audit.ps1",
     "scripts/agents/material_texture_audit.ps1",
     "scripts/agents/modeldoc_audit.ps1",
     "scripts/agents/fbx_material_slot_audit.ps1",
+    "scripts/agents/sound_asset_audit.ps1",
+    "scripts/agents/sound_playback_audit.ps1",
+    "scripts/agents/team_label_copy_audit.ps1",
     "scripts/agents/asset_visual_review.ps1",
     "scripts/agents/blender_live_toolkit_self_test.ps1"
 )
@@ -40,7 +48,7 @@ if (Test-Path -LiteralPath $runner) {
         Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner does not declare a ValidateSet for suites." "Restore suite validation on the Suite parameter."
     }
 
-    foreach ($suite in @("ui", "prefab-graph", "scene", "logs", "readiness", "asset-production", "modeldoc", "blender-live", "gameplay-regression")) {
+    foreach ($suite in @("ui", "prefab-graph", "scene", "logs", "readiness", "train", "asset-production", "modeldoc", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain")) {
         $quotedSuite = '"' + [regex]::Escape($suite) + '"'
         if ($validateSetMatch.Success -and $validateSetMatch.Groups["values"].Value -notmatch $quotedSuite) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner ValidateSet does not expose suite '$suite'." "Add the suite to the Suite parameter ValidateSet."
@@ -56,6 +64,202 @@ else {
     Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner script is missing." "Restore the runner."
 }
 
+$collisionChainAudit = Join-Path $Root "scripts/agents/collision_agent_chain_audit.ps1"
+if (Test-Path -LiteralPath $collisionChainAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-collision-agent-chain-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot ".agents\sbox") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "scripts\agents") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "docs") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "dronevsplayers.sbproj") | Out-Null
+
+        "# Incomplete" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\collision-chain-agent.md") -Encoding UTF8
+        @'
+param(
+    [ValidateSet("collision-chain")]
+    [string]$Suite = "collision-chain"
+)
+switch ($Suite) {
+    "collision-chain" {
+        $scripts = @(
+            @{ Name = "collision_agent_chain_audit.ps1" },
+            @{ Name = "collision_chain_report.ps1" }
+        )
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
+        "collision-chain-agent.md" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
+        "Collision Agent Chain" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionChainAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_agent_chain_audit.ps1" "Collision chain audit did not fail on incomplete role docs." "Keep the chain audit strict enough to catch missing subagent prompts."
+        }
+
+        @'
+# Collision Chain Agent
+
+## Purpose
+
+Fixture chain doc.
+
+## Role Stack
+
+Default flow: Coordinator -> Explorer -> Implementer -> Verifier -> Critic.
+
+### Coordinator
+Coordinates.
+
+### Explorer
+Explores.
+
+### Implementer
+Implements.
+
+### Verifier
+Verifies.
+
+### Critic
+Critiques.
+
+## Handoff Protocol
+
+- `Status`: `PASS`, `REWORK`, `BLOCKED`, or `OUT_OF_SCOPE`.
+
+## Rework Loop
+
+Do not run an endless loop.
+
+## Collision Acceptance Rules
+
+Rules exist.
+
+## Evidence Commands
+
+Commands exist.
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\collision-chain-agent.md") -Encoding UTF8
+        @'
+# Collision Explorer Agent
+
+## Purpose
+Explore.
+
+## Role
+You are a read-only Codex explorer.
+
+## Inputs
+Inputs.
+
+## Work
+Do not edit files.
+
+## Output Shape
+Collision Contract Hotspots Suggested Next Handoff
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\collision-explorer-agent.md") -Encoding UTF8
+        @'
+# Collision Implementer Agent
+
+## Purpose
+Implement.
+
+## Role
+Do not revert edits made by others.
+
+## Inputs
+owned file paths
+
+## Work
+Work.
+
+## Output Shape
+Changed Files Verification Next Handoff
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\collision-implementer-agent.md") -Encoding UTF8
+        @'
+# Collision Verifier Agent
+
+## Purpose
+Verify.
+
+## Role
+Verify.
+
+## Inputs
+Inputs.
+
+## Work
+Run collision-chain and send to collision-critic-agent.md. Treat stale or unrelated logs as limits.
+
+## Output Shape
+Evidence Runtime Gaps
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\collision-verifier-agent.md") -Encoding UTF8
+        @'
+# Collision Critic Agent
+
+## Purpose
+Critique.
+
+## Role
+Use defect-first review.
+
+## Inputs
+Inputs.
+
+## Review Rules
+Distinguish confirmed defects from untested runtime gaps.
+
+## Output Shape
+Findings Evidence Gaps Next Handoff
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\collision-critic-agent.md") -Encoding UTF8
+        @'
+# Collision Authoring Agent
+
+## Purpose
+Authoring.
+
+## Primary Areas
+Areas.
+
+## Review Rules
+Collision_* LadderVolume water tower
+
+## Evidence Command
+Command.
+
+## Runtime Proof
+Static checks prove the authored collision exists.
+
+## Output Shape
+Output.
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\collision-authoring-agent.md") -Encoding UTF8
+        "collision-chain-agent.md collision-explorer-agent.md collision-implementer-agent.md collision-verifier-agent.md collision-critic-agent.md" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
+        "Collision Agent Chain Collision Explorer Agent Collision Implementer Agent Collision Verifier Agent Collision Critic Agent collision_chain_report.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
+        "Authored Prop Collision Alignment collision-chain-agent.md Codex explorer defines the collision contract" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\known_sbox_patterns.md") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionChainAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_agent_chain_audit.ps1" "Collision chain audit failed on complete role docs." "Avoid false positives for valid subagent-chain documentation."
+        }
+    }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
+        }
+    }
+}
+
+$requiredMcpSources = @(
+    "Libraries/jtc.mcp-server/Editor/Handlers/SoundHandler.cs",
+    "Libraries/jtc.mcp-server/Editor/Handlers/ControlPlaneHandler.cs",
+    "Libraries/jtc.mcp-server/Editor/Mcp/Tools/SoundTools.cs",
+    "Libraries/jtc.mcp-server/Editor/Mcp/Tools/ControlPlaneTools.cs"
+)
+
+foreach ($source in $requiredMcpSources) {
+    if (-not (Test-Path -LiteralPath (Join-Path $Root $source))) {
+        Add-AgentIssue $issues "Error" "Full Automation Tests" $source "Required native editor control-plane source is missing." "Add the MCP handler/tool source file."
+    }
+}
+
 foreach ($script in $requiredScripts) {
     if ($script -eq "scripts/agents/asset_visual_review.ps1") {
         continue
@@ -69,6 +273,65 @@ foreach ($script in $requiredScripts) {
     & powershell -NoProfile -ExecutionPolicy Bypass -File $full -Root $Root | Out-Host
     if ($LASTEXITCODE -ne 0) {
         Add-AgentIssue $issues "Error" "Full Automation Tests" $script "Script exited with $LASTEXITCODE on the current project." "Fix the script or the issue it detected."
+    }
+}
+
+$soundAudit = Join-Path $Root "scripts/agents/sound_asset_audit.ps1"
+if (Test-Path -LiteralPath $soundAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-sound-asset-audit-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Assets\sounds") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "dronevsplayers.sbproj") | Out-Null
+
+        $soundPath = Join-Path $tempRoot "Assets\sounds\bad_missing_source.sound"
+        @'
+{
+  "UI": false,
+  "Volume": "1",
+  "Pitch": "1",
+  "Decibels": 58,
+  "SelectionMode": "Random",
+  "Sounds": [ "sounds/missing_source.wav" ],
+  "DistanceAttenuation": true,
+  "Distance": 1200,
+  "__version": 1
+}
+'@ | Set-Content -LiteralPath $soundPath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $soundAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sound_asset_audit.ps1" "Sound asset audit did not fail on a .sound file with a missing WAV source." "Keep the fixture red/green test aligned with the raw-audio wrapper regression."
+        }
+
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "Assets\sounds\missing_source.wav") | Out-Null
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $soundAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sound_asset_audit.ps1" "Sound asset audit failed on a .sound file with an existing WAV source." "Avoid false positives for valid SoundEvent wrappers."
+        }
+
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Code") | Out-Null
+        $fakeSboxRoot = Join-Path $tempRoot "FakeSbox"
+        $mountedSoundDir = Join-Path $fakeSboxRoot "download\assets\gameplay\equipment\weapons\m4a1\sounds"
+        New-Item -ItemType Directory -Force -Path $mountedSoundDir | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $mountedSoundDir "m4_shot.abc123.sound_c") | Out-Null
+        @"
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputPath>$($fakeSboxRoot.Replace("\", "/"))/.vs/output/</OutputPath>
+  </PropertyGroup>
+</Project>
+"@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\dronevsplayers.csproj") -Encoding UTF8
+        'class UsesMountedSound { const string Shot = "gameplay/equipment/weapons/m4a1/sounds/m4_shot.sound"; }' | Set-Content -LiteralPath (Join-Path $tempRoot "Code\UsesMountedSound.cs") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $soundAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sound_asset_audit.ps1" "Sound asset audit did not fail on a direct mounted SoundEvent fixture." "Keep gameplay code, prefabs, and scenes pointed at local Assets/sounds wrappers; import stock audio into local wrappers instead of committing mounted package paths."
+        }
+    }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
+        }
     }
 }
 
@@ -92,6 +355,654 @@ if (Test-Path -LiteralPath $uiAudit) {
         & powershell -NoProfile -ExecutionPolicy Bypass -File $uiAudit -Root $tempRoot -FailOnWarning | Out-Host
         if ($LASTEXITCODE -ne 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/ui_flow_audit.ps1" "UI flow audit failed on a fixture with an onclick handler." "Avoid false positives for valid clickable elements."
+        }
+    }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
+        }
+    }
+}
+
+$teamLabelAudit = Join-Path $Root "scripts/agents/team_label_copy_audit.ps1"
+if (Test-Path -LiteralPath $teamLabelAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-team-label-copy-audit-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Code\UI") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Code\Game") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "docs") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "scripts\agents") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "dronevsplayers.sbproj") | Out-Null
+
+        @'
+<root>
+    <div>ABOVE WINS</div>
+    <div>BELOW WINS</div>
+    <div>Take down above.</div>
+    <div>Hunt below.</div>
+    <span>Fly drones from above</span>
+    <span>Fight from below</span>
+    <div>@(LocalRole == PlayerRole.Pilot ? "ABOVE" : "BELOW")</div>
+    <div>@(LocalRole == PlayerRole.Pilot ? "ABOVE" : LocalRole == PlayerRole.Soldier ? "BELOW" : "SPECTATOR")</div>
+</root>
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\UI\HudPanel.razor") -Encoding UTF8
+
+        @'
+public partial class HudPanel
+{
+    string LocalRoleLabel => LocalRole switch
+    {
+        PlayerRole.Pilot => "ABOVE",
+        PlayerRole.Soldier => "BELOW",
+        _ => "SPECTATOR",
+    };
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\UI\HudPanel.cs") -Encoding UTF8
+
+        @'
+<root>
+    <div class="feature-title pilot">ABOVE</div>
+    <div class="feature-title soldier">BELOW</div>
+</root>
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\UI\MainMenuPanel.razor") -Encoding UTF8
+
+        @'
+public sealed class RoundManager
+{
+    void BroadcastRoundEnd()
+    {
+        var label = winner == WinningSide.Pilot ? "ABOVE" : "BELOW";
+        Log.Info($"[Round] {label} wins. Above {PilotWins} / Below {SoldierWins}");
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\Game\RoundManager.cs") -Encoding UTF8
+
+        "HUD labels still read **ABOVE** for pilots and **BELOW** for soldiers." | Set-Content -LiteralPath (Join-Path $tempRoot "README.md") -Encoding UTF8
+        "Player-facing role names rebranded to ABOVE / BELOW." | Set-Content -LiteralPath (Join-Path $tempRoot "docs\architecture.md") -Encoding UTF8
+        "Above/Below team choices appear only after Play." | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\playtest_checklist.ps1") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $teamLabelAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/team_label_copy_audit.ps1" "Team label audit did not fail on stale Above/Below role-copy fixtures." "Keep the fixture red/green test aligned with the player-facing label policy."
+        }
+
+        @'
+<root>
+    <div>Drone Pilots against Soldiers</div>
+    <div>DRONE PILOTS WIN</div>
+    <div>SOLDIERS WIN</div>
+    <div>Hunt soldiers.</div>
+    <div>Take down drone pilots.</div>
+    <span>Fly drones as drone pilots</span>
+    <span>Fight as soldiers</span>
+</root>
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\UI\HudPanel.razor") -Encoding UTF8
+
+        @'
+public partial class HudPanel
+{
+    string PilotRoleLabel => "DRONE PILOTS";
+    string SoldierRoleLabel => "SOLDIERS";
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\UI\HudPanel.cs") -Encoding UTF8
+
+        @'
+<root>
+    <div>A vertical asymmetric shooter about Drone Pilots and Soldiers.</div>
+    <div>Drone Pilots launch drones, swap into the camera, and pressure Soldiers across the battlefield.</div>
+    <div class="feature-title pilot">DRONE PILOTS</div>
+    <div class="feature-title soldier">SOLDIERS</div>
+</root>
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\UI\MainMenuPanel.razor") -Encoding UTF8
+
+        @'
+public sealed class RoundManager
+{
+    void BroadcastRoundEnd()
+    {
+        var label = winner == WinningSide.Pilot ? "Drone Pilots" : "Soldiers";
+        Log.Info($"[Round] {label} win. Drone Pilots {PilotWins} / Soldiers {SoldierWins}");
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\Game\RoundManager.cs") -Encoding UTF8
+
+        "Player-facing team labels read **Drone Pilots** and **Soldiers**; keep **ABOVE / BELOW** as the project title." | Set-Content -LiteralPath (Join-Path $tempRoot "README.md") -Encoding UTF8
+        "Player-facing team labels use Drone Pilots and Soldiers." | Set-Content -LiteralPath (Join-Path $tempRoot "docs\architecture.md") -Encoding UTF8
+        "Drone Pilots/Soldiers team choices appear only after Play." | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\playtest_checklist.ps1") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $teamLabelAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/team_label_copy_audit.ps1" "Team label audit failed on valid Drone Pilots/Soldiers fixtures." "Avoid false positives for the current player-facing label policy."
+        }
+    }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
+        }
+    }
+}
+
+$prefabWiringAudit = Join-Path $Root "scripts/agents/prefab_wiring_audit.ps1"
+if (Test-Path -LiteralPath $prefabWiringAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-prefab-wiring-audit-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Assets\prefabs") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "dronevsplayers.sbproj") | Out-Null
+
+        $prefabPath = Join-Path $tempRoot "Assets\prefabs\BadLineRenderer.prefab"
+        @'
+{
+  "RootObject": {
+    "Name": "BadLineRenderer",
+    "Components": [
+      {
+        "__type": "Sandbox.LineRenderer",
+        "Color": {
+          "color": "1,0.9,0.28,0.95",
+          "useColor": true,
+          "useGradient": false
+        }
+      }
+    ],
+    "Children": []
+  }
+}
+'@ | Set-Content -LiteralPath $prefabPath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $prefabWiringAudit -Root $tempRoot -OnlyLineRendererSerialization | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/prefab_wiring_audit.ps1" "Prefab wiring audit did not fail on a legacy LineRenderer.Color fixture." "Keep the fixture red/green test aligned with current S&Box LineRenderer serialization."
+        }
+
+        @'
+{
+  "RootObject": {
+    "Name": "GoodLineRenderer",
+    "Components": [
+      {
+        "__type": "Sandbox.LineRenderer",
+        "UseVectorPoints": true,
+        "Lighting": false
+      }
+    ],
+    "Children": []
+  }
+}
+'@ | Set-Content -LiteralPath $prefabPath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $prefabWiringAudit -Root $tempRoot -OnlyLineRendererSerialization | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/prefab_wiring_audit.ps1" "Prefab wiring audit failed on a LineRenderer fixture without legacy Color serialization." "Avoid false positives for valid LineRenderer prefab data."
+        }
+    }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
+        }
+    }
+}
+
+$sceneAudit = Join-Path $Root "scripts/agents/scene_integrity_audit.ps1"
+if (Test-Path -LiteralPath $sceneAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-scene-integrity-audit-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Assets\scenes") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "dronevsplayers.sbproj") | Out-Null
+
+        $scenePath = Join-Path $tempRoot "Assets\scenes\main.scene"
+        @'
+{
+  "GameObjects": [
+    {
+      "Name": "GameManager",
+      "Components": [
+        { "__type": "DroneVsPlayers.GameRules" },
+        { "__type": "DroneVsPlayers.GameStats" },
+        { "__type": "DroneVsPlayers.GameSetup" },
+        { "__type": "DroneVsPlayers.RoundManager" },
+        { "__type": "DroneVsPlayers.AutoWireHelper" },
+        { "__type": "DroneVsPlayers.HudPanel" },
+        { "__type": "DroneVsPlayers.PlayerSpawn", "Role": "Pilot" },
+        { "__type": "DroneVsPlayers.PlayerSpawn", "Role": "Soldier" }
+      ],
+      "Children": [
+        {
+          "Name": "WaterTower",
+          "Components": [],
+          "Children": [
+            {
+              "Name": "Visual",
+              "Components": [
+                { "__type": "Sandbox.ModelRenderer", "Model": "models/watertower.vmdl" }
+              ],
+              "Children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sceneAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit did not fail on a water tower fixture without a LadderVolume." "Keep the fixture red/green test aligned with the water tower traversal regression."
+        }
+
+        @'
+{
+  "GameObjects": [
+    {
+      "Name": "GameManager",
+      "Components": [
+        { "__type": "DroneVsPlayers.GameRules" },
+        { "__type": "DroneVsPlayers.GameStats" },
+        { "__type": "DroneVsPlayers.GameSetup" },
+        { "__type": "DroneVsPlayers.RoundManager" },
+        { "__type": "DroneVsPlayers.AutoWireHelper" },
+        { "__type": "DroneVsPlayers.HudPanel" },
+        { "__type": "DroneVsPlayers.PlayerSpawn", "Role": "Pilot" },
+        { "__type": "DroneVsPlayers.PlayerSpawn", "Role": "Soldier" }
+      ],
+      "Children": [
+        {
+          "Name": "WaterTower",
+          "Components": [],
+          "Children": [
+            {
+              "Name": "Visual",
+              "Components": [
+                { "__type": "Sandbox.ModelRenderer", "Model": "models/watertower.vmdl" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Ladder",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": true, "Scale": "110,80,600" },
+                { "__type": "DroneVsPlayers.LadderVolume", "AutoConfigureCollider": true, "TopExitLocalOffset": "0,60,272" }
+              ],
+              "Children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sceneAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit did not fail on a water tower fixture without solid collision children." "Keep the fixture red/green test aligned with the water tower collision regression."
+        }
+
+        @'
+{
+  "GameObjects": [
+    {
+      "Name": "GameManager",
+      "Components": [
+        { "__type": "DroneVsPlayers.GameRules" },
+        { "__type": "DroneVsPlayers.GameStats" },
+        { "__type": "DroneVsPlayers.GameSetup" },
+        { "__type": "DroneVsPlayers.RoundManager" },
+        { "__type": "DroneVsPlayers.AutoWireHelper" },
+        { "__type": "DroneVsPlayers.HudPanel" },
+        { "__type": "DroneVsPlayers.PlayerSpawn", "Role": "Pilot" },
+        { "__type": "DroneVsPlayers.PlayerSpawn", "Role": "Soldier" }
+      ],
+      "Children": [
+        {
+          "Name": "WaterTower",
+          "Components": [],
+          "Children": [
+            { "Name": "Visual", "Rotation": "0,0,0,1", "Components": [ { "__type": "Sandbox.ModelRenderer", "Model": "models/watertower.vmdl" } ], "Children": [] },
+            { "Name": "Collision_Tank", "Components": [ { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "660,660,230" } ], "Children": [] },
+            { "Name": "Collision_Roof", "Components": [ { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "600,600,80" } ], "Children": [] },
+            { "Name": "Collision_Platform", "Components": [ { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "760,760,34" } ], "Children": [] },
+            { "Name": "Collision_Frame_North", "Components": [ { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "560,48,420" } ], "Children": [] },
+            { "Name": "Collision_Leg_NorthWest", "Components": [ { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "36,36,520" } ], "Children": [] },
+            { "Name": "Collision_Leg_NorthEast", "Components": [ { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "36,36,520" } ], "Children": [] },
+            { "Name": "Collision_Leg_SouthWest", "Components": [ { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "36,36,520" } ], "Children": [] },
+            { "Name": "Collision_Leg_SouthEast", "Components": [ { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "36,36,520" } ], "Children": [] },
+            { "Name": "Collision_Ladder", "Components": [ { "__type": "Sandbox.BoxCollider", "IsTrigger": true, "Scale": "110,80,600" }, { "__type": "DroneVsPlayers.LadderVolume", "AutoConfigureCollider": true, "TopExitLocalOffset": "0,60,272" } ], "Children": [] }
+          ]
+        }
+      ]
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sceneAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit did not fail on a broad lower-frame water tower collider." "Keep the fixture red/green test aligned with the water tower invisible-collision regression."
+        }
+
+        @'
+{
+  "GameObjects": [
+    {
+      "Name": "GameManager",
+      "Components": [
+        { "__type": "DroneVsPlayers.GameRules" },
+        { "__type": "DroneVsPlayers.GameStats" },
+        { "__type": "DroneVsPlayers.GameSetup" },
+        { "__type": "DroneVsPlayers.RoundManager" },
+        { "__type": "DroneVsPlayers.AutoWireHelper" },
+        { "__type": "DroneVsPlayers.HudPanel" },
+        { "__type": "DroneVsPlayers.PlayerSpawn", "Role": "Pilot" },
+        { "__type": "DroneVsPlayers.PlayerSpawn", "Role": "Soldier" }
+      ],
+      "Children": [
+        {
+          "Name": "WaterTower",
+          "Components": [],
+          "Children": [
+            {
+              "Name": "Visual",
+              "Rotation": "0,0,0.131218359,0.991353512",
+              "Components": [
+                { "__type": "Sandbox.ModelRenderer", "Model": "models/watertower.vmdl" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Tank",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "660,660,230" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Roof",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "600,600,80" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Platform",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "760,760,34" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Leg_NorthWest",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "36,36,520" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Leg_NorthEast",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "36,36,520" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Leg_SouthWest",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "36,36,520" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Leg_SouthEast",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "36,36,520" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Ladder",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": true, "Scale": "110,80,600" },
+                { "__type": "DroneVsPlayers.LadderVolume", "AutoConfigureCollider": true, "TopExitLocalOffset": "0,60,272" }
+              ],
+              "Children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sceneAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit did not fail on a water tower fixture with locally rotated visuals and unrotated collision." "Keep the fixture red/green test aligned with the water tower visual/collision alignment regression."
+        }
+
+        @'
+{
+  "GameObjects": [
+    {
+      "Name": "GameManager",
+      "Components": [
+        { "__type": "DroneVsPlayers.GameRules" },
+        { "__type": "DroneVsPlayers.GameStats" },
+        { "__type": "DroneVsPlayers.GameSetup" },
+        { "__type": "DroneVsPlayers.RoundManager" },
+        { "__type": "DroneVsPlayers.AutoWireHelper" },
+        { "__type": "DroneVsPlayers.HudPanel" },
+        { "__type": "DroneVsPlayers.PlayerSpawn", "Role": "Pilot" },
+        { "__type": "DroneVsPlayers.PlayerSpawn", "Role": "Soldier" }
+      ],
+      "Children": [
+        {
+          "Name": "WaterTower",
+          "Components": [],
+          "Children": [
+            {
+              "Name": "Visual",
+              "Rotation": "0,0,0,1",
+              "Components": [
+                { "__type": "Sandbox.ModelRenderer", "Model": "models/watertower.vmdl" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Tank",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "660,660,230" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Roof",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "600,600,80" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Platform",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "760,760,34" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Leg_NorthWest",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "36,36,520" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Leg_NorthEast",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "36,36,520" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Leg_SouthWest",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "36,36,520" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Leg_SouthEast",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "36,36,520" }
+              ],
+              "Children": []
+            },
+            {
+              "Name": "Collision_Ladder",
+              "Components": [
+                { "__type": "Sandbox.BoxCollider", "IsTrigger": true, "Scale": "110,80,600" },
+                { "__type": "DroneVsPlayers.LadderVolume", "AutoConfigureCollider": true, "TopExitLocalOffset": "0,60,272" }
+              ],
+              "Children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sceneAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit failed on a water tower fixture with a trigger LadderVolume." "Avoid false positives for valid water tower ladder authoring."
+        }
+    }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
+        }
+    }
+}
+
+$collisionAudit = Join-Path $Root "scripts/agents/collision_authoring_agent.ps1"
+if (Test-Path -LiteralPath $collisionAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-collision-authoring-agent-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Assets\scenes") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "dronevsplayers.sbproj") | Out-Null
+
+        $scenePath = Join-Path $tempRoot "Assets\scenes\main.scene"
+        @'
+{
+  "GameObjects": [
+    {
+      "Name": "TestProp",
+      "Children": [
+        {
+          "Name": "Collision_Block",
+          "Components": [],
+          "Children": []
+        }
+      ]
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_authoring_agent.ps1" "Collision authoring agent did not fail on a Collision_* object without a BoxCollider." "Keep collision helper naming tied to actual collider authoring."
+        }
+
+        @'
+{
+  "GameObjects": [
+    {
+      "Name": "TestProp",
+      "Children": [
+        {
+          "Name": "Visual",
+          "Rotation": "0,0,0.131218359,0.991353512",
+          "Components": [
+            { "__type": "Sandbox.ModelRenderer", "Model": "models/test.vmdl", "RenderType": "On" }
+          ],
+          "Children": []
+        },
+        {
+          "Name": "Collision_Block",
+          "Components": [
+            { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "100,100,100" }
+          ],
+          "Children": []
+        }
+      ]
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionAudit -Root $tempRoot -FailOnWarning | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_authoring_agent.ps1" "Collision authoring agent did not flag a locally rotated Visual beside Collision_* children." "Keep the regression guard aligned with visual/collision transform drift."
+        }
+
+        @'
+{
+  "GameObjects": [
+    {
+      "Name": "WaterTower",
+      "Children": [
+        { "Name": "Visual", "Rotation": "0,0,0,1", "Components": [ { "__type": "Sandbox.ModelRenderer", "Model": "models/watertower.vmdl", "RenderType": "On" } ], "Children": [] },
+        { "Name": "Collision_Tank", "Components": [ { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "660,660,230" } ], "Children": [] },
+        { "Name": "Collision_Roof", "Components": [ { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "600,600,80" } ], "Children": [] },
+        { "Name": "Collision_Platform", "Components": [ { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "760,760,34" } ], "Children": [] },
+        { "Name": "Collision_Frame_North", "Components": [ { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "560,48,420" } ], "Children": [] },
+        { "Name": "Collision_Leg_NorthWest", "Components": [ { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "36,36,520" } ], "Children": [] },
+        { "Name": "Collision_Leg_NorthEast", "Components": [ { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "36,36,520" } ], "Children": [] },
+        { "Name": "Collision_Leg_SouthWest", "Components": [ { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "36,36,520" } ], "Children": [] },
+        { "Name": "Collision_Leg_SouthEast", "Components": [ { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "36,36,520" } ], "Children": [] },
+        { "Name": "Collision_Ladder", "Components": [ { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": true, "Static": true, "Scale": "110,80,600" }, { "__type": "DroneVsPlayers.LadderVolume", "AutoConfigureCollider": true, "TopExitLocalOffset": "0,60,272" } ], "Children": [] }
+      ]
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_authoring_agent.ps1" "Collision authoring agent did not fail on a broad lower-frame water tower collider." "Keep the collision agent aligned with the water tower open-base regression."
+        }
+
+        @'
+{
+  "GameObjects": [
+    {
+      "Name": "TestProp",
+      "Children": [
+        {
+          "Name": "Visual",
+          "Rotation": "0,0,0,1",
+          "Components": [
+            { "__type": "Sandbox.ModelRenderer", "Model": "models/test.vmdl", "RenderType": "On" }
+          ],
+          "Children": []
+        },
+        {
+          "Name": "Collision_Block",
+          "Components": [
+            { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "100,100,100" }
+          ],
+          "Children": []
+        }
+      ]
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_authoring_agent.ps1" "Collision authoring agent failed on a valid prop with identity Visual rotation and solid collision." "Avoid false positives for normal scene collision authoring."
         }
     }
     finally {

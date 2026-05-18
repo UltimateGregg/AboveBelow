@@ -1,0 +1,289 @@
+param(
+    [string]$Root = "",
+    [switch]$ShowFiles,
+    [switch]$ShowInfo,
+    [switch]$FailOnWarning,
+    [switch]$WriteReport,
+    [string]$RecentGoal = ""
+)
+
+. "$PSScriptRoot\agent_common.ps1"
+
+if ([string]::IsNullOrWhiteSpace($Root)) {
+    $Root = Get-AgentProjectRoot
+}
+$Root = (Resolve-Path -LiteralPath $Root).Path
+
+$issues = New-Object System.Collections.Generic.List[object]
+$reportLines = New-Object System.Collections.Generic.List[string]
+
+function Add-TrainingLine {
+    param([string]$Line = "")
+
+    Write-Host $Line
+    $script:reportLines.Add($Line)
+}
+
+function Add-TrainingSection {
+    param([string]$Title)
+
+    Add-TrainingLine ""
+    Add-TrainingLine "== $Title =="
+}
+
+function Test-TrainingPathMatch {
+    param(
+        [string]$Path,
+        [string[]]$Patterns
+    )
+
+    foreach ($pattern in $Patterns) {
+        if ($Path -like $pattern) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Get-TrainingRecentGoal {
+    param(
+        [string]$Root,
+        [string]$RecentGoal,
+        [object[]]$ChangedFiles = @()
+    )
+
+    if (-not [string]::IsNullOrWhiteSpace($RecentGoal)) {
+        return $RecentGoal
+    }
+
+    $candidateDirs = @(
+        "docs/superpowers/plans",
+        "docs/superpowers/specs",
+        "docs/assets/briefs",
+        "docs/marketing"
+    )
+
+    $changedGoalFiles = @($ChangedFiles | Where-Object {
+        $path = $_.Path
+        foreach ($dir in $candidateDirs) {
+            if ($path -like "$dir/*") {
+                return $true
+            }
+        }
+        return $false
+    })
+
+    if ($changedGoalFiles.Count -gt 0) {
+        return "Changed plan/spec/brief: $($changedGoalFiles[0].Path)"
+    }
+
+    $candidates = @()
+    foreach ($dir in $candidateDirs) {
+        $full = Join-Path $Root $dir
+        if (Test-Path -LiteralPath $full) {
+            $candidates += Get-ChildItem -LiteralPath $full -File -ErrorAction SilentlyContinue
+        }
+    }
+
+    $latest = @($candidates | Sort-Object LastWriteTime -Descending | Select-Object -First 1)
+    if ($latest.Count -eq 0) {
+        return "No recent plan/spec/brief file found."
+    }
+
+    return "No changed goal artifact found; latest plan/spec/brief: $(ConvertTo-AgentRelativePath -Path $latest[0].FullName -Root $Root)"
+}
+
+$changed = @(Get-AgentChangedFiles -Root $Root)
+$recentGoalText = Get-TrainingRecentGoal -Root $Root -RecentGoal $RecentGoal -ChangedFiles $changed
+
+$areaRules = @(
+    [pscustomobject]@{
+        Name = "Gameplay"
+        Patterns = @("Code/Game/*", "Code/Player/*", "Code/Drone/*", "Code/Equipment/*")
+        Checks = @(
+            "scripts/agents/build_log_sentinel.ps1",
+            "scripts/agents/gameplay_regression_guard.ps1",
+            "scripts/agents/networking_review_audit.ps1"
+        )
+        Training = "If the task exposed a missed gameplay regression, add a focused guard under scripts/agents and wire it into run_agent_checks.ps1 plus test_full_automation_layer.ps1."
+    },
+    [pscustomobject]@{
+        Name = "UI"
+        Patterns = @("Code/UI/*", "Assets/ui/*")
+        Checks = @(
+            "scripts/agents/ui_flow_audit.ps1",
+            "scripts/agents/playtest_checklist.ps1 -ChangeArea UI"
+        )
+        Training = "If a UI issue escaped static checks, add a concrete Razor or playtest checklist rule rather than relying on generic build success."
+    },
+    [pscustomobject]@{
+        Name = "PrefabScene"
+        Patterns = @("Assets/prefabs/*", "Assets/scenes/*")
+        Checks = @(
+            "scripts/agents/prefab_wiring_audit.ps1",
+            "scripts/agents/prefab_graph_audit.ps1",
+            "scripts/agents/scene_integrity_audit.ps1",
+            "scripts/agents/collision_authoring_agent.ps1"
+        )
+        Training = "If scene or prefab authoring failed, capture the pattern in known_sbox_patterns.md and add a static fixture to the relevant audit."
+    },
+    [pscustomobject]@{
+        Name = "Assets"
+        Patterns = @("*.blend", "*.blend.blend", "*_model.blend/*", "Assets/models/*", "Assets/materials/*", "scripts/*_asset_pipeline.json", "scripts/asset_pipeline.*", "scripts/smart_asset_export.ps1")
+        Checks = @(
+            "scripts/agents/asset_pipeline_audit.ps1",
+            "scripts/agents/modeldoc_audit.ps1 -ShowInfo",
+            "scripts/agents/fbx_material_slot_audit.ps1 -ShowInfo"
+        )
+        Training = "If an asset roundtrip failed, make the config, ModelDoc, material-slot, and visual-review path reproducible before accepting the asset."
+    },
+    [pscustomobject]@{
+        Name = "Tooling"
+        Patterns = @(".agents/*", ".codex/*", ".claude/*", "scripts/agents/*", "docs/agent_toolkit.md", "AGENTS.md")
+        Checks = @(
+            "scripts/agents/test_full_automation_layer.ps1",
+            "scripts/agents/run_agent_checks.ps1 -Suite train"
+        )
+        Training = "Tooling improvements should land in the runnable suite, the automation self-test, and the human-facing agent docs together."
+    },
+    [pscustomobject]@{
+        Name = "Docs"
+        Patterns = @("docs/*", "README.md", "TESTING_GUIDE.md", "ROADMAP.md")
+        Checks = @(
+            "scripts/agents/docs_roadmap_audit.ps1",
+            "scripts/agents/post_task_training_agent.ps1 -ShowFiles"
+        )
+        Training = "Docs should capture reusable workflow lessons, not just narrate the specific task."
+    }
+)
+
+$areaCounts = @{}
+foreach ($rule in $areaRules) {
+    $areaCounts[$rule.Name] = 0
+}
+
+foreach ($file in $changed) {
+    foreach ($rule in $areaRules) {
+        if (Test-TrainingPathMatch -Path $file.Path -Patterns $rule.Patterns) {
+            $areaCounts[$rule.Name] = $areaCounts[$rule.Name] + 1
+        }
+    }
+}
+
+Add-TrainingLine "# Post-Task Training Agent"
+Add-TrainingLine ""
+Add-TrainingLine "Root: $Root"
+Add-TrainingLine "Recent goal source: $recentGoalText"
+Add-TrainingLine "Changed paths: $($changed.Count)"
+
+if ($ShowFiles -and $changed.Count -gt 0) {
+    Add-TrainingSection "Changed Files"
+    foreach ($file in $changed) {
+        Add-TrainingLine "- $($file.Status) $($file.Path)"
+    }
+}
+
+Add-TrainingSection "Training Focus"
+if ($changed.Count -eq 0) {
+    Add-AgentIssue $issues "Info" "Post-Task Training" "" "No changed files were detected, so the training pass has no task evidence to inspect." "Run this after a completed task or pass -RecentGoal with a concise goal summary."
+}
+else {
+    foreach ($rule in $areaRules) {
+        $count = $areaCounts[$rule.Name]
+        if ($count -le 0) {
+            continue
+        }
+
+        Add-TrainingLine "- $($rule.Name): $count changed path(s)"
+        foreach ($check in $rule.Checks) {
+            Add-TrainingLine "  check: powershell -ExecutionPolicy Bypass -File $check"
+        }
+        Add-TrainingLine "  training: $($rule.Training)"
+    }
+}
+
+$runnerPath = Join-Path $Root "scripts/agents/run_agent_checks.ps1"
+$selfTestPath = Join-Path $Root "scripts/agents/test_full_automation_layer.ps1"
+$toolkitPath = Join-Path $Root "docs/agent_toolkit.md"
+$agentReadmePath = Join-Path $Root ".agents/sbox/README.md"
+$agentsPath = Join-Path $Root "AGENTS.md"
+
+$runnerText = if (Test-Path -LiteralPath $runnerPath) { Get-Content -LiteralPath $runnerPath -Raw } else { "" }
+$selfTestText = if (Test-Path -LiteralPath $selfTestPath) { Get-Content -LiteralPath $selfTestPath -Raw } else { "" }
+$toolkitText = if (Test-Path -LiteralPath $toolkitPath) { Get-Content -LiteralPath $toolkitPath -Raw } else { "" }
+$agentReadmeText = if (Test-Path -LiteralPath $agentReadmePath) { Get-Content -LiteralPath $agentReadmePath -Raw } else { "" }
+$agentsText = if (Test-Path -LiteralPath $agentsPath) { Get-Content -LiteralPath $agentsPath -Raw } else { "" }
+
+if ($runnerText -notmatch 'post_task_training_agent\.ps1') {
+    Add-AgentIssue $issues "Error" "Post-Task Training" "scripts/agents/run_agent_checks.ps1" "The runner does not invoke post_task_training_agent.ps1." "Add a train suite that runs the post-task training agent."
+}
+
+if ($runnerText -notmatch '"train"') {
+    Add-AgentIssue $issues "Error" "Post-Task Training" "scripts/agents/run_agent_checks.ps1" "The runner does not expose a train suite." "Add train to the Suite ValidateSet and switch block."
+}
+
+if ($selfTestText -notmatch 'post_task_training_agent\.ps1' -or $selfTestText -notmatch '"train"') {
+    Add-AgentIssue $issues "Error" "Post-Task Training" "scripts/agents/test_full_automation_layer.ps1" "The automation self-test does not protect the training agent and suite." "Keep training automation in the full-layer self-test."
+}
+
+if ($toolkitText -notmatch 'Post-Task Training Agent') {
+    Add-AgentIssue $issues "Warning" "Post-Task Training" "docs/agent_toolkit.md" "Agent toolkit docs do not mention the Post-Task Training Agent." "Document the train suite and expected use after task handoff."
+}
+
+if ($agentReadmeText -notmatch 'post-task-training-agent\.md') {
+    Add-AgentIssue $issues "Warning" "Post-Task Training" ".agents/sbox/README.md" "Agent routing docs do not mention post-task-training-agent.md." "Add a routing row for post-task training."
+}
+
+if ($agentsText -notmatch 'just the word "train"' -or $agentsText -notmatch 'run_agent_checks\.ps1 -Suite train') {
+    Add-AgentIssue $issues "Warning" "Post-Task Training" "AGENTS.md" "Project instructions do not clearly define the train trigger and train suite." "Document that a bare train request should run the post-task training workflow."
+}
+
+$newAgentScripts = @($changed | Where-Object { $_.Status -eq "??" -and $_.Path -like "scripts/agents/*.ps1" })
+foreach ($script in $newAgentScripts) {
+    $leaf = Split-Path $script.Path -Leaf
+    if ($runnerText -notmatch [regex]::Escape($leaf)) {
+        Add-AgentIssue $issues "Warning" "Post-Task Training" $script.Path "New agent script is not referenced by run_agent_checks.ps1." "Wire recurring checks into a named suite."
+    }
+
+    if ($selfTestText -notmatch [regex]::Escape($leaf)) {
+        Add-AgentIssue $issues "Warning" "Post-Task Training" $script.Path "New agent script is not protected by test_full_automation_layer.ps1." "Add a required-script entry or a focused red/green fixture."
+    }
+}
+
+$newAgentDocs = @($changed | Where-Object { $_.Status -eq "??" -and $_.Path -like ".agents/sbox/*.md" -and $_.Path -notlike "*/README.md" })
+foreach ($doc in $newAgentDocs) {
+    $leaf = Split-Path $doc.Path -Leaf
+    if ($agentReadmeText -notmatch [regex]::Escape($leaf)) {
+        Add-AgentIssue $issues "Warning" "Post-Task Training" $doc.Path "New agent doc is not discoverable from .agents/sbox/README.md." "Add a routing row that names when to use the agent."
+    }
+}
+
+Add-TrainingSection "Findings"
+$visibleIssues = @($issues | Where-Object { $ShowInfo -or $_.Severity -ne "Info" })
+if ($visibleIssues.Count -eq 0) {
+    Add-TrainingLine "No blocking issues found."
+}
+else {
+    foreach ($issue in $visibleIssues) {
+        $location = if ([string]::IsNullOrWhiteSpace($issue.Path)) { "" } else { " [$($issue.Path)]" }
+        Add-TrainingLine "[$($issue.Severity)] $($issue.Area)$location - $($issue.Message)"
+        if (-not [string]::IsNullOrWhiteSpace($issue.Recommendation)) {
+            Add-TrainingLine "  Recommendation: $($issue.Recommendation)"
+        }
+    }
+}
+
+if ($WriteReport) {
+    $reportDir = Join-Path $Root ".tmpbuild"
+    if (-not (Test-Path -LiteralPath $reportDir)) {
+        New-Item -ItemType Directory -Force -Path $reportDir | Out-Null
+    }
+
+    $reportPath = Join-Path $reportDir "post-task-training-report.md"
+    $reportLines | Set-Content -LiteralPath $reportPath -Encoding UTF8
+    Write-Host ""
+    Write-Host "Training report written: $reportPath"
+}
+
+exit (Get-AgentExitCode -Issues $issues -FailOnWarning:$FailOnWarning)

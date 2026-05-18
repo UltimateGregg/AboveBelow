@@ -15,7 +15,10 @@
   "combined_object_name": "ShotgunMesh",
   "material_remap": {
     "Shotgun_Wood": "materials/shotgun_wood.vmat",
-    "Shotgun_Metal": "materials/shotgun_metal.vmat"
+    "Shotgun_Metal": "materials/shotgun_metal.vmat",
+    "Shotgun_Rubber": "materials/shotgun_rubber.vmat",
+    "Shotgun_Shell": "materials/shotgun_shell.vmat",
+    "Shotgun_SightPaint": "materials/shotgun_metal.vmat"
   },
   "global_scale": 0.0254,
   "axis_forward": "-Y",

@@ -42,9 +42,9 @@
             "__guid": "55555555-0001-1100-0000-000000000001",
             "BodyGroups": 18446744073709551615,
             "CreateBoneObjects": false,
-            "Model": "models/citizen/citizen.vmdl",
+            "Model": "models/citizen_human/citizen_human_male.vmdl",
             "RenderType": "On",
-            "Tint": "0.85,0.4,0.2,1",
+            "Tint": "1,1,1,1",
             "UseAnimGraph": true
           },
           {

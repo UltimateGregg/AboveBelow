@@ -28,6 +28,7 @@ $areas = [ordered]@{
     PrefabScene = New-Object System.Collections.Generic.List[string]
     AssetPipeline = New-Object System.Collections.Generic.List[string]
     ModelDoc = New-Object System.Collections.Generic.List[string]
+    Sound = New-Object System.Collections.Generic.List[string]
     UI = New-Object System.Collections.Generic.List[string]
     Balance = New-Object System.Collections.Generic.List[string]
     Docs = New-Object System.Collections.Generic.List[string]
@@ -38,6 +39,7 @@ foreach ($file in $changed) {
     $path = $file.Path
     $isAgentTooling = $path -match "^scripts/agents/|^\.agents/|^\.codex/|^docs/agent_toolkit\.md$"
     $isProductionAssetTool = $path -match "^scripts/blender_asset_audit\.py$|^scripts/render_asset_preview\.py$|^scripts/asset_quality_profiles\.json$|^scripts/agents/(blender_quality_audit|material_texture_audit|asset_visual_review|new_asset_brief)\.ps1$"
+    $isSoundTooling = $path -match "^scripts/agents/sound_asset_audit\.ps1$|^scripts/audio/|^\.agents/sbox/sound-|^docs/editor_control_plane\.md$|^Libraries/jtc\.mcp-server/Editor/(Handlers/(Sound|ControlPlane)Handler|Mcp/Tools/(Sound|ControlPlane)Tools)\.cs$"
     $isAssetPipelineDoc = $path -match "^docs/(asset_pipeline|automation)\.md$"
     $isModelDocTooling = $path -match "^scripts/agents/modeldoc_audit\.ps1$|^\.agents/sbox/modeldoc-|^docs/agent_toolkit\.md$"
 
@@ -48,6 +50,9 @@ foreach ($file in $changed) {
         }
         if ($isModelDocTooling) {
             $areas.ModelDoc.Add($path)
+        }
+        if ($isSoundTooling) {
+            $areas.Sound.Add($path)
         }
         if ($path -match "\.md$|^docs/") {
             $areas.Docs.Add($path)
@@ -69,6 +74,9 @@ foreach ($file in $changed) {
     }
     if ($path -match "^Assets/models/.*\.vmdl$" -or $isModelDocTooling) {
         $areas.ModelDoc.Add($path)
+    }
+    if ($path -match "^Assets/sounds/" -or $path -match "SoundEvent|SoundHandle|Sound\.Play|GameObject\.PlaySound|SoundPointComponent|SoundBoxComponent" -or $isSoundTooling) {
+        $areas.Sound.Add($path)
     }
     if ($isProductionAssetTool) {
         $areas.AssetPipeline.Add($path)
@@ -132,6 +140,7 @@ if ($areas.PrefabScene.Count -gt 0) {
     Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_wiring_audit.ps1`'
     Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_graph_audit.ps1`'
     Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/scene_integrity_audit.ps1`'
+    Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/collision_authoring_agent.ps1`'
 }
 if ($areas.AssetPipeline.Count -gt 0) {
     Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1`'
@@ -141,6 +150,9 @@ if ($areas.AssetPipeline.Count -gt 0) {
 if ($areas.ModelDoc.Count -gt 0) {
     Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/modeldoc_audit.ps1 -ShowInfo`'
     Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite modeldoc`'
+}
+if ($areas.Sound.Count -gt 0) {
+    Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite sound -ShowInfo`'
 }
 if ($areas.UI.Count -gt 0) {
     Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/ui_flow_audit.ps1`'
@@ -171,7 +183,7 @@ if ($areas.Networking.Count -gt 0) {
     Add-Line $lines "- Networking: host-only mutations, replicated state, remote client visuals/notifications."
 }
 if ($areas.PrefabScene.Count -gt 0) {
-    Add-Line $lines "- Prefab/scene: editor load, AutoWire results, spawn points, collider gizmos."
+    Add-Line $lines "- Prefab/scene: editor load, AutoWire results, spawn points, collider gizmos, and collision/visual alignment."
 }
 if ($areas.AssetPipeline.Count -gt 0) {
     Add-Line $lines "- Assets: save/export loop, model/material reload, missing/error material check."
@@ -179,6 +191,9 @@ if ($areas.AssetPipeline.Count -gt 0) {
 }
 if ($areas.ModelDoc.Count -gt 0) {
     Add-Line $lines "- ModelDoc: source mesh path, material remap, owning config drift, FBX material slots, and `use_global_default` fallback."
+}
+if ($areas.Sound.Count -gt 0) {
+    Add-Line $lines "- Sound: SoundEvent wrappers, raw audio source references, editor MCP preview/wiring, and audible range/occlusion settings."
 }
 if ($areas.UI.Count -gt 0) {
     Add-Line $lines "- UI: startup flow, only-live menu actions, 1280x720 HUD fit, class picker, scoreboard, kill feed, loadout state."

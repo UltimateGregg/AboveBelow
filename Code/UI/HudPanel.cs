@@ -12,8 +12,8 @@ public partial class HudPanel
 {
 	string LocalRoleLabel => LocalRole switch
 	{
-		PlayerRole.Pilot => "ABOVE",
-		PlayerRole.Soldier => "BELOW",
+		PlayerRole.Pilot => "DRONE PILOTS",
+		PlayerRole.Soldier => "SOLDIERS",
 		_ => "SPECTATOR",
 	};
 

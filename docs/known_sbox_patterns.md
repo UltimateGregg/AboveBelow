@@ -34,6 +34,17 @@ Health.TakeDamage(damageInfo);  // Host applies damage
 BroadcastKilled(attackerId);     // Notify all peers
 `
 
+### Host RPC for Hitscan Fire Requests
+
+**Pattern:** Player fire input should send weapon intent to the host, not resolved hit data.
+
+**Workflow:**
+- Use a `[Rpc.Host]` request for `HitscanWeapon.RequestFire`.
+- Pass only bounded intent data such as the requested muzzle/eye origin and aim direction.
+- On the host, validate the origin against the server-known player eye, enforce cooldown/ammo/selection, run `Scene.Trace`, and apply damage.
+- Broadcast only visual/audio results such as tracers, muzzle flash, bullet path, and impact effects.
+- Run `scripts/agents/networking_review_audit.ps1` after weapon authority changes; it fails if `HitscanWeapon.RequestFire` drifts back to `[Rpc.Broadcast]` or accepts resolved hit objects.
+
 ### Network Ownership Changes
 
 **Issue:** When Network.Owner is null, the object may not sync properly.
@@ -150,6 +161,16 @@ if (!_cachedRules.IsValid())
 - Test prefabs in isolation
 - Use explicit prefab references, not prefab variants
 - Keep prefab structure flat (avoid deep hierarchies)
+
+### Code-Driven Child Objects
+
+**Pattern:** Components that scan child names need the driven objects authored in every prefab variant that enables the behavior.
+
+**Workflow:**
+- Drone propeller motion is driven by `DroneController`, which scans descendants whose names start with `Propeller`.
+- GPS, FPV, and Fiber FPV drone prefabs should all include four visible propeller children in the prefab hierarchy.
+- Prefer the shared corner naming pattern `Propeller_FL`, `Propeller_FR`, `Propeller_BL`, `Propeller_BR` so audits and future tooling can reason about all variants consistently.
+- Run `scripts/agents/prefab_wiring_audit.ps1` after drone prefab edits; it catches missing code-driven propeller children before playtesting.
 
 ### Held Equipment Visibility
 
@@ -423,7 +444,40 @@ public void TakeDamage(DamageInfo info)
 - `Vector2`, `Vector3`, `Angles`, `Color`, primitive values, models, and materials should be supported by the MCP component setter.
 - If an editor property fails with an invalid cast, add the converter in `Libraries/jtc.mcp-server/Editor/Handlers/ComponentHandler.cs` before working around it manually.
 
+### Authored Prop Collision Alignment
+
+**Pattern:** A prop can look correctly rotated while its collision still uses an older transform if the visible `Visual` child is rotated locally and sibling `Collision_*` children remain unrotated. The water tower reproduced this: the rendered mesh had the new yaw, but tank/platform/leg collision still lived under the parent root's old yaw.
+
+**Workflow:**
+- Keep visible mesh, solid collision, ladder triggers, and helper volumes under a shared prop root.
+- Rotate or move the prop root for scene placement. Do not rotate the `Visual` child to orient a prop that has sibling `Collision_*` children.
+- For open-base props like the water tower, do not fill empty visual space with broad frame wall colliders. Keep tank/platform/legs solid, keep ladder volumes as triggers, and only add narrow brace collision when it matches visible geometry.
+- For climbable props, keep ladder volumes as trigger colliders with `LadderVolume`; keep physical blockers as non-trigger `BoxCollider` children.
+- After Save As or MCP scene edits, verify both saved JSON and the live editor hierarchy. The editor can keep a stale in-memory scene even after the file is patched.
+- Run `scripts\agents\collision_authoring_agent.ps1 -ShowInfo` and then do a short editor playtest walking into the prop from multiple sides.
+- For broad or risky collision work, route through `.agents\sbox\collision-chain-agent.md` so a Codex explorer defines the collision contract, an implementer makes scoped edits, a verifier proves the result, and a critic can pass defects back down before handoff.
+
+### SoundEvent Source Selection
+
+**Pattern:** Local procedural WAVs are acceptable as fallbacks, but common cues should use stock/editor recordings imported into local `.sound` wrappers when the S&Box install already provides usable source audio. Direct mounted package SoundEvent paths looked valid statically but produced editor `.sound_c` file-open errors in this project, so gameplay code, prefabs, and scenes should reference local `Assets/sounds` wrappers.
+
+**Workflow:**
+- Search stock/editor audio before generating: weapon shots/reloads, dry fire, hitmarkers, movement, wind, drone hum, and explosions often have usable recordings under the S&Box download asset tree.
+- Keep gameplay-facing references as `.sound` resource paths. Do not point C# or prefab properties at raw `.wav` files.
+- Import or copy usable stock WAVs into `Assets/sounds/`, wrap them in local `.sound` files, and reference `sounds/example.sound` from C#, prefabs, and scenes.
+- For project-specific local fallbacks, run `python scripts/audio/generate_project_sounds.py --root .`. The generator imports known stock WAVs first, then uses deterministic layered synthesis, filtered noise, envelopes, and per-cue peak targets instead of one-off broad-spectrum noise bursts.
+- Run `scripts\agents\run_agent_checks.ps1 -Suite sound -ShowInfo` after wiring changes so local wrappers, direct mounted-reference bans, and raw source files stay aligned.
+
+### Attached Held-Item Sounds
+
+**Pattern:** Sounds owned by a player-held item should not be started as bare `Sound.Play(sound, worldPosition)` calls. If the local player moves while a shot, reload, dry-fire click, jammer loop, or throw cue is still audible, a world-position one-shot can sound like it was left behind in the map.
+
+**Workflow:**
+- Use `SoundPlayback.PlayAttached` for muzzle, reload, dry-fire, jammer-loop, and throw cues so the `SoundHandle` is parented to the weapon or player object and its position starts at the correct point.
+- Keep impact, explosion, bullet-whip, ambient, and UI/hitmarker cues as world or listener sounds; those are intentionally not attached to the shooter.
+- Run `scripts\agents\run_agent_checks.ps1 -Suite sound -ShowInfo` after sound-behavior changes. The suite now includes `sound_playback_audit.ps1` for held-item playback routing.
+
 ---
 
-Last Updated: May 14, 2026
-Version: 1.3 - Added drone control-mode regression workflow
+Last Updated: May 18, 2026
+Version: 1.7 - Added host-authoritative hitscan and code-driven child object guidance

@@ -25,6 +25,15 @@
 - Prefer adapting existing project patterns over introducing entirely new systems.
 - Avoid repeated compile/test loops without identifying the root cause first.
 
+## Post-Task Training Workflow
+
+- When the user types just the word "train", respond with "On it!" and run:
+  `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite train`
+- Use that pass to inspect the recent goal, changed files, documentation, hooks, agents, subagents, pipelines, and workflows.
+- Apply durable workflow improvements that would help the next similar task. Prefer updates to focused audits, suite wiring, self-tests, agent routing docs, `AGENTS.md`, `docs/agent_toolkit.md`, and `docs/known_sbox_patterns.md`.
+- Keep the scope general. Do not use training mode to continue product-specific gameplay, scene, prefab, UI, or asset edits unless the workflow improvement itself requires a small fixture.
+- After training, give a brief summary of what changed and what still needs human/editor verification.
+
 ## Project-Specific Guidelines
 
 ### Networking

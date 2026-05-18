@@ -181,12 +181,11 @@ public sealed class TrainingDummy : Component
 	{
 		if ( !Body.IsValid() || _appliedTeamRole == TeamRole ) return;
 
-		var tint = TeamRole == PlayerRole.Pilot
-			? new Color( 0.25f, 0.78f, 1f, 1f )
-			: new Color( 0.9f, 0.48f, 0.24f, 1f );
-
 		foreach ( var renderer in Body.Components.GetAll<ModelRenderer>( FindMode.EverythingInSelfAndDescendants ) )
-			renderer.Tint = tint;
+		{
+			renderer.Tint = Color.White;
+			renderer.MaterialGroup = TeamRole == PlayerRole.Pilot ? "skin_dark" : "skin_light";
+		}
 
 		_appliedTeamRole = TeamRole;
 	}

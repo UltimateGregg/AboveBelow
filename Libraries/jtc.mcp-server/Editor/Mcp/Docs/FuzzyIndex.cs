@@ -35,6 +35,7 @@ public sealed class FuzzyHit<T>
 /// </summary>
 public sealed class FuzzyIndex<T>
 {
+	[SkipHotload]
 	private static readonly Regex Tokenizer = new( @"[\p{L}\p{N}_]+", RegexOptions.Compiled );
 
 	private readonly FuzzyIndexConfig _config;

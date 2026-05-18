@@ -249,8 +249,8 @@ function Test-GraphFile {
     $resourceValues = New-Object System.Collections.Generic.List[string]
     foreach ($pattern in @(
         '"prefab"\s*:\s*"(?<value>[^"]+)"',
-        '"(?:Model|MaterialOverride|FireSound|FireSoundFirstPerson|ReloadSound|MagDropSound|MagInsertSound|BoltRackSound|EmptyClickSound|LoopSound|ThrowSound|DetonateSound|FootstepSound|JumpSound|LandSound|PropellerSound|SkyMaterial)"\s*:\s*"(?<value>[^"]+)"',
-        '"(?<value>(?:prefabs|models|materials|sounds|scenes|ui)/[^"]+)"'
+        '"(?:Model|MaterialOverride|Sound|FireSound|FireSoundFirstPerson|ReloadSound|MagDropSound|MagInsertSound|BoltRackSound|EmptyClickSound|LoopSound|ThrowSound|DetonateSound|FootstepSound|JumpSound|LandSound|PropellerSound|SkyMaterial)"\s*:\s*"(?<value>[^"]+)"',
+        '"(?<value>(?:prefabs|models|materials|sounds|sound|gameplay|weapons|items|killstreaks|resources|scenes|ui)/[^"]+)"'
     )) {
         foreach ($value in Get-RegexValues -Text $raw -Pattern $pattern) {
             $resourceValues.Add($value)
@@ -261,6 +261,9 @@ function Test-GraphFile {
         $resolved = Resolve-AgentResourcePath -ResourcePath $resource -Root $Root
         if ($null -ne $resolved -and -not (Test-Path -LiteralPath $resolved)) {
             Add-AgentIssue $issues "Error" "Resource Reference" $relative "Resource '$resource' does not exist at expected path." "Fix the path, restore the asset, or mark it as an engine resource in the audit if appropriate."
+        }
+        elseif ($null -eq $resolved -and $resource.EndsWith(".sound", [System.StringComparison]::OrdinalIgnoreCase)) {
+            Add-AgentIssue $issues "Error" "Resource Reference" $relative "Direct mounted SoundEvent '$resource' is not runtime-safe for this project." "Import or copy the source audio into Assets/sounds and reference a local sounds/*.sound wrapper from prefab and scene properties."
         }
     }
 

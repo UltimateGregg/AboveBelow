@@ -1,7 +1,8 @@
 param(
     [string]$Root = "",
     [switch]$ShowInfo,
-    [switch]$FailOnWarning
+    [switch]$FailOnWarning,
+    [switch]$OnlyLineRendererSerialization
 )
 
 . "$PSScriptRoot\agent_common.ps1"
@@ -57,8 +58,43 @@ function Test-Prefab {
     Add-AgentIssue $issues "Info" "Prefab" $Path "Prefab structure check completed."
 }
 
+function Test-LineRendererColorSerialization {
+    param(
+        [string]$Path
+    )
+
+    $fullPath = Join-Path $Root $Path
+    if (-not (Test-Path -LiteralPath $fullPath)) {
+        return
+    }
+
+    $raw = Get-Content -LiteralPath $fullPath -Raw
+    $legacyColorPattern = '"__type"\s*:\s*"Sandbox\.LineRenderer"[\s\S]*?"Color"\s*:\s*\{[\s\S]*?"useGradient"\s*:'
+    if ($raw -match $legacyColorPattern) {
+        Add-AgentIssue $issues "Error" "Prefab" $Path "Sandbox.LineRenderer.Color uses the legacy object format that current S&Box fails to deserialize." "Serialize LineRenderer.Color as a gradient frame array, or omit it and configure the gradient from runtime code."
+    }
+}
+
+function Test-AllLineRendererColorSerialization {
+    $prefabRoot = Join-Path $Root "Assets\prefabs"
+    if (-not (Test-Path -LiteralPath $prefabRoot)) {
+        return
+    }
+
+    foreach ($prefab in @(Get-ChildItem -LiteralPath $prefabRoot -Recurse -File -Filter "*.prefab")) {
+        $relative = ConvertTo-AgentRelativePath -Path $prefab.FullName -Root $Root
+        Test-LineRendererColorSerialization -Path $relative
+    }
+}
+
 Write-AgentSection "Prefab and Wiring Audit"
 Write-Host "Root: $Root"
+
+if ($OnlyLineRendererSerialization) {
+    Test-AllLineRendererColorSerialization
+    Write-AgentIssues -Issues $issues -ShowInfo:$ShowInfo
+    exit (Get-AgentExitCode -Issues $issues -FailOnWarning:$FailOnWarning)
+}
 
 $soldierBase = @(
     "Sandbox.CharacterController",
@@ -67,21 +103,51 @@ $soldierBase = @(
     "DroneVsPlayers.SoldierLoadout"
 )
 
+$humanBodyModel = "models/citizen_human/citizen_human_male.vmdl"
+$humanBodyCheck = @{
+    "Sandbox.SkinnedModelRenderer" = @(
+        @{ Property = "Model"; Expected = $humanBodyModel; Recommendation = "Use the human Citizen body model instead of the stylized default citizen body." }
+    )
+}
+
+$pilotGroundCheck = @{
+    "Sandbox.SkinnedModelRenderer" = @(
+        @{ Property = "Model"; Expected = $humanBodyModel; Recommendation = "Use the human Citizen body model instead of the stylized default citizen body." }
+    )
+    "DroneVsPlayers.DroneDeployer" = @(
+        @{ Property = "LeftHandFpRotation"; Expected = "0,180,0"; Recommendation = "Keep the pilot's first-person RC transmitter screen facing back toward the player." }
+    )
+}
+
+Test-Prefab -Path "Assets/prefabs/soldier.prefab" `
+    -RequiredComponents $soldierBase `
+    -RequiredNodes @("Body", "Eye", "Weapon", "MuzzleSocket", "WeaponVisual") `
+    -PropertyChecks $humanBodyCheck
+
 Test-Prefab -Path "Assets/prefabs/soldier_assault.prefab" `
     -RequiredComponents ($soldierBase + @("DroneVsPlayers.AssaultSoldier", "DroneVsPlayers.HitscanWeapon", "DroneVsPlayers.ChaffGrenade")) `
-    -RequiredNodes @("Body", "Eye", "Weapon", "Grenade", "MuzzleSocket", "WeaponVisual")
+    -RequiredNodes @("Body", "Eye", "Weapon", "Grenade", "MuzzleSocket", "WeaponVisual") `
+    -PropertyChecks $humanBodyCheck
 
 Test-Prefab -Path "Assets/prefabs/soldier_counter_uav.prefab" `
     -RequiredComponents ($soldierBase + @("DroneVsPlayers.CounterUavSoldier", "DroneVsPlayers.DroneJammerGun", "DroneVsPlayers.FragGrenade")) `
-    -RequiredNodes @("Body", "Eye", "Weapon", "Grenade", "MuzzleSocket")
+    -RequiredNodes @("Body", "Eye", "Weapon", "Grenade", "MuzzleSocket") `
+    -PropertyChecks $humanBodyCheck
 
 Test-Prefab -Path "Assets/prefabs/soldier_heavy.prefab" `
     -RequiredComponents ($soldierBase + @("DroneVsPlayers.HeavySoldier", "DroneVsPlayers.ShotgunWeapon", "DroneVsPlayers.EmpGrenade")) `
-    -RequiredNodes @("Body", "Eye", "Weapon", "Grenade", "MuzzleSocket")
+    -RequiredNodes @("Body", "Eye", "Weapon", "Grenade", "MuzzleSocket") `
+    -PropertyChecks $humanBodyCheck
 
 Test-Prefab -Path "Assets/prefabs/pilot_ground.prefab" `
     -RequiredComponents @("Sandbox.CharacterController", "DroneVsPlayers.GroundPlayerController", "DroneVsPlayers.Health", "DroneVsPlayers.PilotSoldier", "DroneVsPlayers.RemoteController", "DroneVsPlayers.SoldierLoadout", "DroneVsPlayers.DroneDeployer") `
-    -RequiredNodes @("Body", "Eye", "DroneDeployer")
+    -RequiredNodes @("Body", "Eye", "DroneDeployer") `
+    -PropertyChecks $pilotGroundCheck
+
+Test-Prefab -Path "Assets/prefabs/training_dummy.prefab" `
+    -RequiredComponents @("Sandbox.CharacterController", "DroneVsPlayers.Health", "DroneVsPlayers.TrainingDummy", "Sandbox.Citizen.CitizenAnimationHelper") `
+    -RequiredNodes @("Body") `
+    -PropertyChecks $humanBodyCheck
 
 $droneBase = @(
     "Sandbox.Rigidbody",
@@ -95,20 +161,22 @@ $droneBase = @(
 
 Test-Prefab -Path "Assets/prefabs/drone_gps.prefab" `
     -RequiredComponents ($droneBase + @("DroneVsPlayers.GpsDrone")) `
-    -RequiredNodes @("Visual", "CameraSocket", "MuzzleSocket")
+    -RequiredNodes @("Visual", "CameraSocket", "MuzzleSocket", "Propeller_FL", "Propeller_FR", "Propeller_BL", "Propeller_BR")
 
 Test-Prefab -Path "Assets/prefabs/drone_fpv.prefab" `
     -RequiredComponents ($droneBase + @("DroneVsPlayers.FpvDrone", "DroneVsPlayers.DroneWeapon")) `
-    -RequiredNodes @("Visual", "CameraSocket", "MuzzleSocket")
+    -RequiredNodes @("Visual", "CameraSocket", "MuzzleSocket", "Propeller_FL", "Propeller_FR", "Propeller_BL", "Propeller_BR")
 
 Test-Prefab -Path "Assets/prefabs/drone_fpv_fiber.prefab" `
     -RequiredComponents ($droneBase + @("DroneVsPlayers.FiberOpticFpvDrone", "DroneVsPlayers.DroneWeapon", "DroneVsPlayers.FiberCable", "Sandbox.LineRenderer")) `
-    -RequiredNodes @("Visual", "CameraSocket", "MuzzleSocket") `
+    -RequiredNodes @("Visual", "CameraSocket", "MuzzleSocket", "Propeller_FL", "Propeller_FR", "Propeller_BL", "Propeller_BR") `
     -PropertyChecks @{
         "DroneVsPlayers.FiberOpticFpvDrone" = @(
             @{ Property = "JamSusceptibility"; Expected = "0"; Recommendation = "Fiber FPV should stay RF-immune unless the balance design changes." }
         )
     }
+
+Test-AllLineRendererColorSerialization
 
 $scenePath = Join-Path $Root "Assets\scenes\main.scene"
 if (Test-Path -LiteralPath $scenePath) {

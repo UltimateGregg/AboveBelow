@@ -15,12 +15,27 @@
 						[
 
 							{
-								from = "Shotgun_Metal"
+								from = "Shotgun_Metal.vmat"
 								to = "materials/shotgun_metal.vmat"
 							},
 
 							{
-								from = "Shotgun_Wood"
+								from = "Shotgun_Rubber.vmat"
+								to = "materials/shotgun_rubber.vmat"
+							},
+
+							{
+								from = "Shotgun_Shell.vmat"
+								to = "materials/shotgun_shell.vmat"
+							},
+
+							{
+								from = "Shotgun_SightPaint.vmat"
+								to = "materials/shotgun_metal.vmat"
+							},
+
+							{
+								from = "Shotgun_Wood.vmat"
 								to = "materials/shotgun_wood.vmat"
 							},
 						]

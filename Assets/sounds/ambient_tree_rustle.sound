@@ -1,0 +1,23 @@
+{
+  "UI": false,
+  "Volume": "0.32",
+  "Pitch": "1",
+  "Decibels": 45,
+  "SelectionMode": "Random",
+  "Sounds": [ "sounds/ambient_tree_rustle.wav" ],
+  "Occlusion": false,
+  "Reflections": false,
+  "AirAbsorption": true,
+  "Transmission": false,
+  "OcclusionRadius": 0,
+  "DistanceAttenuation": true,
+  "Distance": 8500,
+  "Falloff": [
+    { "x": 0, "y": 1, "in": 0, "out": -1, "mode": "Mirrored" },
+    { "x": 0.45, "y": 0.55, "in": 0, "out": -0.5, "mode": "Mirrored" },
+    { "x": 1, "y": 0.1, "in": 0, "out": 0, "mode": "Mirrored" }
+  ],
+  "DefaultMixer": { "Name": "unknown", "Id": "00000000-0000-0000-0000-000000000000" },
+  "__references": [],
+  "__version": 1
+}

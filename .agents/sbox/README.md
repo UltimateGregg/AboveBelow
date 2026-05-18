@@ -14,6 +14,12 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 | Prefab, scene, or AutoWire review | `prefab-wiring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_wiring_audit.ps1` |
 | Deep prefab/reference graph review | `prefab-wiring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_graph_audit.ps1` |
 | Main scene/spawn/collider review | `prefab-wiring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/scene_integrity_audit.ps1` |
+| Prop collision and visual/collider alignment review | `collision-authoring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite collision -ShowInfo` |
+| Multi-agent collision exploration, implementation, verification, and critique | `collision-chain-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite collision-chain -ShowInfo` |
+| Read-only collision discovery before edits | `collision-explorer-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite collision-chain -ShowInfo` |
+| Scoped collision implementation after a contract is defined | `collision-implementer-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite collision -ShowInfo` |
+| Collision evidence and runtime-gap verification | `collision-verifier-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite scene -ShowInfo` |
+| Findings-first collision critique and rework routing | `collision-critic-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite collision-chain -ShowInfo` |
 | Blender or generated asset review | `asset-pipeline-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1` |
 | Designing the ModelDoc automation agent | `modeldoc-agent-builder.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite modeldoc` |
 | ModelDoc/VMDL validation | `modeldoc-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/modeldoc_audit.ps1 -ShowInfo` |
@@ -23,6 +29,8 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 | Blender procedural look needs to match in S&Box | `procedural-texture-transfer-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production` |
 | Visual preview review for a Blender asset | `visual-review-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/asset_visual_review.ps1 -Blend weapons_model.blend/assault_rifle_m4.blend` |
 | Full asset production readiness | `asset-pipeline-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production` |
+| Sound assets and native editor audio wiring | `sound-control-plane-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite sound -ShowInfo` |
+| Unified editor MCP capability/status check | `sound-control-plane-agent.md` | `control_plane_status` in the S&Box MCP server |
 | UI/startup-flow interaction review | `ui-flow-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/ui_flow_audit.ps1` |
 | Multiplayer authority review | `networking-review-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/networking_review_audit.ps1` |
 | Manual editor test planning | `playtest-qa-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/playtest_checklist.ps1 -ChangeArea All` |
@@ -30,6 +38,7 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 | Balance and tuning review | `balance-tuning-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/balance_tuning_report.ps1` |
 | Changed-file readiness report | `pre-handoff-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/feature_readiness_report.ps1 -ShowFiles` |
 | Current editor/runtime log discovery | `build-log-sentinel.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/current_log_audit.ps1 -RequireFresh` |
+| Post-task workflow training | `post-task-training-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite train` |
 
 ## Operating Rules
 
@@ -39,7 +48,12 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 - Use `[Sync]` for replicated state and RPCs for notifications or validated requests.
 - Extend `Code/code/Wiring/AutoWire.cs` when new prefab references need repeatable wiring.
 - After meaningful C# or scene/prefab edits, run the build/log sentinel and the most relevant specialist audit.
+- After map prop collision edits, run the collision authoring agent and then verify in the live editor; saved scene JSON and active editor state can diverge after Save As or MCP edits.
+- For collision-heavy tasks, use `collision-chain-agent.md` to split work across explorer, implementer, verifier, and critic roles before final handoff.
+- When the user types exactly `train`, respond with `On it!`, run the post-task training workflow, and apply durable hook, agent, pipeline, or documentation updates that will help future tasks.
 - For Blender-to-S&Box texture transfer, inspect whether the Blender material is procedural or image-backed before editing `.vmat` files. Procedural looks need baked project textures and strict VMDL material-slot validation.
+- For sound work, treat `.sound` wrappers as gameplay assets and raw audio as source data. Run the sound suite before wiring or previewing audio in the editor.
+- Prefer the native S&Box MCP server at `http://localhost:29015/mcp` as the unified editor control plane; use CoworkBridge only as a fallback for operations not exposed through MCP.
 - After UI or startup-flow edits, run the UI flow audit and an editor click-test checklist.
 - If runtime logs are stale or unavailable, say that directly and do not overclaim editor validation.
 - Static file audits do not replace an editor playtest or a 2-client multiplayer test when runtime behavior changed.

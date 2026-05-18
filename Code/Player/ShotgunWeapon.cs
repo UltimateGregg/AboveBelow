@@ -186,7 +186,7 @@ public sealed class ShotgunWeapon : Component
 	void PlayFireFx( Vector3 from, Vector3 direction )
 	{
 		if ( FireSound is not null )
-			Sound.Play( FireSound, from );
+			SoundPlayback.PlayAttached( FireSound, MuzzleSocket.IsValid() ? MuzzleSocket : GameObject, from );
 
 		MuzzleFlashVisual.Spawn( from, direction, 1.2f );
 	}

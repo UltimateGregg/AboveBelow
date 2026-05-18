@@ -211,8 +211,22 @@ public sealed class DroneController : Component
 		foreach ( var propeller in _propellers )
 		{
 			if ( propeller.IsValid() )
-				propeller.LocalRotation *= Rotation.From( 0, 0, spin );
+				propeller.LocalRotation *= Rotation.FromYaw( spin * GetPropellerSpinDirection( propeller ) );
 		}
+	}
+
+	static float GetPropellerSpinDirection( GameObject propeller )
+	{
+		var name = propeller.Name ?? string.Empty;
+		if ( name.EndsWith( "_FR", StringComparison.OrdinalIgnoreCase ) ||
+			name.EndsWith( "_BL", StringComparison.OrdinalIgnoreCase ) ||
+			name.EndsWith( "_2", StringComparison.OrdinalIgnoreCase ) ||
+			name.EndsWith( "_3", StringComparison.OrdinalIgnoreCase ) )
+		{
+			return -1f;
+		}
+
+		return 1f;
 	}
 
 	float GetPropellerThrottle()

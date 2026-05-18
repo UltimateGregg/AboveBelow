@@ -7,7 +7,7 @@ namespace DroneVsPlayers;
 /// <summary>
 /// Simple hitscan rifle. Mount on the soldier prefab. The drone is a
 /// flying target so the gun is the soldiers' primary tool. Damage is
-/// authoritative on the host via Health.RequestDamage.
+/// authoritative on the host via a host fire request and Health.RequestDamage.
 /// </summary>
 [Title( "Hitscan Weapon" )]
 [Category( "Drone vs Players/Player" )]
@@ -102,7 +102,7 @@ public sealed class HitscanWeapon : Component
 		// the magazine is dry. Forces the player to release+repress to retry
 		// (which then triggers the auto-reload via RequestFire path).
 		if ( Input.Pressed( "Attack1" ) && AmmoInMagazine == 0 && !IsReloading && EmptyClickSound is not null )
-			Sound.Play( EmptyClickSound, WorldPosition );
+			SoundPlayback.PlayAttached( EmptyClickSound, GameObject, WorldPosition );
 
 		if ( Input.Down( "Attack1" ) && _timeSinceFire >= FireInterval && AmmoInMagazine > 0 )
 		{
@@ -186,19 +186,19 @@ public sealed class HitscanWeapon : Component
 		{
 			_playedMagDrop = true;
 			if ( MagDropSound is not null )
-				Sound.Play( MagDropSound, WorldPosition );
+				SoundPlayback.PlayAttached( MagDropSound, GameObject, WorldPosition );
 		}
 		if ( !_playedMagInsert && elapsed >= dur * 0.40f )
 		{
 			_playedMagInsert = true;
 			if ( MagInsertSound is not null )
-				Sound.Play( MagInsertSound, WorldPosition );
+				SoundPlayback.PlayAttached( MagInsertSound, GameObject, WorldPosition );
 		}
 		if ( !_playedBoltRack && elapsed >= dur * 0.78f )
 		{
 			_playedBoltRack = true;
 			if ( BoltRackSound is not null )
-				Sound.Play( BoltRackSound, WorldPosition );
+				SoundPlayback.PlayAttached( BoltRackSound, GameObject, WorldPosition );
 		}
 	}
 
@@ -211,7 +211,7 @@ public sealed class HitscanWeapon : Component
 		BeginReload();
 	}
 
-	[Rpc.Broadcast]
+	[Rpc.Host]
 	void RequestFire( Vector3 requestedOrigin, Vector3 aimDirection )
 	{
 		if ( !CanMutateState() ) return;
@@ -431,7 +431,7 @@ public sealed class HitscanWeapon : Component
 
 		// Open-air "boom" everyone hears at distance.
 		if ( FireSound is not null )
-			Sound.Play( FireSound, from );
+			SoundPlayback.PlayAttached( FireSound, MuzzleSocket.IsValid() ? MuzzleSocket : GameObject, from );
 
 		// Close-mic'd punchy layer just for the local shooter. UI-mode sound
 		// so it bypasses distance attenuation and plays at the listener.
@@ -462,6 +462,6 @@ public sealed class HitscanWeapon : Component
 	void PlayReloadFx( Vector3 from )
 	{
 		if ( ReloadSound is not null )
-			Sound.Play( ReloadSound, from );
+			SoundPlayback.PlayAttached( ReloadSound, GameObject, from );
 	}
 }

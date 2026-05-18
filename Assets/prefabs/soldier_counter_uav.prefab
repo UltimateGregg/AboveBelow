@@ -60,9 +60,9 @@
             "__guid": "33333333-b000-1100-0000-000000000001",
             "BodyGroups": 18446744073709551615,
             "CreateBoneObjects": false,
-            "Model": "models/citizen/citizen.vmdl",
+            "Model": "models/citizen_human/citizen_human_male.vmdl",
             "RenderType": "On",
-            "Tint": "0.6,0.9,1,1",
+            "Tint": "1,1,1,1",
             "UseAnimGraph": true
           },
           {
@@ -94,7 +94,7 @@
                 "Strength": 1,
                 "LoopSound": "sounds/jammer_loop.sound",
                 "Slot": 1,
-                "FirstPersonOffset": "30,8,-10",
+                "FirstPersonOffset": "30,8,-5",
                 "FirstPersonRotationOffset": "0,0,0",
                 "ThirdPersonLocalPosition": "20,15,55",
                 "ThirdPersonLocalAngles": "0,0,0"
@@ -104,7 +104,6 @@
                 "__guid": "33333333-b000-3110-0000-000000000001",
                 "BodyGroups": 18446744073709551615,
                 "Model": "models/jammer_gun.vmdl",
-                "MaterialOverride": "materials/jammer_body.vmat",
                 "RenderType": "On",
                 "Tint": "1,1,1,1"
               }

@@ -152,6 +152,7 @@ function Resolve-AgentResourcePath {
     $skipPrefixes = @(
         "models/dev/",
         "models/citizen/",
+        "models/citizen_human/",
         "models/effects/",
         "models/sbox_props/",
         "materials/default",

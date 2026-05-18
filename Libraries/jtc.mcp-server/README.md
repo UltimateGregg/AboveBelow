@@ -1,55 +1,72 @@
 # MCP Server for s&box
 
-In-editor MCP server for s&box — drive the editor in natural language with Claude Code (or any MCP client). Editor open = MCP up, close = gone. No subprocess, no WebSocket bridge, no reconnect dance.
+In-editor MCP server for s&box. It lets an MCP client drive the editor through
+HTTP on `localhost:29015`: scene graph, components, assets, docs, execution,
+screenshots, play/stop, sound, and control-plane status.
 
-## What it can do (48 tools)
+## What it can do (57 tools)
 
-**Scene graph (12)** — `scene_list_objects`, `scene_get_object`, `scene_create_object`, `scene_delete_object`, `scene_clone_object`, `scene_reparent_object`, `scene_set_transform`, `scene_get_hierarchy`, `scene_load`, `scene_find_objects` (wildcards), `scene_find_by_component`, `scene_find_by_tag`
+**Scene graph (12)** - `scene_list_objects`, `scene_get_object`,
+`scene_create_object`, `scene_delete_object`, `scene_clone_object`,
+`scene_reparent_object`, `scene_set_transform`, `scene_get_hierarchy`,
+`scene_load`, `scene_find_objects`, `scene_find_by_component`,
+`scene_find_by_tag`
 
-**Components (5)** — `component_list`, `component_get`, `component_set` (typed: Model, Material, Color, Vector3, Angles, cloud-asset idents), `component_add`, `component_remove`
+**Components (5)** - `component_list`, `component_get`, `component_set`,
+`component_add`, `component_remove`
 
-**Tags (3)** — `tag_add`, `tag_remove`, `tag_list`
+**Tags (3)** - `tag_add`, `tag_remove`, `tag_list`
 
-**Cloud assets (4)** — `asset_search` (s&box library), `asset_fetch`, `asset_mount` (auto-pins into `.sbproj` PackageReferences), `asset_browse_local`
+**Cloud assets (4)** - `asset_search`, `asset_fetch`, `asset_mount`,
+`asset_browse_local`
 
-**Editor (11)** — `editor_get_selection`, `editor_select_object`, `editor_undo`/`editor_redo`, `editor_save_scene`, `editor_take_screenshot` (CameraComponent → PNG), `editor_play`/`editor_stop`/`editor_is_playing`, `editor_scene_info`, `editor_console_output`
+**Editor (11)** - `editor_get_selection`, `editor_select_object`,
+`editor_undo`, `editor_redo`, `editor_save_scene`, `editor_take_screenshot`,
+`editor_play`, `editor_stop`, `editor_is_playing`, `editor_scene_info`,
+`editor_console_output`
 
-**Files & execution (7)** — `file_read`, `file_write` (`.cs` → `code/`, else `Assets/`), `file_list` (glob), `project_info`, `console_run`, `execute_csharp` (Roslyn scripting when available), `get_server_status`
+**Files and execution (7)** - `file_read`, `file_write`, `file_list`,
+`project_info`, `console_run`, `execute_csharp`, `get_server_status`
 
-**Docs & API search (6)** — built-in crawler over `docs.facepunch.com` (180+ pages) and the Facepunch API schema (1,800+ types):
-- `sbox_search_docs` (fuzzy search, optional category filter)
-- `sbox_get_doc_page` (Markdown, chunked output)
-- `sbox_list_doc_categories`
-- `sbox_search_api` (types + members)
-- `sbox_get_api_type` (full type details — methods, properties, fields, XML docs)
-- `sbox_cache_status`
+**Docs and API search (6)** - `sbox_search_docs`, `sbox_get_doc_page`,
+`sbox_list_doc_categories`, `sbox_search_api`, `sbox_get_api_type`,
+`sbox_cache_status`
+
+**Sound (6)** - `sound_list`, `sound_inspect`, `sound_create_event`,
+`sound_preview`, `sound_place_point`, `sound_find_hooks`
+
+**Control plane (2)** - `control_plane_status`, `control_plane_capabilities`
 
 ## Features under the hood
 
-- **HTTP/SSE transport** on `localhost:29015` — no external processes
-- **Reflection-based tool discovery** via `[McpToolGroup]` + `[McpTool]` attributes — new tool = new method with an attribute
-- **Main-thread dispatch** — all editor-API calls land safely on the editor's main thread (no Qt crash)
-- **Dirty tracking** via `FullUndoSnapshot` + `OnEdited` + reflection setters — close-without-save prompt works
-- **Process singleton** — survives hot-reloads, no bind-conflict loop
-- **Dock UI** with live status, request counter, uptime, activity log
-- **Graceful degradation** — Roslyn-scripting fallback, multi-stage schema-URL resolver, doc-crawl cold-start retry
+- HTTP transport on `localhost:29015`.
+- Reflection-based tool discovery via `[McpToolGroup]` and `[McpTool]`.
+- Main-thread dispatch for editor APIs.
+- Dirty tracking through undo snapshots, edit markers, and reflection setters.
+- Process singleton that survives hot reloads.
+- Dock UI with live status, request counter, uptime, and activity log.
+- Built-in docs/API crawler and graceful degradation for optional systems.
 
-## Setup in 30 seconds
+## Setup
 
-1. Clone the repo
-2. s&box: `File → Open Project` → `src/SboxMcp/.sbproj`
-3. `claude mcp add --transport http -s user sbox http://localhost:29015/mcp`
-4. Done — Claude sees all 48 tools
+1. Open the project in s&box.
+2. Open or keep running the MCP Server dock.
+3. Register/use `http://localhost:29015/mcp` as the `sbox` MCP endpoint.
+4. The MCP client can use all 57 tools while the editor is open.
+
+When new MCP tool classes are added, restart or fully reload the S&Box editor MCP
+server before expecting them in `tools/list`. A running editor process can keep
+serving the previous loaded assembly even after the project builds cleanly.
 
 ## Architecture
 
-```
-Claude / MCP client  ── HTTP :29015 ──>  s&box editor
-                                          ├── McpHttpServer (HttpListener)
-                                          ├── ToolRegistry (reflection)
-                                          ├── HandlerDispatcher (main-thread)
-                                          ├── Handlers/ (editor APIs)
-                                          └── DocsService (crawler + fuzzy index)
+```text
+MCP client -> HTTP :29015 -> s&box editor
+                           -> McpHttpServer
+                           -> ToolRegistry
+                           -> HandlerDispatcher
+                           -> Handlers
+                           -> DocsService
 ```
 
-One process. 48 tools. Direct access to every editor API. Ask Claude what you want.
+One process. 57 tools. Direct editor API access.

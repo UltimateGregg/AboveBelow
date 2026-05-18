@@ -209,7 +209,7 @@ public sealed class DroneWeapon : Component
 		var shotDirection = path.IsNearZeroLength ? Vector3.Forward : path.Normal;
 
 		if ( FireSound is not null )
-			Sound.Play( FireSound, from );
+			SoundPlayback.PlayAttached( FireSound, MuzzleSocket.IsValid() ? MuzzleSocket : GameObject, from );
 
 		MuzzleFlashVisual.Spawn( from, shotDirection, 0.65f );
 

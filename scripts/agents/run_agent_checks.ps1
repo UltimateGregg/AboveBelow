@@ -1,6 +1,6 @@
 param(
     [string]$Root = "",
-    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "scene", "asset", "asset-production", "modeldoc", "blender-live", "networking", "gameplay-regression", "docs", "balance", "playtest", "logs", "readiness", "self-test")]
+    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "scene", "collision", "collision-chain", "asset", "asset-production", "modeldoc", "blender-live", "sound", "networking", "gameplay-regression", "docs", "balance", "playtest", "logs", "readiness", "train", "self-test")]
     [string]$Suite = "quick",
     [switch]$ShowInfo,
     [switch]$FailOnWarning
@@ -50,8 +50,13 @@ switch ($Suite) {
             @{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs },
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
+            @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
+            @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
             @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sound_asset_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sound_playback_audit.ps1"; Args = $commonArgs },
+            @{ Name = "team_label_copy_audit.ps1"; Args = $commonArgs },
             @{ Name = "ui_flow_audit.ps1"; Args = $commonArgs },
             @{ Name = "networking_review_audit.ps1"; Args = $commonArgs },
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
@@ -67,9 +72,14 @@ switch ($Suite) {
             @{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs },
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
+            @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
+            @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
             @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
             @{ Name = "fbx_material_slot_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sound_asset_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sound_playback_audit.ps1"; Args = $commonArgs },
+            @{ Name = "team_label_copy_audit.ps1"; Args = $commonArgs },
             @{ Name = "ui_flow_audit.ps1"; Args = $commonArgs },
             @{ Name = "networking_review_audit.ps1"; Args = $commonArgs },
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
@@ -82,6 +92,7 @@ switch ($Suite) {
     "build" { $scripts = @(@{ Name = "build_log_sentinel.ps1"; Args = $commonArgs }) }
     "ui" {
         $scripts = @(
+            @{ Name = "team_label_copy_audit.ps1"; Args = $commonArgs },
             @{ Name = "ui_flow_audit.ps1"; Args = $commonArgs },
             @{ Name = "playtest_checklist.ps1"; Args = @("-Root", $Root, "-ChangeArea", "UI") },
             @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root, "-ShowFiles") }
@@ -89,7 +100,24 @@ switch ($Suite) {
     }
     "prefab" { $scripts = @(@{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs }) }
     "prefab-graph" { $scripts = @(@{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs }) }
-    "scene" { $scripts = @(@{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs }) }
+    "scene" {
+        $scripts = @(
+            @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
+            @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs }
+        )
+    }
+    "collision" {
+        $scripts = @(
+            @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
+            @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs }
+        )
+    }
+    "collision-chain" {
+        $scripts = @(
+            @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs },
+            @{ Name = "collision_chain_report.ps1"; Args = $commonArgs }
+        )
+    }
     "asset" {
         $scripts = @(
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
@@ -114,6 +142,12 @@ switch ($Suite) {
         )
     }
     "blender-live" { $scripts = @(@{ Name = "blender_live_toolkit_self_test.ps1"; Args = @("-Root", $Root) }) }
+    "sound" {
+        $scripts = @(
+            @{ Name = "sound_asset_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sound_playback_audit.ps1"; Args = $commonArgs }
+        )
+    }
     "networking" { $scripts = @(@{ Name = "networking_review_audit.ps1"; Args = $commonArgs }) }
     "gameplay-regression" { $scripts = @(@{ Name = "gameplay_regression_guard.ps1"; Args = $commonArgs }) }
     "docs" { $scripts = @(@{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs }) }
@@ -121,6 +155,7 @@ switch ($Suite) {
     "playtest" { $scripts = @(@{ Name = "playtest_checklist.ps1"; Args = @("-Root", $Root, "-ChangeArea", "All") }) }
     "logs" { $scripts = @(@{ Name = "current_log_audit.ps1"; Args = $commonArgs }) }
     "readiness" { $scripts = @(@{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root, "-ShowFiles") }) }
+    "train" { $scripts = @(@{ Name = "post_task_training_agent.ps1"; Args = @("-Root", $Root, "-ShowFiles", "-WriteReport") }) }
     "self-test" { $scripts = @(@{ Name = "test_full_automation_layer.ps1"; Args = @("-Root", $Root) }) }
 }
 

@@ -220,7 +220,7 @@ public abstract class ThrowableGrenade : Component
 	void BroadcastThrowSound( Vector3 from )
 	{
 		if ( ThrowSound is not null )
-			Sound.Play( ThrowSound, from );
+			SoundPlayback.PlayAttached( ThrowSound, GameObject, from );
 	}
 
 	[Rpc.Broadcast]

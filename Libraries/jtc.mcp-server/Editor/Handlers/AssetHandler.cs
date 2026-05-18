@@ -10,7 +10,7 @@ namespace SboxMcp.Handlers;
 public static class AssetHandler
 {
 	/// <summary>
-	/// asset.search — Search the s&box asset store for packages.
+	/// asset.search - Search the s&amp;box asset store for packages.
 	/// Params: { "query": string, "type"?: string, "amount"?: string (default "20") }
 	/// </summary>
 	public static async Task<object> SearchAssets( HandlerRequest request )
