@@ -73,6 +73,23 @@ def add_filtered_noise(buf: list[float], start: float, duration: float, amp: flo
         buf[i] += value * amp * envelope(t, start, duration, attack, release, curve)
 
 
+def add_wind_whoosh(buf: list[float], start: float, duration: float, amp: float, seed: int,
+                    upper_lowpass: float = 0.045, lower_lowpass: float = 0.006,
+                    attack: float = 0.7, release: float = 0.9) -> None:
+    rng = random.Random(seed)
+    start_i = max(0, int(start * SAMPLE_RATE))
+    end_i = min(len(buf), int((start + duration) * SAMPLE_RATE))
+    upper = 0.0
+    lower = 0.0
+    for i in range(start_i, end_i):
+        white = rng.uniform(-1.0, 1.0)
+        upper += upper_lowpass * (white - upper)
+        lower += lower_lowpass * (white - lower)
+        t = i / SAMPLE_RATE
+        gust = 0.72 + 0.28 * math.sin(TAU * (t - start) / max(duration, 0.001))
+        buf[i] += (upper - lower) * amp * gust * envelope(t, start, duration, attack, release, curve=0.55)
+
+
 def add_click(buf: list[float], at: float, amp: float, seed: int, tone: float = 2800.0) -> None:
     add_filtered_noise(buf, at, 0.018, amp, seed, lowpass=0.45, highpass=0.18, release=0.014, curve=4.0)
     add_tone(buf, at, 0.035, tone, tone * 0.65, amp * 0.22, attack=0.001, release=0.025, curve=3.5)
@@ -343,6 +360,21 @@ def ambient_tree_rustle() -> list[float]:
     return render(duration, build, peak=0.20)
 
 
+def ambient_light_wind() -> list[float]:
+    duration = 16.0
+
+    def build(b):
+        for at, length, amp, seed in [
+            (0.00, 5.40, 0.030, 3351),
+            (4.20, 4.70, 0.025, 3352),
+            (8.00, 5.80, 0.028, 3353),
+            (12.10, 3.70, 0.022, 3354),
+        ]:
+            add_wind_whoosh(b, at, length, amp, seed)
+
+    return render(duration, build, peak=0.18)
+
+
 def add_bird_chirp(buf: list[float], start: float, freq: float, amp: float, seed: int) -> None:
     rng = random.Random(seed)
     for n in range(rng.randint(2, 4)):
@@ -351,14 +383,13 @@ def add_bird_chirp(buf: list[float], start: float, freq: float, amp: float, seed
         freq_a = freq * rng.uniform(0.86, 1.08)
         freq_b = freq_a * rng.uniform(1.10, 1.38)
         add_tone(buf, at, length, freq_a, freq_b, amp * rng.uniform(0.65, 1.0), attack=0.006, release=0.035, curve=1.7, harmonics=(0.22, 0.08))
-        add_filtered_noise(buf, at, length * 0.85, amp * 0.035, seed + n * 19, lowpass=0.24, highpass=0.19, attack=0.004, release=0.025, curve=2.0)
+        add_filtered_noise(buf, at, length * 0.85, amp * 0.010, seed + n * 19, lowpass=0.18, highpass=0.08, attack=0.004, release=0.025, curve=2.0)
 
 
 def ambient_birds_chirping() -> list[float]:
     duration = 12.0
 
     def build(b):
-        add_filtered_noise(b, 0.0, duration, 0.010, 3401, lowpass=0.018, highpass=0.0, attack=0.8, release=0.8, curve=0.4)
         for start, freq, amp, seed in [
             (0.80, 3300, 0.055, 3411),
             (2.15, 4100, 0.050, 3412),
@@ -374,6 +405,7 @@ def ambient_birds_chirping() -> list[float]:
 
 SOUNDS = {
     "ambient_battlefield.wav": ambient_battlefield,
+    "ambient_light_wind.wav": ambient_light_wind,
     "ambient_tree_rustle.wav": ambient_tree_rustle,
     "ambient_birds_chirping.wav": ambient_birds_chirping,
     "assault_rifle_fire.wav": rifle_world,
@@ -429,9 +461,7 @@ STOCK_WAVS = {
     "ui_hitmarker_kill.wav": ["sounds/ui/sf_hitmarker.*.wav", "sounds/swb/hit/hitmarker.*.wav"],
 }
 
-STOCK_AUDIO_FILES = {
-    "ambient_light_wind.mp3": ["sounds/wind.*.mp3"],
-}
+STOCK_AUDIO_FILES = {}
 
 
 def find_sbox_asset_roots(project_root: Path) -> list[Path]:

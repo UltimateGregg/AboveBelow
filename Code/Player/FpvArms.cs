@@ -84,7 +84,7 @@ public sealed class FpvArms : Component
 	{
 		if ( !ArmsRenderer.IsValid() ) return;
 		ArmsRenderer.RenderType = visible
-			? ModelRenderer.ShadowRenderType.On
-			: ModelRenderer.ShadowRenderType.Off;
+			? RenderType.On
+			: RenderType.Off;
 	}
 }

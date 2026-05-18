@@ -135,7 +135,7 @@
             "__guid": "22222222-d000-4100-0000-000000000001",
             "Flags": 0,
             "Name": "Propeller_1",
-            "Position": "27.5,27.5,3",
+            "Position": "34,23,3",
             "Enabled": true,
             "Components": [],
             "Children": [
@@ -181,7 +181,7 @@
             "__guid": "22222222-d000-4200-0000-000000000001",
             "Flags": 0,
             "Name": "Propeller_2",
-            "Position": "27.5,-27.5,3",
+            "Position": "34,-23,3",
             "Enabled": true,
             "Components": [],
             "Children": [
@@ -227,7 +227,7 @@
             "__guid": "22222222-d000-4300-0000-000000000001",
             "Flags": 0,
             "Name": "Propeller_3",
-            "Position": "-27.5,27.5,3",
+            "Position": "-34,23,3",
             "Enabled": true,
             "Components": [],
             "Children": [
@@ -273,7 +273,7 @@
             "__guid": "22222222-d000-4400-0000-000000000001",
             "Flags": 0,
             "Name": "Propeller_4",
-            "Position": "-27.5,-27.5,3",
+            "Position": "-34,-23,3",
             "Enabled": true,
             "Components": [],
             "Children": [

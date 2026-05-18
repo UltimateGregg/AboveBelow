@@ -28,6 +28,7 @@ $requiredScripts = @(
     "scripts/agents/modeldoc_audit.ps1",
     "scripts/agents/fbx_material_slot_audit.ps1",
     "scripts/agents/sound_asset_audit.ps1",
+    "scripts/agents/ambient_noise_audit.ps1",
     "scripts/agents/sound_playback_audit.ps1",
     "scripts/agents/team_label_copy_audit.ps1",
     "scripts/agents/asset_visual_review.ps1",

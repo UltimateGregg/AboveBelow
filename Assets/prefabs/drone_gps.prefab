@@ -173,7 +173,7 @@
         "__guid": "22222222-a000-4100-0000-000000000001",
         "Flags": 0,
         "Name": "Propeller_FL",
-        "Position": "6.875,6.875,0.75",
+        "Position": "8.5,5.75,0.75",
         "Enabled": true,
         "Components": [
           {
@@ -190,7 +190,7 @@
         "__guid": "22222222-a000-4200-0000-000000000001",
         "Flags": 0,
         "Name": "Propeller_FR",
-        "Position": "6.875,-6.875,0.75",
+        "Position": "8.5,-5.75,0.75",
         "Rotation": "0,180,0",
         "Enabled": true,
         "Components": [
@@ -208,7 +208,7 @@
         "__guid": "22222222-a000-4300-0000-000000000001",
         "Flags": 0,
         "Name": "Propeller_BL",
-        "Position": "-6.875,6.875,0.75",
+        "Position": "-8.5,5.75,0.75",
         "Rotation": "0,180,0",
         "Enabled": true,
         "Components": [
@@ -226,7 +226,7 @@
         "__guid": "22222222-a000-4400-0000-000000000001",
         "Flags": 0,
         "Name": "Propeller_BR",
-        "Position": "-6.875,-6.875,0.75",
+        "Position": "-8.5,-5.75,0.75",
         "Enabled": true,
         "Components": [
           {

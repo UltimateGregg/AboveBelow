@@ -479,40 +479,7 @@
           "OnComponentStart": null,
           "OnComponentUpdate": null,
           "Sound": "sounds/ambient_light_wind.sound",
-          "VolumeScale": 1
-        }
-      ],
-      "Children": []
-    },
-    {
-      "__guid": "11111111-0001-7510-0000-000000000001",
-      "__version": 2,
-      "Flags": 0,
-      "Name": "AmbientTreeRustle",
-      "Position": "-2100,2100,180",
-      "Rotation": "0,0,0,1",
-      "Scale": "1,1,1",
-      "Tags": "",
-      "Enabled": true,
-      "NetworkMode": 2,
-      "NetworkFlags": 0,
-      "NetworkOrphaned": 0,
-      "NetworkTransmit": true,
-      "OwnerTransfer": 1,
-      "Components": [
-        {
-          "__type": "DroneVsPlayers.AmbientSound",
-          "__guid": "11111111-0001-7511-0000-000000000001",
-          "__enabled": true,
-          "Flags": 0,
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "Sound": "sounds/ambient_tree_rustle.sound",
-          "VolumeScale": 1
+          "VolumeScale": 0.75
         }
       ],
       "Children": []
@@ -545,7 +512,7 @@
           "OnComponentStart": null,
           "OnComponentUpdate": null,
           "Sound": "sounds/ambient_birds_chirping.sound",
-          "VolumeScale": 1
+          "VolumeScale": 0.85
         }
       ],
       "Children": []
@@ -2988,7 +2955,7 @@
                   "Name": "Visual",
                   "Position": "0,0,0",
                   "Rotation": "0,0,0,1",
-                  "Scale": "72,72,72",
+                  "Scale": "40,40,40",
                   "Tags": "",
                   "Enabled": true,
                   "NetworkMode": 2,
@@ -15798,14 +15765,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.Clutter.ClutterGridSystem": {
-        "Storage": {
-          "$blob": "d72447d5-234d-4c1b-90c6-42bdf3024182"
-        }
-      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
+        }
+      },
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "d72447d5-234d-4c1b-90c6-42bdf3024182"
         }
       },
       "Sandbox.MovieMaker.MovieRecorderSystem": {

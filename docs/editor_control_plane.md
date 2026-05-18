@@ -78,6 +78,9 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
   `python scripts/audio/generate_project_sounds.py --root .` instead of adding
   one-off noise bursts by hand. The generator imports known stock WAVs first and
   uses deterministic synthesis only as a fallback.
+- For scene ambience, keep wind and bird emitters on clean local WAV-backed
+  SoundEvents. The sound suite includes `ambient_noise_audit.ps1` to catch broad
+  noise-bed emitters and stock MP3 ambience before playtest.
 - Use `component_list` and `component_get` before mutating component properties.
 - Verify successful scene/prefab opens with `editor_scene_info`; top-level tool
   success is not enough when editor state can be stale.

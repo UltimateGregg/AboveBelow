@@ -61,7 +61,10 @@ public sealed class DroneJammerGun : Component
 			{
 				var pc = Components.GetInAncestors<GroundPlayerController>();
 				if ( pc.IsValid() )
+				{
 					pc.SetAdsTarget( !LocalOptionsState.ConsumesGameplayInput && Input.Down( "Attack2" ), AdsFovDegrees );
+					UpdateHandIk( pc );
+				}
 			}
 
 			WeaponPose.UpdateViewmodel(
@@ -109,6 +112,17 @@ public sealed class DroneJammerGun : Component
 		}
 
 		return selected;
+	}
+
+	void UpdateHandIk( GroundPlayerController pc )
+	{
+		var helper = pc.AnimationHelper;
+		if ( !helper.IsValid() ) return;
+
+		helper.HoldType = CitizenAnimationHelper.HoldTypes.Rifle;
+		helper.Handedness = CitizenAnimationHelper.Hand.Both;
+		helper.IkLeftHand = GameObject;
+		helper.IkRightHand = GameObject;
 	}
 
 	void EmitPulse()

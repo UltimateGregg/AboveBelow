@@ -4,7 +4,7 @@
   "Pitch": "1",
   "Decibels": 48,
   "SelectionMode": "Random",
-  "Sounds": [ "sounds/ambient_light_wind.mp3" ],
+  "Sounds": [ "sounds/ambient_light_wind.wav" ],
   "Occlusion": false,
   "Reflections": false,
   "AirAbsorption": false,

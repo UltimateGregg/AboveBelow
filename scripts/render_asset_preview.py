@@ -98,16 +98,16 @@ def frame_camera(scene, center, size, max_dimension):
         scene.camera = camera_obj
         created_objects.append(camera_obj)
 
-        created_objects.append(make_light(
-            "asset_preview_key_light",
-            center + mathutils.Vector((-max_dimension * 1.8, -max_dimension * 2.0, max_dimension * 2.4)),
-            650.0,
-        ))
-        created_objects.append(make_light(
-            "asset_preview_fill_light",
-            center + mathutils.Vector((max_dimension * 1.8, max_dimension * 1.3, max_dimension * 1.5)),
-            180.0,
-        ))
+    created_objects.append(make_light(
+        "asset_preview_key_light",
+        center + mathutils.Vector((-max_dimension * 1.8, -max_dimension * 2.0, max_dimension * 2.4)),
+        650.0,
+    ))
+    created_objects.append(make_light(
+        "asset_preview_fill_light",
+        center + mathutils.Vector((max_dimension * 1.8, max_dimension * 1.3, max_dimension * 1.5)),
+        180.0,
+    ))
 
     camera_obj.data.type = "ORTHO"
     camera_direction = mathutils.Vector((1.6, -2.2, 1.25)).normalized()

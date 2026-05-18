@@ -46,6 +46,9 @@ public sealed class HitscanWeapon : Component
 	[Property] public Vector3 ThirdPersonLocalPosition { get; set; } = new( 20f, 15f, 55f );
 	[Property] public Angles ThirdPersonLocalAngles { get; set; } = new( 0f, 0f, 0f );
 
+	/// <summary>Whether this weapon is held in both hands (rifle) or one hand (SMG).</summary>
+	[Property] public bool TwoHanded { get; set; } = true;
+
 	/// <summary>Loadout slot this weapon occupies. SoldierLoadout maps Slot1 input to slot 1.</summary>
 	[Property] public int Slot { get; set; } = SoldierLoadout.PrimarySlot;
 
@@ -259,7 +262,10 @@ public sealed class HitscanWeapon : Component
 		{
 			var pc = Components.GetInAncestors<GroundPlayerController>();
 			if ( pc.IsValid() )
+			{
 				pc.SetAdsTarget( !LocalOptionsState.ConsumesGameplayInput && Input.Down( "Attack2" ), AdsFovDegrees );
+				UpdateHandIk( pc );
+			}
 		}
 
 		WeaponPose.UpdateViewmodel(
@@ -267,6 +273,26 @@ public sealed class HitscanWeapon : Component
 			FirstPersonOffset, FirstPersonRotationOffset,
 			AdsOffset, AdsRotationOffset,
 			ThirdPersonLocalPosition, ThirdPersonLocalAngles );
+	}
+
+	void UpdateHandIk( GroundPlayerController pc )
+	{
+		var helper = pc.AnimationHelper;
+		if ( !helper.IsValid() ) return;
+
+		if ( TwoHanded )
+		{
+			helper.HoldType = CitizenAnimationHelper.HoldTypes.Rifle;
+			helper.Handedness = CitizenAnimationHelper.Hand.Both;
+			helper.IkLeftHand = GameObject;
+			helper.IkRightHand = GameObject;
+		}
+		else
+		{
+			helper.HoldType = CitizenAnimationHelper.HoldTypes.Pistol;
+			helper.Handedness = CitizenAnimationHelper.Hand.Right;
+			helper.IkRightHand = GameObject;
+		}
 	}
 
 	internal bool ApplySelectionVisualState()

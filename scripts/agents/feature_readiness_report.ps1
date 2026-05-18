@@ -39,7 +39,7 @@ foreach ($file in $changed) {
     $path = $file.Path
     $isAgentTooling = $path -match "^scripts/agents/|^\.agents/|^\.codex/|^docs/agent_toolkit\.md$"
     $isProductionAssetTool = $path -match "^scripts/blender_asset_audit\.py$|^scripts/render_asset_preview\.py$|^scripts/asset_quality_profiles\.json$|^scripts/agents/(blender_quality_audit|material_texture_audit|asset_visual_review|new_asset_brief)\.ps1$"
-    $isSoundTooling = $path -match "^scripts/agents/sound_asset_audit\.ps1$|^scripts/audio/|^\.agents/sbox/sound-|^docs/editor_control_plane\.md$|^Libraries/jtc\.mcp-server/Editor/(Handlers/(Sound|ControlPlane)Handler|Mcp/Tools/(Sound|ControlPlane)Tools)\.cs$"
+    $isSoundTooling = $path -match "^scripts/agents/(sound_asset_audit|ambient_noise_audit)\.ps1$|^scripts/audio/|^\.agents/sbox/sound-|^docs/editor_control_plane\.md$|^Libraries/jtc\.mcp-server/Editor/(Handlers/(Sound|ControlPlane)Handler|Mcp/Tools/(Sound|ControlPlane)Tools)\.cs$"
     $isAssetPipelineDoc = $path -match "^docs/(asset_pipeline|automation)\.md$"
     $isModelDocTooling = $path -match "^scripts/agents/modeldoc_audit\.ps1$|^\.agents/sbox/modeldoc-|^docs/agent_toolkit\.md$"
 

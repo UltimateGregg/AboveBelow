@@ -150,7 +150,7 @@ public static class WeaponPose
 
 		var renderType = visible
 			? ModelRenderer.ShadowRenderType.On
-			: ModelRenderer.ShadowRenderType.Off;
+			: ModelRenderer.ShadowRenderType.ShadowsOnly;
 
 		foreach ( var renderer in renderRoot.Components.GetAll<ModelRenderer>( FindMode.EverythingInSelfAndDescendants ) )
 			renderer.RenderType = renderType;

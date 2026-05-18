@@ -55,6 +55,7 @@ switch ($Suite) {
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
             @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
             @{ Name = "sound_asset_audit.ps1"; Args = $commonArgs },
+            @{ Name = "ambient_noise_audit.ps1"; Args = $commonArgs },
             @{ Name = "sound_playback_audit.ps1"; Args = $commonArgs },
             @{ Name = "team_label_copy_audit.ps1"; Args = $commonArgs },
             @{ Name = "ui_flow_audit.ps1"; Args = $commonArgs },
@@ -78,6 +79,7 @@ switch ($Suite) {
             @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
             @{ Name = "fbx_material_slot_audit.ps1"; Args = $commonArgs },
             @{ Name = "sound_asset_audit.ps1"; Args = $commonArgs },
+            @{ Name = "ambient_noise_audit.ps1"; Args = $commonArgs },
             @{ Name = "sound_playback_audit.ps1"; Args = $commonArgs },
             @{ Name = "team_label_copy_audit.ps1"; Args = $commonArgs },
             @{ Name = "ui_flow_audit.ps1"; Args = $commonArgs },
@@ -145,6 +147,7 @@ switch ($Suite) {
     "sound" {
         $scripts = @(
             @{ Name = "sound_asset_audit.ps1"; Args = $commonArgs },
+            @{ Name = "ambient_noise_audit.ps1"; Args = $commonArgs },
             @{ Name = "sound_playback_audit.ps1"; Args = $commonArgs }
         )
     }

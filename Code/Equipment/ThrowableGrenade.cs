@@ -73,6 +73,13 @@ public abstract class ThrowableGrenade : Component
 				this, IsProxy,
 				FirstPersonOffset, FirstPersonRotationOffset,
 				ThirdPersonLocalPosition, ThirdPersonLocalAngles );
+
+			if ( !IsProxy )
+			{
+				var pc = Components.GetInAncestors<GroundPlayerController>();
+				if ( pc.IsValid() )
+					UpdateHandIk( pc );
+			}
 		}
 
 		if ( IsProxy ) return;
@@ -87,6 +94,16 @@ public abstract class ThrowableGrenade : Component
 		var visibleInHand = IsSelected && !IsArmed;
 		WeaponPose.SetVisibility( GameObject, visibleInHand );
 		return visibleInHand;
+	}
+
+	void UpdateHandIk( GroundPlayerController pc )
+	{
+		var helper = pc.AnimationHelper;
+		if ( !helper.IsValid() ) return;
+
+		helper.HoldType = CitizenAnimationHelper.HoldTypes.HoldItem;
+		helper.Handedness = CitizenAnimationHelper.Hand.Right;
+		helper.IkRightHand = GameObject;
 	}
 
 	void BeginThrow()

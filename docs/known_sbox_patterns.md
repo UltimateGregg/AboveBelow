@@ -466,7 +466,8 @@ public void TakeDamage(DamageInfo info)
 - Keep gameplay-facing references as `.sound` resource paths. Do not point C# or prefab properties at raw `.wav` files.
 - Import or copy usable stock WAVs into `Assets/sounds/`, wrap them in local `.sound` files, and reference `sounds/example.sound` from C#, prefabs, and scenes.
 - For project-specific local fallbacks, run `python scripts/audio/generate_project_sounds.py --root .`. The generator imports known stock WAVs first, then uses deterministic layered synthesis, filtered noise, envelopes, and per-cue peak targets instead of one-off broad-spectrum noise bursts.
-- Run `scripts\agents\run_agent_checks.ps1 -Suite sound -ShowInfo` after wiring changes so local wrappers, direct mounted-reference bans, and raw source files stay aligned.
+- Ambient scene beds need extra restraint: keep intentional wind and bird cues, but avoid always-on broad hiss layers and stock MP3 ambience in `main.scene`. `ambient_light_wind.sound` should use the local guarded WAV source, and bird ambience should not carry a continuous synthetic noise bed behind the chirps.
+- Run `scripts\agents\run_agent_checks.ps1 -Suite sound -ShowInfo` after wiring changes so local wrappers, ambient-noise guards, direct mounted-reference bans, and raw source files stay aligned.
 
 ### Attached Held-Item Sounds
 
