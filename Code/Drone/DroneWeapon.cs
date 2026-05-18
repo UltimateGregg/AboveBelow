@@ -64,6 +64,9 @@ public sealed class DroneWeapon : Component
 		if ( LocalOptionsState.ConsumesGameplayInput )
 			return;
 
+		if ( !RemoteController.AreLocalDroneWeaponsReady( Scene ) )
+			return;
+
 		if ( PrimaryUsesKamikaze && Input.Pressed( "Attack1" ) )
 		{
 			RequestDetonate();

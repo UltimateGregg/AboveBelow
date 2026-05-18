@@ -4,6 +4,7 @@
   "target_fbx": "Assets/models/weapons/smg_mp7.fbx",
   "target_vmdl": "Assets/models/weapons/smg_mp7.vmdl",
   "model_resource_path": "models/weapons/smg_mp7.vmdl",
+  "prefab": "Assets/prefabs/smg_mp7.prefab",
   "visual_object": "Visual",
   "visual_scale": "1,1,1",
   "visual_tint": "1,1,1,1",
@@ -13,6 +14,9 @@
   "object_type": [ "MESH" ],
   "combine_meshes": true,
   "combined_object_name": "SMG_MP7",
+  "vmdl_material_source_suffix": "",
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
   "material_remap": {
     "SMG_Polymer": "materials/weapons/smg_polymer.vmat",
     "SMG_Metal": "materials/weapons/smg_metal.vmat",

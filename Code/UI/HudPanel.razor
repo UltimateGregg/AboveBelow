@@ -697,7 +697,7 @@
         }
 
         // We got hit — damage direction arc pointing at the attacker.
-        if ( victim.GameObject.Network.Owner?.Id == localId && info.AttackerId != localId )
+        if ( victim.GameObject.Network.Owner?.Id == localId && info.AttackerId != default && info.AttackerId != localId )
         {
             var localPos = LocalCameraPosition;
             var sourcePos = info.Position;

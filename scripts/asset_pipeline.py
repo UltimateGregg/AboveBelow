@@ -289,6 +289,7 @@ def write_blender_export_script(script_path: Path, config_path: Path) -> None:
     script_path.write_text(
         f"""
 import json
+import re
 from pathlib import Path
 
 import bpy
@@ -298,6 +299,13 @@ target = Path(config["target_fbx"])
 target.parent.mkdir(parents=True, exist_ok=True)
 result_path = Path(config["result_path"])
 material_remaps = config.get("material_remap", {{}})
+strict_material_sources = bool(config.get("strict_vmdl_material_sources", False))
+
+def normalized_imported_material_name(name):
+    # Blender appends numeric suffixes when verifying an FBX inside a scene that
+    # already has source materials with the same names. Treat only that collision
+    # suffix as equivalent; keep strict mode strict for real source-name drift.
+    return re.sub(r"\\.\\d{{3}}$", "", name)
 
 root_name = config.get("root_object")
 root = bpy.data.objects.get(root_name) if root_name else None
@@ -410,7 +418,12 @@ if config.get("verify_fbx", False):
         }})
         missing_materials = [
             name for name in sorted(material_remaps)
-            if not any(slot == name or slot.startswith(name + ".") for slot in material_names)
+            if not any(
+                slot == name
+                or (strict_material_sources and normalized_imported_material_name(slot) == name)
+                or (not strict_material_sources and slot.startswith(name + "."))
+                for slot in material_names
+            )
         ]
         result["verify"]["material_names"] = material_names
         result["verify"]["missing_materials"] = missing_materials
@@ -457,6 +470,7 @@ def run_blender_export(args: argparse.Namespace, root: Path) -> dict[str, Any]:
         "axis_forward": args.axis_forward,
         "axis_up": args.axis_up,
         "material_remap": args.material_remap or {},
+        "strict_vmdl_material_sources": args.strict_vmdl_material_sources,
     }
     config_path.write_text(json.dumps(config, indent=2), encoding="utf-8")
     write_blender_export_script(script_path, config_path)
@@ -530,8 +544,10 @@ def update_prefab(args: argparse.Namespace, root: Path, model_resource_path: str
         raise ValueError(f"{args.visual_object!r} does not have a Sandbox.ModelRenderer")
 
     renderer["Model"] = model_resource_path
-    if args.material_override:
+    if args.material_override is not None:
         renderer["MaterialOverride"] = args.material_override
+    elif args.clear_material_override:
+        renderer["MaterialOverride"] = None
     if args.visual_tint:
         renderer["Tint"] = args.visual_tint
     if args.visual_scale:
@@ -574,6 +590,14 @@ def update_vmdl(args: argparse.Namespace, root: Path, fbx_resource_path: str) ->
         args.vmdl_global_default_material,
     )
     print(f"Updated model document: {target_vmdl}")
+
+    if args.remove_compiled_cache:
+        compiled = Path(str(target_vmdl) + "_c")
+        if compiled.exists():
+            backup(compiled, "asset-pipeline-compiled-cache", root)
+            compiled.unlink()
+            print(f"Removed compiled cache: {compiled}")
+
     return target_vmdl
 
 
@@ -617,7 +641,19 @@ def build_parser(defaults: dict[str, Any]) -> argparse.ArgumentParser:
         default=defaults.get("vmdl_global_default_material", "materials/default.vmat"),
         help="ModelDoc global_default_material resource used when vmdl_use_global_default is enabled.",
     )
+    parser.add_argument(
+        "--strict-vmdl-material-sources",
+        action=argparse.BooleanOptionalAction,
+        default=defaults.get("strict_vmdl_material_sources", False),
+        help="Require exact exported FBX material slot names during verification.",
+    )
     parser.add_argument("--material-override", default=defaults.get("material_override"), help="Optional renderer-wide material override for the updated prefab ModelRenderer.")
+    parser.add_argument(
+        "--clear-material-override",
+        action=argparse.BooleanOptionalAction,
+        default=defaults.get("clear_material_override", False),
+        help="Clear any renderer-wide MaterialOverride on the updated prefab visual.",
+    )
     parser.add_argument("--clear-visual-children", action="store_true", default=defaults.get("clear_visual_children", False))
     parser.add_argument("--remove-compiled-cache", action="store_true", default=defaults.get("remove_compiled_cache", False))
     parser.add_argument(

@@ -30,7 +30,7 @@ def save_vmat(
     roughness: float,
 ) -> None:
     path.write_text(
-        f'''"'"Layer0"
+        f'''"Layer0"
 {{
 \t"shader"\t\t"shaders/complex.shader"
 \t"TextureColor"\t\t"{color}"

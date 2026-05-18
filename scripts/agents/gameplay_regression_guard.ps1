@@ -55,6 +55,9 @@ function Invoke-GuardScript {
 
 Invoke-GuardScript -RelativePath "scripts\check_loadout_slots.ps1" -ScriptArgs @("-PrefabDir", (Join-Path $Root "Assets\prefabs"))
 Invoke-GuardScript -RelativePath "scripts\check_drone_kamikaze_primary.ps1" -ScriptArgs @("-Root", $Root)
+Invoke-GuardScript -RelativePath "scripts\check_drone_weapon_arming.ps1" -ScriptArgs @("-Root", $Root)
+Invoke-GuardScript -RelativePath "scripts\check_ground_crouch_toggle.ps1" -ScriptArgs @("-Root", $Root)
+Invoke-GuardScript -RelativePath "scripts\check_hud_damage_arc_attribution.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\agents\drone_propeller_spin_audit.ps1" -ScriptArgs @("-Root", $Root)
 
 Write-AgentIssues -Issues $issues -ShowInfo:$ShowInfo

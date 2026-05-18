@@ -125,6 +125,7 @@ public sealed class GroundPlayerController : Component
 	float _slideTimeLeft;
 	Vector3 _slideDirection;
 	bool _prevDuckDown;
+	bool _crouchToggled;
 	float _ladderDetachCooldown;
 
 	// Suppression state (local-only). Set by HitscanWeapon when a bullet
@@ -244,8 +245,11 @@ public sealed class GroundPlayerController : Component
 		_landingDipPitch = MathX.Lerp( _landingDipPitch, 0f,
 			1f - MathF.Exp( -LandingDipDecay * Time.Delta ) );
 
-		// Crouch lerp. Crouch input held OR sliding → target = 1.
-		var wantsCrouch = (Input.Down( "Duck" ) || IsSliding) && !IsProxy && !IsClimbingLadder;
+		if ( !IsClimbingLadder && Input.Pressed( "Duck" ) )
+			_crouchToggled = !_crouchToggled;
+
+		// Crouch lerp. Crouch toggle OR sliding -> target = 1.
+		var wantsCrouch = (_crouchToggled || IsSliding) && !IsProxy && !IsClimbingLadder;
 		var crouchTarget = wantsCrouch ? 1f : 0f;
 		_crouchT = MathX.Lerp( _crouchT, crouchTarget,
 			1f - MathF.Exp( -CrouchLerpRate * Time.Delta ) );

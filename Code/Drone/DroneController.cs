@@ -71,6 +71,17 @@ public sealed class DroneController : Component
 
 	public void SetInputEnabled( bool enabled ) => InputEnabled = enabled;
 
+	public static bool HasLocalFlightInput()
+	{
+		var move = Input.AnalogMove;
+		if ( MathF.Abs( move.x ) > 0.05f || MathF.Abs( move.y ) > 0.05f )
+			return true;
+
+		return Input.Down( "Jump" )
+			|| Input.Down( "Duck" )
+			|| Input.Down( "Crouch", false );
+	}
+
 	protected override void OnStart()
 	{
 		if ( !Body.IsValid() )

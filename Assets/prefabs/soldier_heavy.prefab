@@ -109,6 +109,7 @@
                 "__guid": "33333333-c000-3110-0000-000000000001",
                 "BodyGroups": 18446744073709551615,
                 "Model": "models/shotgun.vmdl",
+                "MaterialOverride": null,
                 "RenderType": "On",
                 "Tint": "1,1,1,1"
               }

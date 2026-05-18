@@ -1,4 +1,4 @@
-"'"Layer0"
+"Layer0"
 {
 	"shader"		"shaders/complex.shader"
 	"TextureColor"		"materials/shotgun_metal_color.png"

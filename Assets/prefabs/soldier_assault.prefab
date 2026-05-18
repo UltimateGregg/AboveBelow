@@ -147,7 +147,7 @@
                     "__guid": "33333333-a000-3310-0000-000000000001",
                     "BodyGroups": 18446744073709551615,
                     "Model": "models/weapons/assault_rifle_m4.vmdl",
-                    "MaterialOverride": "materials/weapons/m4_full.vmat",
+                    "MaterialOverride": null,
                     "RenderType": "On",
                     "Tint": "1,1,1,1"
                   }

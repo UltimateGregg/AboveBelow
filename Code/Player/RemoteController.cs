@@ -19,6 +19,7 @@ namespace DroneVsPlayers;
 public sealed class RemoteController : Component
 {
 	[Property] public string ToggleInput { get; set; } = "TogglePilotControl";
+	[Property] public float DroneWeaponAutoArmDelay { get; set; } = 3f;
 
 	/// <summary>True while the local pilot is viewing through the drone.</summary>
 	[Sync] public bool DroneViewActive { get; set; }
@@ -37,12 +38,24 @@ public sealed class RemoteController : Component
 		return !local.IsValid() || local.DroneViewActive;
 	}
 
+	public static bool AreLocalDroneWeaponsReady( Scene scene )
+	{
+		if ( scene is null ) return true;
+		var local = scene.GetAllComponents<RemoteController>().FirstOrDefault( r => !r.IsProxy );
+		return !local.IsValid() || local.AreDroneWeaponsReady();
+	}
+
 	public void SetDroneViewActive( bool active )
 	{
 		if ( IsProxy ) return;
 		if ( active && !HasLinkedDrone() ) return;
 
+		var wasActive = DroneViewActive;
 		DroneViewActive = active;
+		if ( active && !wasActive )
+			ResetDroneWeaponArming();
+		else if ( !active )
+			ClearDroneWeaponArming();
 	}
 
 	public bool HasLinkedDrone()
@@ -57,6 +70,10 @@ public sealed class RemoteController : Component
 	PilotSoldier _pilot;
 	GameObject _body;
 	GameObject _eye;
+	TimeSince _timeSinceDroneViewEntered = 999f;
+	bool _droneWeaponsArmed = true;
+	bool _attack1ReleasedSinceDroneViewEntry = true;
+	bool _skipEntryAttack1ReleaseCheck;
 
 	protected override void OnStart()
 	{
@@ -75,6 +92,8 @@ public sealed class RemoteController : Component
 
 		if ( !LocalOptionsState.ConsumesGameplayInput && Input.Pressed( ToggleInput ) )
 			SetDroneViewActive( !DroneViewActive );
+
+		UpdateDroneWeaponArming();
 
 		// Remote camera placement: when drone view is active, hide the ground
 		// HUD by simply not driving the camera here — DroneCamera on the
@@ -100,6 +119,55 @@ public sealed class RemoteController : Component
 		{
 			SetEyeViewmodelsVisible( true );
 		}
+	}
+
+	bool AreDroneWeaponsReady()
+	{
+		return DroneViewActive && _droneWeaponsArmed && _attack1ReleasedSinceDroneViewEntry;
+	}
+
+	void ResetDroneWeaponArming()
+	{
+		_droneWeaponsArmed = false;
+		_attack1ReleasedSinceDroneViewEntry = !Input.Down( "Attack1" );
+		_skipEntryAttack1ReleaseCheck = !_attack1ReleasedSinceDroneViewEntry;
+		_timeSinceDroneViewEntered = 0f;
+		Input.Clear( "Attack1" );
+	}
+
+	void ClearDroneWeaponArming()
+	{
+		_droneWeaponsArmed = true;
+		_attack1ReleasedSinceDroneViewEntry = true;
+		_skipEntryAttack1ReleaseCheck = false;
+		_timeSinceDroneViewEntered = 999f;
+	}
+
+	void UpdateDroneWeaponArming()
+	{
+		if ( !DroneViewActive )
+			return;
+
+		if ( _skipEntryAttack1ReleaseCheck )
+		{
+			_skipEntryAttack1ReleaseCheck = false;
+		}
+		else if ( !_attack1ReleasedSinceDroneViewEntry && !Input.Down( "Attack1" ) )
+		{
+			_attack1ReleasedSinceDroneViewEntry = true;
+		}
+
+		if ( _droneWeaponsArmed )
+			return;
+
+		if ( DroneController.HasLocalFlightInput() )
+		{
+			_droneWeaponsArmed = true;
+			return;
+		}
+
+		if ( _timeSinceDroneViewEntered >= DroneWeaponAutoArmDelay )
+			_droneWeaponsArmed = true;
 	}
 
 	void SetGroundBodyVisible( bool visible )

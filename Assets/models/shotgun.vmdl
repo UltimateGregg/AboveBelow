@@ -15,7 +15,7 @@
 						[
 
 							{
-								from = "Shotgun_Metal.vmat"
+								from = "Shotgun_Metal.001.vmat"
 								to = "materials/shotgun_metal.vmat"
 							},
 
@@ -35,11 +35,11 @@
 							},
 
 							{
-								from = "Shotgun_Wood.vmat"
+								from = "Shotgun_Wood.001.vmat"
 								to = "materials/shotgun_wood.vmat"
 							},
 						]
-						use_global_default = true
+						use_global_default = false
 						global_default_material = "materials/default.vmat"
 					},
 				]

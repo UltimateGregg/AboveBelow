@@ -35,6 +35,10 @@ results = []
 for item in payload["items"]:
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete()
+    for datablocks in (bpy.data.meshes, bpy.data.materials, bpy.data.images):
+        for datablock in list(datablocks):
+            if datablock.users == 0:
+                datablocks.remove(datablock)
 
     entry = {
         "key": item["key"],
@@ -144,6 +148,30 @@ def bool_option(value: Any, default: bool = False) -> bool:
     if text in {"false", "0", "no", "off", "none", "null"}:
         return False
     return bool(value)
+
+
+def material_source_suffix(value: Any) -> str:
+    if value is None:
+        return ".vmat"
+    if value is False:
+        return ""
+    if value is True:
+        return ".vmat"
+    text = str(value)
+    if text.strip().lower() in {"false", "none", "null"}:
+        return ""
+    return text
+
+
+def expected_vmdl_sources(config: dict[str, Any]) -> set[str]:
+    suffix = material_source_suffix(config.get("vmdl_material_source_suffix"))
+    sources: set[str] = set()
+    for name in config.get("material_remap", {}).keys():
+        source = str(name)
+        if suffix and not source.lower().endswith(suffix.lower()):
+            source += suffix
+        sources.add(source)
+    return sources
 
 
 def discover_configs(root: Path, explicit: list[str]) -> list[Path]:
@@ -301,7 +329,12 @@ def main() -> int:
 
         material_names = set(str(name) for name in row.get("material_names", []))
         expected_raw = set(str(name) for name in config.get("material_remap", {}).keys())
-        missing_raw = sorted(name for name in expected_raw if name not in material_names and not any(slot.startswith(name + ".") for slot in material_names))
+        missing_raw = sorted(
+            name for name in expected_raw
+            if name not in material_names and not (
+                not strict and any(slot.startswith(name + ".") for slot in material_names)
+            )
+        )
         if missing_raw:
             print_issue(
                 severity,
@@ -314,24 +347,21 @@ def main() -> int:
                 errors += 1
 
         vmdl_sources = set(str(source) for source in item["vmdl_sources"])
-        missing_vmdl_sources = sorted(
-            source for source in vmdl_sources
-            if source not in material_names and not any(slot.startswith(source + ".") for slot in material_names)
-        )
-        if missing_vmdl_sources:
-            suffix_hints = [
-                source for source in missing_vmdl_sources
-                if source.endswith(".vmat") and source[:-5] in material_names
-            ]
-            detail = f"VMDL remap source(s) do not match exported FBX material slots: {', '.join(missing_vmdl_sources)}."
-            if suffix_hints:
-                detail += " These look like .vmat suffix mismatches against raw FBX material names."
+        expected_sources = expected_vmdl_sources(config)
+        missing_vmdl_sources = sorted(expected_sources - vmdl_sources)
+        unexpected_vmdl_sources = sorted(vmdl_sources - expected_sources)
+        if missing_vmdl_sources or unexpected_vmdl_sources:
+            parts = []
+            if missing_vmdl_sources:
+                parts.append(f"missing sources: {', '.join(missing_vmdl_sources)}")
+            if unexpected_vmdl_sources:
+                parts.append(f"unexpected sources: {', '.join(unexpected_vmdl_sources)}")
             print_issue(
                 severity,
                 "FBX Material Slots",
                 relative_path(item["vmdl"], root),
-                detail,
-                "Set vmdl_material_source_suffix to the FBX slot style and re-export with asset_pipeline.py.",
+                f"VMDL remap source(s) do not match config: {'; '.join(parts)}.",
+                "Set vmdl_material_source_suffix to the source-name style S&Box expects and re-export with asset_pipeline.py.",
             )
             if severity == "Error":
                 errors += 1

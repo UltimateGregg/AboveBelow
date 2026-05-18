@@ -34,7 +34,7 @@
 								to = "materials/weapons/smg_sights.vmat"
 							},
 						]
-						use_global_default = true
+						use_global_default = false
 						global_default_material = "materials/default.vmat"
 					},
 				]

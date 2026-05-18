@@ -14,12 +14,15 @@
   "combine_meshes": true,
   "combined_object_name": "ShotgunMesh",
   "material_remap": {
-    "Shotgun_Wood": "materials/shotgun_wood.vmat",
-    "Shotgun_Metal": "materials/shotgun_metal.vmat",
+    "Shotgun_Wood.001": "materials/shotgun_wood.vmat",
+    "Shotgun_Metal.001": "materials/shotgun_metal.vmat",
     "Shotgun_Rubber": "materials/shotgun_rubber.vmat",
     "Shotgun_Shell": "materials/shotgun_shell.vmat",
     "Shotgun_SightPaint": "materials/shotgun_metal.vmat"
   },
+  "vmdl_material_source_suffix": ".vmat",
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
   "global_scale": 0.0254,
   "axis_forward": "-Y",
   "axis_up": "Z"
