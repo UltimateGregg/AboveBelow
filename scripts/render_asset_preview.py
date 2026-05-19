@@ -110,14 +110,15 @@ def frame_camera(scene, center, size, max_dimension):
     ))
 
     camera_obj.data.type = "ORTHO"
-    camera_direction = mathutils.Vector((1.6, -2.2, 1.25)).normalized()
+    camera_direction = mathutils.Vector((1.7, -2.2, 2.0)).normalized()
     camera_obj.location = center + camera_direction * (max_dimension * 3.0)
     camera_obj.rotation_euler = (center - camera_obj.location).to_track_quat("-Z", "Y").to_euler()
+    camera_obj.data.clip_end = max(1000.0, max_dimension * 8.0)
 
     aspect = scene.render.resolution_x / max(1, scene.render.resolution_y)
     vertical_need = max(float(size.z), float(size.y) * 0.75, 1.0)
     horizontal_need = max(float(size.x), float(size.y) * 0.75, 1.0) / max(aspect, 0.1)
-    camera_obj.data.ortho_scale = max(vertical_need, horizontal_need, max_dimension * 0.55, 1.0) * 1.35
+    camera_obj.data.ortho_scale = max(vertical_need, horizontal_need, max_dimension * 0.55, 1.0) * 1.75
 
     return created_objects
 
@@ -133,6 +134,10 @@ def render_preview():
     sidecar_path.parent.mkdir(parents=True, exist_ok=True)
 
     scene = bpy.context.scene
+    scene.render.engine = "BLENDER_WORKBENCH"
+    scene.display.shading.light = "STUDIO"
+    scene.display.shading.color_type = "MATERIAL"
+    scene.display.shading.show_cavity = True
     scene.render.resolution_x = resolution_x
     scene.render.resolution_y = resolution_y
     scene.render.resolution_percentage = 100
@@ -321,6 +326,8 @@ def render_blend(
     metadata = parse_render_metadata(output)
     if metadata is None:
         print_issue("Warning", "Asset Preview", relative, "Blender completed but did not emit preview metadata.")
+        if output.strip():
+            print_issue("Info", "Asset Preview Output", relative, output.strip()[-3000:])
     else:
         print_issue("Info", "Asset Preview", relative, json.dumps(metadata, sort_keys=True))
 

@@ -231,7 +231,17 @@ public sealed class GroundPlayerController : Component
 
 				// Run is a toggle: pressing it latches sprint until pressed again or interrupted.
 				if ( Input.Pressed( "Run" ) )
-					_sprintToggled = !_sprintToggled;
+				{
+					if ( _crouchToggled && !IsSliding && !IsClimbingLadder )
+					{
+						_crouchToggled = false;
+						_sprintToggled = true;
+					}
+					else
+					{
+						_sprintToggled = !_sprintToggled;
+					}
+				}
 
 				var hasMoveInput = MathF.Abs( Input.AnalogMove.x ) > 0.05f || MathF.Abs( Input.AnalogMove.y ) > 0.05f;
 				if ( !hasMoveInput )
@@ -241,8 +251,8 @@ public sealed class GroundPlayerController : Component
 				if ( !hasStamina )
 					_sprintToggled = false;
 
-				var canSprint = hasStamina && !IsCrouched && !IsSliding && !IsClimbingLadder;
-				if ( !canSprint && (IsCrouched || IsSliding || IsClimbingLadder) )
+				var canSprint = hasStamina && !_crouchToggled && !IsSliding && !IsClimbingLadder;
+				if ( !canSprint && (_crouchToggled || IsSliding || IsClimbingLadder) )
 					_sprintToggled = false;
 
 				IsSprinting = _sprintToggled && hasMoveInput && canSprint;

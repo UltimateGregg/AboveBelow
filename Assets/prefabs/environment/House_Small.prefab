@@ -8,28 +8,40 @@
     "Components": [],
     "Children": [
       {
-        "__guid": "569fbf7f-76f4-4c01-81bd-127c75748b01",
+        "__guid": "77f91f65-8cac-5eb5-af0e-1ff28a279716",
         "Flags": 0,
-        "Name": "North_Wall",
-        "Position": "0,160,96",
+        "Name": "Model_Visual",
+        "Position": "0,0,0",
         "Rotation": "0,0,0,1",
-        "Scale": "6.4,0.32,3.84",
+        "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.ModelRenderer",
-            "__guid": "744f89cb-0419-4f85-b220-6364b7631b91",
+            "__guid": "a9033a63-e2d9-515b-a31e-0cee0a26dd26",
             "BodyGroups": 18446744073709551615,
-            "Model": "models/dev/box.vmdl",
-            "MaterialOverride": "materials/arena/concrete_wall.vmat",
+            "CreateAttachments": false,
+            "Model": "models/house_small.vmdl",
             "RenderType": "On",
             "Tint": "1,1,1,1"
-          },
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "ddd7cb8b-9285-551f-b0c1-229aed1e6d91",
+        "Flags": 0,
+        "Name": "Collision_Floor_Ground",
+        "Position": "0,0,10",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "0cc9d3e2-16fa-4c6e-a9ea-00386b0ac9fe",
+            "__guid": "d7f7f4db-30e7-50e9-b7d7-6b174e5030c0",
             "Center": "0,0,0",
-            "Scale": "50,50,50",
+            "Scale": "180,180,20",
             "Static": true,
             "IsTrigger": false
           }
@@ -37,28 +49,19 @@
         "Children": []
       },
       {
-        "__guid": "af3dc457-05b5-43a4-a89a-595688c027e1",
+        "__guid": "93b1f337-56da-538c-8905-a243b7bacfd3",
         "Flags": 0,
-        "Name": "South_Wall",
-        "Position": "0,-160,96",
+        "Name": "Collision_Floor_Loft",
+        "Position": "0,-38,240",
         "Rotation": "0,0,0,1",
-        "Scale": "6.4,0.32,3.84",
+        "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
-            "__type": "Sandbox.ModelRenderer",
-            "__guid": "ef84bf75-95d2-4013-a559-4449f154a193",
-            "BodyGroups": 18446744073709551615,
-            "Model": "models/dev/box.vmdl",
-            "MaterialOverride": "materials/arena/concrete_wall.vmat",
-            "RenderType": "On",
-            "Tint": "1,1,1,1"
-          },
-          {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "7b1c2872-a68f-4d6f-923c-1dec040622fd",
+            "__guid": "7b9e613f-9913-578d-9afc-b8084d2d8ffb",
             "Center": "0,0,0",
-            "Scale": "50,50,50",
+            "Scale": "110,95,18",
             "Static": true,
             "IsTrigger": false
           }
@@ -66,28 +69,19 @@
         "Children": []
       },
       {
-        "__guid": "413002a3-cf56-4f3b-b94d-465b36d01699",
+        "__guid": "e510bfc6-fe2f-5202-9455-78c093dce2be",
         "Flags": 0,
-        "Name": "West_Wall_North",
-        "Position": "-160,104,96",
+        "Name": "Collision_Roof",
+        "Position": "0,0,365",
         "Rotation": "0,0,0,1",
-        "Scale": "0.32,2.24,3.84",
+        "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
-            "__type": "Sandbox.ModelRenderer",
-            "__guid": "253f4fad-6357-4f7c-b40a-5f37ae03ed1c",
-            "BodyGroups": 18446744073709551615,
-            "Model": "models/dev/box.vmdl",
-            "MaterialOverride": "materials/arena/concrete_wall.vmat",
-            "RenderType": "On",
-            "Tint": "1,1,1,1"
-          },
-          {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "90f55233-693d-4189-bf50-26e4cc30c7bc",
+            "__guid": "e54952cb-50bd-5235-90ce-2fc9a6b1e52d",
             "Center": "0,0,0",
-            "Scale": "50,50,50",
+            "Scale": "195,195,26",
             "Static": true,
             "IsTrigger": false
           }
@@ -95,28 +89,19 @@
         "Children": []
       },
       {
-        "__guid": "f9b375de-6ce4-442e-87ee-7bc726063e5e",
+        "__guid": "77fd03a9-bdc2-523f-9117-b4a742fd1423",
         "Flags": 0,
-        "Name": "West_Wall_South",
-        "Position": "-160,-104,96",
+        "Name": "Collision_Wall_South_Left",
+        "Position": "-60,90,110",
         "Rotation": "0,0,0,1",
-        "Scale": "0.32,2.24,3.84",
+        "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
-            "__type": "Sandbox.ModelRenderer",
-            "__guid": "4df8d842-7178-4ab4-acdc-d7d98995d891",
-            "BodyGroups": 18446744073709551615,
-            "Model": "models/dev/box.vmdl",
-            "MaterialOverride": "materials/arena/concrete_wall.vmat",
-            "RenderType": "On",
-            "Tint": "1,1,1,1"
-          },
-          {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "ecd7dfb6-4e7d-45b1-8f20-42f5270684ed",
+            "__guid": "08fa5fd8-abae-5cbf-8801-c2541f80725d",
             "Center": "0,0,0",
-            "Scale": "50,50,50",
+            "Scale": "60,10,220",
             "Static": true,
             "IsTrigger": false
           }
@@ -124,28 +109,19 @@
         "Children": []
       },
       {
-        "__guid": "80dfe603-4ca9-4c9a-ad0f-c1bd54fe82bc",
+        "__guid": "5712a52c-e5e1-5f61-8165-93056f06d1f7",
         "Flags": 0,
-        "Name": "West_Door_Lintel",
-        "Position": "-160,0,160",
+        "Name": "Collision_Wall_South_Right",
+        "Position": "60,90,110",
         "Rotation": "0,0,0,1",
-        "Scale": "0.32,1.92,1.28",
+        "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
-            "__type": "Sandbox.ModelRenderer",
-            "__guid": "f68a3149-353b-4f68-95f5-a2648d828fb6",
-            "BodyGroups": 18446744073709551615,
-            "Model": "models/dev/box.vmdl",
-            "MaterialOverride": "materials/arena/concrete_wall.vmat",
-            "RenderType": "On",
-            "Tint": "1,1,1,1"
-          },
-          {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "71c03b94-2bfd-4f55-a7c0-d6751b9efa5b",
+            "__guid": "3d82965a-0aa7-5059-9646-9caad3deb8ee",
             "Center": "0,0,0",
-            "Scale": "50,50,50",
+            "Scale": "60,10,220",
             "Static": true,
             "IsTrigger": false
           }
@@ -153,28 +129,19 @@
         "Children": []
       },
       {
-        "__guid": "0212dea2-8a8f-4fbf-89d4-b6e2256914f8",
+        "__guid": "9286f9b2-f5a9-5f78-ac41-89e38d1c1933",
         "Flags": 0,
-        "Name": "East_Wall_North",
-        "Position": "160,104,96",
+        "Name": "Collision_Wall_South_Lintel",
+        "Position": "0,90,185",
         "Rotation": "0,0,0,1",
-        "Scale": "0.32,2.24,3.84",
+        "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
-            "__type": "Sandbox.ModelRenderer",
-            "__guid": "7a12a3c9-a143-4bfa-a704-bf9edecd6eca",
-            "BodyGroups": 18446744073709551615,
-            "Model": "models/dev/box.vmdl",
-            "MaterialOverride": "materials/arena/concrete_wall.vmat",
-            "RenderType": "On",
-            "Tint": "1,1,1,1"
-          },
-          {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "7d4ea67b-5fe0-4605-8017-c67d93d0995e",
+            "__guid": "da6ef1b3-f2fe-50bc-9b4f-85a335b67f43",
             "Center": "0,0,0",
-            "Scale": "50,50,50",
+            "Scale": "60,10,70",
             "Static": true,
             "IsTrigger": false
           }
@@ -182,28 +149,19 @@
         "Children": []
       },
       {
-        "__guid": "83dc2bff-fdbd-4f95-8aaf-0dbd6c5330be",
+        "__guid": "36ed0e97-6013-5858-9bbe-27f31aed9e68",
         "Flags": 0,
-        "Name": "East_Wall_South",
-        "Position": "160,-104,96",
+        "Name": "Collision_Wall_North_Left",
+        "Position": "-62,-90,110",
         "Rotation": "0,0,0,1",
-        "Scale": "0.32,2.24,3.84",
+        "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
-            "__type": "Sandbox.ModelRenderer",
-            "__guid": "3e5e47da-e5d3-4293-a421-ca7330d96b86",
-            "BodyGroups": 18446744073709551615,
-            "Model": "models/dev/box.vmdl",
-            "MaterialOverride": "materials/arena/concrete_wall.vmat",
-            "RenderType": "On",
-            "Tint": "1,1,1,1"
-          },
-          {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "9aea50c4-eb0f-4dfd-be85-43bd51601249",
+            "__guid": "df0aaa4a-4ea4-51ba-94e8-70fdf52e3036",
             "Center": "0,0,0",
-            "Scale": "50,50,50",
+            "Scale": "56,10,220",
             "Static": true,
             "IsTrigger": false
           }
@@ -211,28 +169,19 @@
         "Children": []
       },
       {
-        "__guid": "0b1bc29c-a6e7-4ef3-a512-84dc6aedd9b6",
+        "__guid": "9a2eb80f-6c22-5562-a84b-ef503aeafc9b",
         "Flags": 0,
-        "Name": "East_Door_Lintel",
-        "Position": "160,0,160",
+        "Name": "Collision_Wall_North_Right",
+        "Position": "62,-90,110",
         "Rotation": "0,0,0,1",
-        "Scale": "0.32,1.92,1.28",
+        "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
-            "__type": "Sandbox.ModelRenderer",
-            "__guid": "b310a04b-1b08-4f80-82b1-f60383af63af",
-            "BodyGroups": 18446744073709551615,
-            "Model": "models/dev/box.vmdl",
-            "MaterialOverride": "materials/arena/concrete_wall.vmat",
-            "RenderType": "On",
-            "Tint": "1,1,1,1"
-          },
-          {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "18b85699-8289-4c4f-a081-63550cd66f0a",
+            "__guid": "cd1c92e8-99ae-5340-bdcb-50765a516268",
             "Center": "0,0,0",
-            "Scale": "50,50,50",
+            "Scale": "56,10,220",
             "Static": true,
             "IsTrigger": false
           }
@@ -240,47 +189,646 @@
         "Children": []
       },
       {
-        "__guid": "9e7b055c-d515-4282-8352-b0471bb4110c",
+        "__guid": "2875a415-e9c6-561c-8ed2-ee5faa428812",
         "Flags": 0,
-        "Name": "Roof",
-        "Position": "0,0,200",
+        "Name": "Collision_Wall_North_Sill",
+        "Position": "0,-90,42",
         "Rotation": "0,0,0,1",
-        "Scale": "6.4,6.4,0.32",
+        "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
-            "__type": "Sandbox.ModelRenderer",
-            "__guid": "2ca8f2fa-80c3-4833-b440-627c97054817",
-            "BodyGroups": 18446744073709551615,
-            "Model": "models/dev/box.vmdl",
-            "MaterialOverride": "materials/arena/concrete_wall.vmat",
-            "RenderType": "On",
-            "Tint": "1,1,1,1"
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "525b7484-77e8-523e-b126-9807edb2fd0b",
+            "Center": "0,0,0",
+            "Scale": "68,10,84",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "dd28ad6b-1174-5929-88cd-2862030e45d4",
+        "Flags": 0,
+        "Name": "Collision_Wall_North_Header",
+        "Position": "0,-90,185",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "8e339f7b-6226-5a88-a77a-914f695f3a3b",
+            "Center": "0,0,0",
+            "Scale": "68,10,70",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "778b890e-895f-54d3-aca9-723a618cbfd8",
+        "Flags": 0,
+        "Name": "Collision_Wall_West_Lower",
+        "Position": "-90,-55,110",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "9ecd8e92-68d0-56df-bc3b-2a7cea7d8404",
+            "Center": "0,0,0",
+            "Scale": "10,70,220",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "a57b7dcf-b390-56a1-8c58-eac59bea8cba",
+        "Flags": 0,
+        "Name": "Collision_Wall_West_Upper",
+        "Position": "-90,55,110",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "a68635dc-216e-5033-9f3e-5bcfcdf277fc",
+            "Center": "0,0,0",
+            "Scale": "10,70,220",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "6ab45c29-13d9-568b-afdd-cad73700e0e7",
+        "Flags": 0,
+        "Name": "Collision_Wall_West_Sill",
+        "Position": "-90,0,42",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "9d7125ec-d687-5ea5-bf58-d8f3bf9772e2",
+            "Center": "0,0,0",
+            "Scale": "10,70,84",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "fa125249-11e4-59b7-9eeb-cd346a17d604",
+        "Flags": 0,
+        "Name": "Collision_Wall_West_Header",
+        "Position": "-90,0,185",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "9ce53694-f3df-547e-b0dd-e8dbb4610830",
+            "Center": "0,0,0",
+            "Scale": "10,70,70",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "4bdc7959-882d-5699-b5a8-3e7b8e62df08",
+        "Flags": 0,
+        "Name": "Collision_Wall_East",
+        "Position": "90,0,110",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "4d6eec80-5217-51fa-ba0f-4ec194ad45cc",
+            "Center": "0,0,0",
+            "Scale": "10,180,220",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "23cff9c1-e208-5e3e-b283-3a01186e7477",
+        "Flags": 0,
+        "Name": "Collision_UpperWall_South_Left",
+        "Position": "-48,74,295",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "eefdf091-32b2-5b70-a517-d67eb36d1666",
+            "Center": "0,0,0",
+            "Scale": "42,10,110",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "d6fd0cc6-7cc0-5447-a13e-951fed5ccd88",
+        "Flags": 0,
+        "Name": "Collision_UpperWall_South_Right",
+        "Position": "48,74,295",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "226328f1-553e-51ea-b0d2-b042048c1b80",
+            "Center": "0,0,0",
+            "Scale": "42,10,110",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "f1fe05d6-4153-5d90-97ac-c099d5050806",
+        "Flags": 0,
+        "Name": "Collision_UpperWall_South_Header",
+        "Position": "0,74,328",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "88586afa-f2fb-56b6-8048-ca1e26b91181",
+            "Center": "0,0,0",
+            "Scale": "54,10,44",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "735be0de-669f-5c86-9f9b-b5bc9d2569ed",
+        "Flags": 0,
+        "Name": "Collision_UpperWall_North_Left",
+        "Position": "-48,-74,295",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "02dbb4d2-6f07-5cdf-a2f4-216c739dd024",
+            "Center": "0,0,0",
+            "Scale": "42,10,110",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "22d69824-7fad-55dc-9b8b-59bc786ad13c",
+        "Flags": 0,
+        "Name": "Collision_UpperWall_North_Right",
+        "Position": "48,-74,295",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "e83ef43b-43a5-5f17-a5b2-90f5360ee085",
+            "Center": "0,0,0",
+            "Scale": "42,10,110",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "e5b3b16e-a184-593e-a8e7-65b05e2b76cf",
+        "Flags": 0,
+        "Name": "Collision_UpperWall_North_Sill",
+        "Position": "0,-74,260",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "b63a73be-fe52-588c-af4f-807018a4b98f",
+            "Center": "0,0,0",
+            "Scale": "54,10,38",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "9dd98025-dd45-54f1-af4a-15ef1f1739f5",
+        "Flags": 0,
+        "Name": "Collision_UpperWall_North_Header",
+        "Position": "0,-74,328",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "610f289b-fb6c-5a1a-b4a8-89b75910bde2",
+            "Center": "0,0,0",
+            "Scale": "54,10,44",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "0e6efaf8-e750-5644-99a8-48c5b38db25c",
+        "Flags": 0,
+        "Name": "Collision_UpperWall_West_Lower",
+        "Position": "-74,-46,295",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "82d2b12d-6b26-5b59-ba68-3868a7efb27b",
+            "Center": "0,0,0",
+            "Scale": "10,46,110",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "d73039e1-f3ce-5a0d-9ea6-2a7bf178434a",
+        "Flags": 0,
+        "Name": "Collision_UpperWall_West_Upper",
+        "Position": "-74,46,295",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "a0c90df9-15fe-5976-aa52-c7c2e3a72a08",
+            "Center": "0,0,0",
+            "Scale": "10,46,110",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "c5b32c12-0323-5c8a-b5d6-ad7e349d6c11",
+        "Flags": 0,
+        "Name": "Collision_UpperWall_West_Sill",
+        "Position": "-74,0,260",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "ff81e96f-7878-5f44-b54e-5528ec07fd11",
+            "Center": "0,0,0",
+            "Scale": "10,50,38",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "c72c1cc4-d60f-5a8e-a31b-49f74877c8ab",
+        "Flags": 0,
+        "Name": "Collision_UpperWall_West_Header",
+        "Position": "-74,0,328",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "ba98cd93-4ad9-595c-9ddd-0c0d477f287c",
+            "Center": "0,0,0",
+            "Scale": "10,50,44",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "cf91944f-3131-5279-863f-575361357f3b",
+        "Flags": 0,
+        "Name": "Collision_UpperWall_East",
+        "Position": "74,0,295",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "dbd2cbb4-0b91-56e8-9489-ffe7dc9ffe40",
+            "Center": "0,0,0",
+            "Scale": "10,145,110",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "fb3e0829-05f3-563b-822d-589dcb7197fd",
+        "Flags": 0,
+        "Name": "Collision_Interior_Wall",
+        "Position": "25,12,110",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "0b536334-7c2d-51bc-bd2a-8fcc6116ed90",
+            "Center": "0,0,0",
+            "Scale": "85,10,200",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "2e7ffde8-ffc5-5570-ad38-f1b043f8fba2",
+        "Flags": 0,
+        "Name": "Collision_Parapet_North",
+        "Position": "0,-98,392",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "90c7e56f-e96b-518d-be27-c75474c89930",
+            "Center": "0,0,0",
+            "Scale": "195,10,42",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "9d872c25-d9cd-5e9d-b976-c3b5754aed5c",
+        "Flags": 0,
+        "Name": "Collision_Parapet_South",
+        "Position": "0,98,392",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "2cab6609-a272-5c54-a9de-4bc3e0b4d8cb",
+            "Center": "0,0,0",
+            "Scale": "195,10,42",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "f8bb2de6-2302-51e5-9b74-e9d2fa1baa51",
+        "Flags": 0,
+        "Name": "Collision_Parapet_East",
+        "Position": "98,0,392",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "ad88dd06-6d55-5889-a6cf-b5857f08015f",
+            "Center": "0,0,0",
+            "Scale": "10,195,42",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "8e07b6b0-770f-5f64-a485-5e12dc5bfbb5",
+        "Flags": 0,
+        "Name": "Collision_Parapet_West",
+        "Position": "-98,0,392",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "7ba25cfd-832c-54a4-8f7e-f71eb1da2139",
+            "Center": "0,0,0",
+            "Scale": "10,195,42",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "d6654ee8-49cf-59d4-b874-71a7bbf21cb1",
+        "Flags": 0,
+        "Name": "Ladder_To_Loft",
+        "Position": "0,-82,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "DroneVsPlayers.LadderVolume",
+            "__guid": "6844ce88-5a07-57ef-b4d7-503b8537407b",
+            "AutoConfigureCollider": true,
+            "GrabPadding": 18,
+            "UseTopExit": true,
+            "TopExitLocalOffset": "0,52,252",
+            "TopExitTriggerDistance": 32,
+            "BottomExitTriggerDistance": 8
           },
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "a7e7b032-3b08-414b-b2a3-2dc13c860ca7",
-            "Center": "0,0,0",
-            "Scale": "50,50,50",
+            "__guid": "df520c70-b105-5689-a36e-64a3676cf5c4",
+            "Center": "0,0,121",
+            "Scale": "24,26,242",
             "Static": true,
-            "IsTrigger": false
+            "IsTrigger": true
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "45c8da5d-e484-5d0d-b8ff-38b4465e31e5",
+        "Flags": 0,
+        "Name": "Ladder_To_Roof",
+        "Position": "0,-35,240",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "DroneVsPlayers.LadderVolume",
+            "__guid": "183f16cb-d0f5-5cb3-96e1-08ca373b2921",
+            "AutoConfigureCollider": true,
+            "GrabPadding": 18,
+            "UseTopExit": true,
+            "TopExitLocalOffset": "0,50,140",
+            "TopExitTriggerDistance": 32,
+            "BottomExitTriggerDistance": 8
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "25f187c3-fe05-5d36-9958-be25aca9e5cc",
+            "Center": "0,0,70",
+            "Scale": "24,26,140",
+            "Static": true,
+            "IsTrigger": true
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "15444a82-3b41-548f-b9a8-677f21e9a158",
+        "Flags": 0,
+        "Name": "Zone_Entry",
+        "Position": "0,70,70",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "ca0870f7-ad73-5176-8343-5f365440d746",
+            "Center": "0,0,0",
+            "Scale": "95,50,100",
+            "Static": true,
+            "IsTrigger": true
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "112eb3ef-521a-57d1-a57b-44d95273d9e0",
+        "Flags": 0,
+        "Name": "Zone_MainRoom",
+        "Position": "-35,-15,90",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "b61dee1b-b2a8-5ca7-b4b6-83b58127db89",
+            "Center": "0,0,0",
+            "Scale": "110,110,130",
+            "Static": true,
+            "IsTrigger": true
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "1cce16ac-b77d-56c8-8049-42416665a04d",
+        "Flags": 0,
+        "Name": "Zone_SideRoom",
+        "Position": "55,20,90",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "c5602436-16e2-5ecc-8fc6-b3a35d3aa9bf",
+            "Center": "0,0,0",
+            "Scale": "70,110,130",
+            "Static": true,
+            "IsTrigger": true
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "7758532d-a0e2-5bca-a980-fc743243f229",
+        "Flags": 0,
+        "Name": "Zone_Loft",
+        "Position": "0,-38,265",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "b0cb26e8-feb2-5a00-b2d1-7437b789067f",
+            "Center": "0,0,0",
+            "Scale": "110,95,70",
+            "Static": true,
+            "IsTrigger": true
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "d0da2fb1-216c-5f5e-a5f8-bf52cbea85a4",
+        "Flags": 0,
+        "Name": "Zone_Roof",
+        "Position": "0,0,392",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "6bba5183-f49a-59e1-a588-e1b08f5e77c0",
+            "Center": "0,0,0",
+            "Scale": "195,195,60",
+            "Static": true,
+            "IsTrigger": true
           }
         ],
         "Children": []
       }
-    ],
-    "__variables": [],
-    "__properties": {
-      "FixedUpdateFrequency": 50,
-      "MaxFixedUpdates": 5,
-      "NetworkFrequency": 30,
-      "NetworkInterpolation": true,
-      "PhysicsSubSteps": 1,
-      "ThreadedAnimation": true,
-      "TimeScale": 1,
-      "UseFixedUpdate": true,
-      "Metadata": {}
-    }
+    ]
   },
   "ShowInMenu": false,
   "MenuPath": "Drone vs Players/Environment/House_Small",

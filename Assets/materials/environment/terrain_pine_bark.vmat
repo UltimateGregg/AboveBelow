@@ -2,6 +2,9 @@
 {
 	"shader"		"shaders/complex.shader"
 	"TextureColor"		"materials/environment/terrain_pine_bark_color.png"
+	"TextureNormal"		"materials/environment/terrain_pine_bark_normal.png"
+	"TextureRoughness"		"materials/environment/terrain_pine_bark_rough.png"
+	"TextureAmbientOcclusion"		"materials/environment/terrain_pine_bark_ao.png"
 	"g_flModelTintAmount"		"0.000000"
 	"g_vColorTint"		"[1.000000 1.000000 1.000000 0.000000]"
 	"g_flMetalness"		"0.000000"

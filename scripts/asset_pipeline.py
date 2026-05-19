@@ -232,18 +232,18 @@ def write_vmdl(
     path.write_text(
         f"""<!-- kv3 encoding:text:version{{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d}} format:modeldoc29:version{{3cec427c-1b0e-4d48-a90a-0436f33a6041}} -->
 {{
-\trootNode = 
+\trootNode =
 \t{{
 \t\t_class = "RootNode"
-\t\tchildren = 
+\t\tchildren =
 \t\t[
 \t\t\t{{
 \t\t\t\t_class = "MaterialGroupList"
-\t\t\t\tchildren = 
+\t\t\t\tchildren =
 \t\t\t\t[
 \t\t\t\t\t{{
 \t\t\t\t\t\t_class = "DefaultMaterialGroup"
-\t\t\t\t\t\tremaps = 
+\t\t\t\t\t\tremaps =
 \t\t\t\t\t\t[
 {remap_text}
 \t\t\t\t\t\t]
@@ -254,7 +254,7 @@ def write_vmdl(
 \t\t\t}},
 \t\t\t{{
 \t\t\t\t_class = "RenderMeshList"
-\t\t\t\tchildren = 
+\t\t\t\tchildren =
 \t\t\t\t[
 \t\t\t\t\t{{
 \t\t\t\t\t\t_class = "RenderMeshFile"
@@ -267,7 +267,7 @@ def write_vmdl(
 \t\t\t\t\t\talign_origin_y_type = "None"
 \t\t\t\t\t\talign_origin_z_type = "None"
 \t\t\t\t\t\tparent_bone = ""
-\t\t\t\t\t\timport_filter = 
+\t\t\t\t\t\timport_filter =
 \t\t\t\t\t\t{{
 \t\t\t\t\t\t\texclude_by_default = false
 \t\t\t\t\t\t\texception_list = [  ]

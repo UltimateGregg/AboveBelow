@@ -14,6 +14,7 @@ $Root = (Resolve-Path -LiteralPath $Root).Path
 $issues = New-Object System.Collections.Generic.List[object]
 $collisionObjectCount = 0
 $scannedFileCount = 0
+$environmentBlenderCollisionModels = @{}
 
 function Get-JsonPropertyValue {
     param(
@@ -171,6 +172,155 @@ function Convert-AgentVectorText {
     return $parts
 }
 
+function Convert-AgentResourcePath {
+    param([object]$Value)
+
+    if ($null -eq $Value) {
+        return ""
+    }
+
+    return ([string]$Value).Replace("\", "/").TrimStart("/")
+}
+
+function Get-ModelResourcePathFromConfig {
+    param([object]$Json)
+
+    if ($null -eq $Json -or $null -eq $Json.PSObject) {
+        return $null
+    }
+
+    if ($Json.PSObject.Properties.Name -contains "model_resource_path" -and -not [string]::IsNullOrWhiteSpace([string]$Json.model_resource_path)) {
+        return Convert-AgentResourcePath -Value $Json.model_resource_path
+    }
+
+    if (-not ($Json.PSObject.Properties.Name -contains "target_vmdl")) {
+        return $null
+    }
+
+    $target = Convert-AgentResourcePath -Value $Json.target_vmdl
+    if ([string]::IsNullOrWhiteSpace($target) -or $target -match "\$\{") {
+        return $null
+    }
+
+    if ($target.StartsWith("Assets/", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $target.Substring("Assets/".Length)
+    }
+
+    return $target
+}
+
+function Get-EnvironmentBlenderCollisionModels {
+    param([string]$Root)
+
+    $models = @{}
+    $configDir = Join-Path $Root "scripts"
+    if (Test-Path -LiteralPath $configDir) {
+        foreach ($config in Get-ChildItem -LiteralPath $configDir -File -Filter "*_asset_pipeline.json" -ErrorAction SilentlyContinue) {
+            try {
+                $json = Read-AgentJson -Path $config.FullName
+            }
+            catch {
+                continue
+            }
+
+            $sourceBlend = Convert-AgentResourcePath -Value (Get-JsonPropertyValue -Object $json -Name "source_blend")
+            if (-not $sourceBlend.StartsWith("environment_model.blend/", [System.StringComparison]::OrdinalIgnoreCase)) {
+                continue
+            }
+
+            $modelPath = Get-ModelResourcePathFromConfig -Json $json
+            if ([string]::IsNullOrWhiteSpace($modelPath)) {
+                continue
+            }
+
+            $models[$modelPath] = ConvertTo-AgentRelativePath -Path $config.FullName -Root $Root
+        }
+    }
+
+    foreach ($fallback in @("models/terrain_rock.vmdl", "models/terrain_pine.vmdl")) {
+        $fullPath = Join-Path $Root ("Assets\" + $fallback.Replace("/", "\"))
+        if ((Test-Path -LiteralPath $fullPath) -and -not $models.ContainsKey($fallback)) {
+            $models[$fallback] = ConvertTo-AgentRelativePath -Path $fullPath -Root $Root
+        }
+    }
+
+    return $models
+}
+
+function Test-ObjectHasBoxCollider {
+    param([object]$Object)
+
+    return $null -ne (Get-ComponentByTypeName -Object $Object -TypeName "BoxCollider")
+}
+
+function Test-ObjectHasDirectCollider {
+    param([object]$Object)
+
+    foreach ($component in @(Get-ObjectComponents -Object $Object)) {
+        $componentType = Get-JsonPropertyValue -Object $component -Name "__type"
+        if ($componentType -and $componentType.EndsWith("Collider", [System.StringComparison]::OrdinalIgnoreCase)) {
+            return $true
+        }
+
+        # ConvertFrom-Json can hide S&Box type metadata. Count direct collider
+        # components by the stable shape properties that survive parsing.
+        if ($null -ne (Get-JsonPropertyValue -Object $component -Name "IsTrigger") -and
+            $null -ne (Get-JsonPropertyValue -Object $component -Name "Center") -and
+            (
+                $null -ne (Get-JsonPropertyValue -Object $component -Name "Scale") -or
+                $null -ne (Get-JsonPropertyValue -Object $component -Name "BoxSize") -or
+                $null -ne (Get-JsonPropertyValue -Object $component -Name "Radius") -or
+                $null -ne (Get-JsonPropertyValue -Object $component -Name "Height")
+            )) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Test-ObjectHasCollisionCoverage {
+    param([object]$Object)
+
+    if (Test-ObjectHasDirectCollider -Object $Object) {
+        return $true
+    }
+
+    foreach ($child in @(Get-ObjectChildren -Object $Object)) {
+        $childName = Get-JsonPropertyValue -Object $child -Name "Name"
+        if ($childName -and
+            $childName.StartsWith("Collision_", [System.StringComparison]::OrdinalIgnoreCase) -and
+            (Test-ObjectHasBoxCollider -Object $child)) {
+            return $true
+        }
+
+        if (Test-ObjectHasCollisionCoverage -Object $child) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Test-ParentHasCollisionCoverage {
+    param([object]$Parent)
+
+    if ($null -eq $Parent) {
+        return $false
+    }
+
+    foreach ($child in @(Get-ObjectChildren -Object $Parent)) {
+        $childName = Get-JsonPropertyValue -Object $child -Name "Name"
+        if ($childName -and
+            $childName.StartsWith("Collision_", [System.StringComparison]::OrdinalIgnoreCase) -and
+            (Test-ObjectHasBoxCollider -Object $child)) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
 function Test-SolidCollisionObject {
     param(
         [object]$Object,
@@ -323,9 +473,37 @@ function Test-WaterTowerOpenBaseContract {
     }
 }
 
+function Test-BlenderModelCollisionCoverage {
+    param(
+        [object]$Object,
+        [object]$Parent,
+        [string]$Path,
+        [string]$ObjectPath
+    )
+
+    if ($script:environmentBlenderCollisionModels.Count -eq 0) {
+        return
+    }
+
+    foreach ($component in @(Get-ObjectComponents -Object $Object)) {
+        $model = Convert-AgentResourcePath -Value (Get-JsonPropertyValue -Object $component -Name "Model")
+        if ([string]::IsNullOrWhiteSpace($model) -or -not $script:environmentBlenderCollisionModels.ContainsKey($model)) {
+            continue
+        }
+
+        if ((Test-ObjectHasCollisionCoverage -Object $Object) -or (Test-ParentHasCollisionCoverage -Parent $Parent)) {
+            continue
+        }
+
+        $source = [string]$script:environmentBlenderCollisionModels[$model]
+        Add-AgentIssue $issues "Error" "Blender Model Collision" $Path "$ObjectPath renders environment Blender model '$model' from $source without any BoxCollider or Collision_* coverage." "Add a direct BoxCollider or a Collision_* helper under the model's prop root. For Visual children, keep sibling Collision_* helpers under the same parent root."
+    }
+}
+
 function Visit-CollisionObject {
     param(
         [object]$Object,
+        [object]$Parent,
         [string]$Path,
         [string]$ObjectPath
     )
@@ -345,6 +523,7 @@ function Visit-CollisionObject {
     Test-VisualCollisionAlignment -Object $Object -Path $Path -ObjectPath $currentPath
     Test-WaterTowerCollisionContract -Object $Object -Path $Path -ObjectPath $currentPath
     Test-WaterTowerOpenBaseContract -Object $Object -Path $Path -ObjectPath $currentPath
+    Test-BlenderModelCollisionCoverage -Object $Object -Parent $Parent -Path $Path -ObjectPath $currentPath
 
     $boxCollider = Get-ComponentByTypeName -Object $Object -TypeName "BoxCollider"
     $ladderVolume = Get-ComponentByTypeName -Object $Object -TypeName "LadderVolume"
@@ -353,7 +532,7 @@ function Visit-CollisionObject {
     }
 
     foreach ($child in @(Get-ObjectChildren -Object $Object)) {
-        Visit-CollisionObject -Object $child -Path $Path -ObjectPath $currentPath
+        Visit-CollisionObject -Object $child -Parent $Object -Path $Path -ObjectPath $currentPath
     }
 }
 
@@ -379,18 +558,19 @@ function Test-CollisionFile {
 
     $rootObject = Get-JsonPropertyValue -Object $json -Name "RootObject"
     if ($null -ne $rootObject) {
-        Visit-CollisionObject -Object $rootObject -Path $relative -ObjectPath ""
+        Visit-CollisionObject -Object $rootObject -Parent $null -Path $relative -ObjectPath ""
         return
     }
 
     $gameObjects = Get-JsonPropertyValue -Object $json -Name "GameObjects"
     foreach ($object in @($gameObjects)) {
-        Visit-CollisionObject -Object $object -Path $relative -ObjectPath ""
+        Visit-CollisionObject -Object $object -Parent $null -Path $relative -ObjectPath ""
     }
 }
 
 Write-AgentSection "Collision Authoring Agent"
 Write-Host "Root: $Root"
+$environmentBlenderCollisionModels = Get-EnvironmentBlenderCollisionModels -Root $Root
 
 $assetRoot = Join-Path $Root "Assets"
 if (-not (Test-Path -LiteralPath $assetRoot)) {

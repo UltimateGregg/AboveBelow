@@ -152,6 +152,28 @@ metadata:
 - [ ] Tested in editor playtest (if gameplay/input change)
 - [ ] Pre-handoff suite passed
 
+## Self-Training (Continuous Improvement)
+
+**Trigger:** Type `train` after completing any substantial task
+
+**What happens:**
+1. Runs full audit suite (`scripts/agents/run_agent_checks.ps1 -Suite train`)
+2. Inspects findings to identify durable workflow improvements
+3. Updates documentation, hooks, agents, and memory based on patterns discovered
+4. Summarizes changes and validation gaps
+
+**What gets improved:**
+- Documentation (CLAUDE.md, AGENTS.md, docs/)
+- Hooks for new automation (.claude/settings.json)
+- Agent scripts (new agents, improved existing ones)
+- Memory files (new patterns, lessons learned)
+- Workflow routing (agent selection guide)
+
+**What doesn't change:**
+- Gameplay code, scene content, prefabs, assets, UI (unless part of workflow improvement)
+
+See `docs/training_workflow.md` for full details.
+
 ## Quick Workflow Checklist
 
 **In Plan Mode:**
@@ -170,3 +192,8 @@ metadata:
 - [ ] Run full or subset agent suite
 - [ ] All agents must pass
 - [ ] Summarize changes and validation
+
+**After Handoff (Optional):**
+- [ ] Type `train` to run continuous improvement workflow
+- [ ] Review suggested improvements to docs/hooks/agents/memory
+- [ ] Commit improvements that make sense

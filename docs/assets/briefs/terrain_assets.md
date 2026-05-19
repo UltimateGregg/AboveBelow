@@ -39,10 +39,11 @@ The asset browser name must match the Blender source name unless the user explic
 ## Material Plan
 
 - Use `TerrainPineBark` for the trunk, branches, twigs, and dead lower stubs.
-- Use `terrain_pine_bark_color.png` as a procedural vertical-grain bark color texture so the wood reads brown instead of flat color.
+- Use `terrain_pine_bark_color.png` with matching normal, roughness, and AO maps so the trunk reads as grooved bark instead of a stretched flat pole.
 - Use `TerrainPineNeedlesCardA` and `TerrainPineNeedlesCardB` for transparent foliage cards.
 - Use `terrain_pine_needles_card_a_color.png` / `terrain_pine_needles_card_b_color.png` for branch-and-needle card color and matching `_trans.png` masks for alpha-tested cutouts.
-- No normal, roughness, or ambient-occlusion textures are required for this pass; the current environment material audit treats those as optional warnings.
+- The trunk and branches should use repeated vertical UVs. Do not stretch one bark texture across the full 15m height.
+- Foliage cards should be layered with vertical and tilted planes so the upper crown has depth from ground level.
 
 ## Scale and Orientation
 

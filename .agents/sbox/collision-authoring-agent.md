@@ -18,6 +18,7 @@ Use this agent whenever a task touches environment props, map blockout collision
 - `Collision_*` objects must have a `Sandbox.BoxCollider`.
 - Solid `Collision_*` objects must use `IsTrigger = false`; trigger-only volumes should be named for their purpose.
 - Ladder collision must use a trigger `BoxCollider` and `DroneVsPlayers.LadderVolume`.
+- Environment Blender models placed directly in scenes must have collision coverage: either a direct `BoxCollider`, a `Collision_*` child, or sibling `Collision_*` helpers under the same prop root.
 - Keep visible mesh children separate from collision helper children.
 - If a prop has sibling `Collision_*` children, do not rotate the `Visual` child to orient the prop. Rotate the prop root so visible mesh, collision, and ladder volumes share one transform.
 - For the water tower, keep tank, roof, platform, four legs, and ladder collision authored as children of the `WaterTower` root. Do not use broad lower-frame wall colliders across the open base; add only narrow brace collision if it matches a visible solid piece.

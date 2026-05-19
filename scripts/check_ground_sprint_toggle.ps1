@@ -50,6 +50,9 @@ Require-Match "GroundPlayerController should store sprint as a local toggle stat
 Require-Match "GroundPlayerController should toggle sprint from a Run press edge." `
     $controller "Input\.Pressed\(\s*""Run""\s*\)[\s\S]{0,220}_sprintToggled\s*=\s*!\s*_sprintToggled"
 
+Require-Match "GroundPlayerController should make Run stand the player up from a crouch before sprinting." `
+    $controller "Input\.Pressed\(\s*""Run""\s*\)[\s\S]{0,260}_crouchToggled\s*=\s*false[\s\S]{0,160}_sprintToggled\s*=\s*true"
+
 Require-Match "GroundPlayerController should keep sprint intent separate from held Run input." `
     $controller "IsSprinting\s*=\s*_sprintToggled\s*&&\s*hasMoveInput\s*&&\s*canSprint"
 
@@ -77,6 +80,9 @@ Require-Match "GroundPlayerController should sync sprint lock state for HUD and 
 Require-Match "GroundPlayerController should lock sprint and clear sprint intent when stamina is exhausted." `
     $controller "Stamina\s*<=\s*0f[\s\S]{0,220}IsSprintLocked\s*=\s*true[\s\S]{0,220}ClearSprintIntent\(\)"
 
+Require-Match "GroundPlayerController should allow sprint to begin while crouch height is still standing up." `
+    $controller "var\s+canSprint\s*=\s*hasStamina\s*&&\s*!\s*_crouchToggled\s*&&\s*!\s*IsSliding\s*&&\s*!\s*IsClimbingLadder"
+
 Require-Match "GroundPlayerController should keep stamina from recovering during the exhaustion cooldown." `
     $controller "IsSprintLocked\s*&&\s*_timeSinceSprintLocked\s*<\s*SprintCooldownSeconds"
 
@@ -85,6 +91,9 @@ Require-Match "GroundPlayerController should unlock sprint only after the resume
 
 Reject-Match 'Ground sprint should not be held directly by Input.Down("Run").' `
     $controller "var\s+wantsSprint\s*=\s*Input\.Down\(\s*""Run""\s*\)"
+
+Reject-Match "Ground sprint should not be blocked by the crouch interpolation after Run has released crouch intent." `
+    $controller "var\s+canSprint\s*=\s*hasStamina\s*&&\s*!IsCrouched"
 
 if ($failures.Count -gt 0) {
     $failures | ForEach-Object { Write-Error $_ }

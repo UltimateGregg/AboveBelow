@@ -41,6 +41,11 @@ if ($FailOnWarning) {
     $commonArgs += "-FailOnWarning"
 }
 
+$quickLogArgs = @("-Root", $Root, "-ShowInfo")
+if ($FailOnWarning) {
+    $quickLogArgs += "-FailOnWarning"
+}
+
 $scripts = @()
 switch ($Suite) {
     "quick" {
@@ -61,7 +66,7 @@ switch ($Suite) {
             @{ Name = "ui_flow_audit.ps1"; Args = $commonArgs },
             @{ Name = "networking_review_audit.ps1"; Args = $commonArgs },
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
-            @{ Name = "current_log_audit.ps1"; Args = ($commonArgs + "-ShowInfo") },
+            @{ Name = "current_log_audit.ps1"; Args = $quickLogArgs },
             @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root) }
         )
     }

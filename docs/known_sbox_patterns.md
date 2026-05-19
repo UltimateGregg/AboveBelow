@@ -453,6 +453,7 @@ public void TakeDamage(DamageInfo info)
 - Rotate or move the prop root for scene placement. Do not rotate the `Visual` child to orient a prop that has sibling `Collision_*` children.
 - For open-base props like the water tower, do not fill empty visual space with broad frame wall colliders. Keep tank/platform/legs solid, keep ladder volumes as triggers, and only add narrow brace collision when it matches visible geometry.
 - For climbable props, keep ladder volumes as trigger colliders with `LadderVolume`; keep physical blockers as non-trigger `BoxCollider` children.
+- Scene-placed environment Blender models should not silently remain non-solid. If a local model from `environment_model.blend` is placed directly in `main.scene`, add a direct `BoxCollider`, a `Collision_*` child, or sibling `Collision_*` helpers under the same prop root. Use narrow trunk blockers for trees and low body blockers for rocks instead of broad leaf or scenery volumes.
 - After Save As or MCP scene edits, verify both saved JSON and the live editor hierarchy. The editor can keep a stale in-memory scene even after the file is patched.
 - Run `scripts\agents\collision_authoring_agent.ps1 -ShowInfo` and then do a short editor playtest walking into the prop from multiple sides.
 - For broad or risky collision work, route through `.agents\sbox\collision-chain-agent.md` so a Codex explorer defines the collision contract, an implementer makes scoped edits, a verifier proves the result, and a critic can pass defects back down before handoff.

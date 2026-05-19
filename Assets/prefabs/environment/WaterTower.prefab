@@ -179,7 +179,7 @@
         "__guid": "69b48611-286b-49b0-8305-5967db050c6d",
         "Flags": 0,
         "Name": "Collision_Ladder",
-        "Position": "0,-420,300",
+        "Position": "0,233.52,166.8",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
@@ -188,7 +188,7 @@
             "__type": "Sandbox.BoxCollider",
             "__guid": "73bdd042-42a0-449e-b79d-fb64d6ee1216",
             "Center": "0,0,0",
-            "Scale": "110,80,600",
+            "Scale": "61.16,44.48,333.6",
             "Static": true,
             "IsTrigger": true
           },
@@ -198,9 +198,49 @@
             "AutoConfigureCollider": true,
             "GrabPadding": 18,
             "UseTopExit": true,
-            "TopExitLocalOffset": "0,60,272",
+            "TopExitLocalOffset": "0,-33.36,150.8",
             "TopExitTriggerDistance": 28,
             "BottomExitTriggerDistance": 8
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "8c9a1b2c-3d4e-5f6a-7b8c-9d0e1f2a3b4c",
+        "Flags": 0,
+        "Name": "Collision_Bracing_NW_SE",
+        "Position": "0,0,350",
+        "Rotation": "0,0,0.7071,0.7071",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "5a6b7c8d-9e0f-1a2b-3c4d-5e6f7a8b9c0d",
+            "Center": "0,0,0",
+            "Scale": "40,40,500",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "9e1f2a3b-4c5d-6e7f-8a9b-0c1d2e3f4a5b",
+        "Flags": 0,
+        "Name": "Collision_Bracing_NE_SW",
+        "Position": "0,0,350",
+        "Rotation": "0,0,-0.7071,0.7071",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "6b7c8d9e-0f1a-2b3c-4d5e-6f7a8b9c0d1e",
+            "Center": "0,0,0",
+            "Scale": "40,40,500",
+            "Static": true,
+            "IsTrigger": false
           }
         ],
         "Children": []

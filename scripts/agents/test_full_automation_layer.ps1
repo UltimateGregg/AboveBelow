@@ -890,6 +890,7 @@ if (Test-Path -LiteralPath $collisionAudit) {
     $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-collision-authoring-agent-" + [System.Guid]::NewGuid().ToString("N"))
     try {
         New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Assets\scenes") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "scripts") | Out-Null
         New-Item -ItemType File -Force -Path (Join-Path $tempRoot "dronevsplayers.sbproj") | Out-Null
 
         $scenePath = Join-Path $tempRoot "Assets\scenes\main.scene"
@@ -1004,6 +1005,64 @@ if (Test-Path -LiteralPath $collisionAudit) {
         & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionAudit -Root $tempRoot | Out-Host
         if ($LASTEXITCODE -ne 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_authoring_agent.ps1" "Collision authoring agent failed on a valid prop with identity Visual rotation and solid collision." "Avoid false positives for normal scene collision authoring."
+        }
+
+        @'
+{
+  "source_blend": "environment_model.blend/fixture.blend",
+  "model_resource_path": "models/fixture_environment.vmdl",
+  "target_vmdl": "Assets/models/fixture_environment.vmdl"
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\fixture_environment_asset_pipeline.json") -Encoding UTF8
+
+        @'
+{
+  "GameObjects": [
+    {
+      "Name": "UncoveredEnvironmentModel",
+      "Components": [
+        { "__type": "Sandbox.ModelRenderer", "Model": "models/fixture_environment.vmdl", "RenderType": "On" }
+      ],
+      "Children": []
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_authoring_agent.ps1" "Collision authoring agent did not fail on an environment Blender model without authored collision." "Keep direct scene Blender models covered by a BoxCollider or Collision_* helper."
+        }
+
+        @'
+{
+  "GameObjects": [
+    {
+      "Name": "CoveredEnvironmentModel",
+      "Children": [
+        {
+          "Name": "Visual",
+          "Components": [
+            { "__type": "Sandbox.ModelRenderer", "Model": "models/fixture_environment.vmdl", "RenderType": "On" }
+          ],
+          "Children": []
+        },
+        {
+          "Name": "Collision_Body",
+          "Components": [
+            { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "100,100,100" }
+          ],
+          "Children": []
+        }
+      ]
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_authoring_agent.ps1" "Collision authoring agent failed on an environment Blender model with sibling Collision_* coverage." "Allow normal Visual plus Collision_* prop authoring for Blender environment models."
         }
     }
     finally {

@@ -200,6 +200,172 @@ Notable quirks (also in `~/.claude/projects/.../memory/tooling_sbox_mcp.md`):
 - `scene_open` on a `.prefab` errors "Ambiguous match" if a prefab editor session is open alongside `main.scene`. Re-open `Assets/scenes/main.scene` first.
 - Avoid `editor_save_scene` while in play-mode or while a prefab editor session is the active tab — s&box has saved an `untitled.scene` next to main.scene at least once. Always `scene_open Assets/scenes/main.scene` first if unsure.
 
+## Building Architecture (Multi-Level Design)
+
+Arena buildings are now designed with gameplay depth: multiple floors, interior spaces, and vertical progression. The House_Large redesign establishes the pattern.
+
+### Structure & Gameplay Levels
+
+Each building supports three gameplay contexts:
+
+- **Ground/Interior** (0–350 units): Main entry, living spaces. Semi-protected from drone sightlines.
+- **Elevated/Loft** (350–500 units): Secondary vantage point. Visible to drone but harder to defend.
+- **Roof** (500+ units): Highest exposure, best sight-lines. Fully visible to drone, tactical risk/reward.
+- **Basement** (optional, −350 to 0): Underground shelter, completely hidden from drone view.
+
+### File Structure
+
+Building models live in `environment_model.blend/<buildingname>.blend` with organized sub-objects:
+
+```
+Blender File Structure:
+├── Floor_Ground       (walkable surface, 0 height)
+├── Floor_Basement     (walkable surface, negative height)
+├── Floor_Loft         (partial platform, mid-height)
+├── Roof_Sloped        (pitched roof surface)
+├── Wall_Exterior_*    (north, south, east, west)
+├── Wall_Interior_*    (room dividers)
+├── Ladder_To_Loft     (climbable access)
+├── Ladder_To_Roof     (continuation to roof)
+├── Parapet_*          (low walls around roof edges)
+└── Window_Frame_*     (door/window openings)
+```
+
+**Critical**: Each *walkable surface* must be a separate object for collision assignment. Visual-only geometry can share objects.
+
+### Collision & Gameplay Zones in Prefabs
+
+Prefab structure mirrors Blender but adds collision and trigger volumes:
+
+```json
+House_Large (root)
+├── Model_Visual (ModelRenderer → house_large.vmdl)
+├── Collision_Floor_Ground (BoxCollider, solid)
+├── Collision_Floor_Basement (BoxCollider, solid)
+├── Collision_Floor_Loft (BoxCollider, solid)
+├── Collision_Roof (BoxCollider, solid)
+├── Collision_Wall_* (BoxCollider, solid)
+├── Ladder_To_Loft (LadderVolume + trigger)
+├── Ladder_To_Roof (LadderVolume + trigger)
+└── Zone_* (trigger-only BoxColliders for gameplay logic)
+```
+
+**Collision Rules**:
+- All floor/wall collision: `Static: true`, `IsTrigger: false`
+- All ladder volumes: `Static: true` (for trigger), `IsTrigger: true`
+- All zones (Foyer, LivingArea, Basement, etc.): `IsTrigger: true` (detect player presence, not physical barrier)
+
+### LadderVolume Configuration
+
+Two-ladder pattern (ground→loft, loft→roof):
+
+```json
+{
+  "__type": "Sandbox.LadderVolume",
+  "GrabPadding": 18,           // How far player can reach to grab ladder
+  "TopExit": "0,0,185"         // Offset where player exits (relative to ladder position)
+}
+```
+
+**Calculation**: `Ladder Position + TopExit = Exit Height`
+- Ladder_To_Loft at (−50, −100, 0) with TopExit (0, 0, 185) → exits at height 185
+- Ladder_To_Roof at (−50, −50, 350) with TopExit (0, 0, 150) → exits at height 500
+
+Verify offsets match floor heights after export (Blender units scale by 0.0254 in game).
+
+### Material Mapping
+
+Reuse arena materials (don't create new ones):
+
+```json
+"material_remap": {
+  "Material_Brick": "materials/arena/concrete_wall.vmat",
+  "Material_Concrete": "materials/arena/concrete_wall.vmat",
+  "Material_Wood": "materials/arena/asphalt_cover.vmat",
+  "Material_Metal": "materials/arena/metal_pad.vmat",
+  "Material_Glass": "materials/arena/asphalt_cover.vmat"
+}
+```
+
+Available arena materials:
+- `concrete_wall.vmat` — walls, floors
+- `grass_ground.vmat` — terrain, berms
+- `asphalt_cover.vmat` — interior, platforms
+- `metal_pad.vmat` — roof, metal structures
+
+### Blender Export & Alignment
+
+**Before saving**:
+1. Set each material slot name explicitly (Blender silently appends `.001` on collision)
+2. Verify object hierarchy: separate objects for each walkable surface
+3. Apply all transforms (Ctrl+A → All Transforms)
+4. Orient all geometry with `-Y forward, +Z up` (per pipeline convention)
+
+**After export** (asset pipeline auto-runs on save):
+- Verify `Assets/models/<buildingname>.vmdl` created
+- Verify `scripts/<buildingname>_asset_pipeline.json` scaffolded
+- Check material_remap paths match actual .vmat files in `Assets/materials/arena/`
+
+**Collision alignment** (critical for gameplay):
+- Use CollisionDebugViewer (`GameManager` in `main.scene`, set `AlwaysDraw = true`)
+- Visually verify: floor colliders match floor tops, wall colliders match wall bounds
+- Test in-game: walk on all surfaces, climb ladders, verify no clipping
+
+### Debugging Building Issues
+
+**Model won't load**:
+- Check `Assets/models/<buildingname>.vmdl` exists
+- Verify prefab ModelRenderer.Model points to correct vmdl path
+- Confirm material_remap points to existing .vmat files (run pipeline if error)
+
+**Players fall through floors**:
+- Enable CollisionDebugViewer to see wireframe boxes
+- Check Collision_Floor_* boxes: `Scale` and `Center` must cover entire walkable area
+- Verify no gaps between collision boxes
+
+**Can't climb ladder**:
+- Ladder position must match visual ladder geometry in model
+- LadderVolume.TopExit offset must be non-zero (e.g., not 0,0,0)
+- Trigger collider must overlap ladder (use CollisionDebugViewer to verify)
+
+**Ladder clips into geometry on exit**:
+- Recalculate TopExit offset: should place player at the adjacent floor height
+- Example: if loft floor is at height 360 and ladder is at height 185, TopExit should be (0, 0, 175) to exit at height 185+175=360
+
+### Replicating the Pattern (House_Small, Water Tower, etc.)
+
+For each new building:
+
+1. **Create Blender file** in `environment_model.blend/<buildingname>.blend`
+   - Use same axis/scale conventions (-Y forward, +Z up, 0.0254 global scale)
+   - Organize by floor: separate objects for each walkable surface
+   - Assign material slot names explicitly
+
+2. **Save to trigger pipeline**
+   - Pipeline auto-scaffolds `scripts/<buildingname>_asset_pipeline.json`
+   - Verify material_remap points to existing arena materials
+   - Re-run pipeline if material paths need updating
+
+3. **Update/create prefab** (`Assets/prefabs/environment/<BuildingName>.prefab`)
+   - Single Model_Visual child with ModelRenderer → new vmdl
+   - Collision children matching walkable surfaces
+   - LadderVolume components for vertical access (if applicable)
+   - Zone triggers for each gameplay area
+
+4. **Test in-game**
+   - Load main.scene
+   - Use CollisionDebugViewer to verify collision alignment
+   - Walk/climb/jump to validate gameplay feel
+   - Verify drone can see intended surfaces, not others
+
+### References in Code
+
+- **LadderVolume** (`Code/Game/LadderVolume.cs`): Configure entry/exit only; do not modify logic
+- **CollisionDebugViewer** (`Code/Game/CollisionDebugViewer.cs`): Set `AlwaysDraw = true` for debugging
+- **AutoWire** (`Code/code/Wiring/AutoWire.cs`): Resolves prefab references by name; don't use for buildings
+
+---
+
 ## What not to do
 
 - Don't rename public components, prefabs, or assets unless the user asks.

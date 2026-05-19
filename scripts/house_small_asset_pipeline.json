@@ -1,0 +1,29 @@
+{
+  "source_blend": "environment_model.blend/house_small.blend",
+  "root_object": "HouseSmall_Root",
+  "target_fbx": "Assets/models/house_small.fbx",
+  "target_vmdl": "Assets/models/house_small.vmdl",
+  "model_resource_path": "models/house_small.vmdl",
+  "combine_meshes": true,
+  "combined_object_name": "HouseSmallMesh",
+  "material_remap": {
+    "Material_Brick": "materials/arena/concrete_wall.vmat",
+    "Material_Concrete": "materials/arena/concrete_wall.vmat",
+    "Material_Glass": "materials/arena/asphalt_cover.vmat",
+    "Material_Metal": "materials/arena/metal_pad.vmat",
+    "Material_Wood": "materials/arena/asphalt_cover.vmat"
+  },
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
+  "verify_fbx": true,
+  "required_object": [
+    "HouseSmallMesh"
+  ],
+  "object_type": [
+    "EMPTY",
+    "MESH"
+  ],
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z"
+}
