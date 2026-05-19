@@ -472,6 +472,8 @@
           "__guid": "11111111-0001-7501-0000-000000000001",
           "__enabled": true,
           "Flags": 0,
+          "LoopDurationSeconds": 16,
+          "LoopOverlapSeconds": 1.25,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -505,6 +507,8 @@
           "__guid": "11111111-0001-7521-0000-000000000001",
           "__enabled": true,
           "Flags": 0,
+          "LoopDurationSeconds": 32,
+          "LoopOverlapSeconds": 1,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -512,7 +516,77 @@
           "OnComponentStart": null,
           "OnComponentUpdate": null,
           "Sound": "sounds/ambient_birds_chirping.sound",
-          "VolumeScale": 0.85
+          "VolumeScale": 0.72
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "11111111-0001-7530-0000-000000000001",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "AmbientBirdsCanopyFar",
+      "Position": "-1800,2600,380",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "DroneVsPlayers.AmbientSound",
+          "__guid": "11111111-0001-7531-0000-000000000001",
+          "__enabled": true,
+          "Flags": 0,
+          "LoopDurationSeconds": 36,
+          "LoopOverlapSeconds": 1.1,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "Sound": "sounds/ambient_birds_canopy_far.sound",
+          "VolumeScale": 0.62
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "11111111-0001-7540-0000-000000000001",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "AmbientCrowsDistant",
+      "Position": "3600,-2200,420",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "DroneVsPlayers.AmbientSound",
+          "__guid": "11111111-0001-7541-0000-000000000001",
+          "__enabled": true,
+          "Flags": 0,
+          "LoopDurationSeconds": 44,
+          "LoopOverlapSeconds": 0.8,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "Sound": "sounds/ambient_crows_distant.sound",
+          "VolumeScale": 0.58
         }
       ],
       "Children": []

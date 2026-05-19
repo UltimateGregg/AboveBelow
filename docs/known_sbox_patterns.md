@@ -467,6 +467,7 @@ public void TakeDamage(DamageInfo info)
 - Import or copy usable stock WAVs into `Assets/sounds/`, wrap them in local `.sound` files, and reference `sounds/example.sound` from C#, prefabs, and scenes.
 - For project-specific local fallbacks, run `python scripts/audio/generate_project_sounds.py --root .`. The generator imports known stock WAVs first, then uses deterministic layered synthesis, filtered noise, envelopes, and per-cue peak targets instead of one-off broad-spectrum noise bursts.
 - Ambient scene beds need extra restraint: keep intentional wind and bird cues, but avoid always-on broad hiss layers and stock MP3 ambience in `main.scene`. `ambient_light_wind.sound` should use the local guarded WAV source, and bird ambience should not carry a continuous synthetic noise bed behind the chirps.
+- For ambient beds with obvious loop seams, use `AmbientSound.LoopDurationSeconds` and `LoopOverlapSeconds` on the scene emitter so the next pass starts under the end of the current pass. Keep the values aligned with the source WAV length and guarded by `ambient_noise_audit.ps1`.
 - Run `scripts\agents\run_agent_checks.ps1 -Suite sound -ShowInfo` after wiring changes so local wrappers, ambient-noise guards, direct mounted-reference bans, and raw source files stay aligned.
 
 ### Attached Held-Item Sounds
@@ -481,4 +482,4 @@ public void TakeDamage(DamageInfo info)
 ---
 
 Last Updated: May 18, 2026
-Version: 1.7 - Added host-authoritative hitscan and code-driven child object guidance
+Version: 1.8 - Added ambient loop-overlap guidance

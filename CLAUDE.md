@@ -36,7 +36,7 @@ A `.blend` change only reaches s&box once it's saved AND processed by the pipeli
 
 After any Blender modeling work that should land in-game:
 
-1. **Save** the `.blend` to `<group>_model.blend/<assetname>.blend` (e.g., `weapons_model.blend/watertower.blend`). Use the `mcp__blender_stdio__blender_save_file` tool, or call `bpy.ops.wm.save_as_mainfile(filepath="<absolute path>")` via `execute_blender_code`. Do not skip this step.
+1. **Save** the `.blend` to `<group>_model.blend/<assetname>.blend` (e.g., `environment_model.blend/watertower.blend`). Use the `mcp__blender_stdio__blender_save_file` tool, or call `bpy.ops.wm.save_as_mainfile(filepath="<absolute path>")` via `execute_blender_code`. Do not skip this step.
 2. The hook fires on save. If `scripts/<assetname>_asset_pipeline.json` doesn't exist, it gets scaffolded automatically (axis -Y/Z, scale 0.0254, target paths under `Assets/models/`, material slots mapped to `materials/<lowercased_slot>.vmat` with a leading `M_` stripped).
 3. **Verify** that `Assets/models/<assetname>.vmdl` and `Assets/models/<assetname>.fbx` exist after the hook completes. Read the hook's success/failure notification. On failure, run the pipeline manually and read the error:
    ```powershell

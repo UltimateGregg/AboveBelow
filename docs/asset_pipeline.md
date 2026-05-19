@@ -154,7 +154,7 @@ python .\scripts\asset_pipeline.py --help
 ## Weapon Asset Example
 
 `scripts/assault_rifle_m4_asset_pipeline.json` is the first weapon-specific
-config. It exports `weapons_model.blend/assault_rifle_m4.blend` to
+config. It exports `weapons_model.blend/assault_rifle_m4_realistic.blend` to
 `Assets/models/weapons/assault_rifle_m4.fbx`, writes the matching `.vmdl`, and
 updates the standalone `Assets/prefabs/assault_rifle_m4.prefab` visual renderer.
 

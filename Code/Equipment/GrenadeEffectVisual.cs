@@ -12,30 +12,25 @@ public enum GrenadeEffectKind
 }
 
 /// <summary>
-/// Fallback visual feedback for grenade detonations when no effect prefab is
-/// wired. It uses small dev-box fragments so the effect remains asset-light and
-/// works in plain blockout scenes.
+/// Typed fallback feedback for grenade detonations when no stock effect prefab
+/// is available. The primary path should still be a wired prefab; this keeps
+/// playtests readable if a mounted stock asset cannot be loaded.
 /// </summary>
 [Title( "Grenade Effect Visual" )]
 [Category( "Drone vs Players/Equipment" )]
 [Icon( "auto_awesome" )]
 public sealed class GrenadeEffectVisual : Component
 {
-	struct Piece
+	struct LightPulse
 	{
-		public GameObject Object;
-		public ModelRenderer Renderer;
-		public Vector3 Start;
-		public Vector3 Velocity;
-		public Rotation BaseRotation;
-		public float Spin;
+		public PointLight Light;
+		public float Radius;
 		public Color Color;
 	}
 
-	readonly List<Piece> _pieces = new();
-	float _spawnTime;
+	readonly List<LightPulse> _lights = new();
+	TimeSince _timeSinceSpawn;
 	float _lifetime = 1.5f;
-	GrenadeEffectKind _kind;
 
 	public static void Spawn( Vector3 center, GrenadeEffectKind kind, float radius )
 	{
@@ -51,106 +46,151 @@ public sealed class GrenadeEffectVisual : Component
 
 	void Configure( GrenadeEffectKind kind, float radius )
 	{
-		_kind = kind;
-		_spawnTime = Time.Now;
+		_timeSinceSpawn = 0f;
 		_lifetime = kind switch
 		{
-			GrenadeEffectKind.Chaff => 3.0f,
-			GrenadeEffectKind.Emp => 2.2f,
-			_ => 1.1f
+			GrenadeEffectKind.Chaff => 2.8f,
+			GrenadeEffectKind.Emp => 1.7f,
+			_ => 1.3f
 		};
 
-		var count = kind switch
+		switch ( kind )
 		{
-			GrenadeEffectKind.Chaff => 54,
-			GrenadeEffectKind.Emp => 36,
-			_ => 30
-		};
-
-		var color = kind switch
-		{
-			GrenadeEffectKind.Chaff => new Color( 0.78f, 0.9f, 1f, 0.92f ),
-			GrenadeEffectKind.Emp => new Color( 0.18f, 0.9f, 1f, 0.82f ),
-			_ => new Color( 1f, 0.48f, 0.14f, 0.95f )
-		};
-
-		var maxBurst = MathF.Min( radius * 0.32f, kind == GrenadeEffectKind.Frag ? 180f : 260f );
-		var random = new System.Random( GameObject.Id.GetHashCode() );
-		var model = Model.Load( "models/dev/box.vmdl" );
-
-		for ( int i = 0; i < count; i++ )
-		{
-			var child = new GameObject( GameObject, true, "Effect Piece" )
-			{
-				LocalPosition = RandomOffset( random, kind, maxBurst * 0.14f ),
-				LocalRotation = Rotation.From( Rand( random, 0f, 360f ), Rand( random, 0f, 360f ), Rand( random, 0f, 360f ) ),
-				LocalScale = RandomScale( random, kind )
-			};
-
-			var renderer = child.Components.Create<ModelRenderer>();
-			renderer.Model = model;
-			renderer.Tint = color;
-
-			_pieces.Add( new Piece
-			{
-				Object = child,
-				Renderer = renderer,
-				Start = child.LocalPosition,
-				Velocity = RandomOffset( random, kind, maxBurst ) / _lifetime,
-				BaseRotation = child.LocalRotation,
-				Spin = Rand( random, -540f, 540f ),
-				Color = color
-			} );
+			case GrenadeEffectKind.Chaff:
+				CreateSmokeBurst( "Chaff Smoke", new Color( 0.72f, 0.86f, 0.95f, 0.75f ), radius * 0.28f, 54, 2.6f );
+				CreateSparkBurst( "Chaff Metallic Flash", new Color( 0.9f, 0.97f, 1f, 0.95f ), radius * 0.18f, 32, 0.55f );
+				CreateLightPulse( new Color( 0.6f, 0.9f, 1f, 1f ), MathF.Min( radius * 0.45f, 320f ) );
+				break;
+			case GrenadeEffectKind.Emp:
+				CreateRingBurst( "EMP Ring", new Color( 0.18f, 0.9f, 1f, 0.9f ), radius * 0.42f, 18, 0.9f );
+				CreateSparkBurst( "EMP Spark Pulse", new Color( 0.35f, 0.95f, 1f, 1f ), radius * 0.24f, 44, 0.7f );
+				CreateLightPulse( new Color( 0.1f, 0.78f, 1f, 1f ), MathF.Min( radius * 0.55f, 620f ) );
+				break;
+			default:
+				CreateFlashBurst( "Frag Fireball", new Color( 1f, 0.48f, 0.12f, 0.95f ), radius * 0.24f, 18, 0.45f );
+				CreateSmokeBurst( "Frag Smoke", new Color( 0.28f, 0.26f, 0.23f, 0.72f ), radius * 0.32f, 38, 1.4f );
+				CreateSparkBurst( "Frag Sparks", new Color( 1f, 0.72f, 0.24f, 1f ), radius * 0.2f, 26, 0.65f );
+				CreateLightPulse( new Color( 1f, 0.45f, 0.16f, 1f ), MathF.Min( radius * 0.7f, 360f ) );
+				break;
 		}
+	}
+
+	void CreateFlashBurst( string name, Color color, float scale, int count, float lifetime )
+	{
+		var child = CreateParticleObject( name, color, scale, count, lifetime );
+		var emitter = child.Components.Create<ParticleSphereEmitter>();
+		emitter.Burst = count;
+		emitter.Duration = 0.08f;
+		emitter.Loop = false;
+		emitter.DestroyOnEnd = true;
+		emitter.Radius = MathF.Max( 2f, scale * 0.05f );
+		emitter.Velocity = MathF.Max( 80f, scale * 1.8f );
+	}
+
+	void CreateSmokeBurst( string name, Color color, float scale, int count, float lifetime )
+	{
+		var child = CreateParticleObject( name, color, scale, count, lifetime );
+		var emitter = child.Components.Create<ParticleConeEmitter>();
+		emitter.Burst = count;
+		emitter.Duration = 0.12f;
+		emitter.Loop = false;
+		emitter.DestroyOnEnd = true;
+		emitter.ConeAngle = 70f;
+		emitter.ConeFar = MathF.Max( 24f, scale * 0.35f );
+		emitter.ConeNear = 2f;
+		emitter.InVolume = true;
+		emitter.VelocityMultiplier = 0.55f;
+		emitter.VelocityRandom = 0.5f;
+	}
+
+	void CreateSparkBurst( string name, Color color, float scale, int count, float lifetime )
+	{
+		var child = CreateParticleObject( name, color, scale, count, lifetime );
+		var emitter = child.Components.Create<ParticleSphereEmitter>();
+		emitter.Burst = count;
+		emitter.Duration = 0.05f;
+		emitter.Loop = false;
+		emitter.DestroyOnEnd = true;
+		emitter.Radius = MathF.Max( 1f, scale * 0.02f );
+		emitter.Velocity = MathF.Max( 180f, scale * 2.8f );
+	}
+
+	void CreateRingBurst( string name, Color color, float scale, int count, float lifetime )
+	{
+		var child = CreateParticleObject( name, color, scale, count, lifetime );
+		child.LocalRotation = Rotation.From( 90f, 0f, 0f );
+
+		var emitter = child.Components.Create<ParticleConeEmitter>();
+		emitter.Burst = count;
+		emitter.Duration = 0.06f;
+		emitter.Loop = false;
+		emitter.DestroyOnEnd = true;
+		emitter.ConeAngle = 88f;
+		emitter.ConeFar = MathF.Max( 60f, scale * 0.5f );
+		emitter.ConeNear = MathF.Max( 12f, scale * 0.12f );
+		emitter.OnEdge = true;
+		emitter.VelocityMultiplier = 1.1f;
+	}
+
+	GameObject CreateParticleObject( string name, Color color, float scale, int count, float lifetime )
+	{
+		var child = new GameObject( GameObject, true, name )
+		{
+			LocalPosition = Vector3.Zero
+		};
+
+		var effect = child.Components.Create<ParticleEffect>();
+		effect.MaxParticles = Math.Max( 1, count );
+		effect.Lifetime = MathF.Max( 0.05f, lifetime );
+		effect.ApplyColor = true;
+		effect.ApplyAlpha = true;
+		effect.ApplyRotation = true;
+		effect.ApplyShape = true;
+		effect.Tint = color;
+		effect.Brightness = MathF.Max( 1f, color.a * 3f );
+		effect.Scale = MathF.Max( 16f, scale );
+		effect.Damping = 0.5f;
+		effect.LocalSpace = 0f;
+
+		var renderer = child.Components.Create<ParticleSpriteRenderer>();
+		renderer.Additive = color.r > 0.75f || color.b > 0.75f;
+		renderer.Lighting = false;
+		renderer.DepthFeather = 24f;
+		renderer.Scale = 1f;
+
+		return child;
+	}
+
+	void CreateLightPulse( Color color, float radius )
+	{
+		var child = new GameObject( GameObject, true, "Explosion Light" );
+		var light = child.Components.Create<PointLight>();
+		light.LightColor = color;
+		light.Radius = MathF.Max( 64f, radius );
+
+		_lights.Add( new LightPulse
+		{
+			Light = light,
+			Radius = light.Radius,
+			Color = color
+		} );
 	}
 
 	protected override void OnUpdate()
 	{
-		var elapsed = Time.Now - _spawnTime;
-		var t = (elapsed / _lifetime).Clamp( 0f, 1f );
+		var t = ((float)_timeSinceSpawn / MathF.Max( 0.05f, _lifetime )).Clamp( 0f, 1f );
 		var fade = 1f - t;
 
-		for ( int i = 0; i < _pieces.Count; i++ )
+		for ( int i = 0; i < _lights.Count; i++ )
 		{
-			var piece = _pieces[i];
-			if ( !piece.Object.IsValid() || !piece.Renderer.IsValid() ) continue;
+			var pulse = _lights[i];
+			if ( !pulse.Light.IsValid() ) continue;
 
-			var lift = _kind == GrenadeEffectKind.Frag ? Vector3.Up * (60f * MathF.Sin( t * MathF.PI )) : Vector3.Up * (24f * MathF.Sin( t * MathF.PI ));
-			piece.Object.LocalPosition = piece.Start + piece.Velocity * elapsed + lift;
-			piece.Object.LocalRotation = piece.BaseRotation * Rotation.From( 0f, 0f, elapsed * piece.Spin );
-			piece.Renderer.Tint = new Color( piece.Color.r, piece.Color.g, piece.Color.b, piece.Color.a * fade );
+			pulse.Light.Radius = pulse.Radius * fade;
+			pulse.Light.LightColor = new Color( pulse.Color.r, pulse.Color.g, pulse.Color.b, pulse.Color.a * fade );
 		}
 
 		if ( t >= 1f )
 			GameObject.Destroy();
-	}
-
-	static Vector3 RandomOffset( System.Random random, GrenadeEffectKind kind, float radius )
-	{
-		var angle = Rand( random, 0f, MathF.PI * 2f );
-		var distance = Rand( random, radius * 0.25f, radius );
-		var vertical = kind switch
-		{
-			GrenadeEffectKind.Chaff => Rand( random, 12f, 120f ),
-			GrenadeEffectKind.Emp => Rand( random, 4f, 80f ),
-			_ => Rand( random, 10f, 150f )
-		};
-
-		return new Vector3( MathF.Cos( angle ) * distance, MathF.Sin( angle ) * distance, vertical );
-	}
-
-	static Vector3 RandomScale( System.Random random, GrenadeEffectKind kind )
-	{
-		return kind switch
-		{
-			GrenadeEffectKind.Chaff => new Vector3( Rand( random, 0.08f, 0.18f ), Rand( random, 0.08f, 0.18f ), Rand( random, 0.02f, 0.05f ) ),
-			GrenadeEffectKind.Emp => new Vector3( Rand( random, 0.05f, 0.12f ), Rand( random, 0.05f, 0.12f ), Rand( random, 0.05f, 0.12f ) ),
-			_ => new Vector3( Rand( random, 0.08f, 0.2f ), Rand( random, 0.08f, 0.2f ), Rand( random, 0.08f, 0.2f ) )
-		};
-	}
-
-	static float Rand( System.Random random, float min, float max )
-	{
-		return min + (float)random.NextDouble() * (max - min);
 	}
 }

@@ -15,7 +15,7 @@
 						[
 
 							{
-								from = "Shotgun_Metal.001.vmat"
+								from = "Shotgun_Metal.vmat"
 								to = "materials/shotgun_metal.vmat"
 							},
 
@@ -35,7 +35,7 @@
 							},
 
 							{
-								from = "Shotgun_Wood.001.vmat"
+								from = "Shotgun_Wood.vmat"
 								to = "materials/shotgun_wood.vmat"
 							},
 						]

@@ -155,6 +155,13 @@
                 </div>
                 <div class="hitmarker @HitmarkerClass"></div>
 
+                @if ( ShowSprintMeter )
+                {
+                    <div class="sprint-meter @SprintMeterClass">
+                        <div class="sprint-fill" style="width: @SprintMeterPercent%"></div>
+                    </div>
+                }
+
                 @foreach ( var arc in DamageArcs )
                 {
                     <div class="damage-arc" style="transform: rotate(@(arc.AngleDeg.ToString("0"))deg); opacity: @arc.Opacity.ToString("0.00")">
@@ -209,12 +216,6 @@
                     <div class="hp-fill" style="width: @HpFraction%"></div>
                 </div>
                 <div class="hp-text">@HpText</div>
-                @if ( ShowStamina )
-                {
-                    <div class="stamina-bar">
-                        <div class="stamina-fill" style="width: @StaminaPercent%"></div>
-                    </div>
-                }
             </div>
         }
 
@@ -1176,15 +1177,37 @@
 
     string HpText => LocalHealth is null ? "" : $"{LocalHealth.CurrentHealth:0} / {LocalHealth.MaxHealth:0}";
 
-    bool ShowStamina => LocalRole == PlayerRole.Soldier && LocalGroundController.IsValid();
+    bool ShowSprintMeter
+    {
+        get
+        {
+            var g = LocalGroundController;
+            if ( !ShowReticle || !g.IsValid() || LocalDroneViewActive )
+                return false;
 
-    int StaminaPercent
+            return g.IsSprinting || g.IsSprintLocked || g.Stamina < 0.995f;
+        }
+    }
+
+    int SprintMeterPercent
     {
         get
         {
             var g = LocalGroundController;
             if ( !g.IsValid() ) return 100;
             return (int)(g.Stamina.Clamp( 0f, 1f ) * 100f);
+        }
+    }
+
+    string SprintMeterClass
+    {
+        get
+        {
+            var g = LocalGroundController;
+            if ( !g.IsValid() ) return "";
+            if ( g.IsSprintLocked && g.Stamina <= 0.01f ) return "locked";
+            if ( g.Stamina < 0.995f && !g.IsSprinting ) return "recovering";
+            return "ready";
         }
     }
 
@@ -1238,8 +1261,7 @@
                 ShowJamWarning,
                 SelectedLoadoutTeam,
                 ShowScoreboard,
-                VignetteClass,
-                StaminaPercent,
+                HashCode.Combine( VignetteClass, ShowSprintMeter, SprintMeterPercent ),
                 Round?.LastWinnerInt ?? -1,
                 HashCode.Combine( RoundEndVisible, (int)(SunGlareOpacity * 100f), OptionsMenuOpen, ShowMainMenu )
             ),

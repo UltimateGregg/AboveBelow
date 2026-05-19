@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -307,6 +308,13 @@ def normalized_imported_material_name(name):
     # suffix as equivalent; keep strict mode strict for real source-name drift.
     return re.sub(r"\\.\\d{{3}}$", "", name)
 
+def material_names_match(actual, expected):
+    if actual == expected:
+        return True
+    if not strict_material_sources:
+        return actual.startswith(expected + ".")
+    return normalized_imported_material_name(actual) == normalized_imported_material_name(expected)
+
 root_name = config.get("root_object")
 root = bpy.data.objects.get(root_name) if root_name else None
 if root_name and root is None:
@@ -419,9 +427,7 @@ if config.get("verify_fbx", False):
         missing_materials = [
             name for name in sorted(material_remaps)
             if not any(
-                slot == name
-                or (strict_material_sources and normalized_imported_material_name(slot) == name)
-                or (not strict_material_sources and slot.startswith(name + "."))
+                material_names_match(slot, name)
                 for slot in material_names
             )
         ]
@@ -451,7 +457,9 @@ def run_blender_export(args: argparse.Namespace, root: Path) -> dict[str, Any]:
 
     backup(target_fbx, "asset-pipeline-export", root)
 
-    work_dir = root / ".tmpbuild" / "asset_pipeline"
+    work_dir = root / ".tmpbuild" / "asset_pipeline" / (
+        f"{target_fbx.stem}-{datetime.now().strftime('%Y%m%d%H%M%S%f')}-{os.getpid()}"
+    )
     work_dir.mkdir(parents=True, exist_ok=True)
     config_path = work_dir / "blender_export_config.json"
     result_path = work_dir / "blender_export_result.json"

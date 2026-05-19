@@ -41,7 +41,7 @@ Start a visible Blender window with the add-on enabled and the bridge started:
 To open a specific file visibly:
 
 ```powershell
-.\scripts\start_visible_blender_asset_toolkit.ps1 -BlendFile "C:\Programming\S&Box\weapons_model.blend\assault_rifle_m4.blend"
+.\scripts\start_visible_blender_asset_toolkit.ps1 -BlendFile "C:\Programming\S&Box\weapons_model.blend\assault_rifle_m4_realistic.blend"
 ```
 
 Inside Blender, open the right sidebar with `N`, choose the `S&Box` tab, and use

@@ -375,37 +375,223 @@ def ambient_light_wind() -> list[float]:
     return render(duration, build, peak=0.18)
 
 
-def add_bird_chirp(buf: list[float], start: float, freq: float, amp: float, seed: int) -> None:
+def add_modulated_bird_tone(buf: list[float], start: float, duration: float, freq_a: float, freq_b: float,
+                            amp: float, seed: int, vibrato_depth: float = 35.0, vibrato_rate: float = 18.0,
+                            attack: float = 0.006, release: float = 0.045, curve: float = 1.35,
+                            harmonics: tuple[float, ...] = (0.18, 0.06)) -> None:
     rng = random.Random(seed)
+    start_i = max(0, int(start * SAMPLE_RATE))
+    end_i = min(len(buf), int((start + duration) * SAMPLE_RATE))
+    phase = rng.uniform(0.0, TAU)
+    vibrato_phase = rng.uniform(0.0, TAU)
+    shimmer_phase = rng.uniform(0.0, TAU)
+    shimmer_rate = vibrato_rate * rng.uniform(1.8, 2.6)
+    for i in range(start_i, end_i):
+        t = i / SAMPLE_RATE
+        local = t - start
+        u = local / max(duration, 0.0001)
+        bend = math.sin(TAU * vibrato_rate * local + vibrato_phase) * vibrato_depth
+        shimmer = math.sin(TAU * shimmer_rate * local + shimmer_phase) * vibrato_depth * 0.22
+        freq = freq_a + (freq_b - freq_a) * u + bend + shimmer
+        phase += TAU * max(120.0, freq) / SAMPLE_RATE
+        value = math.sin(phase)
+        for idx, h_amp in enumerate(harmonics, start=2):
+            value += h_amp * math.sin(phase * idx + idx * 0.37)
+        buf[i] += value * amp * envelope(t, start, duration, attack, release, curve)
+
+
+def add_bird_note(buf: list[float], start: float, duration: float, freq_a: float, freq_b: float,
+                  amp: float, seed: int, distant: bool = False) -> None:
+    add_modulated_bird_tone(
+        buf,
+        start,
+        duration,
+        freq_a,
+        freq_b,
+        amp,
+        seed,
+        vibrato_depth=22.0 if distant else 42.0,
+        vibrato_rate=12.0 if distant else 22.0,
+        attack=0.010 if distant else 0.004,
+        release=0.070 if distant else 0.040,
+        curve=0.95 if distant else 1.45,
+        harmonics=(0.10, 0.025) if distant else (0.20, 0.07),
+    )
+    add_filtered_noise(
+        buf,
+        start,
+        duration * 0.85,
+        amp * (0.006 if distant else 0.010),
+        seed + 911,
+        lowpass=0.10 if distant else 0.16,
+        highpass=0.05,
+        attack=0.004,
+        release=0.030,
+        curve=2.0,
+    )
+    if distant:
+        add_modulated_bird_tone(
+            buf,
+            start + 0.055,
+            duration * 0.95,
+            freq_a * 0.985,
+            freq_b * 0.985,
+            amp * 0.13,
+            seed + 1201,
+            vibrato_depth=10.0,
+            vibrato_rate=9.0,
+            attack=0.015,
+            release=0.095,
+            curve=0.9,
+            harmonics=(0.04,),
+        )
+
+
+def add_songbird_phrase(buf: list[float], start: float, base_freq: float, amp: float,
+                        seed: int, style: str, distant: bool = False) -> None:
+    rng = random.Random(seed)
+    at = start
+
+    if style == "trill":
+        count = rng.randint(8, 13)
+        for n in range(count):
+            length = rng.uniform(0.025, 0.045)
+            freq = base_freq * rng.uniform(0.92, 1.12)
+            sweep = rng.uniform(-0.10, 0.16)
+            add_bird_note(buf, at, length, freq, freq * (1.0 + sweep), amp * rng.uniform(0.52, 0.82), seed + n * 37, distant)
+            at += rng.uniform(0.036, 0.058)
+        return
+
+    if style == "whistle":
+        count = rng.randint(3, 5)
+        for n in range(count):
+            length = rng.uniform(0.070, 0.140)
+            step = [0.0, 0.17, -0.10, 0.23, -0.18][n % 5]
+            freq = base_freq * (1.0 + step + rng.uniform(-0.035, 0.035))
+            add_bird_note(buf, at, length, freq, freq * rng.uniform(0.96, 1.08), amp * rng.uniform(0.70, 1.0), seed + n * 41, distant)
+            at += length + rng.uniform(0.060, 0.130)
+        return
+
+    if style == "chip":
+        count = rng.randint(4, 7)
+        for n in range(count):
+            length = rng.uniform(0.030, 0.065)
+            freq = base_freq * rng.uniform(0.78, 1.18)
+            add_bird_note(buf, at, length, freq, freq * rng.uniform(1.08, 1.32), amp * rng.uniform(0.62, 1.0), seed + n * 43, distant)
+            at += rng.uniform(0.080, 0.180)
+        return
+
+    count = rng.randint(5, 9)
+    for n in range(count):
+        length = rng.uniform(0.040, 0.090)
+        freq = base_freq * rng.uniform(0.82, 1.20)
+        sweep = rng.choice((-0.22, -0.12, 0.10, 0.18, 0.26))
+        add_bird_note(buf, at, length, freq, freq * (1.0 + sweep), amp * rng.uniform(0.55, 0.95), seed + n * 47, distant)
+        at += length + rng.uniform(0.025, 0.095)
+
+
+def add_crow_caw(buf: list[float], start: float, amp: float, seed: int) -> None:
+    rng = random.Random(seed)
+    at = start
     for n in range(rng.randint(2, 4)):
-        at = start + n * rng.uniform(0.055, 0.105)
-        length = rng.uniform(0.050, 0.095)
-        freq_a = freq * rng.uniform(0.86, 1.08)
-        freq_b = freq_a * rng.uniform(1.10, 1.38)
-        add_tone(buf, at, length, freq_a, freq_b, amp * rng.uniform(0.65, 1.0), attack=0.006, release=0.035, curve=1.7, harmonics=(0.22, 0.08))
-        add_filtered_noise(buf, at, length * 0.85, amp * 0.010, seed + n * 19, lowpass=0.18, highpass=0.08, attack=0.004, release=0.025, curve=2.0)
+        length = rng.uniform(0.22, 0.44)
+        freq = rng.uniform(420, 610)
+        add_modulated_bird_tone(
+            buf,
+            at,
+            length,
+            freq,
+            freq * rng.uniform(0.72, 0.92),
+            amp * rng.uniform(0.75, 1.0),
+            seed + n * 53,
+            vibrato_depth=55.0,
+            vibrato_rate=rng.uniform(6.0, 10.0),
+            attack=0.025,
+            release=0.150,
+            curve=0.65,
+            harmonics=(0.38, 0.18, 0.08),
+        )
+        add_filtered_noise(buf, at + 0.015, length * 0.80, amp * 0.12, seed + n * 59, lowpass=0.050, highpass=0.018, attack=0.020, release=0.130, curve=0.8)
+        add_modulated_bird_tone(
+            buf,
+            at + 0.090,
+            length * 0.85,
+            freq * 0.96,
+            freq * 0.76,
+            amp * 0.16,
+            seed + n * 61,
+            vibrato_depth=22.0,
+            vibrato_rate=5.0,
+            attack=0.030,
+            release=0.190,
+            curve=0.7,
+            harmonics=(0.16,),
+        )
+        at += length + rng.uniform(0.20, 0.48)
 
 
 def ambient_birds_chirping() -> list[float]:
-    duration = 12.0
+    duration = 32.0
 
     def build(b):
-        for start, freq, amp, seed in [
-            (0.80, 3300, 0.055, 3411),
-            (2.15, 4100, 0.050, 3412),
-            (3.90, 2900, 0.042, 3413),
-            (5.75, 4550, 0.048, 3414),
-            (8.05, 3600, 0.052, 3415),
-            (10.35, 3950, 0.045, 3416),
-        ]:
-            add_bird_chirp(b, start, freq, amp, seed)
+        phrases = [
+            (1.10, 3150, 0.044, 3411, "whistle"),
+            (3.85, 4680, 0.034, 3412, "trill"),
+            (6.70, 3860, 0.036, 3413, "warble"),
+            (10.20, 5220, 0.030, 3414, "chip"),
+            (13.60, 2880, 0.040, 3415, "whistle"),
+            (17.45, 4420, 0.032, 3416, "warble"),
+            (21.30, 4960, 0.029, 3417, "trill"),
+            (25.55, 3600, 0.035, 3418, "chip"),
+            (29.10, 4200, 0.026, 3419, "warble"),
+        ]
+        for start, freq, amp, seed, style in phrases:
+            add_songbird_phrase(b, start, freq, amp, seed, style)
 
-    return render(duration, build, peak=0.22)
+    return render(duration, build, peak=0.20)
+
+
+def ambient_birds_canopy_far() -> list[float]:
+    duration = 36.0
+
+    def build(b):
+        phrases = [
+            (0.90, 2500, 0.020, 3511, "whistle"),
+            (3.60, 3300, 0.018, 3512, "warble"),
+            (5.85, 4150, 0.015, 3513, "trill"),
+            (9.40, 2800, 0.019, 3514, "chip"),
+            (12.70, 3650, 0.016, 3515, "warble"),
+            (15.20, 2350, 0.019, 3516, "whistle"),
+            (19.10, 4450, 0.014, 3517, "trill"),
+            (23.35, 3100, 0.017, 3518, "chip"),
+            (27.80, 3950, 0.015, 3519, "warble"),
+            (32.10, 2600, 0.017, 3520, "whistle"),
+        ]
+        for start, freq, amp, seed, style in phrases:
+            add_songbird_phrase(b, start, freq, amp, seed, style, distant=True)
+
+    return render(duration, build, peak=0.14)
+
+
+def ambient_crows_distant() -> list[float]:
+    duration = 44.0
+
+    def build(b):
+        for start, amp, seed in [
+            (4.40, 0.038, 3611),
+            (18.70, 0.031, 3612),
+            (34.20, 0.035, 3613),
+        ]:
+            add_crow_caw(b, start, amp, seed)
+
+    return render(duration, build, peak=0.16)
 
 
 SOUNDS = {
     "ambient_battlefield.wav": ambient_battlefield,
+    "ambient_birds_canopy_far.wav": ambient_birds_canopy_far,
     "ambient_light_wind.wav": ambient_light_wind,
+    "ambient_crows_distant.wav": ambient_crows_distant,
     "ambient_tree_rustle.wav": ambient_tree_rustle,
     "ambient_birds_chirping.wav": ambient_birds_chirping,
     "assault_rifle_fire.wav": rifle_world,

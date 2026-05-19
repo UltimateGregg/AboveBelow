@@ -1,5 +1,5 @@
 {
-  "source_blend": "weapons_model.blend/watertower.blend",
+  "source_blend": "environment_model.blend/watertower.blend",
   "target_fbx": "Assets/models/watertower.fbx",
   "target_vmdl": "Assets/models/watertower.vmdl",
   "model_resource_path": "models/watertower.vmdl",

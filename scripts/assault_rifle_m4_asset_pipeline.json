@@ -1,5 +1,5 @@
 {
-  "source_blend": "weapons_model.blend/assault_rifle_m4.blend",
+  "source_blend": "weapons_model.blend/assault_rifle_m4_realistic.blend",
   "root_object": "AssaultRifle_M4",
   "target_fbx": "Assets/models/weapons/assault_rifle_m4.fbx",
   "target_vmdl": "Assets/models/weapons/assault_rifle_m4.vmdl",
@@ -25,6 +25,7 @@
   "material_remap": {
     "M4_Accent": "materials/weapons/m4_accent.vmat",
     "M4_BareMetal": "materials/weapons/m4_bare_metal.vmat",
+    "M4_DarkRecess": "materials/weapons/m4_rubber.vmat",
     "M4_Markings": "materials/weapons/m4_markings.vmat",
     "M4_Polymer": "materials/weapons/m4_polymer.vmat",
     "M4_Receiver": "materials/weapons/m4_receiver.vmat",

@@ -1,8 +1,8 @@
 {
   "UI": false,
-  "Volume": "0.24",
+  "Volume": "0.20",
   "Pitch": "1",
-  "Decibels": 46,
+  "Decibels": 44,
   "SelectionMode": "Random",
   "Sounds": [ "sounds/ambient_birds_chirping.wav" ],
   "Occlusion": false,
@@ -11,7 +11,7 @@
   "Transmission": false,
   "OcclusionRadius": 0,
   "DistanceAttenuation": true,
-  "Distance": 10000,
+  "Distance": 9500,
   "Falloff": [
     { "x": 0, "y": 1, "in": 0, "out": -1, "mode": "Mirrored" },
     { "x": 0.5, "y": 0.45, "in": 0, "out": -0.5, "mode": "Mirrored" },

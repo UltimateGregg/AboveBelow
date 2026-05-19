@@ -103,7 +103,7 @@ Blender or asset pipeline changes:
 powershell -ExecutionPolicy Bypass -File scripts/agents/new_asset_brief.ps1 -Name my_asset -Category weapon
 powershell -ExecutionPolicy Bypass -File scripts/agents/blender_quality_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/material_texture_audit.ps1
-powershell -ExecutionPolicy Bypass -File scripts/agents/asset_visual_review.ps1 -Blend weapons_model.blend/assault_rifle_m4.blend
+powershell -ExecutionPolicy Bypass -File scripts/agents/asset_visual_review.ps1 -Blend weapons_model.blend/assault_rifle_m4_realistic.blend
 python scripts/texture_contact_sheet.py --config scripts/terrain_assets_asset_pipeline.json --out screenshots/asset_previews/terrain_assets_texture_sheet.png
 powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/modeldoc_audit.ps1 -ShowInfo

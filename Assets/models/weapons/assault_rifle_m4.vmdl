@@ -25,6 +25,11 @@
 							},
 
 							{
+								from = "M4_DarkRecess"
+								to = "materials/weapons/m4_rubber.vmat"
+							},
+
+							{
 								from = "M4_Markings"
 								to = "materials/weapons/m4_markings.vmat"
 							},

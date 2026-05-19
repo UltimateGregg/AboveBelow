@@ -79,8 +79,10 @@ public sealed class GroundPlayerController : Component
 	[Property, Range( 0f, 30f )]   public float SlideCameraRollDegrees { get; set; } = 8f;
 
 	// ---- Stamina ----
-	[Property, Range( 1f, 30f )] public float StaminaMaxSeconds { get; set; } = 6f;
-	[Property, Range( 1f, 30f )] public float StaminaRefillSeconds { get; set; } = 4f;
+	[Property, Range( 1f, 30f )] public float StaminaMaxSeconds { get; set; } = 4f;
+	[Property, Range( 1f, 30f )] public float StaminaRefillSeconds { get; set; } = 3f;
+	[Property, Range( 0f, 5f )] public float SprintCooldownSeconds { get; set; } = 0.75f;
+	[Property, Range( 0f, 1f )] public float StaminaResumeThreshold { get; set; } = 0.20f;
 	[Property, Range( 0f, 1f )]  public float StaminaMinToSprint { get; set; } = 0.10f;
 
 	// ---- Ladders ----
@@ -93,6 +95,7 @@ public sealed class GroundPlayerController : Component
 
 	[Sync] public Angles EyeAngles { get; set; }
 	[Sync] public bool IsSprinting { get; set; }
+	[Sync] public bool IsSprintLocked { get; set; }
 	[Sync] public float Stamina { get; set; } = 1f;          // 0..1, replicated for HUD
 	[Sync] public bool IsCrouched { get; set; }              // for animgraph / observers
 	[Sync] public bool IsSliding { get; set; }
@@ -126,6 +129,12 @@ public sealed class GroundPlayerController : Component
 	Vector3 _slideDirection;
 	bool _prevDuckDown;
 	bool _crouchToggled;
+	bool _sprintToggled;
+	bool _staminaInitialized;
+	bool _recoverStaminaAfterDisabled;
+	float _sprintCooldownRemainingOnDisable;
+	TimeSince _timeSinceDisabled = 999f;
+	TimeSince _timeSinceSprintLocked = 999f;
 	float _ladderDetachCooldown;
 
 	// Suppression state (local-only). Set by HitscanWeapon when a bullet
@@ -176,7 +185,33 @@ public sealed class GroundPlayerController : Component
 			EyeAngles = ee;
 			_cachedCamera.FieldOfView = BaseFovDegrees;
 		}
-		Stamina = 1f;
+		if ( !_staminaInitialized )
+		{
+			Stamina = 1f;
+			IsSprintLocked = false;
+			_timeSinceSprintLocked = 999f;
+			_staminaInitialized = true;
+		}
+		else if ( _recoverStaminaAfterDisabled )
+		{
+			RecoverStaminaAfterDisabled( (float)_timeSinceDisabled );
+			_recoverStaminaAfterDisabled = false;
+		}
+	}
+
+	protected override void OnDisabled()
+	{
+		base.OnDisabled();
+		if ( IsProxy ) return;
+
+		_sprintCooldownRemainingOnDisable = IsSprintLocked
+			? Math.Max( 0f, SprintCooldownSeconds - (float)_timeSinceSprintLocked )
+			: 0f;
+		_timeSinceDisabled = 0f;
+		_recoverStaminaAfterDisabled = true;
+		ClearSprintIntent();
+		WishVelocity = Vector3.Zero;
+		_adsRequested = false;
 	}
 
 	protected override void OnUpdate()
@@ -187,17 +222,30 @@ public sealed class GroundPlayerController : Component
 		{
 			if ( LocalOptionsState.ConsumesGameplayInput )
 			{
-				IsSprinting = false;
+				ClearSprintIntent();
 				_adsRequested = false;
 			}
 			else
 			{
 				try { HandleLook(); } catch ( System.Exception e ) { Log.Warning( $"HandleLook error: {e.Message}" ); }
 
-				// Sprint requested? Gate on stamina (only if locally-owned).
-				var wantsSprint = Input.Down( "Run" );
-				var hasStamina = Stamina > StaminaMinToSprint;
-				IsSprinting = wantsSprint && hasStamina && !IsCrouched && !IsSliding && !IsClimbingLadder;
+				// Run is a toggle: pressing it latches sprint until pressed again or interrupted.
+				if ( Input.Pressed( "Run" ) )
+					_sprintToggled = !_sprintToggled;
+
+				var hasMoveInput = MathF.Abs( Input.AnalogMove.x ) > 0.05f || MathF.Abs( Input.AnalogMove.y ) > 0.05f;
+				if ( !hasMoveInput )
+					_sprintToggled = false;
+
+				var hasStamina = !IsSprintLocked && Stamina > StaminaMinToSprint;
+				if ( !hasStamina )
+					_sprintToggled = false;
+
+				var canSprint = hasStamina && !IsCrouched && !IsSliding && !IsClimbingLadder;
+				if ( !canSprint && (IsCrouched || IsSliding || IsClimbingLadder) )
+					_sprintToggled = false;
+
+				IsSprinting = _sprintToggled && hasMoveInput && canSprint;
 			}
 		}
 
@@ -361,7 +409,7 @@ public sealed class GroundPlayerController : Component
 		if ( inputBlocked )
 		{
 			WishVelocity = Vector3.Zero;
-			IsSprinting = false;
+			ClearSprintIntent();
 			_prevDuckDown = false;
 		}
 		else
@@ -382,7 +430,7 @@ public sealed class GroundPlayerController : Component
 		}
 		else if ( TryMoveOnLadder( cc ) )
 		{
-			Stamina = Math.Min( 1f, Stamina + Time.Delta / Math.Max( 0.1f, StaminaRefillSeconds ) );
+			UpdateStamina( false );
 			_wasOnGround = false;
 			return;
 		}
@@ -406,7 +454,7 @@ public sealed class GroundPlayerController : Component
 				_slideDirection = horizVel.Normal;
 				// Initial boost
 				cc.Velocity = (_slideDirection * horizVel.Length * SlideInitialBoost).WithZ( cc.Velocity.z );
-				IsSprinting = false;
+				ClearSprintIntent();
 			}
 		}
 
@@ -478,12 +526,53 @@ public sealed class GroundPlayerController : Component
 
 		// Stamina: drain while sprinting (only if actually moving), refill otherwise.
 		var moving = cc.Velocity.WithZ( 0 ).Length > WalkSpeed * 0.5f;
-		if ( IsSprinting && moving )
-			Stamina = Math.Max( 0f, Stamina - Time.Delta / Math.Max( 0.1f, StaminaMaxSeconds ) );
-		else
-			Stamina = Math.Min( 1f, Stamina + Time.Delta / Math.Max( 0.1f, StaminaRefillSeconds ) );
+		UpdateStamina( moving );
 
 		_wasOnGround = cc.IsOnGround;
+	}
+
+	void ClearSprintIntent()
+	{
+		IsSprinting = false;
+		_sprintToggled = false;
+	}
+
+	void UpdateStamina( bool moving )
+	{
+		if ( IsSprinting && moving )
+		{
+			Stamina = Math.Max( 0f, Stamina - Time.Delta / Math.Max( 0.1f, StaminaMaxSeconds ) );
+			if ( Stamina <= 0f )
+			{
+				Stamina = 0f;
+				IsSprintLocked = true;
+				_timeSinceSprintLocked = 0f;
+				ClearSprintIntent();
+			}
+
+			return;
+		}
+
+		if ( IsSprintLocked && _timeSinceSprintLocked < SprintCooldownSeconds )
+			return;
+
+		Stamina = Math.Min( 1f, Stamina + Time.Delta / Math.Max( 0.1f, StaminaRefillSeconds ) );
+		if ( IsSprintLocked && Stamina >= StaminaResumeThreshold )
+			IsSprintLocked = false;
+	}
+
+	void RecoverStaminaAfterDisabled( float elapsedSeconds )
+	{
+		if ( elapsedSeconds <= 0f || Stamina >= 1f )
+			return;
+
+		var recoverySeconds = Math.Max( 0f, elapsedSeconds - _sprintCooldownRemainingOnDisable );
+		if ( recoverySeconds <= 0f )
+			return;
+
+		Stamina = Math.Min( 1f, Stamina + recoverySeconds / Math.Max( 0.1f, StaminaRefillSeconds ) );
+		if ( IsSprintLocked && Stamina >= StaminaResumeThreshold )
+			IsSprintLocked = false;
 	}
 
 	bool TryMoveOnLadder( CharacterController cc )
@@ -501,7 +590,7 @@ public sealed class GroundPlayerController : Component
 			return false;
 
 		IsClimbingLadder = true;
-		IsSprinting = false;
+		ClearSprintIntent();
 		IsSliding = false;
 		WishVelocity = Vector3.Zero;
 

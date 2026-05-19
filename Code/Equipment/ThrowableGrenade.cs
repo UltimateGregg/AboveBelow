@@ -22,6 +22,17 @@ public abstract class ThrowableGrenade : Component
 	[Property] public Vector3 ProjectileGravity { get; set; } = new( 0f, 0f, 800f );
 	[Property] public float ProjectileRestOffset { get; set; } = 2.5f;
 	[Property] public float ProjectileSpinDegreesPerSecond { get; set; } = 540f;
+	[Property] public float ProjectileColliderRadius { get; set; } = 5.5f;
+	[Property] public float ProjectileColliderLength { get; set; } = 18f;
+	[Property] public float ProjectileMass { get; set; } = 1.2f;
+	[Property] public float ProjectileLinearDamping { get; set; } = 0.18f;
+	[Property] public float ProjectileAngularDamping { get; set; } = 0.75f;
+	[Property] public float ProjectileElasticity { get; set; } = 0.32f;
+	[Property] public float ProjectileFriction { get; set; } = 0.8f;
+	[Property] public float ProjectileRollingResistance { get; set; } = 0.45f;
+	[Property] public float ProjectileSpinMin { get; set; } = 420f;
+	[Property] public float ProjectileSpinMax { get; set; } = 980f;
+	[Property] public float ProjectileOwnerCollisionGraceSeconds { get; set; } = 0.12f;
 
 	/// <summary>One-shot played at the thrower's position when the grenade leaves the hand.</summary>
 	[Property] public SoundEvent ThrowSound { get; set; }
@@ -209,8 +220,17 @@ public abstract class ThrowableGrenade : Component
 			velocity,
 			ProjectileGravity,
 			FuseSeconds,
-			ProjectileRestOffset,
-			ProjectileSpinDegreesPerSecond );
+			ProjectileColliderRadius,
+			ProjectileColliderLength,
+			ProjectileMass,
+			ProjectileLinearDamping,
+			ProjectileAngularDamping,
+			ProjectileElasticity,
+			ProjectileFriction,
+			ProjectileRollingResistance,
+			ProjectileSpinMin,
+			ProjectileSpinMax,
+			ProjectileOwnerCollisionGraceSeconds );
 
 		if ( Networking.IsActive )
 			projectileObject.NetworkSpawn();

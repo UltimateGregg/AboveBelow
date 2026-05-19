@@ -57,8 +57,11 @@ Invoke-GuardScript -RelativePath "scripts\check_loadout_slots.ps1" -ScriptArgs @
 Invoke-GuardScript -RelativePath "scripts\check_drone_kamikaze_primary.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_drone_weapon_arming.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_ground_crouch_toggle.ps1" -ScriptArgs @("-Root", $Root)
+Invoke-GuardScript -RelativePath "scripts\check_ground_sprint_toggle.ps1" -ScriptArgs @("-Root", $Root)
+Invoke-GuardScript -RelativePath "scripts\check_hud_sprint_meter.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_hud_damage_arc_attribution.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\agents\drone_propeller_spin_audit.ps1" -ScriptArgs @("-Root", $Root)
+Invoke-GuardScript -RelativePath "scripts\agents\grenade_physics_fx_audit.ps1" -ScriptArgs @("-Root", $Root)
 
 Write-AgentIssues -Issues $issues -ShowInfo:$ShowInfo
 exit (Get-AgentExitCode -Issues $issues -FailOnWarning:$FailOnWarning)

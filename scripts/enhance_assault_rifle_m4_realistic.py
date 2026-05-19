@@ -445,7 +445,7 @@ def add_surface_wear(root, mats):
     wear_zones = [
         {"name": "Receiver", "x": (-3.6, 3.2), "y": -0.825, "z": (1.0, 2.12), "count": 28},
         {"name": "Handguard", "x": (4.8, 12.8), "y": -1.005, "z": (1.0, 2.35), "count": 28},
-        {"name": "Magazine", "x": (-0.45, 0.85), "y": -0.6, "z": (-2.9, -0.9), "count": 20},
+        {"name": "Magazine", "x": (-0.45, 0.85), "y": -0.462, "z": (-2.9, -0.9), "count": 20},
         {"name": "Stock", "x": (-10.6, -7.1), "y": -0.72, "z": (0.8, 2.2), "count": 16},
     ]
 
@@ -462,7 +462,7 @@ def add_surface_wear(root, mats):
                 (length, 0.012, height),
                 mat,
                 0.001,
-                rot=(0.0, 0.0, random.uniform(-0.25, 0.25)),
+                rot=(0.0, random.uniform(-0.25, 0.25), 0.0),
                 parent=root,
             )
 

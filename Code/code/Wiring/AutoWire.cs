@@ -165,7 +165,30 @@ public class AutoWireHelper : Component
 		{
 			var frag = grenadeObject.Components.Get<FragGrenade>();
 			if ( frag != null )
-				frag.ExplosionPrefab = GameObject.GetPrefab( "models/effects/explosion_med.prefab" );
+			{
+				frag.ExplosionPrefab = ResolveFirstPrefab(
+					"particles/explosion/explosion_medium.prefab",
+					"prefabs/killstreaks/missile_explosion.prefab",
+					"prefabs/effects/explosion.prefab",
+					"models/effects/explosion_med.prefab" );
+			}
+
+			var chaff = grenadeObject.Components.Get<ChaffGrenade>();
+			if ( chaff != null )
+			{
+				chaff.EffectPrefab = ResolveFirstPrefab(
+					"prefabs/effects/muzzle_smoke.prefab",
+					"prefabs/helpers/smoke.prefab" );
+			}
+
+			var emp = grenadeObject.Components.Get<EmpGrenade>();
+			if ( emp != null )
+			{
+				emp.EffectPrefab = ResolveFirstPrefab(
+					"prefabs/effects/ring_explosion.prefab",
+					"prefabs/effects/ring_explosion_2.prefab",
+					"prefabs/effects/ring.prefab" );
+			}
 		}
 
 		// Wire the pilot's held drone/controller item if present.
@@ -185,6 +208,18 @@ public class AutoWireHelper : Component
 		}
 
 		Log.Info( $"Soldier prefab wiring complete: {path}" );
+	}
+
+	static GameObject ResolveFirstPrefab( params string[] paths )
+	{
+		foreach ( var path in paths )
+		{
+			var prefab = GameObject.GetPrefab( path );
+			if ( prefab.IsValid() )
+				return prefab;
+		}
+
+		return null;
 	}
 
 	static GameObject FindDescendantByName( GameObject root, string name )

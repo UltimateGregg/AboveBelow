@@ -80,6 +80,7 @@ function Add-AmbientNamedSoundRefs {
                     $Refs.Add([pscustomobject]@{
                         ObjectName = $name
                         Sound = [string]$component.Sound
+                        Component = $component
                     })
                 }
             }
@@ -91,11 +92,11 @@ function Add-AmbientNamedSoundRefs {
     }
 }
 
+$ambientRefs = New-Object System.Collections.Generic.List[object]
 $scenePath = Join-Path $Root "Assets\scenes\main.scene"
 if (Test-Path -LiteralPath $scenePath) {
     try {
         $sceneJson = Get-Content -LiteralPath $scenePath -Raw | ConvertFrom-Json
-        $ambientRefs = New-Object System.Collections.Generic.List[object]
         Add-AmbientNamedSoundRefs -Objects @($sceneJson.GameObjects) -Refs $ambientRefs
 
         foreach ($ref in $ambientRefs) {
@@ -110,6 +111,27 @@ if (Test-Path -LiteralPath $scenePath) {
                     Add-AgentIssue $issues "Error" "Ambient Noise" "Assets/scenes/main.scene" "Ambient emitter '$($ref.ObjectName)' uses MP3 source '$sourceText' through '$sound'." "Use a local WAV source for ambience so the sound suite can guard against broad hiss."
                 }
             }
+
+            if ($ref.ObjectName -eq "AmbientLightWind") {
+                $component = $ref.Component
+                $duration = 0.0
+                $overlap = 0.0
+                $hasDuration = $component.PSObject.Properties.Name -contains "LoopDurationSeconds"
+                $hasOverlap = $component.PSObject.Properties.Name -contains "LoopOverlapSeconds"
+                $parsedDuration = $hasDuration -and [double]::TryParse([string]$component.LoopDurationSeconds, [ref]$duration)
+                $parsedOverlap = $hasOverlap -and [double]::TryParse([string]$component.LoopOverlapSeconds, [ref]$overlap)
+
+                if (-not $parsedDuration -or $duration -lt 2.0) {
+                    Add-AgentIssue $issues "Error" "Ambient Noise" "Assets/scenes/main.scene" "AmbientLightWind does not declare a usable loop duration for overlap scheduling." "Set LoopDurationSeconds to the source WAV length so the next wind pass can start before the current one ends."
+                }
+
+                if (-not $parsedOverlap -or $overlap -lt 0.5) {
+                    Add-AgentIssue $issues "Error" "Ambient Noise" "Assets/scenes/main.scene" "AmbientLightWind does not overlap its loop restart enough to hide the seam." "Set LoopOverlapSeconds to at least 0.5 seconds; 1.25 seconds works well for the generated wind bed."
+                }
+                elseif ($parsedDuration -and $overlap -ge $duration) {
+                    Add-AgentIssue $issues "Error" "Ambient Noise" "Assets/scenes/main.scene" "AmbientLightWind loop overlap is not shorter than the loop duration." "Keep LoopOverlapSeconds below LoopDurationSeconds."
+                }
+            }
         }
 
         Add-AgentIssue $issues "Info" "Ambient Noise" "Assets/scenes/main.scene" "Checked $($ambientRefs.Count) AmbientSound scene emitter(s)."
@@ -120,6 +142,32 @@ if (Test-Path -LiteralPath $scenePath) {
 }
 else {
     Add-AgentIssue $issues "Error" "Ambient Noise" "Assets/scenes/main.scene" "Main scene is missing." "Restore the main scene before auditing ambient sound sources."
+}
+
+$requiredBirdLayers = @(
+    [pscustomobject]@{ ObjectName = "AmbientBirdsChirping"; Wrapper = "sounds/ambient_birds_chirping.sound"; Source = "sounds/ambient_birds_chirping.wav" },
+    [pscustomobject]@{ ObjectName = "AmbientBirdsCanopyFar"; Wrapper = "sounds/ambient_birds_canopy_far.sound"; Source = "sounds/ambient_birds_canopy_far.wav" },
+    [pscustomobject]@{ ObjectName = "AmbientCrowsDistant"; Wrapper = "sounds/ambient_crows_distant.sound"; Source = "sounds/ambient_crows_distant.wav" }
+)
+
+foreach ($layer in $requiredBirdLayers) {
+    $sources = @(Get-SoundSources -SoundPath $layer.Wrapper -Root $Root)
+    $normalizedSources = @($sources | ForEach-Object { ([string]$_).Replace("\", "/") })
+    if ($normalizedSources -notcontains $layer.Source) {
+        Add-AgentIssue $issues "Error" "Ambient Noise" "Assets/sounds/$($layer.Wrapper.Substring(7))" "Bird ambience layer '$($layer.Wrapper)' does not use guarded local WAV source '$($layer.Source)'." "Point the SoundEvent at the expected local WAV source."
+    }
+
+    $sourcePath = Resolve-LocalSoundSource -Source $layer.Source -Root $Root
+    if ($null -eq $sourcePath -or -not (Test-Path -LiteralPath $sourcePath)) {
+        Add-AgentIssue $issues "Error" "Ambient Noise" "Assets/sounds/$($layer.Source.Substring(7))" "Bird ambience source '$($layer.Source)' is missing." "Run scripts/audio/generate_project_sounds.py after updating the bird builders."
+    }
+
+    $sceneMatch = @($ambientRefs | Where-Object {
+        ([string]$_.ObjectName) -eq $layer.ObjectName -and ([string]$_.Sound).Replace("\", "/") -eq $layer.Wrapper
+    })
+    if ($sceneMatch.Count -eq 0) {
+        Add-AgentIssue $issues "Error" "Ambient Noise" "Assets/scenes/main.scene" "Missing bird ambience emitter '$($layer.ObjectName)' for '$($layer.Wrapper)'." "Keep the bird ambience spatially layered with local SoundEvent wrappers."
+    }
 }
 
 $windWrapper = Join-Path $Root "Assets\sounds\ambient_light_wind.sound"
@@ -146,9 +194,32 @@ if (Test-Path -LiteralPath $generatorPath) {
         Add-AgentIssue $issues "Error" "Ambient Noise" "scripts/audio/generate_project_sounds.py" "Generator still imports the stock ambient_light_wind.mp3 source." "Remove the stock MP3 import for scene ambience."
     }
 
+    foreach ($name in @("ambient_birds_chirping", "ambient_birds_canopy_far", "ambient_crows_distant")) {
+        if ($generatorText -notmatch "def\s+$name\s*\(\)\s*->\s*list\[float\]:") {
+            Add-AgentIssue $issues "Error" "Ambient Noise" "scripts/audio/generate_project_sounds.py" "Generator is missing bird ambience builder '$name'." "Keep near, far-canopy, and distant-crow bird layers reproducible."
+        }
+    }
+
+    foreach ($wavName in @("ambient_birds_chirping.wav", "ambient_birds_canopy_far.wav", "ambient_crows_distant.wav")) {
+        $escapedName = [regex]::Escape($wavName)
+        if ($generatorText -notmatch "`"$escapedName`"\s*:") {
+            Add-AgentIssue $issues "Error" "Ambient Noise" "scripts/audio/generate_project_sounds.py" "Generator SOUNDS map is missing '$wavName'." "Add the WAV to SOUNDS so regeneration keeps all bird layers current."
+        }
+    }
+
+    if ($generatorText -match 'def\s+add_bird_chirp\s*\(') {
+        Add-AgentIssue $issues "Error" "Ambient Noise" "scripts/audio/generate_project_sounds.py" "Generator still contains the old simple add_bird_chirp helper." "Use varied phrase builders so bird ambience does not regress to a short beep-like loop."
+    }
+
     $birdMatch = [regex]::Match($generatorText, 'def\s+ambient_birds_chirping\s*\(\)\s*->\s*list\[float\]:[\s\S]*?(?=\r?\ndef\s+|\r?\nSOUNDS\s*=)')
     if ($birdMatch.Success -and $birdMatch.Value -match 'add_filtered_noise\(\s*b\s*,\s*0\.0\s*,\s*duration') {
         Add-AgentIssue $issues "Error" "Ambient Noise" "scripts/audio/generate_project_sounds.py" "Bird ambience still contains a continuous synthetic noise bed." "Keep chirps, but remove the always-on noise layer."
+    }
+    if ($birdMatch.Success) {
+        $durationMatch = [regex]::Match($birdMatch.Value, 'duration\s*=\s*(?<value>\d+(?:\.\d+)?)')
+        if ($durationMatch.Success -and [double]$durationMatch.Groups["value"].Value -lt 24.0) {
+            Add-AgentIssue $issues "Error" "Ambient Noise" "scripts/audio/generate_project_sounds.py" "Near bird ambience loop is shorter than 24 seconds." "Use a longer phrase sequence so bird calls do not repeat obviously."
+        }
     }
 }
 else {
