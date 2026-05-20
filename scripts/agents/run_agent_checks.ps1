@@ -114,12 +114,14 @@ switch ($Suite) {
     "scene" {
         $scripts = @(
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
+            @{ Name = "level_layout_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs }
         )
     }
     "collision" {
         $scripts = @(
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
+            @{ Name = "level_layout_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs }
         )
     }

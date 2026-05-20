@@ -233,10 +233,11 @@ function Test-WaterTowerSolidCollisionAuthoringText {
         "Collision_Leg_SouthEast"
     )
 
+    $solidColliderTypePattern = 'Sandbox\.(?:BoxCollider|CapsuleCollider|HullCollider)'
     foreach ($colliderName in $requiredSolidColliders) {
-        $pattern = '"Name"\s*:\s*"' + [regex]::Escape($colliderName) + '"[\s\S]{0,2500}?"__type"\s*:\s*"Sandbox\.BoxCollider"[\s\S]{0,1000}?"IsTrigger"\s*:\s*false'
+        $pattern = '"Name"\s*:\s*"' + [regex]::Escape($colliderName) + '"[\s\S]{0,2500}?"__type"\s*:\s*"' + $solidColliderTypePattern + '"[\s\S]{0,1000}?"IsTrigger"\s*:\s*false'
         if ($Text -notmatch $pattern) {
-            Add-AgentIssue $issues "Error" "Water Tower Collision" $Path "$Context water tower is missing solid BoxCollider child '$colliderName'." "Keep tank, roof, platform, and leg collision as non-trigger BoxCollider children so the prop blocks soldiers and drones without closing the open base."
+            Add-AgentIssue $issues "Error" "Water Tower Collision" $Path "$Context water tower is missing solid collider child '$colliderName'." "Keep tank, roof, platform, and leg collision as non-trigger collider children so the prop blocks soldiers and drones without closing the open base."
         }
     }
 }

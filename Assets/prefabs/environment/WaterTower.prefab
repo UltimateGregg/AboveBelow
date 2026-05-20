@@ -39,16 +39,17 @@
         "__guid": "18cf0e71-357a-4bbe-82f2-742800adf9e2",
         "Flags": 0,
         "Name": "Collision_Tank",
-        "Position": "0,0,700",
+        "Position": "0,0,594",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
-            "__type": "Sandbox.BoxCollider",
+            "__type": "Sandbox.CapsuleCollider",
             "__guid": "ab1be574-651b-40db-a966-ac6356d64030",
             "Center": "0,0,0",
-            "Scale": "660,660,230",
+            "Radius": "297",
+            "Height": "515",
             "Static": true,
             "IsTrigger": false
           }
@@ -59,16 +60,17 @@
         "__guid": "73205efa-d7ed-42b7-b0b5-82c273ca9dd6",
         "Flags": 0,
         "Name": "Collision_Roof",
-        "Position": "0,0,845",
+        "Position": "0,0,854",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
-            "__type": "Sandbox.BoxCollider",
+            "__type": "Sandbox.CapsuleCollider",
             "__guid": "80429d58-132f-4875-9668-c40a66770561",
             "Center": "0,0,0",
-            "Scale": "600,600,80",
+            "Radius": "270",
+            "Height": "57",
             "Static": true,
             "IsTrigger": false
           }

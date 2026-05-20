@@ -41,6 +41,7 @@ public sealed class GroundPlayerController : Component
 	[Property] public GameObject Eye { get; set; }
 	[Property] public CitizenAnimationHelper AnimationHelper { get; set; }
 	[Property] public bool FirstPerson { get; set; } = true;
+	[Property] public bool UseLocalFirstPersonViewmodel { get; set; } = true;
 
 	// ---- Camera FOV ----
 	[Property, Range( 50f, 110f )] public float BaseFovDegrees { get; set; } = 80f;
@@ -106,6 +107,7 @@ public sealed class GroundPlayerController : Component
 	[Sync] public bool IsClimbingLadder { get; set; }
 
 	private CameraComponent _cachedCamera;
+	FirstPersonViewmodel _localFirstPersonViewmodel;
 
 	// Recoil
 	private Angles _recoilOffset;
@@ -152,6 +154,7 @@ public sealed class GroundPlayerController : Component
 	public float AdsT => _adsT;
 	public float CrouchT => _crouchT;
 	public float SuppressionT => _suppressionT;
+	public bool LocalFirstPersonViewmodelActive { get; internal set; }
 
 	/// <summary>
 	/// Bump the local-player suppression factor (0..1). Decays over time at
@@ -181,6 +184,8 @@ public sealed class GroundPlayerController : Component
 		ResolvePrefabReferences();
 		if ( IsProxy ) return;
 
+		EnsureLocalFirstPersonViewmodel();
+
 		_cachedCamera = Scene.GetAllComponents<CameraComponent>().FirstOrDefault();
 		if ( _cachedCamera.IsValid() )
 		{
@@ -209,6 +214,7 @@ public sealed class GroundPlayerController : Component
 		if ( IsProxy ) return;
 
 		SetLocalFirstPersonBodyMode( false );
+		LocalFirstPersonViewmodelActive = false;
 		_sprintCooldownRemainingOnDisable = IsSprintLocked
 			? Math.Max( 0f, SprintCooldownSeconds - (float)_timeSinceSprintLocked )
 			: 0f;
@@ -222,6 +228,7 @@ public sealed class GroundPlayerController : Component
 	protected override void OnUpdate()
 	{
 		ResolvePrefabReferences();
+		EnsureLocalFirstPersonViewmodel();
 
 		if ( !IsProxy )
 		{
@@ -381,9 +388,31 @@ public sealed class GroundPlayerController : Component
 			renderer.SetBodyGroup( "Head", handsOnly ? CitizenHeadHidden : CitizenBodyGroupVisible );
 			renderer.SetBodyGroup( "Chest", handsOnly ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
 			renderer.SetBodyGroup( "Legs", handsOnly ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
-			renderer.SetBodyGroup( "Hands", CitizenBodyGroupVisible );
+			renderer.SetBodyGroup( "Hands", handsOnly && UseLocalFirstPersonViewmodel ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
 			renderer.SetBodyGroup( "Feet", handsOnly ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
 		}
+	}
+
+	void EnsureLocalFirstPersonViewmodel()
+	{
+		if ( IsProxy )
+			return;
+
+		if ( !UseLocalFirstPersonViewmodel )
+		{
+			LocalFirstPersonViewmodelActive = false;
+			if ( _localFirstPersonViewmodel.IsValid() )
+				_localFirstPersonViewmodel.Enabled = false;
+			return;
+		}
+
+		if ( !_localFirstPersonViewmodel.IsValid() )
+			_localFirstPersonViewmodel = Components.Get<FirstPersonViewmodel>();
+
+		if ( !_localFirstPersonViewmodel.IsValid() )
+			_localFirstPersonViewmodel = Components.Create<FirstPersonViewmodel>();
+
+		_localFirstPersonViewmodel.Enabled = true;
 	}
 
 	void SetBodyRenderType( ModelRenderer.ShadowRenderType renderType )

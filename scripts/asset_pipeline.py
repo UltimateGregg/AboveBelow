@@ -207,6 +207,91 @@ def resource_path_for(asset_path: Path, root: Path) -> str:
         raise ValueError(f"Asset path must be inside {assets_root}: {asset_path}") from exc
 
 
+def modeldoc_number(value: Any) -> str:
+    number = float(value)
+    if number.is_integer():
+        return f"{number:.1f}"
+    return f"{number:.6f}".rstrip("0").rstrip(".")
+
+
+def modeldoc_vector(values: Any, field_name: str) -> str:
+    if not isinstance(values, (list, tuple)) or len(values) != 3:
+        raise ValueError(f"physics_shapes {field_name} must be a three-number list")
+    return "[ " + ", ".join(modeldoc_number(value) for value in values) + " ]"
+
+
+def modeldoc_string(value: Any) -> str:
+    return str(value).replace("\\", "\\\\").replace('"', '\\"')
+
+
+def write_physics_shape_list(physics_shapes: list[dict[str, Any]] | None) -> str:
+    if not physics_shapes:
+        return ""
+
+    shape_blocks = []
+    for index, shape in enumerate(physics_shapes):
+        if not isinstance(shape, dict):
+            raise ValueError(f"physics_shapes entry {index} must be an object")
+
+        shape_type = str(shape.get("type", "box")).lower()
+        shape_class_by_type = {
+            "box": "PhysicsShapeBox",
+            "capsule": "PhysicsShapeCapsule",
+            "cylinder": "PhysicsShapeCylinder",
+        }
+        if shape_type not in shape_class_by_type:
+            raise ValueError(f"Unsupported physics shape type '{shape_type}'")
+
+        lines = [
+            "\t\t\t\t\t{",
+            f'\t\t\t\t\t\t_class = "{shape_class_by_type[shape_type]}"',
+        ]
+
+        if shape.get("disabled", False):
+            lines.append("\t\t\t\t\t\tdisabled = true")
+
+        lines.extend(
+            [
+                f'\t\t\t\t\t\tparent_bone = "{modeldoc_string(shape.get("parent_bone", ""))}"',
+                f'\t\t\t\t\t\tsurface_prop = "{modeldoc_string(shape.get("surface_prop", "default"))}"',
+                f'\t\t\t\t\t\tcollision_tags = "{modeldoc_string(shape.get("collision_tags", "solid"))}"',
+            ]
+        )
+
+        if shape_type == "box":
+            lines.extend(
+                [
+                    f'\t\t\t\t\t\torigin = {modeldoc_vector(shape.get("origin", [0, 0, 0]), "origin")}',
+                    f'\t\t\t\t\t\tangles = {modeldoc_vector(shape.get("angles", [0, 0, 0]), "angles")}',
+                    f'\t\t\t\t\t\tdimensions = {modeldoc_vector(shape["dimensions"], "dimensions")}',
+                ]
+            )
+        else:
+            if "radius" not in shape:
+                raise ValueError(f"physics_shapes entry {index} is missing radius")
+            lines.extend(
+                [
+                    f'\t\t\t\t\t\tradius = {modeldoc_number(shape["radius"])}',
+                    f'\t\t\t\t\t\tpoint0 = {modeldoc_vector(shape["point0"], "point0")}',
+                    f'\t\t\t\t\t\tpoint1 = {modeldoc_vector(shape["point1"], "point1")}',
+                ]
+            )
+
+        lines.append("\t\t\t\t\t},")
+        shape_blocks.append("\n".join(lines))
+
+    shape_text = "\n".join(shape_blocks)
+    return f"""
+\t\t\t{{
+\t\t\t\t_class = "PhysicsShapeList"
+\t\t\t\tchildren =
+\t\t\t\t[
+{shape_text}
+\t\t\t\t]
+\t\t\t}},
+""".rstrip()
+
+
 def write_vmdl(
     path: Path,
     fbx_resource_path: str,
@@ -214,6 +299,7 @@ def write_vmdl(
     material_source_suffix: Any = ".vmat",
     use_global_default: bool = True,
     global_default_material: str = "materials/default.vmat",
+    physics_shapes: list[dict[str, Any]] | None = None,
 ) -> None:
     remaps = material_remaps or {}
     remap_blocks = []
@@ -228,6 +314,7 @@ def write_vmdl(
 """.rstrip()
         )
     remap_text = "\n".join(remap_blocks)
+    physics_shape_text = write_physics_shape_list(physics_shapes)
 
     path.write_text(
         f"""<!-- kv3 encoding:text:version{{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d}} format:modeldoc29:version{{3cec427c-1b0e-4d48-a90a-0436f33a6041}} -->
@@ -275,6 +362,7 @@ def write_vmdl(
 \t\t\t\t\t}},
 \t\t\t\t]
 \t\t\t}},
+{physics_shape_text}
 \t\t]
 \t\tmodel_archetype = ""
 \t\tprimary_associated_entity = ""
@@ -596,6 +684,7 @@ def update_vmdl(args: argparse.Namespace, root: Path, fbx_resource_path: str) ->
         args.vmdl_material_source_suffix,
         args.vmdl_use_global_default,
         args.vmdl_global_default_material,
+        getattr(args, "physics_shapes", None),
     )
     print(f"Updated model document: {target_vmdl}")
 

@@ -104,8 +104,9 @@ public abstract class ThrowableGrenade : Component
 	internal bool ApplySelectionVisualState()
 	{
 		var visibleInHand = IsSelected && !IsArmed;
-		WeaponPose.SetVisibility( GameObject, visibleInHand );
-		WeaponPose.ApplyHandPose( this, visibleInHand, HoldType, Handedness, LeftHandIkTarget, RightHandIkTarget );
+		var visible = visibleInHand && !FirstPersonViewmodel.ShouldHideWorldHeldItem( this, visibleInHand );
+		WeaponPose.SetVisibility( GameObject, visible );
+		WeaponPose.ApplyHandPose( this, visible, HoldType, Handedness, LeftHandIkTarget, RightHandIkTarget );
 		return visibleInHand;
 	}
 

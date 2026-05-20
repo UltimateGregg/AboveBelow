@@ -106,8 +106,9 @@ public sealed class DroneDeployer : Component
 		if ( !selected || droneViewActive )
 			return false;
 
-		WeaponPose.SetVisibility( LeftHandVisual, true );
-		WeaponPose.SetVisibility( RightHandVisual, !DroneInFlight );
+		var hideForFirstPersonViewmodel = FirstPersonViewmodel.ShouldHideWorldHeldItem( this, selected );
+		WeaponPose.SetVisibility( LeftHandVisual, !hideForFirstPersonViewmodel );
+		WeaponPose.SetVisibility( RightHandVisual, !hideForFirstPersonViewmodel && !DroneInFlight );
 		return true;
 	}
 
@@ -185,6 +186,15 @@ public sealed class DroneDeployer : Component
 	{
 		var helper = pc.IsValid() ? pc.AnimationHelper : null;
 		if ( !helper.IsValid() ) return;
+
+		if ( FirstPersonViewmodel.ShouldHideWorldHeldItem( this, IsSelected ) )
+		{
+			if ( helper.IkLeftHand == LeftHandIkTarget || helper.IkLeftHand == LeftHandVisual )
+				helper.IkLeftHand = null;
+			if ( helper.IkRightHand == RightHandIkTarget || helper.IkRightHand == RightHandVisual )
+				helper.IkRightHand = null;
+			return;
+		}
 
 		var leftTarget = LeftHandIkTarget.IsValid() ? LeftHandIkTarget : LeftHandVisual;
 		var rightTarget = DroneInFlight || droneViewActive

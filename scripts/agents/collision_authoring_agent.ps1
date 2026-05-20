@@ -254,30 +254,43 @@ function Test-ObjectHasBoxCollider {
     return $null -ne (Get-ComponentByTypeName -Object $Object -TypeName "BoxCollider")
 }
 
-function Test-ObjectHasDirectCollider {
+function Get-DirectColliderComponent {
     param([object]$Object)
 
     foreach ($component in @(Get-ObjectComponents -Object $Object)) {
         $componentType = Get-JsonPropertyValue -Object $component -Name "__type"
         if ($componentType -and $componentType.EndsWith("Collider", [System.StringComparison]::OrdinalIgnoreCase)) {
-            return $true
+            return $component
         }
 
         # ConvertFrom-Json can hide S&Box type metadata. Count direct collider
         # components by the stable shape properties that survive parsing.
-        if ($null -ne (Get-JsonPropertyValue -Object $component -Name "IsTrigger") -and
-            $null -ne (Get-JsonPropertyValue -Object $component -Name "Center") -and
-            (
-                $null -ne (Get-JsonPropertyValue -Object $component -Name "Scale") -or
-                $null -ne (Get-JsonPropertyValue -Object $component -Name "BoxSize") -or
-                $null -ne (Get-JsonPropertyValue -Object $component -Name "Radius") -or
-                $null -ne (Get-JsonPropertyValue -Object $component -Name "Height")
-            )) {
-            return $true
+        if ($null -ne (Get-JsonPropertyValue -Object $component -Name "IsTrigger")) {
+            $hasBoxShape = $null -ne (Get-JsonPropertyValue -Object $component -Name "Center") -and
+                (
+                    $null -ne (Get-JsonPropertyValue -Object $component -Name "Scale") -or
+                    $null -ne (Get-JsonPropertyValue -Object $component -Name "BoxSize")
+                )
+            $hasCapsuleShape = $null -ne (Get-JsonPropertyValue -Object $component -Name "Radius") -and
+                (
+                    $null -ne (Get-JsonPropertyValue -Object $component -Name "Height") -or
+                    $null -ne (Get-JsonPropertyValue -Object $component -Name "Start") -or
+                    $null -ne (Get-JsonPropertyValue -Object $component -Name "End")
+                )
+
+            if ($hasBoxShape -or $hasCapsuleShape) {
+                return $component
+            }
         }
     }
 
-    return $false
+    return $null
+}
+
+function Test-ObjectHasDirectCollider {
+    param([object]$Object)
+
+    return $null -ne (Get-DirectColliderComponent -Object $Object)
 }
 
 function Test-ObjectHasCollisionCoverage {
@@ -291,7 +304,7 @@ function Test-ObjectHasCollisionCoverage {
         $childName = Get-JsonPropertyValue -Object $child -Name "Name"
         if ($childName -and
             $childName.StartsWith("Collision_", [System.StringComparison]::OrdinalIgnoreCase) -and
-            (Test-ObjectHasBoxCollider -Object $child)) {
+            (Test-ObjectHasDirectCollider -Object $child)) {
             return $true
         }
 
@@ -346,7 +359,7 @@ function Test-ParentHasCollisionCoverage {
         $childName = Get-JsonPropertyValue -Object $child -Name "Name"
         if ($childName -and
             $childName.StartsWith("Collision_", [System.StringComparison]::OrdinalIgnoreCase) -and
-            (Test-ObjectHasBoxCollider -Object $child)) {
+            (Test-ObjectHasDirectCollider -Object $child)) {
             return $true
         }
     }
@@ -377,7 +390,7 @@ function Test-BuildingCollisionCoverage {
 
     $script:buildingObjectCount++
     if (-not (Test-ObjectHasCollisionCoverage -Object $Object)) {
-        Add-AgentIssue $issues "Error" "Building Collision" $Path "$ObjectPath renders building geometry but has no direct collider or Collision_* coverage under the building root." "Add static Collision_* BoxCollider children or a deliberate direct collider on the building root. Keep Model_Visual renderer-only when sibling collision children own the blocking shape."
+        Add-AgentIssue $issues "Error" "Building Collision" $Path "$ObjectPath renders building geometry but has no direct collider or Collision_* coverage under the building root." "Add static Collision_* collider children or a deliberate direct collider on the building root. Keep Model_Visual renderer-only when sibling collision children own the blocking shape."
         return
     }
 
@@ -398,12 +411,13 @@ function Test-SolidCollisionObject {
     }
 
     $script:collisionObjectCount++
+    $collider = Get-DirectColliderComponent -Object $Object
     $boxCollider = Get-ComponentByTypeName -Object $Object -TypeName "BoxCollider"
     $modelRenderer = Get-ComponentByTypeName -Object $Object -TypeName "ModelRenderer"
     $ladderVolume = Get-ComponentByTypeName -Object $Object -TypeName "LadderVolume"
 
-    if ($null -eq $boxCollider) {
-        Add-AgentIssue $issues "Error" "Collision Authoring" $Path "$ObjectPath is named like a collision helper but has no BoxCollider." "Add a BoxCollider or rename the object if it is not collision."
+    if ($null -eq $collider) {
+        Add-AgentIssue $issues "Error" "Collision Authoring" $Path "$ObjectPath is named like a collision helper but has no collider component." "Add a solid S&Box collider or rename the object if it is not collision."
         return
     }
 
@@ -412,10 +426,13 @@ function Test-SolidCollisionObject {
     }
 
     $isLadder = $name -match "Ladder" -or $null -ne $ladderVolume
-    $isTrigger = Get-JsonPropertyValue -Object $boxCollider -Name "IsTrigger"
-    $isStatic = Get-JsonPropertyValue -Object $boxCollider -Name "Static"
+    $isTrigger = Get-JsonPropertyValue -Object $collider -Name "IsTrigger"
+    $isStatic = Get-JsonPropertyValue -Object $collider -Name "Static"
 
     if ($isLadder) {
+        if ($null -eq $boxCollider) {
+            Add-AgentIssue $issues "Error" "Collision Authoring" $Path "$ObjectPath is a ladder volume but has no BoxCollider." "Add a trigger BoxCollider to define the climbable volume."
+        }
         if ($null -eq $ladderVolume) {
             Add-AgentIssue $issues "Error" "Collision Authoring" $Path "$ObjectPath is ladder-named collision but has no LadderVolume." "Add DroneVsPlayers.LadderVolume or rename the object if it is a normal solid collider."
         }
@@ -425,7 +442,7 @@ function Test-SolidCollisionObject {
     }
     else {
         if (-not (Test-JsonBool -Value $isTrigger -Expected $false)) {
-            Add-AgentIssue $issues "Error" "Collision Authoring" $Path "$ObjectPath is a solid collision helper but its BoxCollider is a trigger." "Set IsTrigger false for physical blockers."
+            Add-AgentIssue $issues "Error" "Collision Authoring" $Path "$ObjectPath is a solid collision helper but its collider is a trigger." "Set IsTrigger false for physical blockers."
         }
         if (-not (Test-JsonBool -Value $isStatic -Expected $true)) {
             Add-AgentIssue $issues "Warning" "Collision Authoring" $Path "$ObjectPath is a non-trigger collision helper but is not marked static." "Mark authored prop/map collision static unless it is intentionally dynamic."
@@ -560,7 +577,7 @@ function Test-BlenderModelCollisionCoverage {
         }
 
         $source = [string]$script:environmentBlenderCollisionModels[$model]
-        Add-AgentIssue $issues "Error" "Blender Model Collision" $Path "$ObjectPath renders environment Blender model '$model' from $source without any BoxCollider or Collision_* coverage." "Add a direct BoxCollider or a Collision_* helper under the model's prop root. For Visual children, keep sibling Collision_* helpers under the same parent root."
+        Add-AgentIssue $issues "Error" "Blender Model Collision" $Path "$ObjectPath renders environment Blender model '$model' from $source without any direct collider or Collision_* coverage." "Add a direct collider or a Collision_* helper under the model's prop root. For Visual children, keep sibling Collision_* helpers under the same parent root."
     }
 }
 

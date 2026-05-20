@@ -10,6 +10,7 @@ internal static class LocalOptionsState
 
 	internal const float MinUiScale = 0.75f;
 	internal const float MaxUiScale = 1.4f;
+	internal const float DefaultUiScale = 1.2f;
 	internal const float UiScaleStep = 0.05f;
 	internal const float MinLookSensitivity = 0.2f;
 	internal const float MaxLookSensitivity = 3f;
@@ -42,7 +43,7 @@ internal static class LocalOptionsState
 	};
 
 	static bool _settingsLoaded;
-	static float _uiScale = 1f;
+	static float _uiScale = DefaultUiScale;
 	static float _lookSensitivity = 1f;
 
 	internal static bool IsOpen { get; private set; }
@@ -87,7 +88,7 @@ internal static class LocalOptionsState
 
 	internal static void ResetUiScale()
 	{
-		SetUiScale( 1f );
+		SetUiScale( DefaultUiScale );
 	}
 
 	internal static void AdjustLookSensitivity( float delta )
@@ -111,7 +112,7 @@ internal static class LocalOptionsState
 	{
 		if ( _settingsLoaded ) return;
 
-		_uiScale = SnapScale( Game.Cookies.Get( UiScaleCookieKey, 1f ) );
+		_uiScale = SnapScale( Game.Cookies.Get( UiScaleCookieKey, DefaultUiScale ) );
 		_lookSensitivity = SnapLookSensitivity( Game.Cookies.Get( LookSensitivityCookieKey, 1f ) );
 		_settingsLoaded = true;
 	}

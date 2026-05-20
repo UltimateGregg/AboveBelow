@@ -20,7 +20,8 @@
     "fish.spruce_tree_d",
     "titanovsky.low_poly_tree",
     "facepunch.beech_shrub_wide_small",
-    "facepunch.pine_shrub_tall_b"
+    "facepunch.pine_shrub_tall_b",
+    "facepunch.sboxweapons"
   ],
   "EditorReferences": [
     "Libraries/sboxskinsgg.claudebridge"

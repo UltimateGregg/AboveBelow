@@ -166,6 +166,24 @@ function Get-JsonBoolOption {
     return [bool]$value
 }
 
+function Get-JsonPropertyValue {
+    param(
+        [object]$Object,
+        [string]$Name
+    )
+
+    if ($null -eq $Object -or $null -eq $Object.PSObject) {
+        return $null
+    }
+
+    $property = $Object.PSObject.Properties[$Name]
+    if ($null -eq $property) {
+        return $null
+    }
+
+    return $property.Value
+}
+
 function Test-ModelDocResource {
     param(
         [string]$ResourcePath,
@@ -195,9 +213,67 @@ function Test-ModelDocResource {
     }
 }
 
+function Test-ConfiguredPhysicsShapes {
+    param(
+        [string]$VmdlRelative,
+        [string]$Raw,
+        [object]$ConfigInfo
+    )
+
+    $json = $ConfigInfo.Json
+    $configRelative = $ConfigInfo.RelativePath
+    $rawPhysicsShapes = Get-JsonPropertyValue -Object $json -Name "physics_shapes"
+    if ($null -eq $rawPhysicsShapes) {
+        return
+    }
+
+    $configuredPhysicsShapes = @($rawPhysicsShapes)
+    if ($configuredPhysicsShapes.Count -eq 0) {
+        return
+    }
+
+    if ($Raw -notmatch '_class\s*=\s*"PhysicsShapeList"') {
+        Add-AgentIssue $issues "Error" "ModelDoc Physics" $VmdlRelative "$configRelative declares physics_shapes but the VMDL has no PhysicsShapeList." "Re-export with asset_pipeline.py so configured collision is written into the model document."
+        return
+    }
+
+    $expectedCounts = @{}
+    foreach ($shape in $configuredPhysicsShapes) {
+        $shapeType = [string](Get-JsonPropertyValue -Object $shape -Name "type")
+        if ([string]::IsNullOrWhiteSpace($shapeType)) {
+            $shapeType = "box"
+        }
+
+        switch ($shapeType.ToLowerInvariant()) {
+            "box" { $className = "PhysicsShapeBox" }
+            "capsule" { $className = "PhysicsShapeCapsule" }
+            "cylinder" { $className = "PhysicsShapeCylinder" }
+            default {
+                Add-AgentIssue $issues "Error" "ModelDoc Physics" $configRelative "Unsupported configured physics shape type '$shapeType'." "Use box, capsule, or cylinder for generated ModelDoc collision shapes."
+                continue
+            }
+        }
+
+        if (-not $expectedCounts.ContainsKey($className)) {
+            $expectedCounts[$className] = 0
+        }
+        $expectedCounts[$className]++
+    }
+
+    foreach ($entry in $expectedCounts.GetEnumerator()) {
+        $actualCount = [regex]::Matches($Raw, '_class\s*=\s*"' + [regex]::Escape($entry.Key) + '"').Count
+        if ($actualCount -lt $entry.Value) {
+            Add-AgentIssue $issues "Error" "ModelDoc Physics" $VmdlRelative "$configRelative expects at least $($entry.Value) $($entry.Key) node(s), but the VMDL has $actualCount." "Re-export with asset_pipeline.py so configured collision shapes are applied to the model."
+        }
+    }
+
+    Add-AgentIssue $issues "Info" "ModelDoc Physics" $VmdlRelative "PhysicsShapeList matches configured collision shape classes from $configRelative."
+}
+
 function Test-ConfigDrift {
     param(
         [string]$VmdlRelative,
+        [string]$Raw,
         [string[]]$Filenames,
         [string[]]$MaterialSources,
         [string[]]$MaterialTargets,
@@ -207,6 +283,8 @@ function Test-ConfigDrift {
 
     $json = $ConfigInfo.Json
     $configRelative = $ConfigInfo.RelativePath
+
+    Test-ConfiguredPhysicsShapes -VmdlRelative $VmdlRelative -Raw $Raw -ConfigInfo $ConfigInfo
 
     if ($json.PSObject.Properties.Name -contains "target_fbx") {
         $targetFbx = [string]$json.target_fbx
@@ -378,7 +456,7 @@ foreach ($vmdl in $vmdlFiles) {
     $vmdlFull = [System.IO.Path]::GetFullPath($vmdl.FullName)
     if ($configMap.ContainsKey($vmdlFull)) {
         foreach ($configInfo in $configMap[$vmdlFull]) {
-            Test-ConfigDrift -VmdlRelative $relative -Filenames $filenames -MaterialSources $materialSources -MaterialTargets $materialTargets -UseGlobalDefaultValues $useGlobalDefaultValues -ConfigInfo $configInfo
+            Test-ConfigDrift -VmdlRelative $relative -Raw $raw -Filenames $filenames -MaterialSources $materialSources -MaterialTargets $materialTargets -UseGlobalDefaultValues $useGlobalDefaultValues -ConfigInfo $configInfo
         }
     }
     else {

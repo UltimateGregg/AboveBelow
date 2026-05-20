@@ -25,5 +25,59 @@
   ],
   "global_scale": 0.0254,
   "axis_forward": "-Y",
-  "axis_up": "Z"
+  "axis_up": "Z",
+  "physics_shapes": [
+    {
+      "type": "cylinder",
+      "surface_prop": "metal",
+      "collision_tags": "solid",
+      "radius": 8.25,
+      "point0": [0, 0, 14.625],
+      "point1": [0, 0, 20.375]
+    },
+    {
+      "type": "cylinder",
+      "surface_prop": "metal",
+      "collision_tags": "solid",
+      "radius": 7.5,
+      "point0": [0, 0, 20.125],
+      "point1": [0, 0, 22.125]
+    },
+    {
+      "type": "cylinder",
+      "surface_prop": "metal",
+      "collision_tags": "solid",
+      "radius": 9.5,
+      "point0": [0, 0, 13.325],
+      "point1": [0, 0, 14.175]
+    },
+    {
+      "type": "box",
+      "surface_prop": "metal",
+      "collision_tags": "solid",
+      "origin": [-6.375, 6.375, 6.5],
+      "dimensions": [0.9, 0.9, 13]
+    },
+    {
+      "type": "box",
+      "surface_prop": "metal",
+      "collision_tags": "solid",
+      "origin": [6.375, 6.375, 6.5],
+      "dimensions": [0.9, 0.9, 13]
+    },
+    {
+      "type": "box",
+      "surface_prop": "metal",
+      "collision_tags": "solid",
+      "origin": [-6.375, -6.375, 6.5],
+      "dimensions": [0.9, 0.9, 13]
+    },
+    {
+      "type": "box",
+      "surface_prop": "metal",
+      "collision_tags": "solid",
+      "origin": [6.375, -6.375, 6.5],
+      "dimensions": [0.9, 0.9, 13]
+    }
+  ]
 }
