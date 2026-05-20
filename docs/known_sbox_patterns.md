@@ -60,6 +60,16 @@ pawn.NetworkSpawn(connection);  // Sets Network.Owner = connection
 
 ## Component Lifecycle Quirks
 
+### Component-First Engine Research Intake
+
+**Pattern:** Current S&Box guidance should be reduced to this project's component-first workflow before it becomes standing agent advice.
+
+**Workflow:**
+- Verify volatile engine claims against official S&Box docs, the public engine source, or current local project patterns before updating docs.
+- For gameplay, prefer `Sandbox.Component` subclasses with `[Property]` tunables, `[Sync]` replicated state, and RPCs for validated requests or notifications.
+- Treat older Source 1 or legacy S&Box examples as migration context, not implementation authority. In particular, do not revive `[Net]`, `.qc` model scripts, entity/I/O gameplay, or manual `.vmdl` text editing as active defaults.
+- Capture useful research in `docs/sbox_engine_llm_reference.md` and run `scripts/agents/sbox_engine_reference_audit.ps1` after docs or agent-routing changes.
+
 ### OnAwake vs OnStart
 
 **Pattern:**
@@ -496,5 +506,5 @@ public void TakeDamage(DamageInfo info)
 
 ---
 
-Last Updated: May 19, 2026
-Version: 1.9 - Added human first-person arms and held-item IK guidance
+Last Updated: May 20, 2026
+Version: 1.10 - Added verified S&Box engine research intake guidance

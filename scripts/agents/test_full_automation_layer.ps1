@@ -32,6 +32,7 @@ $requiredScripts = @(
     "scripts/agents/sound_playback_audit.ps1",
     "scripts/agents/team_label_copy_audit.ps1",
     "scripts/agents/mcp_screenshot_audit.ps1",
+    "scripts/agents/sbox_engine_reference_audit.ps1",
     "scripts/agents/asset_visual_review.ps1",
     "scripts/agents/blender_live_toolkit_self_test.ps1"
 )
@@ -1416,6 +1417,77 @@ if (Test-Path -LiteralPath $fbxMaterialSlotAudit) {
     }
     else {
         Add-AgentIssue $issues "Info" "Full Automation Tests" "scripts/agents/fbx_material_slot_audit.ps1" "Skipped FBX material-slot fixture because Blender or terrain_assets.fbx is unavailable."
+    }
+}
+
+$sboxEngineReferenceAudit = Join-Path $Root "scripts/agents/sbox_engine_reference_audit.ps1"
+if (Test-Path -LiteralPath $sboxEngineReferenceAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-engine-reference-audit-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "docs") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot ".agents\sbox") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "scripts\agents") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "dronevsplayers.sbproj") | Out-Null
+
+        @'
+# S&Box Engine LLM Reference
+
+Verified against official sources on 2026-05-20:
+
+- https://sbox.game/dev/doc
+- https://github.com/Facepunch/sbox-public
+
+Use `[Sync]` for replicated state.
+Use ModelDoc for VMDL work.
+
+## Avoid Source 1 Habits
+
+Do not use `.qc` model scripts as active S&Box guidance.
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "docs\sbox_engine_llm_reference.md") -Encoding UTF8
+
+        @'
+# S&Box Engine Reference Agent
+
+## Purpose
+
+Verify S&Box engine research.
+
+Sources:
+- https://sbox.game/dev/doc
+- https://github.com/Facepunch/sbox-public
+
+Evidence:
+scripts/agents/sbox_engine_reference_audit.ps1
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\sbox-engine-reference-agent.md") -Encoding UTF8
+
+        "S&Box Engine Reference Agent sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
+        "sbox-engine-reference-agent.md sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
+        "sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
+        "sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
+        "sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\post_task_training_agent.ps1") -Encoding UTF8
+
+        "Use [Net] for replicated S&Box gameplay state." | Set-Content -LiteralPath (Join-Path $tempRoot "docs\bad_engine_guidance.md") -Encoding UTF8
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxEngineReferenceAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_engine_reference_audit.ps1" "Engine reference audit did not fail on active stale [Net] guidance." "Keep the fixture red/green test aligned with current S&Box [Sync] guidance."
+        }
+
+        "Use [Sync] for replicated S&Box gameplay state." | Set-Content -LiteralPath (Join-Path $tempRoot "docs\bad_engine_guidance.md") -Encoding UTF8
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxEngineReferenceAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_engine_reference_audit.ps1" "Engine reference audit failed on valid [Sync] guidance and complete routing docs." "Avoid false positives for current, sourced S&Box reference guidance."
+        }
+
+        "Create a .qc file for this S&Box model." | Set-Content -LiteralPath (Join-Path $tempRoot "docs\bad_engine_guidance.md") -Encoding UTF8
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxEngineReferenceAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_engine_reference_audit.ps1" "Engine reference audit did not fail on active .qc model guidance." "Keep Source 1 model workflow references marked as historical or avoided."
+        }
+    }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
+        }
     }
 }
 

@@ -38,6 +38,7 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 | Balance and tuning review | `balance-tuning-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/balance_tuning_report.ps1` |
 | Changed-file readiness report | `pre-handoff-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/feature_readiness_report.ps1 -ShowFiles` |
 | Current editor/runtime log discovery | `build-log-sentinel.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/current_log_audit.ps1 -RequireFresh` |
+| S&Box engine/API research intake | `sbox-engine-reference-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_engine_reference_audit.ps1 -Root . -ShowInfo` |
 | Post-task workflow training | `post-task-training-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite train` |
 
 ## Operating Rules
@@ -57,3 +58,4 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 - After UI or startup-flow edits, run the UI flow audit and an editor click-test checklist.
 - If runtime logs are stale or unavailable, say that directly and do not overclaim editor validation.
 - Static file audits do not replace an editor playtest or a 2-client multiplayer test when runtime behavior changed.
+- Treat pasted S&Box or Source 2 research as useful input, not authority. Route it through `sbox-engine-reference-agent.md`, prefer official docs/public source, and add source/date markers for volatile API or release claims.

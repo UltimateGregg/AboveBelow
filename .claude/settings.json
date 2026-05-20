@@ -91,6 +91,53 @@
           "level": "error"
         }
       }
+    },
+    {
+      "id": "sbox-engine-reference-check",
+      "name": "S&Box Engine Reference Check",
+      "description": "Runs stale engine-guidance checks when docs, agent routing, or engine-reference audits change",
+      "enabled": true,
+      "trigger": {
+        "type": "file_pattern_change",
+        "patterns": [
+          "AGENTS.md",
+          "docs/**/*.md",
+          ".agents/sbox/*.md",
+          "scripts/agents/sbox_engine_reference_audit.ps1",
+          "scripts/agents/run_agent_checks.ps1",
+          "scripts/agents/post_task_training_agent.ps1",
+          "scripts/agents/test_full_automation_layer.ps1"
+        ],
+        "events": ["modified", "saved"],
+        "debounce_ms": 1500
+      },
+      "action": {
+        "type": "script",
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          ".\\scripts\\agents\\sbox_engine_reference_audit.ps1",
+          "-Root",
+          "${WORKSPACE_ROOT}",
+          "-ShowInfo"
+        ],
+        "cwd": "${WORKSPACE_ROOT}",
+        "timeout_seconds": 90,
+        "capture_output": true,
+        "on_success": {
+          "notify": false,
+          "message": "S&Box engine reference checks passed",
+          "level": "info"
+        },
+        "on_failure": {
+          "notify": true,
+          "message": "S&Box engine reference check failed",
+          "level": "error"
+        }
+      }
     }
   ]
 }

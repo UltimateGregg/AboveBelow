@@ -67,6 +67,7 @@ switch ($Suite) {
             @{ Name = "mcp_screenshot_audit.ps1"; Args = $commonArgs },
             @{ Name = "networking_review_audit.ps1"; Args = $commonArgs },
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "current_log_audit.ps1"; Args = $quickLogArgs },
             @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root) }
         )
@@ -92,6 +93,7 @@ switch ($Suite) {
             @{ Name = "mcp_screenshot_audit.ps1"; Args = $commonArgs },
             @{ Name = "networking_review_audit.ps1"; Args = $commonArgs },
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "current_log_audit.ps1"; Args = $commonArgs },
             @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root, "-ShowFiles") },
             @{ Name = "balance_tuning_report.ps1"; Args = @("-Root", $Root) },
@@ -160,12 +162,22 @@ switch ($Suite) {
     }
     "networking" { $scripts = @(@{ Name = "networking_review_audit.ps1"; Args = $commonArgs }) }
     "gameplay-regression" { $scripts = @(@{ Name = "gameplay_regression_guard.ps1"; Args = $commonArgs }) }
-    "docs" { $scripts = @(@{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs }) }
+    "docs" {
+        $scripts = @(
+            @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs }
+        )
+    }
     "balance" { $scripts = @(@{ Name = "balance_tuning_report.ps1"; Args = @("-Root", $Root) }) }
     "playtest" { $scripts = @(@{ Name = "playtest_checklist.ps1"; Args = @("-Root", $Root, "-ChangeArea", "All") }) }
     "logs" { $scripts = @(@{ Name = "current_log_audit.ps1"; Args = $commonArgs }) }
     "readiness" { $scripts = @(@{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root, "-ShowFiles") }) }
-    "train" { $scripts = @(@{ Name = "post_task_training_agent.ps1"; Args = @("-Root", $Root, "-ShowFiles", "-WriteReport") }) }
+    "train" {
+        $scripts = @(
+            @{ Name = "post_task_training_agent.ps1"; Args = @("-Root", $Root, "-ShowFiles", "-WriteReport") },
+            @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs }
+        )
+    }
     "self-test" { $scripts = @(@{ Name = "test_full_automation_layer.ps1"; Args = @("-Root", $Root) }) }
 }
 
