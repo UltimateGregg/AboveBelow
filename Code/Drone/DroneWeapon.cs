@@ -16,10 +16,13 @@ namespace DroneVsPlayers;
 [Icon( "rocket_launch" )]
 public sealed class DroneWeapon : Component
 {
+	const string DefaultExplosionSoundPath = "sounds/grenade_explosion.sound";
+
 	[Property] public DroneController Drone { get; set; }
 	[Property] public GameObject MuzzleSocket { get; set; }
 	[Property] public GameObject TracerPrefab { get; set; }
 	[Property] public SoundEvent FireSound { get; set; }
+	[Property] public SoundEvent ExplosionSound { get; set; }
 	[Property] public string WeaponDisplayName { get; set; } = "Drone Beam";
 	[Property] public string KamikazeDisplayName { get; set; } = "Kamikaze";
 
@@ -35,6 +38,7 @@ public sealed class DroneWeapon : Component
 	[Property] public GameObject ExplosionPrefab { get; set; }
 
 	TimeSince _timeSinceFire = 10f;
+	bool _detonationRequested;
 
 	public bool PrimaryReady => PrimaryCooldownRemaining <= 0f;
 	public float PrimaryCooldownRemaining => PrimaryUsesKamikaze
@@ -90,11 +94,14 @@ public sealed class DroneWeapon : Component
 	{
 		if ( !EnableKamikaze )
 			return;
+		if ( _detonationRequested )
+			return;
 
 		var droneHealth = Components.Get<Health>() ?? Components.GetInAncestors<Health>();
 		if ( droneHealth.IsValid() && droneHealth.IsDead )
 			return;
 
+		_detonationRequested = true;
 		Detonate();
 	}
 
@@ -138,16 +145,28 @@ public sealed class DroneWeapon : Component
 
 	void Detonate()
 	{
+		var center = WorldPosition;
+
 		// Damage request: broadcasts everywhere, only host actually applies.
-		RequestExplosion( WorldPosition );
+		RequestExplosion( center );
 
 		// Visual broadcast (independent so all clients see the boom).
-		BroadcastExplosionFx( WorldPosition );
+		BroadcastExplosionFx( center );
 
-		// Kill the drone (so the pilot can't keep flying after detonating).
+		// Kill and remove the drone so the pilot can't keep flying after detonating.
+		RequestKillAndDespawnDrone( WorldPosition );
+	}
+
+	[Rpc.Broadcast]
+	void RequestKillAndDespawnDrone( Vector3 center )
+	{
+		if ( !CanMutateState() ) return;
+
 		var droneHealth = Components.Get<Health>() ?? Components.GetInAncestors<Health>();
-		if ( droneHealth.IsValid() )
-			droneHealth.RequestDamage( 9999f, default, WorldPosition );
+		if ( droneHealth.IsValid() && !droneHealth.IsDead )
+			droneHealth.TakeDamage( new DamageInfo { Amount = 9999f, AttackerId = default, Position = center } );
+
+		GameObject.Destroy();
 	}
 
 	static Health FindHealth( GameObject go )
@@ -202,7 +221,18 @@ public sealed class DroneWeapon : Component
 	void BroadcastExplosionFx( Vector3 center )
 	{
 		if ( ExplosionPrefab.IsValid() )
+		{
 			ExplosionPrefab.Clone( center );
+		}
+		else
+		{
+			GrenadeEffectVisual.Spawn( center, GrenadeEffectKind.Frag, KamikazeRadius );
+		}
+
+		if ( ExplosionSound is not null )
+			Sound.Play( ExplosionSound, center );
+		else
+			Sound.Play( DefaultExplosionSoundPath, center );
 	}
 
 	[Rpc.Broadcast]
@@ -248,4 +278,6 @@ public sealed class DroneWeapon : Component
 		else if ( n.Contains( "concrete" ) || n.Contains( "stone" ) || n.Contains( "brick" ) ) kind = ImpactEffects.SurfaceKind.Concrete;
 		ImpactEffects.Spawn( position, kind );
 	}
+
+	static bool CanMutateState() => !Networking.IsActive || Networking.IsHost;
 }

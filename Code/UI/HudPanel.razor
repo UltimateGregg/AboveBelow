@@ -26,24 +26,24 @@
         @if ( ShowMainMenu )
         {
             <div class="role-select main-menu-startup">
-                <div class="role-panel">
-                    <div class="title">ABOVE / BELOW</div>
-                    <div class="subtitle">Drone Pilots against Soldiers.</div>
-
-                    <div class="loadout-section">
+                <div class="main-menu-title">ABOVE / BELOW</div>
+                <div class="role-panel main-menu-panel">
+                    <div class="loadout-section main-menu-actions">
                         <div class="section-title">Main Menu</div>
-                        <div class="choices">
-                            <div class="choice pilot" onclick=@StartFromMainMenu>
+                        <div class="choices main-menu-choices">
+                            <div class="choice pilot main-menu-play" onclick=@StartFromMainMenu>
                                 <span class="label">PLAY</span>
                                 <span class="desc">Choose team and loadout</span>
                             </div>
-                            <div class="choice soldier" onclick=@OpenMainMenuOptions>
-                                <span class="label">OPTIONS</span>
-                                <span class="desc">Local settings</span>
-                            </div>
-                            <div class="choice" onclick=@QuitGame>
-                                <span class="label">QUIT</span>
-                                <span class="desc">Close the game</span>
+                            <div class="main-menu-secondary">
+                                <div class="choice soldier" onclick=@OpenMainMenuOptions>
+                                    <span class="label">OPTIONS</span>
+                                    <span class="desc">Local settings</span>
+                                </div>
+                                <div class="choice" onclick=@QuitGame>
+                                    <span class="label">QUIT</span>
+                                    <span class="desc">Close the game</span>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -73,8 +73,8 @@ public sealed class DroneDeployer : Component
 
 		if ( selected )
 		{
-			UpdateHandVisual( LeftHandVisual, pc, droneViewActive, LeftHandFpOffset, LeftHandFpRotation, LeftHandTpLocalPos, LeftHandTpLocalAngles );
-			UpdateHandVisual( RightHandVisual, pc, droneViewActive, RightHandFpOffset, RightHandFpRotation, RightHandTpLocalPos, RightHandTpLocalAngles );
+			UpdateHandVisual( LeftHandVisual, LeftHandIkTarget, pc, droneViewActive, LeftHandFpOffset, LeftHandFpRotation, LeftHandTpLocalPos, LeftHandTpLocalAngles );
+			UpdateHandVisual( RightHandVisual, RightHandIkTarget, pc, droneViewActive, RightHandFpOffset, RightHandFpRotation, RightHandTpLocalPos, RightHandTpLocalAngles );
 		}
 		UpdateCitizenHands( pc, droneViewActive );
 
@@ -129,17 +129,17 @@ public sealed class DroneDeployer : Component
 			RightHandIkTarget = GameObject.Children.FirstOrDefault( x => x.Name == "RightHandIk" );
 	}
 
-	void UpdateHandVisual( GameObject visual, GroundPlayerController pc, bool forceThirdPerson,
+	void UpdateHandVisual( GameObject visual, GameObject ikTarget, GroundPlayerController pc, bool forceThirdPerson,
 		Vector3 fpOffset, Angles fpRot, Vector3 tpPos, Angles tpRot )
 	{
-		if ( !visual.IsValid() ) return;
+		if ( !visual.IsValid() && !ikTarget.IsValid() ) return;
 
 		var firstPersonMode = !forceThirdPerson && !IsProxy && pc.IsValid() && pc.FirstPerson && pc.Eye.IsValid();
 
 		if ( !firstPersonMode )
 		{
-			visual.LocalPosition = tpPos;
-			visual.LocalRotation = tpRot.ToRotation();
+			ApplyLocalPose( visual, tpPos, tpRot.ToRotation() );
+			ApplyLocalPose( ikTarget, tpPos, tpRot.ToRotation() );
 			return;
 		}
 
@@ -150,18 +150,35 @@ public sealed class DroneDeployer : Component
 			+ look.Up * fpOffset.z;
 		var targetRot = look * fpRot.ToRotation();
 
-		var current = visual.WorldPosition;
+		var poseRoot = visual.IsValid() ? visual : ikTarget;
+		var current = poseRoot.WorldPosition;
 		if ( current.LengthSquared < 0.01f )
 		{
-			visual.WorldPosition = targetPos;
-			visual.WorldRotation = targetRot;
+			ApplyWorldPose( visual, targetPos, targetRot );
+			ApplyWorldPose( ikTarget, targetPos, targetRot );
 		}
 		else
 		{
 			var k = 1f - MathF.Exp( -SwayLerpRate * Time.Delta );
-			visual.WorldPosition = Vector3.Lerp( current, targetPos, k );
-			visual.WorldRotation = Rotation.Slerp( visual.WorldRotation, targetRot, k );
+			var displayPos = Vector3.Lerp( current, targetPos, k );
+			var displayRot = Rotation.Slerp( poseRoot.WorldRotation, targetRot, k );
+			ApplyWorldPose( visual, displayPos, displayRot );
+			ApplyWorldPose( ikTarget, displayPos, displayRot );
 		}
+	}
+
+	static void ApplyLocalPose( GameObject go, Vector3 position, Rotation rotation )
+	{
+		if ( !go.IsValid() ) return;
+		go.LocalPosition = position;
+		go.LocalRotation = rotation;
+	}
+
+	static void ApplyWorldPose( GameObject go, Vector3 position, Rotation rotation )
+	{
+		if ( !go.IsValid() ) return;
+		go.WorldPosition = position;
+		go.WorldRotation = rotation;
 	}
 
 	void UpdateCitizenHands( GroundPlayerController pc, bool droneViewActive )

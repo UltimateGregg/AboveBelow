@@ -79,7 +79,7 @@ $documents = @(
         Path = ".agents/sbox/collision-authoring-agent.md"
         Title = "Collision Authoring Agent"
         Headings = @("Purpose", "Primary Areas", "Review Rules", "Evidence Command", "Runtime Proof", "Output Shape")
-        Phrases = @('Collision_*', 'LadderVolume', 'water tower', 'Static checks prove the authored collision exists')
+        Phrases = @('Collision_*', 'LadderVolume', 'water tower', 'building root', 'Static checks prove the authored collision exists')
     }
 )
 

@@ -1,0 +1,31 @@
+{
+  "source_blend": "environment_model.blend/house_rural.blend",
+  "target_fbx": "Assets/models/house_rural.fbx",
+  "target_vmdl": "Assets/models/house_rural.vmdl",
+  "model_resource_path": "models/house_rural.vmdl",
+  "combine_meshes": true,
+  "combined_object_name": "HouseRuralMesh",
+  "material_remap": {
+    "M_Wall_Siding": "materials/environment/house_rural_siding.vmat",
+    "M_Roof_Metal": "materials/environment/house_rural_roof.vmat",
+    "M_Structural_Frame": "materials/environment/house_rural_frame.vmat",
+    "M_Ladder": "materials/environment/house_rural_ladder.vmat",
+    "M_Sniper_Railing": "materials/environment/house_rural_railing.vmat",
+    "M_Entry_Frame": "materials/environment/house_rural_entry.vmat",
+    "M_Foundation": "materials/environment/house_rural_foundation.vmat"
+  },
+  "vmdl_material_source_suffix": "",
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
+  "verify_fbx": true,
+  "required_object": [
+    "HouseRuralMesh"
+  ],
+  "object_type": [
+    "EMPTY",
+    "MESH"
+  ],
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z"
+}

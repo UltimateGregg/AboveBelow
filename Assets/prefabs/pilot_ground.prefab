@@ -63,7 +63,7 @@
           {
             "__type": "Sandbox.SkinnedModelRenderer",
             "__guid": "33333333-d000-1100-0000-000000000001",
-            "BodyGroups": 18446744073709551615,
+            "BodyGroups": 341,
             "CreateBoneObjects": false,
             "Model": "models/citizen_human/citizen_human_male.vmdl",
             "RenderType": "On",
@@ -184,6 +184,22 @@
                     ]
                   }
                 ]
+              },
+              {
+                "__guid": "33333333-d000-3600-0000-000000000001",
+                "Flags": 0,
+                "Name": "LeftHandIk",
+                "Position": "16,-5,-2",
+                "Enabled": true,
+                "Components": []
+              },
+              {
+                "__guid": "33333333-d000-3700-0000-000000000001",
+                "Flags": 0,
+                "Name": "RightHandIk",
+                "Position": "4,4,-2",
+                "Enabled": true,
+                "Components": []
               }
             ]
           },
@@ -283,7 +299,7 @@
                 "__guid": "33333333-d000-4400-0000-000000000001",
                 "Flags": 0,
                 "Name": "LeftHandIk",
-                "Position": "21,-9,48",
+                "Position": "28,-8,44",
                 "Enabled": true,
                 "Components": []
               },
@@ -291,7 +307,7 @@
                 "__guid": "33333333-d000-4500-0000-000000000001",
                 "Flags": 0,
                 "Name": "RightHandIk",
-                "Position": "21,9,48",
+                "Position": "34,10,46",
                 "Enabled": true,
                 "Components": []
               }
@@ -306,39 +322,7 @@
         "Position": "0,0,64",
         "Enabled": true,
         "Components": [],
-        "Children": [
-          {
-            "__guid": "33333333-d000-2100-0000-000000000001",
-            "Flags": 0,
-            "Name": "FpvArms",
-            "Enabled": true,
-            "Components": [
-              {
-                "__type": "Sandbox.ModelRenderer",
-                "__guid": "33333333-d000-2110-0000-000000000001",
-                "BodyGroups": 18446744073709551615,
-                "Model": "models/fps_arms.vmdl",
-                "RenderType": "On",
-                "Tint": "0.4,0.4,0.5,1"
-              },
-              {
-                "__type": "DroneVsPlayers.FpvArms",
-                "__guid": "33333333-d000-2200-0000-000000000001",
-                "ArmsRenderer": {
-                  "_type": "component",
-                  "component_id": "33333333-d000-2110-0000-000000000001",
-                  "go": "33333333-d000-2100-0000-000000000001",
-                  "component_type": "ModelRenderer"
-                },
-                "HipOffset": "0,-2,-4",
-                "HipRotationOffset": "0,0,0",
-                "AdsOffset": "-6,-2,2",
-                "AdsRotationOffset": "0,0,0",
-                "SwayLerpRate": 18
-              }
-            ]
-          }
-        ]
+        "Children": []
       }
     ],
     "__variables": [],

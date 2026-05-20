@@ -143,6 +143,8 @@ public class AutoWireHelper : Component
 		{
 			var muzzle = weaponObject.Children.FirstOrDefault( x => x.Name == "MuzzleSocket" );
 			var visual = weaponObject.Children.FirstOrDefault( x => x.Name == "WeaponVisual" );
+			var leftIk = weaponObject.Children.FirstOrDefault( x => x.Name == "LeftHandIk" );
+			var rightIk = weaponObject.Children.FirstOrDefault( x => x.Name == "RightHandIk" );
 			var flash = muzzle?.Children.FirstOrDefault( x => x.Name == "MuzzleFlash" );
 
 			var hit = weaponObject.Components.Get<HitscanWeapon>();
@@ -150,19 +152,42 @@ public class AutoWireHelper : Component
 			{
 				hit.MuzzleSocket = muzzle;
 				hit.WeaponVisual = visual;
+				hit.LeftHandIkTarget = leftIk;
+				hit.RightHandIkTarget = rightIk;
 				hit.MuzzleFlash = flash?.Components.Get<PointLight>();
 			}
 
 			var shotgun = weaponObject.Components.Get<ShotgunWeapon>();
-			if ( shotgun != null ) shotgun.MuzzleSocket = muzzle;
+			if ( shotgun != null )
+			{
+				shotgun.MuzzleSocket = muzzle;
+				shotgun.WeaponVisual = visual;
+				shotgun.LeftHandIkTarget = leftIk;
+				shotgun.RightHandIkTarget = rightIk;
+			}
 
 			var jammerGun = weaponObject.Components.Get<DroneJammerGun>();
-			if ( jammerGun != null ) jammerGun.MuzzleSocket = muzzle;
+			if ( jammerGun != null )
+			{
+				jammerGun.MuzzleSocket = muzzle;
+				jammerGun.WeaponVisual = visual;
+				jammerGun.LeftHandIkTarget = leftIk;
+				jammerGun.RightHandIkTarget = rightIk;
+			}
 		}
 
 		// Wire grenade explosion FX if present.
 		if ( grenadeObject != null )
 		{
+			var leftIk = grenadeObject.Children.FirstOrDefault( x => x.Name == "LeftHandIk" );
+			var rightIk = grenadeObject.Children.FirstOrDefault( x => x.Name == "RightHandIk" );
+			var throwable = grenadeObject.Components.Get<ThrowableGrenade>();
+			if ( throwable != null )
+			{
+				throwable.LeftHandIkTarget = leftIk;
+				throwable.RightHandIkTarget = rightIk;
+			}
+
 			var frag = grenadeObject.Components.Get<FragGrenade>();
 			if ( frag != null )
 			{

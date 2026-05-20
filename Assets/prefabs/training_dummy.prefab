@@ -40,7 +40,7 @@
           {
             "__type": "Sandbox.SkinnedModelRenderer",
             "__guid": "55555555-0001-1100-0000-000000000001",
-            "BodyGroups": 18446744073709551615,
+            "BodyGroups": 341,
             "CreateBoneObjects": false,
             "Model": "models/citizen_human/citizen_human_male.vmdl",
             "RenderType": "On",

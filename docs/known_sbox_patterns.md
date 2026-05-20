@@ -434,7 +434,20 @@ public void TakeDamage(DamageInfo info)
 - Soldier classes keep primary weapons in slot 1 and grenades/equipment in slot 2.
 - Pilot ground avatars currently keep the drone controller/deployer in slot 1 and the MP7 in slot 2.
 - Held-item components should call the shared `WeaponPose.SetVisibility(GameObject, selected)` root helper when stowed.
+- Selected held-item components should also call `WeaponPose.ApplyHandPose(...)` with item-owned `LeftHandIk` and `RightHandIk` child targets so the human body hands have stable places to attach.
+- Stowed held items should clear only the IK targets they own; do not wipe another selected item's hand pose.
 - Run `.\scripts\check_loadout_slots.ps1` after prefab slot edits to catch duplicate or reversed slot assignments before playtesting.
+
+### Human First-Person Arms And Held-Item IK
+
+**Pattern:** Player-facing first-person arms come from the real human body renderer plus Citizen IK. Do not add a separate arms-only viewmodel path for the local player.
+
+**Workflow:**
+- Keep `GroundPlayerController` body rendering visible in first person unless a local-only clipping fix is explicitly needed.
+- Put `LeftHandIk` and `RightHandIk` child GameObjects directly under every active held item: `Weapon`, `Grenade`, and `DroneDeployer` where present.
+- Use `Rifle` / `Both` for hitscan rifles and the drone jammer, `Shotgun` / `Both` for shotgun, `HoldItem` / `Right` for grenades, and `HoldItem` / `Both` for the pilot deployer.
+- If editor playtest shows head or torso self-occlusion, fix local body/head visibility in the human body path rather than bringing back a separate arms model.
+- Run `.\scripts\agents\run_agent_checks.ps1 -Suite prefab -ShowInfo` after held-item prefab edits so missing hand targets are caught before playtesting.
 
 ### MCP Component Value Conversion
 
@@ -451,6 +464,7 @@ public void TakeDamage(DamageInfo info)
 **Workflow:**
 - Keep visible mesh, solid collision, ladder triggers, and helper volumes under a shared prop root.
 - Rotate or move the prop root for scene placement. Do not rotate the `Visual` child to orient a prop that has sibling `Collision_*` children.
+- For buildings, evaluate collision on the house/building root, not just the selected `Model_Visual` child. `Model_Visual` can remain renderer-only when sibling `Collision_*` children under the root provide the floors, walls, roof, stairs, and cover collision.
 - For open-base props like the water tower, do not fill empty visual space with broad frame wall colliders. Keep tank/platform/legs solid, keep ladder volumes as triggers, and only add narrow brace collision when it matches visible geometry.
 - For climbable props, keep ladder volumes as trigger colliders with `LadderVolume`; keep physical blockers as non-trigger `BoxCollider` children.
 - Scene-placed environment Blender models should not silently remain non-solid. If a local model from `environment_model.blend` is placed directly in `main.scene`, add a direct `BoxCollider`, a `Collision_*` child, or sibling `Collision_*` helpers under the same prop root. Use narrow trunk blockers for trees and low body blockers for rocks instead of broad leaf or scenery volumes.
@@ -482,5 +496,5 @@ public void TakeDamage(DamageInfo info)
 
 ---
 
-Last Updated: May 18, 2026
-Version: 1.8 - Added ambient loop-overlap guidance
+Last Updated: May 19, 2026
+Version: 1.9 - Added human first-person arms and held-item IK guidance

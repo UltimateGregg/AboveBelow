@@ -1,4 +1,5 @@
 using Sandbox;
+using System.Reflection;
 using System.IO;
 using SboxMcp;
 
@@ -187,20 +188,27 @@ public static class EditorHandler
 
 			var pixmap = Activator.CreateInstance( pixmapType, new object[] { width, height } );
 
-			var renderToPixmap = camera.GetType().GetMethod( "RenderToPixmap", new[] { pixmapType } )
-				?? AppDomain.CurrentDomain.GetAssemblies()
-					.SelectMany( a => a.GetTypes() )
-					.SelectMany( t => t.GetMethods( BindingFlags.Public | BindingFlags.Static ) )
-					.FirstOrDefault( m => m.Name == "RenderToPixmap"
-						&& m.GetParameters().Length == 2
-						&& m.GetParameters()[1].ParameterType == pixmapType );
+			var renderToPixmap = FindRenderToPixmap( camera.GetType(), pixmapType );
 			if ( renderToPixmap is null )
-				throw new InvalidOperationException( "RenderToPixmap method not available in this context." );
+				throw new InvalidOperationException( "RenderToPixmap method not available in this context after checking 2- and 3-parameter signatures." );
 
+			var renderParams = renderToPixmap.GetParameters();
+			object result;
 			if ( renderToPixmap.IsStatic )
-				renderToPixmap.Invoke( null, new object[] { camera, pixmap } );
+			{
+				result = renderParams.Length == 3
+					? renderToPixmap.Invoke( null, new object[] { camera, pixmap, false } )
+					: renderToPixmap.Invoke( null, new object[] { camera, pixmap } );
+			}
 			else
-				renderToPixmap.Invoke( camera, new object[] { pixmap } );
+			{
+				result = renderParams.Length == 2
+					? renderToPixmap.Invoke( camera, new object[] { pixmap, false } )
+					: renderToPixmap.Invoke( camera, new object[] { pixmap } );
+			}
+
+			if ( result is bool rendered && !rendered )
+				throw new InvalidOperationException( "RenderToPixmap returned false." );
 
 			var savePng = pixmapType.GetMethod( "SavePng", new[] { typeof( string ) } );
 			savePng?.Invoke( pixmap, new object[] { outPath } );
@@ -234,6 +242,48 @@ public static class EditorHandler
 			if ( cam is not null ) return cam;
 		}
 		return null;
+	}
+
+	private static MethodInfo FindRenderToPixmap( Type cameraType, Type pixmapType )
+	{
+		var instanceMethod = cameraType.GetMethods( BindingFlags.Public | BindingFlags.Instance )
+			.FirstOrDefault( m => m.Name == "RenderToPixmap" && IsInstanceRenderToPixmap( m, pixmapType ) );
+		if ( instanceMethod is not null )
+			return instanceMethod;
+
+		return AppDomain.CurrentDomain.GetAssemblies()
+			.SelectMany( GetLoadableTypes )
+			.SelectMany( t => t.GetMethods( BindingFlags.Public | BindingFlags.Static ) )
+			.FirstOrDefault( m => m.Name == "RenderToPixmap" && IsStaticRenderToPixmap( m, cameraType, pixmapType ) );
+	}
+
+	private static bool IsInstanceRenderToPixmap( MethodInfo method, Type pixmapType )
+	{
+		var parameters = method.GetParameters();
+		return parameters.Length is 1 or 2
+			&& parameters[0].ParameterType == pixmapType
+			&& (parameters.Length == 1 || parameters[1].ParameterType == typeof( bool ));
+	}
+
+	private static bool IsStaticRenderToPixmap( MethodInfo method, Type cameraType, Type pixmapType )
+	{
+		var parameters = method.GetParameters();
+		return parameters.Length is 2 or 3
+			&& parameters[0].ParameterType.IsAssignableFrom( cameraType )
+			&& parameters[1].ParameterType == pixmapType
+			&& (parameters.Length == 2 || parameters[2].ParameterType == typeof( bool ));
+	}
+
+	private static IEnumerable<Type> GetLoadableTypes( Assembly assembly )
+	{
+		try
+		{
+			return assembly.GetTypes();
+		}
+		catch ( ReflectionTypeLoadException ex )
+		{
+			return ex.Types.Where( t => t is not null );
+		}
 	}
 
 	private static string ResolveOutputPath( string explicitPath )

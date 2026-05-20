@@ -77,8 +77,8 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 
 | Task Type | Read This Section in CLAUDE.md |
 |-----------|------|
-| Visibility/rendering bug | "Held-item viewmodel architecture" + "First-person arms" + "HUD feedback layers" |
-| Weapon or grenade behavior | "Held-item viewmodel architecture" + "Slot system" + "Health and damage events" |
+| Visibility/rendering bug | "Held-item pose/IK architecture" + "human first-person body rendering" + "HUD feedback layers" |
+| Weapon or grenade behavior | "Held-item pose/IK architecture" + "Slot system" + "Health and damage events" |
 | Drone prefab work | "Drone prefab conventions" + "Pilot / drone control flow" |
 | Networking issue | Search CLAUDE.md for `[Sync]`, `Rpc`, "host-authoritative" |
 | Input/controls | "Recoil" + "GroundPlayerController" + relevant weapon class |

@@ -67,7 +67,10 @@ $ownedSoundFiles = @(
     },
     @{
         Path = "Code/Drone/DroneWeapon.cs"
-        Allowed = @()
+        Allowed = @(
+            'Sound\.Play\(\s*ExplosionSound\s*,\s*center\s*\)',
+            'Sound\.Play\(\s*DefaultExplosionSoundPath\s*,\s*center\s*\)'
+        )
     },
     @{
         Path = "Code/Player/DroneJammerGun.cs"

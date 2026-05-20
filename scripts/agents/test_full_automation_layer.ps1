@@ -31,6 +31,7 @@ $requiredScripts = @(
     "scripts/agents/ambient_noise_audit.ps1",
     "scripts/agents/sound_playback_audit.ps1",
     "scripts/agents/team_label_copy_audit.ps1",
+    "scripts/agents/mcp_screenshot_audit.ps1",
     "scripts/agents/asset_visual_review.ps1",
     "scripts/agents/blender_live_toolkit_self_test.ps1"
 )
@@ -221,7 +222,7 @@ Authoring.
 Areas.
 
 ## Review Rules
-Collision_* LadderVolume water tower
+Collision_* LadderVolume water tower building root
 
 ## Evidence Command
 Command.
@@ -429,7 +430,7 @@ public sealed class RoundManager
 
         @'
 <root>
-    <div>Drone Pilots against Soldiers</div>
+    <div class="main-menu-title">ABOVE / BELOW</div>
     <div>DRONE PILOTS WIN</div>
     <div>SOLDIERS WIN</div>
     <div>Hunt soldiers.</div>
@@ -1005,6 +1006,81 @@ if (Test-Path -LiteralPath $collisionAudit) {
         & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionAudit -Root $tempRoot | Out-Host
         if ($LASTEXITCODE -ne 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_authoring_agent.ps1" "Collision authoring agent failed on a valid prop with identity Visual rotation and solid collision." "Avoid false positives for normal scene collision authoring."
+        }
+
+        @'
+{
+  "GameObjects": [
+    {
+      "Name": "BlockoutMap",
+      "Children": [
+        {
+          "Name": "Buildings",
+          "Children": [
+            {
+              "Name": "House_Large_01",
+              "Children": [
+                {
+                  "Name": "Model_Visual",
+                  "Components": [
+                    { "__type": "Sandbox.ModelRenderer", "Model": "models/house_large.vmdl", "RenderType": "On" }
+                  ],
+                  "Children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_authoring_agent.ps1" "Collision authoring agent did not fail on a rendered building without authored collision coverage." "Keep building collision checks rooted at the building object, not the selected visual child."
+        }
+
+        @'
+{
+  "GameObjects": [
+    {
+      "Name": "BlockoutMap",
+      "Children": [
+        {
+          "Name": "Buildings",
+          "Children": [
+            {
+              "Name": "House_Large_01",
+              "Children": [
+                {
+                  "Name": "Model_Visual",
+                  "Components": [
+                    { "__type": "Sandbox.ModelRenderer", "Model": "models/house_large.vmdl", "RenderType": "On" }
+                  ],
+                  "Children": []
+                },
+                {
+                  "Name": "Collision_Floor",
+                  "Components": [
+                    { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "100,100,24" }
+                  ],
+                  "Children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_authoring_agent.ps1" "Collision authoring agent failed on a rendered building with sibling Collision_* coverage." "Allow Model_Visual children to remain renderer-only when the building root owns collision helpers."
         }
 
         @'

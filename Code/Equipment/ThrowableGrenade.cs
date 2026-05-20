@@ -1,4 +1,5 @@
 using Sandbox;
+using Sandbox.Citizen;
 using System;
 using System.Linq;
 
@@ -41,10 +42,14 @@ public abstract class ThrowableGrenade : Component
 	[Property] public SoundEvent DetonateSound { get; set; }
 
 	[Property] public GameObject WeaponVisual { get; set; }
+	[Property] public GameObject LeftHandIkTarget { get; set; }
+	[Property] public GameObject RightHandIkTarget { get; set; }
 	[Property] public Vector3 FirstPersonOffset { get; set; } = new( 28f, 8f, -10f );
 	[Property] public Angles FirstPersonRotationOffset { get; set; } = new( 0f, 0f, 0f );
 	[Property] public Vector3 ThirdPersonLocalPosition { get; set; } = new( 12f, 14f, 48f );
 	[Property] public Angles ThirdPersonLocalAngles { get; set; } = new( 0f, 0f, 0f );
+	[Property] public CitizenAnimationHelper.HoldTypes HoldType { get; set; } = CitizenAnimationHelper.HoldTypes.HoldItem;
+	[Property] public CitizenAnimationHelper.Hand Handedness { get; set; } = CitizenAnimationHelper.Hand.Right;
 
 	/// <summary>Loadout slot this grenade occupies. Defaults to the equipment slot.</summary>
 	[Property] public int Slot { get; set; } = SoldierLoadout.EquipmentSlot;
@@ -69,11 +74,14 @@ public abstract class ThrowableGrenade : Component
 
 	protected override void OnStart()
 	{
+		ResolvePrefabReferences();
 		ApplySelectionVisualState();
 	}
 
 	protected override void OnUpdate()
 	{
+		ResolvePrefabReferences();
+
 		// Hold-in-hand visibility + FPS viewmodel pose run for everyone so
 		// remote players see the grenade attached to the body, and so the
 		// local player sees it bob with their camera when selected.
@@ -97,7 +105,20 @@ public abstract class ThrowableGrenade : Component
 	{
 		var visibleInHand = IsSelected && !IsArmed;
 		WeaponPose.SetVisibility( GameObject, visibleInHand );
+		WeaponPose.ApplyHandPose( this, visibleInHand, HoldType, Handedness, LeftHandIkTarget, RightHandIkTarget );
 		return visibleInHand;
+	}
+
+	void ResolvePrefabReferences()
+	{
+		if ( !WeaponVisual.IsValid() )
+			WeaponVisual = GameObject.Children.FirstOrDefault( x => x.Name == "WeaponVisual" );
+
+		if ( !LeftHandIkTarget.IsValid() )
+			LeftHandIkTarget = GameObject.Children.FirstOrDefault( x => x.Name == "LeftHandIk" );
+
+		if ( !RightHandIkTarget.IsValid() )
+			RightHandIkTarget = GameObject.Children.FirstOrDefault( x => x.Name == "RightHandIk" );
 	}
 
 	void BeginThrow()

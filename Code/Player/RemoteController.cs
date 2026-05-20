@@ -172,6 +172,12 @@ public sealed class RemoteController : Component
 
 	void SetGroundBodyVisible( bool visible )
 	{
+		if ( visible && _groundController.IsValid() )
+		{
+			_groundController.SetLocalFirstPersonBodyMode( false );
+			return;
+		}
+
 		if ( !_body.IsValid() )
 			_body = GameObject.Children.FirstOrDefault( c => c.Name == "Body" );
 		if ( !_body.IsValid() ) return;

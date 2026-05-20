@@ -35,6 +35,54 @@ HudPanel {
                 box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
             }
 
+            &.main-menu-startup {
+                flex-direction: column;
+                gap: 12px;
+
+                .main-menu-title {
+                    position: absolute;
+                    top: 16%;
+                    left: 50%;
+                    font-size: 68px;
+                    font-weight: 900;
+                    color: white;
+                    text-align: center;
+                    text-shadow: 0 0 18px rgba(77, 210, 255, 0.34);
+                    transform: translatex(-50%);
+                }
+
+                .main-menu-panel {
+                    width: 430px;
+                    max-width: 88%;
+                    padding: 16px;
+                    gap: 10px;
+                }
+
+                .main-menu-actions,
+                .main-menu-choices {
+                    gap: 10px;
+                }
+
+                .main-menu-choices {
+                    flex-direction: column;
+                }
+
+                .main-menu-secondary {
+                    width: 100%;
+                    flex-direction: row;
+                    gap: 10px;
+                }
+
+                .choice {
+                    min-height: 58px;
+                    padding: 10px 12px;
+                }
+
+                .main-menu-play {
+                    min-height: 68px;
+                }
+            }
+
             .title {
                 font-size: 30px;
                 font-weight: 800;
@@ -575,11 +623,13 @@ HudPanel {
 
         .sprint-meter {
             position: absolute;
-            left: -60px;
-            top: 30px;
-            width: 120px;
-            height: 6px;
-            border-radius: 3px;
+            left: -120px;
+            top: 25vh;
+            width: 240px;
+            height: 18px;
+            opacity: 0.5;
+            transform: translatey(-50%);
+            border-radius: 9px;
             border: 1px solid rgba(black, 0.72);
             background-color: rgba(black, 0.42);
             box-shadow: 0 0 2px rgba(black, 0.78);

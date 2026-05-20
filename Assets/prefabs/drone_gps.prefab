@@ -39,7 +39,7 @@
         "MousePitchSensitivity": 0.05,
         "VisualTiltDegrees": 14,
         "VisualTiltSmoothing": 6,
-        "PropellerSpinDegreesPerSecond": 2160,
+        "PropellerSpinDegreesPerSecond": 4320,
         "PropellerIdleSpinFraction": 0.35,
         "PropellerBoostSpinMultiplier": 1.25,
         "PropellerSound": "sounds/drone_hum.sound",
@@ -156,86 +156,96 @@
         "__guid": "22222222-a000-1000-0000-000000000001",
         "Flags": 0,
         "Name": "Visual",
-        "Scale": "0.25,0.25,0.25",
+        "Scale": "1,1,1",
         "Enabled": true,
-        "Components": [
+        "Components": [],
+        "Children": [
           {
-            "__type": "Sandbox.ModelRenderer",
-            "__guid": "22222222-a000-1100-0000-000000000001",
-            "BodyGroups": 18446744073709551615,
-            "Model": "models/drone_high.vmdl",
-            "RenderType": "On",
-            "Tint": "0.7,1,0.7,1"
-          }
-        ]
-      },
-      {
-        "__guid": "22222222-a000-4100-0000-000000000001",
-        "Flags": 0,
-        "Name": "Propeller_FL",
-        "Position": "8.5,5.75,0.75",
-        "Enabled": true,
-        "Components": [
+            "__guid": "22222222-a000-1200-0000-000000000001",
+            "Flags": 0,
+            "Name": "Model_Visual",
+            "Scale": "0.25,0.25,0.25",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "Sandbox.ModelRenderer",
+                "__guid": "22222222-a000-1100-0000-000000000001",
+                "BodyGroups": 18446744073709551615,
+                "Model": "models/drone_high.vmdl",
+                "RenderType": "On",
+                "Tint": "0.7,1,0.7,1"
+              }
+            ]
+          },
           {
-            "__type": "Sandbox.ModelRenderer",
-            "__guid": "22222222-a000-4101-0000-000000000001",
-            "BodyGroups": 18446744073709551615,
-            "Model": "models/drone_fpv_prop.vmdl",
-            "RenderType": "On",
-            "Tint": "0.7,1,0.7,1"
-          }
-        ]
-      },
-      {
-        "__guid": "22222222-a000-4200-0000-000000000001",
-        "Flags": 0,
-        "Name": "Propeller_FR",
-        "Position": "8.5,-5.75,0.75",
-        "Rotation": "0,180,0",
-        "Enabled": true,
-        "Components": [
+            "__guid": "22222222-a000-4100-0000-000000000001",
+            "Flags": 0,
+            "Name": "Propeller_FL",
+            "Position": "8.5,5.75,0.75",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "Sandbox.ModelRenderer",
+                "__guid": "22222222-a000-4101-0000-000000000001",
+                "BodyGroups": 18446744073709551615,
+                "Model": "models/drone_fpv_prop.vmdl",
+                "RenderType": "On",
+                "Tint": "0.7,1,0.7,1"
+              }
+            ]
+          },
           {
-            "__type": "Sandbox.ModelRenderer",
-            "__guid": "22222222-a000-4201-0000-000000000001",
-            "BodyGroups": 18446744073709551615,
-            "Model": "models/drone_fpv_prop.vmdl",
-            "RenderType": "On",
-            "Tint": "0.7,1,0.7,1"
-          }
-        ]
-      },
-      {
-        "__guid": "22222222-a000-4300-0000-000000000001",
-        "Flags": 0,
-        "Name": "Propeller_BL",
-        "Position": "-8.5,5.75,0.75",
-        "Rotation": "0,180,0",
-        "Enabled": true,
-        "Components": [
+            "__guid": "22222222-a000-4200-0000-000000000001",
+            "Flags": 0,
+            "Name": "Propeller_FR",
+            "Position": "8.5,-5.75,0.75",
+            "Rotation": "0,180,0",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "Sandbox.ModelRenderer",
+                "__guid": "22222222-a000-4201-0000-000000000001",
+                "BodyGroups": 18446744073709551615,
+                "Model": "models/drone_fpv_prop.vmdl",
+                "RenderType": "On",
+                "Tint": "0.7,1,0.7,1"
+              }
+            ]
+          },
           {
-            "__type": "Sandbox.ModelRenderer",
-            "__guid": "22222222-a000-4301-0000-000000000001",
-            "BodyGroups": 18446744073709551615,
-            "Model": "models/drone_fpv_prop.vmdl",
-            "RenderType": "On",
-            "Tint": "0.7,1,0.7,1"
-          }
-        ]
-      },
-      {
-        "__guid": "22222222-a000-4400-0000-000000000001",
-        "Flags": 0,
-        "Name": "Propeller_BR",
-        "Position": "-8.5,-5.75,0.75",
-        "Enabled": true,
-        "Components": [
+            "__guid": "22222222-a000-4300-0000-000000000001",
+            "Flags": 0,
+            "Name": "Propeller_BL",
+            "Position": "-8.5,5.75,0.75",
+            "Rotation": "0,180,0",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "Sandbox.ModelRenderer",
+                "__guid": "22222222-a000-4301-0000-000000000001",
+                "BodyGroups": 18446744073709551615,
+                "Model": "models/drone_fpv_prop.vmdl",
+                "RenderType": "On",
+                "Tint": "0.7,1,0.7,1"
+              }
+            ]
+          },
           {
-            "__type": "Sandbox.ModelRenderer",
-            "__guid": "22222222-a000-4401-0000-000000000001",
-            "BodyGroups": 18446744073709551615,
-            "Model": "models/drone_fpv_prop.vmdl",
-            "RenderType": "On",
-            "Tint": "0.7,1,0.7,1"
+            "__guid": "22222222-a000-4400-0000-000000000001",
+            "Flags": 0,
+            "Name": "Propeller_BR",
+            "Position": "-8.5,-5.75,0.75",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "Sandbox.ModelRenderer",
+                "__guid": "22222222-a000-4401-0000-000000000001",
+                "BodyGroups": 18446744073709551615,
+                "Model": "models/drone_fpv_prop.vmdl",
+                "RenderType": "On",
+                "Tint": "0.7,1,0.7,1"
+              }
+            ]
           }
         ]
       },

@@ -1,13 +1,14 @@
 using Sandbox;
+using Sandbox.Citizen;
 using System;
 
 namespace DroneVsPlayers;
 
 /// <summary>
 /// Shared helpers for "held item" components (weapons + thrown equipment) so
-/// the M4, shotgun, drone jammer, and grenades all use the exact same FPS
-/// viewmodel pose, third-person fallback, slot-selection check, ADS lerping,
-/// view-inertia smoothing, and hide-when-stowed behaviour.
+/// the M4, shotgun, drone jammer, and grenades all use the same first-person
+/// held-item pose, third-person fallback, slot-selection check, ADS lerping,
+/// view-inertia smoothing, Citizen hand IK, and hide-when-stowed behaviour.
 ///
 /// Each consumer adds a <c>Slot</c> property plus hip/ADS viewmodel offset
 /// properties and calls the viewmodel update helpers plus the visibility helpers
@@ -157,5 +158,59 @@ public static class WeaponPose
 
 		foreach ( var renderer in renderRoot.Components.GetAll<SkinnedModelRenderer>( FindMode.EverythingInSelfAndDescendants ) )
 			renderer.RenderType = renderType;
+	}
+
+	/// <summary>
+	/// Assigns the owning human Citizen hands to this selected item. When the
+	/// item is stowed, only hand targets owned by this item are cleared.
+	/// </summary>
+	public static void ApplyHandPose(
+		Component owner,
+		bool selected,
+		CitizenAnimationHelper.HoldTypes holdType,
+		CitizenAnimationHelper.Hand handedness,
+		GameObject leftTarget,
+		GameObject rightTarget )
+	{
+		if ( owner is null ) return;
+
+		var helper = owner.Components.GetInAncestors<CitizenAnimationHelper>();
+		if ( !helper.IsValid() )
+		{
+			var pc = owner.Components.GetInAncestors<GroundPlayerController>();
+			helper = pc.IsValid() ? pc.AnimationHelper : null;
+		}
+		if ( !helper.IsValid() ) return;
+
+		if ( selected )
+		{
+			var useLeftHand = handedness != CitizenAnimationHelper.Hand.Right;
+			var useRightHand = handedness != CitizenAnimationHelper.Hand.Left;
+
+			helper.HoldType = holdType;
+			helper.Handedness = handedness;
+			helper.IkLeftHand = useLeftHand && leftTarget.IsValid() ? leftTarget : null;
+			helper.IkRightHand = useRightHand && rightTarget.IsValid() ? rightTarget : null;
+			return;
+		}
+
+		var cleared = false;
+		if ( leftTarget.IsValid() && helper.IkLeftHand == leftTarget )
+		{
+			helper.IkLeftHand = null;
+			cleared = true;
+		}
+
+		if ( rightTarget.IsValid() && helper.IkRightHand == rightTarget )
+		{
+			helper.IkRightHand = null;
+			cleared = true;
+		}
+
+		if ( cleared && !helper.IkLeftHand.IsValid() && !helper.IkRightHand.IsValid() )
+		{
+			helper.HoldType = CitizenAnimationHelper.HoldTypes.None;
+			helper.Handedness = CitizenAnimationHelper.Hand.Both;
+		}
 	}
 }

@@ -78,6 +78,21 @@ foreach ($stylePath in @(
     Require-Match "$stylePath should style the sprint fill." `
         $style "\.sprint-fill"
 
+    Require-Match "$stylePath should center the sprint meter between the reticle and bottom of the screen." `
+        $style "top:\s*25vh"
+
+    Require-Match "$stylePath should center the sprint meter on its vertical midpoint." `
+        $style "transform:\s*translatey\(\s*-50%\s*\)"
+
+    Require-Match "$stylePath should make the sprint meter double wide." `
+        $style "width:\s*240px"
+
+    Require-Match "$stylePath should make the sprint meter taller." `
+        $style "height:\s*18px"
+
+    Require-Match "$stylePath should render the sprint meter at 50 percent opacity." `
+        $style "opacity:\s*0\.5"
+
     Require-Match "$stylePath should style the exhausted/locked sprint state." `
         $style "&\.locked"
 

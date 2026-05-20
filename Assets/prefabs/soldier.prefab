@@ -65,7 +65,7 @@
           {
             "__type": "Sandbox.SkinnedModelRenderer",
             "__guid": "33333333-5000-1100-0000-000000000001",
-            "BodyGroups": 18446744073709551615,
+            "BodyGroups": 341,
             "CreateBoneObjects": false,
             "Model": "models/citizen_human/citizen_human_male.vmdl",
             "RenderType": "On",
@@ -181,6 +181,22 @@
                     ]
                   }
                 ]
+              },
+              {
+                "__guid": "33333333-5000-3600-0000-000000000001",
+                "Flags": 0,
+                "Name": "LeftHandIk",
+                "Position": "21,-5,-2",
+                "Enabled": true,
+                "Components": []
+              },
+              {
+                "__guid": "33333333-5000-3700-0000-000000000001",
+                "Flags": 0,
+                "Name": "RightHandIk",
+                "Position": "5,5,-3",
+                "Enabled": true,
+                "Components": []
               }
             ]
           }

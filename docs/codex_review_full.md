@@ -67,18 +67,18 @@ You are auditing roughly two weeks of work on an s&box (Source 2 based) game pro
 2. **Round transition** — `Assets/sounds/round_start_swell.sound`, played on countdown → active.
 3. **Suppression** — when the whip-by fires, `GroundPlayerController.AddSuppression()` adds to `SuppressionT`; HudPanel applies a grey vignette and look sensitivity dampens.
 
-### Phase 7 — First-person arms (stub)
+### Phase 7 — Human held-item arms
 
-1. **Blender model**: `weapons_model.blend/fps_arms.blend` — root empty `Fps_Arms` parents two forearm cylinders + two hand boxes. Materials `Arms_Sleeve` and `Arms_Glove`.
-2. **Pipeline config**: `scripts/fps_arms_asset_pipeline.json`.
-3. **Materials**: `Assets/materials/fps_arms_sleeve.vmat`, `Assets/materials/fps_arms_glove.vmat`, both `shaders/complex.shader`.
-4. **Exported**: `Assets/models/fps_arms.vmdl` + `.fbx` with material remaps. Bounds reported by editor: `mins(4.5,-12,-19), maxs(32.3,15.7,-7.2)`.
-5. **Component**: `Code/Player/FpvArms.cs` — camera-tracking viewmodel with hip↔ADS blend and view inertia, hides on `IsProxy` or `!FirstPerson` by setting `RenderType = Off`. Default offsets `HipOffset=(0,-2,-4)`, `AdsOffset=(-6,-2,2)`.
-6. **Prefab wiring**: `FpvArms` GameObject under `Eye` in all four soldier/pilot prefabs (`soldier_assault`, `soldier_counter_uav`, `soldier_heavy`, `pilot_ground`), each with a per-class `ModelRenderer.Tint`.
+1. **Body source**: the local first-person view uses the real human body renderer, not a dedicated arms-only model.
+2. **Pose helper**: `Code/Player/WeaponPose.cs` owns the shared Citizen hand-pose path. Selected held items set `CitizenAnimationHelper.HoldType`, `Handedness`, `IkLeftHand`, and `IkRightHand`; stowed items clear only the targets they own.
+3. **Held-item targets**: active soldier, pilot, and fallback soldier prefabs must place `LeftHandIk` and `RightHandIk` child objects under each held item (`Weapon`, `Grenade`, and `DroneDeployer` where present).
+4. **First-person rendering**: `GroundPlayerController` keeps the local human body visible in first person so the arms can be seen holding selected items.
+5. **Pilot deployer**: `DroneDeployer` moves its IK targets with the visible RC transmitter and mini-drone positions so the hands follow the same first-person pose as the held objects.
+6. **Regression guard**: `scripts/agents/prefab_wiring_audit.ps1` should fail if active player prefabs lose held-item hand targets or reintroduce the removed arms-only viewmodel path.
 
 ### Cross-cutting infrastructure work
 
-1. **WeaponPose static utility** — `Code/Player/WeaponPose.cs`. All held items use it: rifle, shotgun, drone jammer, three grenade types. Provides `IsSlotSelected`, `UpdateViewmodel` (with ADS overload), and `SetVisibility`.
+1. **WeaponPose static utility** — `Code/Player/WeaponPose.cs`. All held items use it: rifle, shotgun, drone jammer, three grenade types. Provides `IsSlotSelected`, `UpdateViewmodel` (with ADS overload), `SetVisibility`, and `ApplyHandPose`.
 2. **Slot system** — `Code/Player/SoldierLoadout.cs`. `[Sync] SelectedSlot`. Listens for `Slot1`/`Slot2` input. `SoldierLoadout.PrimarySlot = 1` (rifle/shotgun/jammer), `EquipmentSlot = 2` (grenades). When a slot isn't selected: `ModelRenderer.RenderType = ShadowsOnly`, input gated off.
 3. **Health events** — `Code/Player/Health.cs`. `OnDamaged(DamageInfo)` and `OnKilled(DamageInfo)` fire on every peer. `DamageInfo` has `Amount`, `AttackerId`, `Position`, `WeaponName`. `RequestDamageNamed(amount, attackerId, position, weaponName)` is the canonical entry point for weapons. Each weapon declares `[Property] string WeaponDisplayName`.
 4. **Training dummies for solo play** — `Code/Game/TrainingDummy.cs`. Citizens with `Health` + `CharacterController` that respawn after `RespawnSeconds`. Don't use `PilotSoldier` / `SoldierBase` so `RoundManager` win conditions ignore them. Four placed in `main.scene` (`TrainingDummy_NearSpawn`, `Mid_North`, `Mid_South`, `Far_East`). Prefab at `Assets/prefabs/training_dummy.prefab`.
@@ -164,7 +164,7 @@ Verify no `.sound` references a `.wav` that doesn't exist on disk.
 ### H. Procedural asset pipeline outputs
 
 For each procedurally generated asset:
-- `Assets/models/fps_arms.vmdl` (Phase 7)
+- Verify the removed arms-only viewmodel asset path stays absent.
 - `Assets/models/jammer_gun.vmdl`
 - `Assets/models/shotgun.vmdl`
 - `Assets/models/frag_grenade.vmdl`, `chaff_grenade.vmdl`, `emp_grenade.vmdl`
@@ -178,8 +178,8 @@ Verify:
 ### I. Prefab JSON integrity
 
 For each prefab modified in this work:
-- `soldier_assault.prefab`, `soldier_counter_uav.prefab`, `soldier_heavy.prefab`, `pilot_ground.prefab` — verify the `Eye` child has an `FpvArms` GameObject with a `ModelRenderer` + `DroneVsPlayers.FpvArms` component, the `ArmsRenderer` component-typed ref is wired correctly, and GUIDs don't collide within the file.
-- Same prefabs: verify the weapon GameObject (Weapon, Grenade) has `Slot`, `FirstPersonOffset`, `AdsOffset` (where supported), `FirstPersonRotationOffset`, `ThirdPersonLocalPosition`, `ThirdPersonLocalAngles` set, plus weapon-specific properties (sounds, tracer prefab ref, magazine size, etc.).
+- `soldier.prefab`, `soldier_assault.prefab`, `soldier_counter_uav.prefab`, `soldier_heavy.prefab`, `pilot_ground.prefab` — verify no removed arms-only viewmodel object remains under `Eye`, held-item target GUIDs do not collide within each file, and each active held item has direct `LeftHandIk` and `RightHandIk` child objects.
+- Same prefabs: verify the weapon GameObject (Weapon, Grenade, DroneDeployer where present) has `Slot`, `FirstPersonOffset`, `AdsOffset` (where supported), `FirstPersonRotationOffset`, `ThirdPersonLocalPosition`, `ThirdPersonLocalAngles`, hand-pose targets, and weapon-specific properties (sounds, tracer prefab ref, magazine size, etc.).
 - `tracer_default.prefab` — has a `LineRenderer` + `TracerLifetime` component, lifetime ~0.06s.
 - `training_dummy.prefab` — has `CharacterController`, `Health`, `TrainingDummy`, plus a `Body` child with `SkinnedModelRenderer` + `CitizenAnimationHelper`.
 
@@ -194,13 +194,14 @@ Confirm the scene contains:
 - Soldier spawn `PlayerSpawn` GameObjects at `(-880, ±180, 32)` (not `(-1420, ±180, 32)`).
 - The scene file is valid JSON.
 
-### K. Phase 7 — first-person arms
+### K. Phase 7 — human held-item arms
 
-Everything from the previous Phase 7-only review prompt. Specifically:
-- `Code/Player/FpvArms.cs` — compiles, API-correct, doesn't NPE on missing renderer, snap-on-first-frame check (`current.LengthSquared < 0.01f`) actually works given that FpvArms is parented to `Eye` which has `Position: 0,0,64` relative to soldier root.
-- `RenderType = Off` vs `ShadowsOnly`: FpvArms is *never* meant to be visible to remote players. Is `Off` correct, or should arms cast no shadow either? (Casting arms shadows from the first-person viewmodel onto the world would look wrong.)
-- Default offsets `HipOffset=(0,-2,-4)`, `AdsOffset=(-6,-2,2)` vs the mesh bounds `mins(4.5,-12,-19), maxs(32.3,15.7,-7.2)`. Are the arms going to render in a visible position in front of the camera? (They might be too far forward and partially clipped by the near plane, or too low.)
-- The 4 prefabs: GUID uniqueness, valid JSON, correct component-typed `ArmsRenderer` refs.
+Everything from the current human-body hand-pose path. Specifically:
+- `Code/Player/WeaponPose.cs` — `ApplyHandPose` sets hold type, handedness, and both IK targets only while the item is selected, then clears only targets owned by the stowed item.
+- `Code/Player/GroundPlayerController.cs` — local first-person rendering keeps the human body visible while preserving drone-view body behavior.
+- Held-item components — rifle, shotgun, drone jammer, grenades, and pilot deployer resolve `LeftHandIk` / `RightHandIk` targets from prefab children and apply the expected `CitizenAnimationHelper` hold type.
+- Prefabs — active soldier, pilot, and fallback soldier held items have stable left/right hand target child objects. Verify GUID uniqueness and valid JSON.
+- Editor playtest — verify assault rifle, jammer, shotgun, grenades, pilot MP7, RC transmitter, and mini-drone place the hands correctly and switching slots clears the previous pose.
 
 ### L. CLAUDE.md accuracy
 
@@ -213,7 +214,7 @@ Particular checks:
 - "HUD feedback layers" section: every described behaviour matches HudPanel code.
 - "Held-item viewmodel architecture" section: the listed `[Property]` set matches every consumer.
 - "Slot system" section: PrimarySlot=1, EquipmentSlot=2, ShadowsOnly hide behaviour.
-- "First-person arms" section (new): every claim about FpvArms.
+- "Human held-item arms" section: every claim about body rendering, Citizen IK, and held-item target ownership.
 - "Collider visualisation" section (new): every claim about CollisionDebugViewer.
 - "What not to do" list: verify each forbidden pattern is actually absent from the new code (no `GameObject.Find` in fixed update, no recoil mixed into EyeAngles, no renamed public components without permission, etc.).
 
@@ -248,4 +249,4 @@ Reply with four sections:
 
 If you can't verify something without running the editor or actually playtesting (e.g. "do the arms appear in the right position"), say so explicitly in section 3 rather than guessing.
 
-Spend more time on the bits the previous agent was uncertain about: the recoil/aim split, the WeaponPose `LengthSquared < 0.01f` snap-check, the `RenderType = Off` vs `ShadowsOnly` decision for FpvArms, the HUD `BuildHash` completeness, the `Health` event unsubscribe pattern, and the M4 `import_scale` fix interacting with the `WeaponVisual.Rotation = "0,-90,0"` muzzle alignment.
+Spend more time on the bits the previous agent was uncertain about: the recoil/aim split, the WeaponPose `LengthSquared < 0.01f` snap-check, first-person body rendering and IK target ownership, the HUD `BuildHash` completeness, the `Health` event unsubscribe pattern, and the M4 `import_scale` fix interacting with the `WeaponVisual.Rotation = "0,-90,0"` muzzle alignment.

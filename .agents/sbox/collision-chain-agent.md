@@ -64,6 +64,7 @@ Do not run an endless loop. If the same failure survives two implementer passes,
 - Ladder volumes must use a trigger `BoxCollider` plus `DroneVsPlayers.LadderVolume`.
 - Visible mesh children and collision helper children should share the same prop root transform.
 - If a prop has sibling collision helpers, keep the `Visual` child identity-aligned and rotate or move the prop root instead.
+- For building work, judge coverage from the building root. Do not add duplicate colliders to `Model_Visual` just because the selected visual child has no component when sibling `Collision_*` helpers already exist.
 - For the water tower, keep tank, roof, platform, four legs, and ladder collision. Do not use broad lower-frame `Collision_Frame_*` wall boxes across the open base.
 
 ## Evidence Commands

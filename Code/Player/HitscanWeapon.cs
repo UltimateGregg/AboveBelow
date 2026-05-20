@@ -1,4 +1,5 @@
 using Sandbox;
+using Sandbox.Citizen;
 using System;
 using System.Linq;
 
@@ -27,6 +28,8 @@ public sealed class HitscanWeapon : Component
 
 	[Property] public GameObject MuzzleSocket { get; set; }
 	[Property] public GameObject WeaponVisual { get; set; }
+	[Property] public GameObject LeftHandIkTarget { get; set; }
+	[Property] public GameObject RightHandIkTarget { get; set; }
 	[Property] public GameObject TracerPrefab { get; set; }
 	[Property] public PointLight MuzzleFlash { get; set; }
 	[Property] public SoundEvent FireSound { get; set; }
@@ -45,6 +48,8 @@ public sealed class HitscanWeapon : Component
 	[Property, Range( 30f, 90f )] public float AdsFovDegrees { get; set; } = 55f;
 	[Property] public Vector3 ThirdPersonLocalPosition { get; set; } = new( 20f, 15f, 55f );
 	[Property] public Angles ThirdPersonLocalAngles { get; set; } = new( 0f, 0f, 0f );
+	[Property] public CitizenAnimationHelper.HoldTypes HoldType { get; set; } = CitizenAnimationHelper.HoldTypes.Rifle;
+	[Property] public CitizenAnimationHelper.Hand Handedness { get; set; } = CitizenAnimationHelper.Hand.Both;
 
 	/// <summary>Loadout slot this weapon occupies. SoldierLoadout maps Slot1 input to slot 1.</summary>
 	[Property] public int Slot { get; set; } = SoldierLoadout.PrimarySlot;
@@ -273,6 +278,7 @@ public sealed class HitscanWeapon : Component
 	{
 		var selected = IsSelected;
 		WeaponPose.SetVisibility( GameObject, selected );
+		WeaponPose.ApplyHandPose( this, selected, HoldType, Handedness, LeftHandIkTarget, RightHandIkTarget );
 		if ( !selected )
 			SetMuzzleFlashVisible( false );
 
@@ -288,6 +294,12 @@ public sealed class HitscanWeapon : Component
 
 		if ( !WeaponVisual.IsValid() )
 			WeaponVisual = GameObject.Children.FirstOrDefault( x => x.Name == "WeaponVisual" );
+
+		if ( !LeftHandIkTarget.IsValid() )
+			LeftHandIkTarget = GameObject.Children.FirstOrDefault( x => x.Name == "LeftHandIk" );
+
+		if ( !RightHandIkTarget.IsValid() )
+			RightHandIkTarget = GameObject.Children.FirstOrDefault( x => x.Name == "RightHandIk" );
 
 		if ( !MuzzleFlash.IsValid() && MuzzleSocket.IsValid() )
 		{

@@ -13,6 +13,7 @@ $Root = (Resolve-Path -LiteralPath $Root).Path
 
 $issues = New-Object System.Collections.Generic.List[object]
 $collisionObjectCount = 0
+$buildingObjectCount = 0
 $scannedFileCount = 0
 $environmentBlenderCollisionModels = @{}
 
@@ -302,6 +303,38 @@ function Test-ObjectHasCollisionCoverage {
     return $false
 }
 
+function Get-ObjectModelRendererCount {
+    param([object]$Object)
+
+    $count = 0
+    foreach ($component in @(Get-ObjectComponents -Object $Object)) {
+        if ($null -ne (Get-JsonPropertyValue -Object $component -Name "Model")) {
+            $count++
+        }
+    }
+
+    foreach ($child in @(Get-ObjectChildren -Object $Object)) {
+        $count += Get-ObjectModelRendererCount -Object $child
+    }
+
+    return $count
+}
+
+function Get-ObjectColliderCount {
+    param([object]$Object)
+
+    $count = 0
+    if (Test-ObjectHasDirectCollider -Object $Object) {
+        $count++
+    }
+
+    foreach ($child in @(Get-ObjectChildren -Object $Object)) {
+        $count += Get-ObjectColliderCount -Object $child
+    }
+
+    return $count
+}
+
 function Test-ParentHasCollisionCoverage {
     param([object]$Parent)
 
@@ -319,6 +352,37 @@ function Test-ParentHasCollisionCoverage {
     }
 
     return $false
+}
+
+function Test-BuildingCollisionCoverage {
+    param(
+        [object]$Object,
+        [object]$Parent,
+        [string]$Path,
+        [string]$ObjectPath
+    )
+
+    $name = Get-JsonPropertyValue -Object $Object -Name "Name"
+    $parentName = Get-JsonPropertyValue -Object $Parent -Name "Name"
+    $isBuildingRoot = $parentName -eq "Buildings" -or
+        ($name -and $name -match "^(House|Building|Warehouse|Garage|Apartment|Barracks|Office)_")
+    if (-not $isBuildingRoot) {
+        return
+    }
+
+    $modelRendererCount = Get-ObjectModelRendererCount -Object $Object
+    if ($modelRendererCount -eq 0) {
+        return
+    }
+
+    $script:buildingObjectCount++
+    if (-not (Test-ObjectHasCollisionCoverage -Object $Object)) {
+        Add-AgentIssue $issues "Error" "Building Collision" $Path "$ObjectPath renders building geometry but has no direct collider or Collision_* coverage under the building root." "Add static Collision_* BoxCollider children or a deliberate direct collider on the building root. Keep Model_Visual renderer-only when sibling collision children own the blocking shape."
+        return
+    }
+
+    $colliderCount = Get-ObjectColliderCount -Object $Object
+    Add-AgentIssue $issues "Info" "Building Collision" $Path "$ObjectPath has building collision coverage ($colliderCount collider component(s), $modelRendererCount model renderer(s))." "Evaluate building collision from the root object, not from the selected Model_Visual child alone."
 }
 
 function Test-SolidCollisionObject {
@@ -524,6 +588,7 @@ function Visit-CollisionObject {
     Test-WaterTowerCollisionContract -Object $Object -Path $Path -ObjectPath $currentPath
     Test-WaterTowerOpenBaseContract -Object $Object -Path $Path -ObjectPath $currentPath
     Test-BlenderModelCollisionCoverage -Object $Object -Parent $Parent -Path $Path -ObjectPath $currentPath
+    Test-BuildingCollisionCoverage -Object $Object -Parent $Parent -Path $Path -ObjectPath $currentPath
 
     $boxCollider = Get-ComponentByTypeName -Object $Object -TypeName "BoxCollider"
     $ladderVolume = Get-ComponentByTypeName -Object $Object -TypeName "LadderVolume"
@@ -583,7 +648,7 @@ else {
     }
 }
 
-Add-AgentIssue $issues "Info" "Collision Authoring" "" "Scanned $scannedFileCount scene/prefab file(s) and $collisionObjectCount Collision_* object(s)."
+Add-AgentIssue $issues "Info" "Collision Authoring" "" "Scanned $scannedFileCount scene/prefab file(s), $collisionObjectCount Collision_* object(s), and $buildingObjectCount building object(s)."
 
 Write-AgentIssues -Issues $issues -ShowInfo:$ShowInfo
 exit (Get-AgentExitCode -Issues $issues -FailOnWarning:$FailOnWarning)

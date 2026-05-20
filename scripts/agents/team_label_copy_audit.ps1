@@ -25,6 +25,7 @@ $forbiddenChecks = @(
             "Hunt below.",
             "Fly drones from above",
             "Fight from below",
+            "Drone Pilots against Soldiers.",
             '"ABOVE" : "BELOW"',
             '"ABOVE" : LocalRole == PlayerRole.Soldier ? "BELOW"'
         )
@@ -84,7 +85,7 @@ $requiredCopy = @(
             "Take down drone pilots.",
             "Fly drones as drone pilots",
             "Fight as soldiers",
-            "Drone Pilots against Soldiers"
+            "main-menu-title"">ABOVE / BELOW"
         )
     },
     @{

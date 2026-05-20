@@ -28,6 +28,10 @@ namespace DroneVsPlayers;
 [Icon( "directions_walk" )]
 public sealed class GroundPlayerController : Component
 {
+	const int CitizenBodyGroupVisible = 0;
+	const int CitizenBodyGroupHidden = 1;
+	const int CitizenHeadHidden = 2;
+
 	[Property] public Vector3 Gravity { get; set; } = new Vector3( 0, 0, 800 );
 	[Property] public float WalkSpeed { get; set; } = 110f;
 	[Property] public float SprintSpeed { get; set; } = 320f;
@@ -204,6 +208,7 @@ public sealed class GroundPlayerController : Component
 		base.OnDisabled();
 		if ( IsProxy ) return;
 
+		SetLocalFirstPersonBodyMode( false );
 		_sprintCooldownRemainingOnDisable = IsSprintLocked
 			? Math.Max( 0f, SprintCooldownSeconds - (float)_timeSinceSprintLocked )
 			: 0f;
@@ -354,13 +359,30 @@ public sealed class GroundPlayerController : Component
 		{
 			_cachedCamera.WorldPosition = Eye.WorldPosition + bobOffset;
 			_cachedCamera.WorldRotation = displayDir;
-			SetBodyRenderType( ModelRenderer.ShadowRenderType.ShadowsOnly );
+			SetLocalFirstPersonBodyMode( true );
 		}
 		else
 		{
 			_cachedCamera.WorldPosition = WorldPosition + lookDir.Backward * 200f + Vector3.Up * 75f;
 			_cachedCamera.WorldRotation = displayDir;
-			SetBodyRenderType( ModelRenderer.ShadowRenderType.On );
+			SetLocalFirstPersonBodyMode( false );
+		}
+	}
+
+	internal void SetLocalFirstPersonBodyMode( bool handsOnly )
+	{
+		if ( !Body.IsValid() )
+			ResolvePrefabReferences();
+		if ( !Body.IsValid() ) return;
+
+		foreach ( var renderer in Body.Components.GetAll<SkinnedModelRenderer>( FindMode.EverythingInSelfAndDescendants ) )
+		{
+			renderer.RenderType = ModelRenderer.ShadowRenderType.On;
+			renderer.SetBodyGroup( "Head", handsOnly ? CitizenHeadHidden : CitizenBodyGroupVisible );
+			renderer.SetBodyGroup( "Chest", handsOnly ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
+			renderer.SetBodyGroup( "Legs", handsOnly ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
+			renderer.SetBodyGroup( "Hands", CitizenBodyGroupVisible );
+			renderer.SetBodyGroup( "Feet", handsOnly ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
 		}
 	}
 

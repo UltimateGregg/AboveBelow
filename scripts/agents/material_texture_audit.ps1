@@ -24,7 +24,7 @@ function Get-InferredConfigCategories {
     $patterns = @{
         weapon = @("gun", "rifle", "shotgun", "smg", "grenade", "m4", "mp7", "jammer", "transmitter")
         drone = @("drone", "fpv", "propeller", "quadcopter")
-        character = @("character", "soldier", "pilot", "fps_arms", "arms", "glove", "sleeve")
+        character = @("character", "soldier", "pilot", "arms", "glove", "sleeve")
         environment = @("environment", "terrain", "watertower", "house", "berm", "hill", "plateau", "trench")
     }
 

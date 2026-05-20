@@ -21748,7 +21748,7 @@
           "__enabled": true,
           "Flags": 0,
           "AffectsPilotsOnly": false,
-          "FullGlareDegrees": 7,
+          "FullGlareDegrees": 4.7048454,
           "GroundPilotViewOnly": false,
           "MaxOpacity": 0.96,
           "OnComponentDestroy": null,
@@ -21757,7 +21757,7 @@
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null,
-          "OuterGlareDegrees": 38,
+          "OuterGlareDegrees": 25.352423,
           "SpriteTexturePath": "materials/skybox/blinding_sun_glow.png",
           "VisualSize": "760,760",
           "VisualTint": "1,0.93,0.58,1"
@@ -22313,6 +22313,31 @@
           },
           "RenderType": "On",
           "Tint": "0.45,0.48,0.5,1"
+        },
+        {
+          "__type": "Sandbox.ModelCollider",
+          "__guid": "9a3ac73b-5cb7-48f1-b4de-ed281a9f532c",
+          "__enabled": true,
+          "Flags": 0,
+          "ColliderFlags": 0,
+          "Elasticity": null,
+          "Friction": null,
+          "IsTrigger": false,
+          "Model": "models/dev/box.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "OnObjectTriggerEnter": null,
+          "OnObjectTriggerExit": null,
+          "OnTriggerEnter": null,
+          "OnTriggerExit": null,
+          "RollingResistance": null,
+          "Static": false,
+          "Surface": null,
+          "SurfaceVelocity": "0,0,0"
         }
       ],
       "Children": []
@@ -25169,13 +25194,13 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
+      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
         }
-      },
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
       },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {

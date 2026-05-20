@@ -26,7 +26,7 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 | Prefab and Wiring Agent | Validate prefab shape and AutoWire references | `scripts/agents/prefab_wiring_audit.ps1` |
 | Prefab Graph Audit | Validate GUID refs, component refs, prefab refs, and resource paths | `scripts/agents/prefab_graph_audit.ps1` |
 | Scene Integrity Audit | Validate main scene managers, spawns, and collider patterns | `scripts/agents/scene_integrity_audit.ps1` |
-| Collision Authoring Agent | Validate `Collision_*`, ladder triggers, visual/collider alignment, and water-tower collision coverage | `scripts/agents/collision_authoring_agent.ps1` |
+| Collision Authoring Agent | Validate `Collision_*`, building-root coverage, ladder triggers, visual/collider alignment, and water-tower collision coverage | `scripts/agents/collision_authoring_agent.ps1` |
 | Collision Agent Chain | Coordinate Codex explorer, implementer, verifier, and critic roles for collision-heavy work | `scripts/agents/collision_chain_report.ps1` |
 | Collision Explorer Agent | Read-only collision discovery before edits | `.agents/sbox/collision-explorer-agent.md` |
 | Collision Implementer Agent | Scoped collision edits after a contract is defined | `.agents/sbox/collision-implementer-agent.md` |
@@ -93,7 +93,7 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 powershell -ExecutionPolicy Bypass -File scripts/agents/collision_chain_report.ps1 -ShowInfo
 ```
 
-The collision agent catches the failure mode where a visible `Visual` child is rotated while sibling `Collision_*` children stay on the old parent transform. Rotate the prop root instead, then verify in the editor with collider gizmos and a short walk-into-the-prop playtest.
+The collision agent catches missing building-root coverage and the failure mode where a visible `Visual` child is rotated while sibling `Collision_*` children stay on the old parent transform. For buildings, inspect the house/building root before adding duplicate colliders to `Model_Visual`; renderer-only visual children are valid when sibling `Collision_*` helpers own the blocking shape. Rotate the prop root instead of the visual child, then verify in the editor with collider gizmos and a short walk-into-the-prop playtest.
 
 For larger collision work, start with `.agents/sbox/collision-chain-agent.md`. The chain splits Codex work into explorer, implementer, verifier, and critic handoffs so a second pass can challenge broad invisible blockers, stale editor state, and weak evidence before final handoff. The report script runs the static evidence stack and writes `.tmpbuild/collision-chain-report.md` as the handoff packet for the next Codex role.
 

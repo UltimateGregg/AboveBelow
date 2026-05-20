@@ -16,10 +16,14 @@ namespace DroneVsPlayers;
 [Icon( "link" )]
 public sealed class PilotLink : Component
 {
+	const string DefaultExplosionSoundPath = "sounds/grenade_explosion.sound";
+
 	[Property] public DroneController Drone { get; set; }
 	[Property] public DroneBase DroneBase { get; set; }
 	[Property] public Rigidbody Body { get; set; }
 	[Property] public GameObject ExplosionPrefab { get; set; }
+	[Property] public SoundEvent ExplosionSound { get; set; }
+	[Property] public float ExplosionEffectRadius { get; set; } = 320f;
 
 	/// <summary>Connection ID of the pilot operating this drone.</summary>
 	[Sync] public Guid PilotId { get; set; }
@@ -33,6 +37,7 @@ public sealed class PilotLink : Component
 	Action<DamageInfo> _killHandler;
 	TimeSince _timeSinceCrashStarted;
 	bool _crashImpactConsumed;
+	bool _detonationRequested;
 
 	protected override void OnStart()
 	{
@@ -77,18 +82,42 @@ public sealed class PilotLink : Component
 
 	void Detonate()
 	{
+		if ( _detonationRequested )
+			return;
+
+		_detonationRequested = true;
 		BroadcastExplosionFx( WorldPosition );
+		RequestKillAndDespawnDrone( WorldPosition );
+	}
+
+	[Rpc.Broadcast]
+	void RequestKillAndDespawnDrone( Vector3 center )
+	{
+		if ( !CanMutateState() ) return;
 
 		var droneHealth = Components.Get<Health>() ?? Components.GetInAncestors<Health>();
-		if ( droneHealth.IsValid() )
-			droneHealth.RequestDamage( 9999f, default, WorldPosition );
+		if ( droneHealth.IsValid() && !droneHealth.IsDead )
+			droneHealth.TakeDamage( new DamageInfo { Amount = 9999f, AttackerId = default, Position = center } );
+
+		GameObject.Destroy();
 	}
 
 	[Rpc.Broadcast]
 	void BroadcastExplosionFx( Vector3 center )
 	{
 		if ( ExplosionPrefab.IsValid() )
+		{
 			ExplosionPrefab.Clone( center );
+		}
+		else
+		{
+			GrenadeEffectVisual.Spawn( center, GrenadeEffectKind.Frag, ExplosionEffectRadius );
+		}
+
+		if ( ExplosionSound is not null )
+			Sound.Play( ExplosionSound, center );
+		else
+			Sound.Play( DefaultExplosionSoundPath, center );
 	}
 
 	void HookPilotHealth()
@@ -154,4 +183,6 @@ public sealed class PilotLink : Component
 		if ( !Body.IsValid() )
 			Body = Components.Get<Rigidbody>();
 	}
+
+	static bool CanMutateState() => !Networking.IsActive || Networking.IsHost;
 }
