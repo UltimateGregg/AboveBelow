@@ -94,15 +94,15 @@ The `.blend` save hook remains export-focused. Production quality gates are run 
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production
 ```
 
-## Documentation Hook: S&Box Engine Reference Check
+## Documentation Hook: S&Box Engine/API Reference Check
 
 **Hook ID:** `sbox-engine-reference-check`
 **Configuration file:** `./.claude/settings.json`
-**Trigger:** S&Box docs, agent routing docs, `AGENTS.md`, or related agent-suite scripts are saved.
+**Trigger:** S&Box docs, agent routing docs, `AGENTS.md`, `API.json`, or related agent-suite scripts are saved.
 **Action:** Runs:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_engine_reference_audit.ps1 -Root . -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Root . -Suite docs -ShowInfo
 ```
 
 This hook catches unsafe documentation close to the edit that introduced it:
@@ -111,6 +111,7 @@ This hook catches unsafe documentation close to the edit that introduced it:
 - Source 1 `.qc` model workflow advice used as active S&Box guidance.
 - warnings or recommendations to hand-edit `.vmdl` text, unless they clearly tell agents to use ModelDoc or the asset pipeline instead.
 - volatile S&Box/API/tooling claims that need a source/date marker.
+- missing local API lookup routing, or a broken/mismatched `API.json` dump when exact S&Box symbols are needed.
 
 It is docs-and-agent only. It does not compile code, change assets, mutate prefabs, or run broad product checks.
 

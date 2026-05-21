@@ -281,6 +281,12 @@ function Get-DirectColliderComponent {
             if ($hasBoxShape -or $hasCapsuleShape) {
                 return $component
             }
+
+            $hasModelShape = $null -ne (Get-JsonPropertyValue -Object $component -Name "Model") -and
+                $null -ne (Get-JsonPropertyValue -Object $component -Name "Static")
+            if ($hasModelShape) {
+                return $component
+            }
         }
     }
 

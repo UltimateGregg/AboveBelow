@@ -23,6 +23,9 @@ public sealed class ShotgunWeapon : Component
 	[Property] public float MaxRange { get; set; } = 2400f;
 	[Property] public float FireInterval { get; set; } = 0.7f;
 	[Property] public float RecoilDegrees { get; set; } = 1.4f;
+	[Property] public int MagazineSize { get; set; } = 6;
+	[Property] public int StartingReserveAmmo { get; set; } = 24;
+	[Property] public float ReloadSeconds { get; set; } = 2.4f;
 
 	[Property] public GameObject MuzzleSocket { get; set; }
 	[Property] public GameObject WeaponVisual { get; set; }
@@ -30,6 +33,8 @@ public sealed class ShotgunWeapon : Component
 	[Property] public GameObject RightHandIkTarget { get; set; }
 	[Property] public GameObject TracerPrefab { get; set; }
 	[Property] public SoundEvent FireSound { get; set; }
+	[Property] public SoundEvent ReloadSound { get; set; }
+	[Property] public SoundEvent EmptyClickSound { get; set; }
 
 	[Property] public Vector3 FirstPersonOffset { get; set; } = new( 34f, 9f, -12f );
 	[Property] public Angles FirstPersonRotationOffset { get; set; } = new( 0f, 0f, 0f );
@@ -44,24 +49,41 @@ public sealed class ShotgunWeapon : Component
 	/// <summary>Loadout slot this weapon occupies.</summary>
 	[Property] public int Slot { get; set; } = SoldierLoadout.PrimarySlot;
 
+	[Sync] public int AmmoInMagazine { get; set; }
+	[Sync] public int AmmoReserve { get; set; }
+	[Sync] public bool IsReloading { get; set; }
+	[Sync] public float ReloadFinishTime { get; set; }
+
 	TimeSince _timeSinceFire = 10f;
+	TimeSince _timeSinceReloadStart = 10f;
 
 	public bool IsSelected => WeaponPose.IsSlotSelected( this, Slot );
-	public bool IsReady => IsSelected && CooldownRemaining <= 0f;
+	public bool IsReady => IsSelected && !IsReloading && AmmoInMagazine > 0 && CooldownRemaining <= 0f;
 	public float CooldownRemaining => MathF.Max( 0f, FireInterval - _timeSinceFire );
 	public float CooldownReadyFraction => FireInterval <= 0f
 		? 1f
 		: (1f - CooldownRemaining / FireInterval).Clamp( 0f, 1f );
+	public float ReloadRemaining => IsReloading ? MathF.Max( 0f, ReloadFinishTime - Time.Now ) : 0f;
+	public float ReloadReadyFraction => !IsReloading || ReloadSeconds <= 0f
+		? 1f
+		: (1f - ReloadRemaining / ReloadSeconds).Clamp( 0f, 1f );
+	public float ReadyFraction => IsReloading ? ReloadReadyFraction : CooldownReadyFraction;
+	public string AmmoDisplay => IsReloading
+		? $"RELOAD {ReloadRemaining:0.0}s"
+		: $"{AmmoInMagazine}/{AmmoReserve}";
 
 	protected override void OnStart()
 	{
 		ResolvePrefabReferences();
+		if ( CanMutateState() )
+			ResetAmmo();
 		ApplySelectionVisualState();
 	}
 
 	protected override void OnUpdate()
 	{
 		ResolvePrefabReferences();
+		CompleteReloadIfReady();
 
 		if ( ApplySelectionVisualState() )
 		{
@@ -83,14 +105,27 @@ public sealed class ShotgunWeapon : Component
 		if ( !IsSelected ) return;
 		if ( LocalOptionsState.ConsumesGameplayInput ) return;
 
-		if ( Input.Pressed( "Attack1" ) && _timeSinceFire >= FireInterval )
+		if ( Input.Pressed( "Attack1" ) && AmmoInMagazine == 0 && !IsReloading && EmptyClickSound is not null )
+			SoundPlayback.PlayAttached( EmptyClickSound, GameObject, WorldPosition );
+
+		if ( Input.Pressed( "Attack1" ) && _timeSinceFire >= FireInterval && AmmoInMagazine > 0 )
 		{
-			Fire();
 			var pc = Components.GetInAncestors<GroundPlayerController>();
 			if ( pc.IsValid() )
+			{
+				RequestFire( GetFireOrigin( pc ), pc.EyeAngles.ToRotation().Forward );
 				pc.AddRecoil( RecoilDegrees, Random.Shared.Float( -RecoilDegrees * 0.25f, RecoilDegrees * 0.25f ) );
+			}
 			_timeSinceFire = 0f;
 		}
+		else if ( Input.Pressed( "Attack1" ) && _timeSinceFire >= FireInterval && AmmoInMagazine == 0 && !IsReloading )
+		{
+			RequestReload();
+			_timeSinceFire = 0f;
+		}
+
+		if ( Input.Pressed( "Reload" ) )
+			RequestReload();
 	}
 
 	internal bool ApplySelectionVisualState()
@@ -117,13 +152,107 @@ public sealed class ShotgunWeapon : Component
 			RightHandIkTarget = GameObject.Children.FirstOrDefault( x => x.Name == "RightHandIk" );
 	}
 
-	void Fire()
+	void ResetAmmo()
+	{
+		AmmoInMagazine = Math.Max( 1, MagazineSize );
+		AmmoReserve = Math.Max( 0, StartingReserveAmmo );
+		IsReloading = false;
+		ReloadFinishTime = 0f;
+	}
+
+	void CompleteReloadIfReady()
+	{
+		if ( !CanMutateState() ) return;
+		if ( !IsReloading ) return;
+		if ( Time.Now < ReloadFinishTime ) return;
+
+		var needed = Math.Max( 0, MagazineSize - AmmoInMagazine );
+		var loaded = Math.Min( needed, AmmoReserve );
+		AmmoInMagazine += loaded;
+		AmmoReserve -= loaded;
+		IsReloading = false;
+		ReloadFinishTime = 0f;
+	}
+
+	void BeginReload()
+	{
+		if ( IsReloading ) return;
+		if ( AmmoReserve <= 0 ) return;
+		if ( AmmoInMagazine >= MagazineSize ) return;
+
+		IsReloading = true;
+		ReloadFinishTime = Time.Now + MathF.Max( 0.05f, ReloadSeconds );
+		PlayReloadFx( WorldPosition );
+		BroadcastReloadStart();
+	}
+
+	[Rpc.Broadcast]
+	void BroadcastReloadStart()
+	{
+		_timeSinceReloadStart = 0f;
+	}
+
+	[Rpc.Broadcast]
+	void RequestReload()
+	{
+		if ( !CanMutateState() ) return;
+
+		CompleteReloadIfReady();
+		BeginReload();
+	}
+
+	[Rpc.Host]
+	void RequestFire( Vector3 requestedOrigin, Vector3 aimDirection )
+	{
+		if ( !CanMutateState() ) return;
+
+		CompleteReloadIfReady();
+
+		if ( !IsSelected ) return;
+		if ( IsReloading ) return;
+		if ( _timeSinceFire < FireInterval ) return;
+
+		if ( AmmoInMagazine <= 0 )
+		{
+			BeginReload();
+			return;
+		}
+
+		Fire( requestedOrigin, aimDirection );
+		AmmoInMagazine = Math.Max( 0, AmmoInMagazine - 1 );
+		_timeSinceFire = 0f;
+
+		if ( AmmoInMagazine <= 0 )
+			BeginReload();
+	}
+
+	static bool CanMutateState() => !Networking.IsActive || Networking.IsHost;
+
+	Vector3 GetFireOrigin( GroundPlayerController pc )
+	{
+		return MuzzleSocket.IsValid() ? MuzzleSocket.WorldPosition : pc.Eye?.WorldPosition ?? WorldPosition;
+	}
+
+	Vector3 ValidateFireOrigin( GroundPlayerController pc, Vector3 requestedOrigin )
+	{
+		var fallback = GetFireOrigin( pc );
+		var eye = pc.Eye?.WorldPosition ?? pc.WorldPosition;
+
+		return requestedOrigin.Distance( eye ) <= 140f
+			? requestedOrigin
+			: fallback;
+	}
+
+	void Fire( Vector3 requestedOrigin, Vector3 aimDirection )
 	{
 		var pc = Components.GetInAncestors<GroundPlayerController>();
 		if ( !pc.IsValid() ) return;
 
-		var lookRot = pc.EyeAngles.ToRotation();
-		var origin = MuzzleSocket.IsValid() ? MuzzleSocket.WorldPosition : pc.Eye?.WorldPosition ?? WorldPosition;
+		var origin = ValidateFireOrigin( pc, requestedOrigin );
+		var aim = aimDirection.IsNearZeroLength
+			? pc.EyeAngles.ToRotation().Forward
+			: aimDirection.Normal;
+		var lookRot = Rotation.LookAt( aim );
 		var attackerId = DamageAttribution.OwnerConnectionId( pc.GameObject );
 		var shotRotation = Random.Shared.Float( 0f, 360f );
 
@@ -202,6 +331,13 @@ public sealed class ShotgunWeapon : Component
 			SoundPlayback.PlayAttached( FireSound, MuzzleSocket.IsValid() ? MuzzleSocket : GameObject, from );
 
 		MuzzleFlashVisual.Spawn( from, direction, 1.2f );
+	}
+
+	[Rpc.Broadcast]
+	void PlayReloadFx( Vector3 from )
+	{
+		if ( ReloadSound is not null )
+			SoundPlayback.PlayAttached( ReloadSound, GameObject, from );
 	}
 
 	[Rpc.Broadcast]

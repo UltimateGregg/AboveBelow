@@ -1,0 +1,60 @@
+{
+  "RootObject": {
+    "__guid": "e4ad4d5a-4695-4b4a-9772-56c4d791ced7",
+    "Flags": 0,
+    "Name": "Plank_1x4",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [],
+    "Children": [
+      {
+        "__guid": "1870f53a-bb33-4238-9585-ecf91b5016b4",
+        "Flags": 0,
+        "Name": "Visual",
+        "Position": "0,0,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "1605b2b8-1195-468b-a1a6-cdc3e7a72b52",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/plank_1x4.vmdl",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.ModelCollider",
+            "__guid": "ca077647-a0b3-4ebb-a91d-df68ee8e94f0",
+            "IsTrigger": false,
+            "Model": "models/plank_1x4.vmdl",
+            "Static": true,
+            "Surface": null,
+            "SurfaceVelocity": "0,0,0"
+          }
+        ],
+        "Children": []
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Environment/Plank 1x4",
+  "MenuIcon": "inventory_2",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

@@ -143,6 +143,19 @@
             </div>
         }
 
+        @if ( ShowDroneLcdOverlay )
+        {
+            <div class="drone-lcd-overlay @DroneVariantClass">
+                <div class="lcd-glass"></div>
+                <div class="lcd-scanlines"></div>
+                <div class="lcd-corner top-left"></div>
+                <div class="lcd-corner top-right"></div>
+                <div class="lcd-corner bottom-left"></div>
+                <div class="lcd-corner bottom-right"></div>
+                <div class="lcd-label">@DroneLcdVariantLabel</div>
+            </div>
+        }
+
         @if ( ShowReticle )
         {
             <div class="reticle-stack">
@@ -154,6 +167,18 @@
                     <div class="dot"></div>
                 </div>
                 <div class="hitmarker @HitmarkerClass"></div>
+
+                @if ( ShowDroneActionPrompt )
+                {
+                    <div class="drone-action-prompt @DroneActionPromptClass">
+                        <div class="mouse-icon lmb">
+                            <div class="mouse-button left"></div>
+                            <div class="mouse-button right"></div>
+                            <div class="mouse-wheel"></div>
+                        </div>
+                        <div class="drone-action-copy">@DroneActionLabel</div>
+                    </div>
+                }
 
                 @if ( ShowSprintMeter )
                 {
@@ -369,8 +394,13 @@
     bool ShowMainMenu => MainMenuOpen && NeedsRoleChoice;
     bool ShowRolePicker => !ShowMainMenu && NeedsRoleChoice;
     bool GameplayUiBlocked => ShowMainMenu || ShowRolePicker;
-    bool ShowLoadoutHud => !GameplayUiBlocked && LocalRole is PlayerRole.Pilot or PlayerRole.Soldier;
+    bool ShowLoadoutHud => !GameplayUiBlocked && !LocalDroneViewActive && LocalRole is PlayerRole.Pilot or PlayerRole.Soldier;
     bool ShowReticle => !GameplayUiBlocked && LocalRole is PlayerRole.Pilot or PlayerRole.Soldier;
+    bool ShowDroneLcdOverlay => !GameplayUiBlocked
+        && LocalDroneViewActive
+        && LocalDroneCamera.IsValid()
+        && LocalDroneCamera.IsFirstPersonActive;
+    bool ShowDroneActionPrompt => ShowReticle && LocalDroneViewActive && LocalDroneWeapon.IsValid();
     bool ShowScoreboard { get; set; }
 
     string UiScaleDisplay => $"{LocalOptionsState.UiScalePercent}%";
@@ -872,52 +902,11 @@
 
     LoadoutSlot[] PilotLoadoutSlots()
     {
-        var weapon = LocalDroneWeapon;
         var remote = LocalRemoteController;
-        if ( !remote.IsValid() || !remote.DroneViewActive )
-            return PilotGroundLoadoutSlots();
+        if ( remote.IsValid() && remote.DroneViewActive )
+            return Array.Empty<LoadoutSlot>();
 
-        if ( !weapon.IsValid() )
-        {
-            return new[]
-            {
-                DisabledSlot( 1, "Primary", "No drone weapon found", "LMB" ),
-                DisabledSlot( 2, "Ability", "No drone ability found", "RMB" ),
-            };
-        }
-
-        if ( weapon.PrimaryUsesKamikaze )
-        {
-            var kamikazePrimary = new LoadoutSlot(
-                1,
-                "Kamikaze Charge",
-                $"{weapon.KamikazeDamage:0} dmg / {weapon.KamikazeRadius:0} radius",
-                "LMB"
-            );
-
-            var noSecondary = DisabledSlot( 2, "No Secondary", "Primary fire detonates", "" );
-            return new[] { kamikazePrimary, noSecondary };
-        }
-
-        var primary = weapon.EnableHitscan
-            ? new LoadoutSlot(
-                1,
-                LocalDroneBase.IsValid() && LocalDroneBase.Type == DroneType.Gps ? "GPS Beam" : "Drone Beam",
-                $"{weapon.HitscanDamage:0} dmg / {weapon.HitscanRange / 1000f:0.0}k range",
-                "LMB"
-            )
-            : DisabledSlot( 1, "No Primary", "This drone uses slot 2", "LMB" );
-
-        var ability = weapon.EnableKamikaze
-            ? new LoadoutSlot(
-                2,
-                "Kamikaze Charge",
-                $"{weapon.KamikazeDamage:0} dmg / {weapon.KamikazeRadius:0} radius",
-                "RMB"
-            )
-            : DisabledSlot( 2, "No Payload", "Primary fire only", "RMB" );
-
-        return new[] { primary, ability };
+        return PilotGroundLoadoutSlots();
     }
 
     LoadoutSlot[] PilotGroundLoadoutSlots()
@@ -964,6 +953,59 @@
 
     DroneWeapon LocalDroneWeapon =>
         LocalDroneController.IsValid() ? LocalDroneController.Components.Get<DroneWeapon>() : null;
+
+    string DroneActionLabel
+    {
+        get
+        {
+            var weapon = LocalDroneWeapon;
+            if ( !weapon.IsValid() )
+                return "";
+
+            if ( weapon.PrimaryUsesKamikaze )
+                return "DETONATE";
+
+            if ( LocalDroneBase.IsValid() && LocalDroneBase.Type == DroneType.Gps )
+                return "GPS LASER";
+
+            if ( weapon.EnableHitscan )
+                return "LASER";
+
+            return weapon.EnableKamikaze ? "DETONATE" : "";
+        }
+    }
+
+    string DroneActionPromptClass
+    {
+        get
+        {
+            var classes = new List<string> { DroneVariantClass };
+            if ( !RemoteController.AreLocalDroneWeaponsReady( Scene ) )
+                classes.Add( "arming" );
+
+            return string.Join( " ", classes );
+        }
+    }
+
+    string DroneLcdVariantLabel => LocalDroneBase.IsValid()
+        ? LocalDroneBase.Type switch
+        {
+            DroneType.Gps => "GPS CAMERA",
+            DroneType.Fpv => "FPV CAMERA",
+            DroneType.FiberOpticFpv => "FIBER FPV",
+            _ => "DRONE CAMERA",
+        }
+        : "DRONE CAMERA";
+
+    string DroneVariantClass => LocalDroneBase.IsValid()
+        ? LocalDroneBase.Type switch
+        {
+            DroneType.Gps => "gps",
+            DroneType.Fpv => "fpv",
+            DroneType.FiberOpticFpv => "fpv fiber",
+            _ => "drone",
+        }
+        : "drone";
 
     string LocalSoldierName
     {
@@ -1034,7 +1076,7 @@
         return className;
     }
 
-    HitscanWeapon CurrentAmmoWeapon
+    HitscanWeapon CurrentRifleAmmoWeapon
     {
         get
         {
@@ -1053,17 +1095,56 @@
         }
     }
 
+    ShotgunWeapon CurrentShotgunAmmoWeapon
+    {
+        get
+        {
+            var ground = LocalGroundController;
+            if ( !ground.IsValid() )
+                return null;
+
+            var selectedSlot = SelectedLoadoutSlot;
+            var loadout = ground.GameObject.Components.Get<SoldierLoadout>( FindMode.EverythingInSelfAndDescendants );
+            if ( loadout.IsValid() )
+                selectedSlot = loadout.ActiveSlot;
+
+            return ground.GameObject.Components
+                .GetAll<ShotgunWeapon>( FindMode.EverythingInSelfAndDescendants )
+                .FirstOrDefault( weapon => weapon.IsValid() && weapon.Slot == selectedSlot );
+        }
+    }
+
     bool ShowAmmoHud => ShowLoadoutHud
-        && CurrentAmmoWeapon.IsValid()
-        && !LocalDroneViewActive;
+        && !LocalDroneViewActive
+        && (CurrentRifleAmmoWeapon.IsValid() || CurrentShotgunAmmoWeapon.IsValid());
 
-    string AmmoHudLabel => CurrentAmmoWeapon.IsValid()
-        ? (CurrentAmmoWeapon.WeaponDisplayName ?? "Ammo").ToUpperInvariant()
-        : "";
+    string AmmoHudLabel
+    {
+        get
+        {
+            if ( CurrentRifleAmmoWeapon.IsValid() )
+                return (CurrentRifleAmmoWeapon.WeaponDisplayName ?? "Ammo").ToUpperInvariant();
 
-    string AmmoHudValue => CurrentAmmoWeapon.IsValid()
-        ? $"{CurrentAmmoWeapon.AmmoInMagazine} / {CurrentAmmoWeapon.AmmoReserve}"
-        : "";
+            if ( CurrentShotgunAmmoWeapon.IsValid() )
+                return (CurrentShotgunAmmoWeapon.WeaponDisplayName ?? "Ammo").ToUpperInvariant();
+
+            return "";
+        }
+    }
+
+    string AmmoHudValue
+    {
+        get
+        {
+            if ( CurrentRifleAmmoWeapon.IsValid() )
+                return CurrentRifleAmmoWeapon.AmmoDisplay;
+
+            if ( CurrentShotgunAmmoWeapon.IsValid() )
+                return CurrentShotgunAmmoWeapon.AmmoDisplay;
+
+            return "";
+        }
+    }
 
     bool LocalDroneViewActive
     {
@@ -1249,7 +1330,8 @@
     /// </summary>
     protected override int BuildHash()
     {
-        var ammoWeapon = CurrentAmmoWeapon;
+        var rifleAmmoWeapon = CurrentRifleAmmoWeapon;
+        var shotgunAmmoWeapon = CurrentShotgunAmmoWeapon;
 
         return HashCode.Combine(
             HashCode.Combine(
@@ -1257,7 +1339,14 @@
                 LocalRole, HpFraction, ShowTimer, TimerLine, ShowRolePicker
             ),
             HashCode.Combine(
-                LocalDroneCamera.IsValid() && LocalDroneCamera.IsFirstPersonActive,
+                HashCode.Combine(
+                    LocalDroneCamera.IsValid() && LocalDroneCamera.IsFirstPersonActive,
+                    LocalDroneViewActive,
+                    ShowDroneLcdOverlay,
+                    ShowDroneActionPrompt,
+                    DroneActionLabel,
+                    DroneLcdVariantLabel
+                ),
                 ShowJamWarning,
                 SelectedLoadoutTeam,
                 ShowScoreboard,
@@ -1269,8 +1358,13 @@
                 ShowLoadoutHud,
                 SelectedLoadoutSlot,
                 ShowAmmoHud,
-                ammoWeapon.IsValid() ? ammoWeapon.AmmoInMagazine : -1,
-                ammoWeapon.IsValid() ? ammoWeapon.AmmoReserve : -1,
+                HashCode.Combine( ShowDroneActionPrompt, DroneActionLabel, DroneLcdVariantLabel ),
+                HashCode.Combine(
+                    rifleAmmoWeapon.IsValid() ? rifleAmmoWeapon.AmmoInMagazine : -1,
+                    rifleAmmoWeapon.IsValid() ? rifleAmmoWeapon.AmmoReserve : -1,
+                    shotgunAmmoWeapon.IsValid() ? shotgunAmmoWeapon.AmmoInMagazine : -1,
+                    shotgunAmmoWeapon.IsValid() ? shotgunAmmoWeapon.AmmoReserve : -1
+                ),
                 LocalOptionsState.UiScalePercent,
                 (int)(LocalOptionsState.LookSensitivity * 100f),
                 HashCode.Combine(

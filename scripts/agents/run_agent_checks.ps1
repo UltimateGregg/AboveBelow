@@ -1,6 +1,6 @@
 param(
     [string]$Root = "",
-    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "scene", "collision", "collision-chain", "asset", "asset-production", "modeldoc", "blender-live", "sound", "networking", "gameplay-regression", "docs", "balance", "playtest", "logs", "readiness", "train", "self-test")]
+    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "scene", "collision", "collision-chain", "asset", "asset-production", "modeldoc", "blender-live", "sound", "networking", "gameplay-regression", "docs", "api", "balance", "playtest", "logs", "readiness", "train", "self-test")]
     [string]$Suite = "quick",
     [switch]$ShowInfo,
     [switch]$FailOnWarning
@@ -68,6 +68,7 @@ switch ($Suite) {
             @{ Name = "networking_review_audit.ps1"; Args = $commonArgs },
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "current_log_audit.ps1"; Args = $quickLogArgs },
             @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root) }
         )
@@ -94,6 +95,7 @@ switch ($Suite) {
             @{ Name = "networking_review_audit.ps1"; Args = $commonArgs },
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "current_log_audit.ps1"; Args = $commonArgs },
             @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root, "-ShowFiles") },
             @{ Name = "balance_tuning_report.ps1"; Args = @("-Root", $Root) },
@@ -167,7 +169,14 @@ switch ($Suite) {
     "docs" {
         $scripts = @(
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
-            @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs }
+            @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs }
+        )
+    }
+    "api" {
+        $scripts = @(
+            @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_api_lookup.ps1"; Args = @("-Root", $Root, "-Query", "SyncAttribute", "-Limit", "5") }
         )
     }
     "balance" { $scripts = @(@{ Name = "balance_tuning_report.ps1"; Args = @("-Root", $Root) }) }
@@ -177,7 +186,8 @@ switch ($Suite) {
     "train" {
         $scripts = @(
             @{ Name = "post_task_training_agent.ps1"; Args = @("-Root", $Root, "-ShowFiles", "-WriteReport") },
-            @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs }
+            @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs }
         )
     }
     "self-test" { $scripts = @(@{ Name = "test_full_automation_layer.ps1"; Args = @("-Root", $Root) }) }

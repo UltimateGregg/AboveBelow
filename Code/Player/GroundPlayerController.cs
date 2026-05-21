@@ -65,6 +65,7 @@ public sealed class GroundPlayerController : Component
 
 	// ---- Footsteps ----
 	[Property, Range( 8f, 80f )]    public float FootstepDistance { get; set; } = 36f;
+	[Property, Range( 1f, 4f )]     public float SprintFootstepStrideMultiplier { get; set; } = 1.8f;
 	[Property] public SoundEvent FootstepSound { get; set; }
 	[Property] public SoundEvent JumpSound { get; set; }
 	[Property] public SoundEvent LandSound { get; set; }
@@ -572,7 +573,7 @@ public sealed class GroundPlayerController : Component
 			var step = cc.Velocity.WithZ( 0 ).Length * Time.Delta;
 			_stepAccumulator += step;
 			var stride = FootstepDistance;
-			if ( IsSprinting ) stride *= 0.75f;
+			if ( IsSprinting ) stride *= SprintFootstepStrideMultiplier;
 			if ( IsCrouched ) stride *= 1.4f;        // slower cadence when sneaking
 			if ( _stepAccumulator >= stride )
 			{

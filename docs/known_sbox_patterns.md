@@ -65,10 +65,10 @@ pawn.NetworkSpawn(connection);  // Sets Network.Owner = connection
 **Pattern:** Current S&Box guidance should be reduced to this project's component-first workflow before it becomes standing agent advice.
 
 **Workflow:**
-- Verify volatile engine claims against official S&Box docs, the public engine source, or current local project patterns before updating docs.
+- Verify volatile engine claims against official S&Box docs, the public engine source, local `API.json`, or current local project patterns before updating docs.
 - For gameplay, prefer `Sandbox.Component` subclasses with `[Property]` tunables, `[Sync]` replicated state, and RPCs for validated requests or notifications.
 - Treat older Source 1 or legacy S&Box examples as migration context, not implementation authority. In particular, do not revive `[Net]`, `.qc` model scripts, entity/I/O gameplay, or manual `.vmdl` text editing as active defaults.
-- Capture useful research in `docs/sbox_engine_llm_reference.md` and run `scripts/agents/sbox_engine_reference_audit.ps1` after docs or agent-routing changes.
+- Capture useful research in `docs/sbox_engine_llm_reference.md`; use `scripts/agents/sbox_api_lookup.ps1` for exact local API symbols and run `scripts/agents/run_agent_checks.ps1 -Suite docs` after docs or agent-routing changes.
 
 ### OnAwake vs OnStart
 

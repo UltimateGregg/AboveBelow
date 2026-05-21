@@ -94,8 +94,8 @@
     },
     {
       "id": "sbox-engine-reference-check",
-      "name": "S&Box Engine Reference Check",
-      "description": "Runs stale engine-guidance checks when docs, agent routing, or engine-reference audits change",
+      "name": "S&Box Engine/API Reference Check",
+      "description": "Runs stale engine-guidance and local API-reference checks when docs, agent routing, API dump, or reference audits change",
       "enabled": true,
       "trigger": {
         "type": "file_pattern_change",
@@ -103,7 +103,11 @@
           "AGENTS.md",
           "docs/**/*.md",
           ".agents/sbox/*.md",
+          "API.json",
+          "api.json",
           "scripts/agents/sbox_engine_reference_audit.ps1",
+          "scripts/agents/sbox_api_lookup.ps1",
+          "scripts/agents/sbox_api_reference_audit.ps1",
           "scripts/agents/run_agent_checks.ps1",
           "scripts/agents/post_task_training_agent.ps1",
           "scripts/agents/test_full_automation_layer.ps1"
@@ -119,9 +123,11 @@
           "-ExecutionPolicy",
           "Bypass",
           "-File",
-          ".\\scripts\\agents\\sbox_engine_reference_audit.ps1",
+          ".\\scripts\\agents\\run_agent_checks.ps1",
           "-Root",
           "${WORKSPACE_ROOT}",
+          "-Suite",
+          "docs",
           "-ShowInfo"
         ],
         "cwd": "${WORKSPACE_ROOT}",
@@ -129,12 +135,12 @@
         "capture_output": true,
         "on_success": {
           "notify": false,
-          "message": "S&Box engine reference checks passed",
+          "message": "S&Box engine/API reference checks passed",
           "level": "info"
         },
         "on_failure": {
           "notify": true,
-          "message": "S&Box engine reference check failed",
+          "message": "S&Box engine/API reference check failed",
           "level": "error"
         }
       }

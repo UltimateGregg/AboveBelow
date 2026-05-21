@@ -59,10 +59,13 @@ Invoke-GuardScript -RelativePath "scripts\check_drone_explosion_feedback.ps1" -S
 Invoke-GuardScript -RelativePath "scripts\check_drone_weapon_arming.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_ground_crouch_toggle.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_ground_sprint_toggle.ps1" -ScriptArgs @("-Root", $Root)
+Invoke-GuardScript -RelativePath "scripts\check_sprint_footstep_cadence.ps1" -ScriptArgs @("-Root", $Root)
+Invoke-GuardScript -RelativePath "scripts\check_match_length.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_hud_sprint_meter.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_hud_damage_arc_attribution.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_ui_scale_default.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_first_person_viewmodel_spawn.ps1" -ScriptArgs @("-Root", $Root)
+Invoke-GuardScript -RelativePath "scripts\check_shotgun_reload_and_hud.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\agents\drone_propeller_spin_audit.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\agents\grenade_physics_fx_audit.ps1" -ScriptArgs @("-Root", $Root)
 

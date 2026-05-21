@@ -309,17 +309,17 @@ Test-HumanBodyRenderer -Path "Assets/prefabs/soldier_assault.prefab"
 Test-HeldItemTargets -Path "Assets/prefabs/soldier_assault.prefab" -HeldItemNames @("Weapon", "Grenade")
 
 Test-Prefab -Path "Assets/prefabs/soldier_counter_uav.prefab" `
-    -RequiredComponents ($soldierBase + @("DroneVsPlayers.CounterUavSoldier", "DroneVsPlayers.DroneJammerGun", "DroneVsPlayers.FragGrenade")) `
-    -RequiredNodes @("Body", "Eye", "Weapon", "Grenade", "MuzzleSocket", "LeftHandIk", "RightHandIk") `
-    -PropertyChecks $humanBodyCheck
+	-RequiredComponents ($soldierBase + @("DroneVsPlayers.CounterUavSoldier", "DroneVsPlayers.DroneJammerGun", "DroneVsPlayers.FragGrenade")) `
+	-RequiredNodes @("Body", "Eye", "Weapon", "Grenade", "MuzzleSocket", "WeaponVisual", "LeftHandIk", "RightHandIk") `
+	-PropertyChecks $humanBodyCheck
 Test-NoLegacyFirstPersonArms -Path "Assets/prefabs/soldier_counter_uav.prefab"
 Test-HumanBodyRenderer -Path "Assets/prefabs/soldier_counter_uav.prefab"
 Test-HeldItemTargets -Path "Assets/prefabs/soldier_counter_uav.prefab" -HeldItemNames @("Weapon", "Grenade")
 
 Test-Prefab -Path "Assets/prefabs/soldier_heavy.prefab" `
-    -RequiredComponents ($soldierBase + @("DroneVsPlayers.HeavySoldier", "DroneVsPlayers.ShotgunWeapon", "DroneVsPlayers.EmpGrenade")) `
-    -RequiredNodes @("Body", "Eye", "Weapon", "Grenade", "MuzzleSocket", "LeftHandIk", "RightHandIk") `
-    -PropertyChecks $humanBodyCheck
+	-RequiredComponents ($soldierBase + @("DroneVsPlayers.HeavySoldier", "DroneVsPlayers.ShotgunWeapon", "DroneVsPlayers.EmpGrenade")) `
+	-RequiredNodes @("Body", "Eye", "Weapon", "Grenade", "MuzzleSocket", "WeaponVisual", "LeftHandIk", "RightHandIk") `
+	-PropertyChecks $humanBodyCheck
 Test-NoLegacyFirstPersonArms -Path "Assets/prefabs/soldier_heavy.prefab"
 Test-HumanBodyRenderer -Path "Assets/prefabs/soldier_heavy.prefab"
 Test-HeldItemTargets -Path "Assets/prefabs/soldier_heavy.prefab" -HeldItemNames @("Weapon", "Grenade")

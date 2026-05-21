@@ -18,6 +18,7 @@ Prefer official sources first:
 - `https://sbox.game/dev/doc`
 - `https://sbox.game/api`
 - `https://github.com/Facepunch/sbox-public`
+- local `API.json` / `api.json` queried with `scripts/agents/sbox_api_lookup.ps1`
 - existing project code and audits in this checkout
 
 Use community posts, wikis, and third-party tools only as secondary context. Label anything volatile with an `as of YYYY-MM-DD` source marker.
@@ -25,6 +26,7 @@ Use community posts, wikis, and third-party tools only as secondary context. Lab
 ## Work
 
 - Summarize the engine fact in project-specific terms.
+- For exact API shape, query the local API dump before adding unfamiliar S&Box symbols.
 - Reject or soften claims that are not backed by official docs, public source, or local evidence.
 - Update `docs/sbox_engine_llm_reference.md` or `docs/known_sbox_patterns.md` when the lesson is broadly useful.
 - Add or update a focused audit if the lesson prevents a repeatable failure.
@@ -34,6 +36,7 @@ Use community posts, wikis, and third-party tools only as secondary context. Lab
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_engine_reference_audit.ps1 -Root . -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_api_lookup.ps1 -Root . -Query SyncAttribute -ShowMembers
 ```
 
 ## Output Shape

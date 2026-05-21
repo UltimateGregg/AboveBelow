@@ -43,6 +43,7 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 | Balance and Tuning Agent | Snapshot balance-related values | `scripts/agents/balance_tuning_report.ps1` |
 | Current Log Audit | Search project and local app log locations for fresh runtime/editor logs | `scripts/agents/current_log_audit.ps1` |
 | S&Box Engine Reference Agent | Verify external S&Box/Source 2 research and guard against obsolete guidance | `scripts/agents/sbox_engine_reference_audit.ps1` |
+| S&Box API Lookup | Query local `API.json` for exact S&Box types, members, attributes, and summaries | `scripts/agents/sbox_api_lookup.ps1` |
 | Feature Readiness Report | Map changed files to required checks and manual test focus | `scripts/agents/feature_readiness_report.ps1` |
 | Post-Task Training Agent | Inspect recent work and route durable hook, agent, pipeline, and docs improvements | `scripts/agents/post_task_training_agent.ps1` |
 | Pre-Handoff Agent | Orchestrate final checks | `scripts/agents/run_agent_checks.ps1` |
@@ -178,6 +179,7 @@ Docs/tooling changes:
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/docs_roadmap_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_engine_reference_audit.ps1 -Root . -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_api_reference_audit.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/test_full_automation_layer.ps1
 ```
 
@@ -185,11 +187,12 @@ External S&Box or Source 2 research intake:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_engine_reference_audit.ps1 -Root . -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_api_lookup.ps1 -Root . -Query SyncAttribute -ShowMembers
 ```
 
-Use `.agents/sbox/sbox-engine-reference-agent.md` before turning pasted engine research into standing guidance. Prefer official S&Box docs, the public engine repo, and local project patterns. Keep volatile claims dated and sourced, and turn recurring stale-guidance risks into audit rules rather than leaving them only in chat history.
+Use `.agents/sbox/sbox-engine-reference-agent.md` before turning pasted engine research into standing guidance. Prefer official S&Box docs, the public engine repo, local `API.json`, and local project patterns. Keep volatile claims dated and sourced, and turn recurring stale-guidance risks into audit rules rather than leaving them only in chat history.
 
-The `sbox-engine-reference-check` Claude hook runs the same audit when docs, agent routing, `AGENTS.md`, or engine-reference suite scripts change.
+The `sbox-engine-reference-check` Claude hook runs the docs suite when docs, agent routing, `AGENTS.md`, `API.json`, or engine/API reference suite scripts change.
 
 Post-task workflow training:
 

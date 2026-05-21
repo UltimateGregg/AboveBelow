@@ -186,7 +186,7 @@ Player A shoots Player B for N damage:
 | Event | Default | Tunable in |
 |-------|---------|------------|
 | Countdown | 5 s | `GameRules.CountdownSeconds` |
-| Active round | 300 s | `GameRules.RoundTimeSeconds` |
+| Active round | 180 s | `GameRules.RoundTimeSeconds` |
 | Round end screen | 5 s | `GameRules.RoundEndScreenSeconds` |
 | Pilot crash timeout | 5 s | `GameRules.DroneCrashTimeout` / `PilotLink.CrashTimeout` |
 | Drone Jammer Gun pulse | 0.3 s, every 0.1 s | `DroneJammerGun.PulseDuration`, `TickInterval` |

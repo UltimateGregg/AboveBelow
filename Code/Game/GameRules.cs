@@ -28,7 +28,7 @@ public sealed class GameRules : Component
 	[Property, Sync] public float SoldierWalkSpeed { get; set; } = 110f;
 
 	/// <summary>Match duration in seconds before pilots auto-win</summary>
-	[Property, Sync] public int RoundTimeSeconds { get; set; } = 300;
+	[Property, Sync] public int RoundTimeSeconds { get; set; } = 180;
 
 	/// <summary>Players needed to start (including host). Keep at 1 so solo smoke tests exercise the full round loop.</summary>
 	[Property, Sync] public int MinPlayersToStart { get; set; } = 1;

@@ -98,17 +98,26 @@
                 "FirstPersonRotationOffset": "0,0,0",
                 "ThirdPersonLocalPosition": "20,15,55",
                 "ThirdPersonLocalAngles": "0,0,0"
-              },
-              {
-                "__type": "Sandbox.ModelRenderer",
-                "__guid": "33333333-b000-3110-0000-000000000001",
-                "BodyGroups": 18446744073709551615,
-                "Model": "models/jammer_gun.vmdl",
-                "RenderType": "On",
-                "Tint": "1,1,1,1"
               }
             ],
             "Children": [
+              {
+                "__guid": "33333333-b000-3300-0000-000000000001",
+                "Flags": 0,
+                "Name": "WeaponVisual",
+                "Position": "0,0,0",
+                "Enabled": true,
+                "Components": [
+                  {
+                    "__type": "Sandbox.ModelRenderer",
+                    "__guid": "33333333-b000-3110-0000-000000000001",
+                    "BodyGroups": 18446744073709551615,
+                    "Model": "models/jammer_gun.vmdl",
+                    "RenderType": "On",
+                    "Tint": "1,1,1,1"
+                  }
+                ]
+              },
               {
                 "__guid": "33333333-b000-3200-0000-000000000001",
                 "Flags": 0,

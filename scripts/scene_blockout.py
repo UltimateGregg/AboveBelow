@@ -233,12 +233,26 @@ def find_object(scene: dict[str, Any], name: str) -> dict[str, Any] | None:
     return None
 
 
+ROAD_CENTER_X = 416.190948
+
+
 def road_surface(name: str, position: str, scale: str) -> dict[str, Any]:
     return game_object(
         name,
         position,
         scale=scale,
         material="materials/arena/asphalt_cover.vmat",
+        model="models/dev/plane.vmdl",
+    )
+
+
+def road_plane(name: str, position: str, scale: str, material: str, tint: str = "1,1,1,1") -> dict[str, Any]:
+    return game_object(
+        name,
+        position,
+        scale=scale,
+        material=material,
+        tint=tint,
         model="models/dev/plane.vmdl",
     )
 
@@ -263,6 +277,50 @@ def road_curb(name: str, position: str, scale: str) -> dict[str, Any]:
         tint="0.72,0.72,0.68,1",
         model="models/dev/box.vmdl",
     )
+
+
+def build_road_corridor() -> dict[str, Any]:
+    yellow = "1,0.78,0.16,1"
+    white = "0.86,0.84,0.74,1"
+    dirt = "0.50,0.43,0.28,1"
+    concrete = "materials/arena/concrete_wall.vmat"
+    grass = "materials/arena/grass_ground.vmat"
+
+    cx = ROAD_CENTER_X
+    west_curb_x = cx - 205
+    east_curb_x = cx + 205
+    west_shoulder_x = cx - 275
+    east_shoulder_x = cx + 275
+
+    children: list[dict[str, Any]] = [
+        road_plane("RoadShoulder_West", f"{west_shoulder_x},0,0.16", "2.2,88,1", grass, dirt),
+        road_plane("RoadShoulder_East", f"{east_shoulder_x},0,0.16", "2.2,88,1", grass, dirt),
+        road_surface("RoadSurface_Main", f"{cx},0,0.2", "7.2,86,1"),
+        road_curb("RoadCurb_West", f"{west_curb_x},0,5", "0.32,86,0.2"),
+        road_curb("RoadCurb_East", f"{east_curb_x},0,5", "0.32,86,0.2"),
+    ]
+
+    for index, y in enumerate((-1820, -1560, -1300, -1040, -780, -520, -260, 260, 520, 780, 1040, 1300, 1560, 1820), start=1):
+        children.append(road_marking(f"RoadDash_{index:02}", f"{cx},{y},2", "0.16,2.4,0.04", yellow))
+
+    for index, y in enumerate((-1740, -920, -180, 640, 1460), start=1):
+        children.append(road_marking(f"RoadEdgeWear_West_{index:02}", f"{cx - 154},{y},1.4", "0.42,5.4,0.025", white))
+        children.append(road_marking(f"RoadEdgeWear_East_{index:02}", f"{cx + 154},{y + 120},1.4", "0.34,4.8,0.025", white))
+
+    children.extend(
+        [
+            solid_box("RoadCover_Northwest_Barrier", f"{cx - 305},1185,42", "3.4,0.52,1.7", concrete, "0.62,0.64,0.58,1"),
+            solid_box("RoadCover_Northeast_Barrier", f"{cx + 335},1510,42", "0.56,3.1,1.7", concrete, "0.62,0.64,0.58,1"),
+            solid_box("RoadCover_Southwest_Barrier", f"{cx - 335},-1335,42", "0.56,3.2,1.7", concrete, "0.62,0.64,0.58,1"),
+            solid_box("RoadCover_Southeast_Barrier", f"{cx + 305},-980,42", "3.2,0.52,1.7", concrete, "0.62,0.64,0.58,1"),
+            road_marking("RoadShoulderDirt_West_North", f"{cx - 238},1680,1.2", "0.5,7.0,0.025", dirt),
+            road_marking("RoadShoulderDirt_West_South", f"{cx - 246},-1510,1.2", "0.58,6.2,0.025", dirt),
+            road_marking("RoadShoulderDirt_East_North", f"{cx + 245},1080,1.2", "0.54,5.8,0.025", dirt),
+            road_marking("RoadShoulderDirt_East_South", f"{cx + 238},-1720,1.2", "0.5,6.8,0.025", dirt),
+        ]
+    )
+
+    return game_object("RoadCorridor_Main", "0,0,0", children=children)
 
 
 def build_road_intersection() -> dict[str, Any]:
@@ -479,17 +537,54 @@ def build_above_below_level_pass() -> dict[str, Any]:
     )
 
 
-def install_group(parent: dict[str, Any], group: dict[str, Any]) -> tuple[int, int]:
+def install_group(parent: dict[str, Any], group: dict[str, Any], aliases: set[str] | None = None) -> tuple[int, int]:
     children = parent.setdefault("Children", [])
     before = len(children)
-    children[:] = [child for child in children if child.get("Name") != group["Name"]]
+    removable_names = aliases or {group["Name"]}
+    removable_names.add(group["Name"])
+    children[:] = [child for child in children if child.get("Name") not in removable_names]
     removed = before - len(children)
     insert_at = 1 if children and children[0].get("Name") == "ArenaFloor" else len(children)
     children.insert(insert_at, group)
     return len(group.get("Children", []) or []), removed
 
 
+def add_road_corridor(scene_path: Path, dry_run: bool) -> None:
+    root = project_root()
+    data = json.loads(scene_path.read_text(encoding="utf-8"))
+    blockout_map = find_object(data, "BlockoutMap")
+    if blockout_map is None:
+        raise RuntimeError("BlockoutMap was not found in the scene")
+
+    group = build_road_corridor()
+    count, removed = install_group(blockout_map, group, aliases={"RoadIntersection_Center", "RoadCorridor_Main"})
+
+    scene_info = find_object(data, "Scene Information")
+    if scene_info:
+        for component in scene_info.get("Components", []) or []:
+            if component.get("__type") == "Sandbox.SceneInformation":
+                component["Description"] = (
+                    "ABOVE / BELOW playable map: expanded arena with textured grass, "
+                    "a finished north-south tactical service road corridor, concrete cover, "
+                    "metal launch pad, west soldier base, east drone pad, central cover, "
+                    "GameManager, HUD, and role-specific spawn points."
+                )
+
+    if dry_run:
+        print(f"Dry run: would install {count} RoadCorridor_Main children; replaced road groups: {removed}")
+        return
+
+    backup_path = backup(scene_path, root)
+    scene_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    print(f"Backup: {backup_path}")
+    print(f"Installed RoadCorridor_Main with {count} child objects")
+
+
 def add_road_intersection(scene_path: Path, dry_run: bool) -> None:
+    add_road_corridor(scene_path, dry_run)
+
+
+def add_legacy_road_intersection(scene_path: Path, dry_run: bool) -> None:
     root = project_root()
     data = json.loads(scene_path.read_text(encoding="utf-8"))
     blockout_map = find_object(data, "BlockoutMap")
@@ -551,7 +646,7 @@ def apply_above_below_level_pass(scene_path: Path, dry_run: bool) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Repeatable S&Box scene blockout edits.")
-    parser.add_argument("command", choices=["add-road-intersection", "apply-above-below-level-pass"])
+    parser.add_argument("command", choices=["add-road-corridor", "add-road-intersection", "apply-above-below-level-pass"])
     parser.add_argument("--scene", default="Assets/scenes/main.scene")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
@@ -562,7 +657,9 @@ def main() -> int:
     if not scene_path.exists():
         raise FileNotFoundError(scene_path)
 
-    if args.command == "add-road-intersection":
+    if args.command == "add-road-corridor":
+        add_road_corridor(scene_path, args.dry_run)
+    elif args.command == "add-road-intersection":
         add_road_intersection(scene_path, args.dry_run)
     elif args.command == "apply-above-below-level-pass":
         apply_above_below_level_pass(scene_path, args.dry_run)

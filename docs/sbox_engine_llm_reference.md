@@ -10,7 +10,20 @@ Verified against official sources on 2026-05-20:
 - https://sbox.game/dev/doc/editor/model-editor
 - https://github.com/Facepunch/sbox-public
 
-This is a working reference for agents editing this repo. It is intentionally short. If a task depends on exact API shape, check the current docs, API reference, public source, or local project patterns before changing code.
+This is a working reference for agents editing this repo. It is intentionally short. If a task depends on exact API shape, check the current docs, API reference, public source, the local API dump, or local project patterns before changing code.
+
+## Local API Dump
+
+The project root can contain the official S&Box API dump as `API.json` or `api.json`. Agents should treat it as the fastest local source for exact type, method, property, attribute, and summary checks before using an unfamiliar S&Box symbol.
+
+Use the lookup helper instead of manually scanning the minified JSON:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_api_lookup.ps1 -Root . -Type Sandbox.GameObject -Member NetworkSpawn
+powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_api_lookup.ps1 -Root . -Query SyncAttribute -ShowMembers
+```
+
+The API dump is a local reflection/reference surface, not a replacement for runtime proof. Still compile, check logs, and use editor or multiplayer verification when behavior changes.
 
 ## Mental Model
 

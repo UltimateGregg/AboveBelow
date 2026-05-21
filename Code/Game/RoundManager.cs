@@ -32,7 +32,7 @@ public sealed class RoundManager : Component
 	[Property] public GameStats Stats { get; set; }
 
 	[Property] public float CountdownSeconds { get; set; } = 5f;
-	[Property] public float RoundLengthSeconds { get; set; } = 300f;
+	[Property] public float RoundLengthSeconds { get; set; } = 180f;
 	[Property] public int MinPlayers { get; set; } = 1;
 
 	[Sync] public RoundState State { get; set; } = RoundState.WaitingForPlayers;

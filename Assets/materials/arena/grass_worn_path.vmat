@@ -1,0 +1,16 @@
+"Layer0"
+{
+	"shader"		"shaders/complex.shader"
+	"TextureColor"		"materials/arena/grass_worn_path_color.png"
+	"TextureNormal"		"materials/arena/grass_worn_path_normal.png"
+	"TextureRoughness"		"materials/arena/grass_worn_path_rough.png"
+	"TextureAmbientOcclusion"		"materials/arena/grass_worn_path_ao.png"
+	"g_flModelTintAmount"		"1.000000"
+	"g_vColorTint"		"[1.000000 1.000000 1.000000 0.000000]"
+	"g_flMetalness"		"0.000000"
+	"g_flRoughness"		"0.820000"
+	"g_bFogEnabled"		"1"
+	"g_vTexCoordScale"		"[1.750 1.750]"
+	"g_vTexCoordOffset"		"[0.000 0.000]"
+	"g_vTexCoordScrollSpeed"		"[0.000 0.000]"
+}

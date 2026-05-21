@@ -1,0 +1,42 @@
+{
+  "source_blend": "environment_model.blend/plank_1x4.blend",
+  "root_object": "Plank1x4Root",
+  "target_fbx": "Assets/models/plank_1x4.fbx",
+  "target_vmdl": "Assets/models/plank_1x4.vmdl",
+  "model_resource_path": "models/plank_1x4.vmdl",
+  "prefab": "Assets/prefabs/environment/plank_1x4.prefab",
+  "visual_object": "Visual",
+  "visual_scale": "1,1,1",
+  "visual_tint": "1,1,1,1",
+  "clear_visual_children": false,
+  "verify_fbx": true,
+  "required_object": [
+    "Plank1x4Mesh"
+  ],
+  "object_type": [
+    "EMPTY",
+    "MESH"
+  ],
+  "combine_meshes": true,
+  "combined_object_name": "Plank1x4Mesh",
+  "material_remap": {
+    "Plank1x4End": "materials/environment/plank_1x4_end.vmat",
+    "Plank1x4Face": "materials/environment/plank_1x4_face.vmat"
+  },
+  "vmdl_material_source_suffix": "",
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
+  "allow_default_color_texture": false,
+  "global_scale": 1.0,
+  "axis_forward": "-Y",
+  "axis_up": "Z",
+  "physics_shapes": [
+    {
+      "type": "box",
+      "surface_prop": "wood",
+      "collision_tags": "solid",
+      "origin": [0, 0, 0],
+      "dimensions": [2.4384, 0.0889, 0.01905]
+    }
+  ]
+}

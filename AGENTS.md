@@ -9,7 +9,7 @@
 - Never rename public classes, components, prefabs, or assets unless asked.
 - When editing scenes through MCP, summarize objects changed.
 - After changes, check compile errors and editor logs.
-- Do not invent S&Box APIs. Check docs or existing project patterns first.
+- Do not invent S&Box APIs. Check docs, `API.json`, or existing project patterns first; use `scripts/agents/sbox_api_lookup.ps1` for exact local API symbols before adding unfamiliar calls or attributes.
 - AI Workflow Discipline:
 - Break large tasks into small, verifiable phases.
 - Complete one gameplay/system change at a time before starting another.

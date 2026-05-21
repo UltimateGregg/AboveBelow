@@ -168,11 +168,11 @@ the model.
 Use `scripts/scene_blockout.py` for repeatable scene-JSON blockout edits that do not need Blender-authored meshes.
 
 ```powershell
-python .\scripts\scene_blockout.py add-road-intersection --dry-run
-python .\scripts\scene_blockout.py add-road-intersection
+python .\scripts\scene_blockout.py add-road-corridor --dry-run
+python .\scripts\scene_blockout.py add-road-corridor
 ```
 
-The helper finds `BlockoutMap`, installs a deterministic `RoadIntersection_Center` group, and replaces that group on rerun instead of duplicating objects. It uses the same `models/dev/box.vmdl` and `models/dev/plane.vmdl` patterns already used by `Assets/scenes/main.scene`.
+The helper finds `BlockoutMap`, installs a deterministic `RoadCorridor_Main` group, and replaces old road/intersection groups on rerun instead of duplicating objects. It uses the same `models/dev/box.vmdl` and `models/dev/plane.vmdl` patterns already used by `Assets/scenes/main.scene`.
 
 ## Blockout Collider Sync
 

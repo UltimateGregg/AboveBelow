@@ -33,6 +33,8 @@ $requiredScripts = @(
     "scripts/agents/team_label_copy_audit.ps1",
     "scripts/agents/mcp_screenshot_audit.ps1",
     "scripts/agents/sbox_engine_reference_audit.ps1",
+    "scripts/agents/sbox_api_lookup.ps1",
+    "scripts/agents/sbox_api_reference_audit.ps1",
     "scripts/agents/asset_visual_review.ps1",
     "scripts/agents/blender_live_toolkit_self_test.ps1"
 )
@@ -51,7 +53,7 @@ if (Test-Path -LiteralPath $runner) {
         Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner does not declare a ValidateSet for suites." "Restore suite validation on the Suite parameter."
     }
 
-    foreach ($suite in @("ui", "prefab-graph", "scene", "logs", "readiness", "train", "asset-production", "modeldoc", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain")) {
+    foreach ($suite in @("ui", "prefab-graph", "scene", "logs", "readiness", "train", "asset-production", "modeldoc", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain", "api")) {
         $quotedSuite = '"' + [regex]::Escape($suite) + '"'
         if ($validateSetMatch.Success -and $validateSetMatch.Groups["values"].Value -notmatch $quotedSuite) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner ValidateSet does not expose suite '$suite'." "Add the suite to the Suite parameter ValidateSet."
@@ -1482,6 +1484,64 @@ scripts/agents/sbox_engine_reference_audit.ps1
         & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxEngineReferenceAudit -Root $tempRoot | Out-Host
         if ($LASTEXITCODE -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_engine_reference_audit.ps1" "Engine reference audit did not fail on active .qc model guidance." "Keep Source 1 model workflow references marked as historical or avoided."
+        }
+    }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
+        }
+    }
+}
+
+$sboxApiReferenceAudit = Join-Path $Root "scripts/agents/sbox_api_reference_audit.ps1"
+if (Test-Path -LiteralPath $sboxApiReferenceAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-api-reference-audit-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "docs") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot ".agents\sbox") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot ".claude") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "scripts\agents") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "dronevsplayers.sbproj") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "scripts\agents\sbox_api_lookup.ps1") | Out-Null
+
+        "API.json local API dump sbox_api_lookup.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\sbox_engine_llm_reference.md") -Encoding UTF8
+        "API.json sbox_api_lookup.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\sbox-engine-reference-agent.md") -Encoding UTF8
+        "S&Box API Lookup sbox_api_lookup.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
+        "S&Box API Lookup sbox_api_lookup.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
+        "API.json sbox_api_lookup.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "AGENTS.md") -Encoding UTF8
+        "API.json sbox_api_lookup.ps1 sbox_api_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".claude\settings.json") -Encoding UTF8
+        '"api" sbox_api_reference_audit.ps1 sbox_api_lookup.ps1' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
+        "sbox_api_lookup.ps1 sbox_api_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
+
+        $badTypes = @(
+            [pscustomobject]@{ FullName = "Sandbox.Component"; Name = "Component" },
+            [pscustomobject]@{ FullName = "Sandbox.GameObject"; Name = "GameObject"; Methods = @([pscustomobject]@{ Name = "NetworkSpawn" }) },
+            [pscustomobject]@{ FullName = "Sandbox.Networking"; Name = "Networking"; Properties = @([pscustomobject]@{ Name = "IsHost" }) }
+        )
+        @{ Types = $badTypes } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $tempRoot "API.json") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxApiReferenceAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_api_reference_audit.ps1" "API reference audit did not fail on an incomplete local API dump." "Keep API dump validation strict enough to catch missing core S&Box symbols."
+        }
+
+        $validTypes = New-Object System.Collections.Generic.List[object]
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.Component"; Name = "Component" })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.GameObject"; Name = "GameObject"; Methods = @([pscustomobject]@{ Name = "NetworkSpawn" }) })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.Networking"; Name = "Networking"; Properties = @([pscustomobject]@{ Name = "IsHost" }) })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.SyncAttribute"; Name = "SyncAttribute" })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.RpcAttribute"; Name = "RpcAttribute" })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.Rpc.BroadcastAttribute"; Name = "BroadcastAttribute" })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.Rpc.HostAttribute"; Name = "HostAttribute" })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.Rpc.OwnerAttribute"; Name = "OwnerAttribute" })
+        for ($i = 0; $i -lt 100; $i++) {
+            $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.FixtureType$i"; Name = "FixtureType$i" })
+        }
+        @{ Types = $validTypes.ToArray() } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $tempRoot "API.json") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxApiReferenceAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_api_reference_audit.ps1" "API reference audit failed on complete lookup docs, suite wiring, and required API symbols." "Avoid false positives for valid local API-reference setup."
         }
     }
     finally {

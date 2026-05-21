@@ -28,21 +28,43 @@ public sealed class FirstPersonViewmodel : Component
 	[Property] public string ChaffGrenadeViewmodelPath { get; set; } = "facepunch/v_smoke_grenade";
 	[Property] public string EmpGrenadeViewmodelPath { get; set; } = "facepunch/v_decoy_grenade";
 
+	[Property] public string AssaultRifleCustomModelPath { get; set; } = "models/weapons/assault_rifle_m4.vmdl";
+	[Property] public string ShotgunCustomModelPath { get; set; } = "models/shotgun.vmdl";
+	[Property] public string JammerCustomModelPath { get; set; } = "models/jammer_gun.vmdl";
+	string JammerStockAnimationPath => AssaultRifleViewmodelPath;
+
 	[Property] public Vector3 StockViewmodelOffset { get; set; } = Vector3.Zero;
 	[Property] public Angles StockViewmodelRotationOffset { get; set; } = new( 0f, 0f, 0f );
+	[Property] public Vector3 CustomM4ViewmodelOffset { get; set; } = Vector3.Zero;
+	[Property] public Angles CustomM4ViewmodelRotation { get; set; } = new( 0f, 0f, 0f );
+	[Property] public Vector3 CustomM4ViewmodelScale { get; set; } = new( 1f, 1f, 1f );
+	[Property] public Vector3 CustomShotgunViewmodelOffset { get; set; } = Vector3.Zero;
+	[Property] public Angles CustomShotgunViewmodelRotation { get; set; } = new( 0f, 0f, 0f );
+	[Property] public Vector3 CustomShotgunViewmodelScale { get; set; } = new( 1f, 1f, 1f );
+	[Property] public Vector3 CustomJammerViewmodelOffset { get; set; } = Vector3.Zero;
+	[Property] public Angles CustomJammerViewmodelRotation { get; set; } = new( 0f, 0f, 0f );
+	[Property] public Vector3 CustomJammerViewmodelScale { get; set; } = new( 1f, 1f, 1f );
 	[Property, Range( 1f, 60f )] public float StaticArmFollowRate { get; set; } = 28f;
 
 	GameObject _root;
 	GameObject _weaponObject;
+	GameObject _customVisualRoot;
 	GameObject _armsObject;
 	SkinnedModelRenderer _weaponRenderer;
 	SkinnedModelRenderer _armsRenderer;
 	string _activeKey = "";
-	bool _activeUsesStockViewmodel;
+	ViewmodelRenderMode _renderMode = ViewmodelRenderMode.StaticFallback;
 	bool _wasReloading;
 	TimeSince _timeSinceLastAttack = 10f;
 
 	readonly List<StaticVisual> _staticVisuals = new();
+
+	enum ViewmodelRenderMode
+	{
+		StaticFallback,
+		StockVisible,
+		CustomVisibleStockAnimated
+	}
 
 	struct StaticVisual
 	{
@@ -55,10 +77,14 @@ public sealed class FirstPersonViewmodel : Component
 	{
 		public Component Owner;
 		public GameObject Root;
+		public GameObject VisualTarget;
 		public GameObject LeftHandTarget;
 		public GameObject RightHandTarget;
+		public GameObject MuzzleTarget;
 		public string Key;
 		public string StockModelPath;
+		public string CustomModelPath;
+		public ViewmodelRenderMode RenderMode;
 		public bool HasStockViewmodel;
 		public bool TwoHanded;
 		public bool IsAds;
@@ -68,6 +94,9 @@ public sealed class FirstPersonViewmodel : Component
 		public bool AttackDown;
 		public bool ReloadPressed;
 		public Vector3 MoveInput;
+		public Vector3 CustomViewmodelOffset;
+		public Angles CustomViewmodelRotation;
+		public Vector3 CustomViewmodelScale;
 	}
 
 	public bool IsViewmodelActive => _root.IsValid() && _root.Enabled && HasVisibleViewmodel();
@@ -145,8 +174,14 @@ public sealed class FirstPersonViewmodel : Component
 		DestroyViewmodel();
 
 		_activeKey = item.Key;
-		_activeUsesStockViewmodel = item.HasStockViewmodel && BuildStockWeaponViewmodel( item );
-		if ( !_activeUsesStockViewmodel )
+		var built = item.RenderMode switch
+		{
+			ViewmodelRenderMode.StockVisible => item.HasStockViewmodel && BuildStockWeaponViewmodel( item ),
+			ViewmodelRenderMode.CustomVisibleStockAnimated => BuildCustomAnimatedViewmodel( item ),
+			_ => false
+		};
+
+		if ( !built )
 			BuildStaticItemViewmodel( item );
 
 		if ( _root.IsValid() )
@@ -175,7 +210,53 @@ public sealed class FirstPersonViewmodel : Component
 		_weaponRenderer.Parameters.Set( "b_twohanded", item.TwoHanded );
 
 		CreateArmsRenderer( _weaponRenderer );
+		_renderMode = ViewmodelRenderMode.StockVisible;
 		return true;
+	}
+
+	bool BuildCustomAnimatedViewmodel( HeldItem item )
+	{
+		var weaponModel = TryLoadModel( item.StockModelPath );
+		if ( weaponModel is null || !weaponModel.IsValid )
+			return false;
+
+		CreateRoot();
+
+		_weaponObject = new GameObject( _root, true, $"Hidden Stock Animation Driver - {item.Key}" )
+		{
+			NetworkMode = NetworkMode.Never
+		};
+
+		_weaponRenderer = _weaponObject.Components.Create<SkinnedModelRenderer>();
+		_weaponRenderer.Model = weaponModel;
+		_weaponRenderer.UseAnimGraph = true;
+		_weaponRenderer.Parameters.Set( "b_deploy_skip", true );
+		_weaponRenderer.Parameters.Set( "skeleton", 0 );
+		_weaponRenderer.Parameters.Set( "b_twohanded", item.TwoHanded );
+		HideStockAnimationDriver();
+
+		_customVisualRoot = new GameObject( _root, true, $"Custom Viewmodel Visual - {item.Key}" )
+		{
+			NetworkMode = NetworkMode.Never
+		};
+
+		if ( !AddCustomAnimatedVisualCopies( item, _customVisualRoot ) )
+			AddModelPathFallback( item, _customVisualRoot );
+
+		CreateArmsRenderer( _weaponRenderer );
+		_renderMode = ViewmodelRenderMode.CustomVisibleStockAnimated;
+		return true;
+	}
+
+	void HideStockAnimationDriver()
+	{
+		if ( !_weaponRenderer.IsValid() )
+			return;
+
+		_weaponRenderer.RenderType = ModelRenderer.ShadowRenderType.Off;
+
+		if ( _weaponRenderer.SceneObject is { } sceneObject )
+			sceneObject.RenderingEnabled = false;
 	}
 
 	void BuildStaticItemViewmodel( HeldItem item )
@@ -187,15 +268,26 @@ public sealed class FirstPersonViewmodel : Component
 			NetworkMode = NetworkMode.Never
 		};
 
+		AddStaticVisualCopies( item, _weaponObject );
+		CreateArmsRenderer( null );
+		_renderMode = ViewmodelRenderMode.StaticFallback;
+	}
+
+	bool AddStaticVisualCopies( HeldItem item, GameObject parent )
+	{
+		var copiedAny = false;
 		foreach ( var source in item.Root.Components.GetAll<ModelRenderer>( FindMode.EverythingInSelfAndDescendants ) )
 		{
 			if ( !source.IsValid() || source.Model is null || !source.Model.IsValid )
 				continue;
 
-			var copyObject = new GameObject( _weaponObject, true, source.GameObject.Name )
+			var copyObject = new GameObject( parent, true, source.GameObject.Name )
 			{
 				NetworkMode = NetworkMode.Never
 			};
+			copyObject.LocalPosition = source.GameObject.LocalPosition;
+			copyObject.LocalRotation = source.GameObject.LocalRotation;
+			copyObject.LocalScale = source.GameObject.LocalScale;
 
 			var copyRenderer = copyObject.Components.Create<ModelRenderer>();
 			copyRenderer.Model = source.Model;
@@ -208,9 +300,72 @@ public sealed class FirstPersonViewmodel : Component
 				CopyObject = copyObject,
 				CopyRenderer = copyRenderer
 			} );
+			copiedAny = true;
 		}
 
-		CreateArmsRenderer( null );
+		return copiedAny;
+	}
+
+	bool AddCustomAnimatedVisualCopies( HeldItem item, GameObject parent )
+	{
+		var visualRoot = item.VisualTarget.IsValid() ? item.VisualTarget : item.Root;
+		if ( !visualRoot.IsValid() )
+			return false;
+
+		var copiedAny = false;
+		foreach ( var source in visualRoot.Components.GetAll<ModelRenderer>( FindMode.EverythingInSelfAndDescendants ) )
+		{
+			if ( !source.IsValid() || source.Model is null || !source.Model.IsValid )
+				continue;
+
+			var copyObject = new GameObject( parent, true, source.GameObject.Name )
+			{
+				NetworkMode = NetworkMode.Never
+			};
+
+			var sourceIsWeaponRoot = source.GameObject == item.Root;
+			copyObject.LocalPosition = sourceIsWeaponRoot ? Vector3.Zero : source.GameObject.LocalPosition;
+			copyObject.LocalRotation = sourceIsWeaponRoot ? Rotation.Identity : source.GameObject.LocalRotation;
+			copyObject.LocalScale = sourceIsWeaponRoot ? Vector3.One : source.GameObject.LocalScale;
+
+			var copyRenderer = copyObject.Components.Create<ModelRenderer>();
+			copyRenderer.Model = source.Model;
+			copyRenderer.MaterialOverride = source.MaterialOverride;
+			copyRenderer.RenderType = ModelRenderer.ShadowRenderType.On;
+
+			_staticVisuals.Add( new StaticVisual
+			{
+				Source = source,
+				CopyObject = copyObject,
+				CopyRenderer = copyRenderer
+			} );
+			copiedAny = true;
+		}
+
+		return copiedAny;
+	}
+
+	void AddModelPathFallback( HeldItem item, GameObject parent )
+	{
+		var customModel = TryLoadModel( item.CustomModelPath );
+		if ( customModel is null || !customModel.IsValid )
+			return;
+
+		var copyObject = new GameObject( parent, true, "WeaponVisual" )
+		{
+			NetworkMode = NetworkMode.Never
+		};
+
+		var copyRenderer = copyObject.Components.Create<ModelRenderer>();
+		copyRenderer.Model = customModel;
+		copyRenderer.RenderType = ModelRenderer.ShadowRenderType.On;
+
+		_staticVisuals.Add( new StaticVisual
+		{
+			Source = null,
+			CopyObject = copyObject,
+			CopyRenderer = copyRenderer
+		} );
 	}
 
 	void CreateRoot()
@@ -303,8 +458,14 @@ public sealed class FirstPersonViewmodel : Component
 
 	void UpdateStaticVisuals( HeldItem item )
 	{
-		if ( _activeUsesStockViewmodel )
+		if ( _renderMode == ViewmodelRenderMode.StockVisible )
 			return;
+
+		if ( _renderMode == ViewmodelRenderMode.CustomVisibleStockAnimated )
+		{
+			UpdateCustomAnimatedVisual( item );
+			return;
+		}
 
 		foreach ( var visual in _staticVisuals )
 		{
@@ -324,9 +485,149 @@ public sealed class FirstPersonViewmodel : Component
 		}
 	}
 
+	void UpdateCustomAnimatedVisual( HeldItem item )
+	{
+		if ( !_customVisualRoot.IsValid() )
+			return;
+
+		HideStockAnimationDriver();
+
+		if ( !TryGetCustomAnimatedVisualAnchor( item, out var anchor ) )
+		{
+			SetCustomVisualRenderType( ModelRenderer.ShadowRenderType.Off );
+			return;
+		}
+
+		var rot = anchor.Rotation * item.CustomViewmodelRotation.ToRotation();
+		var position = TryGetCustomHandAnchoredPose( item, rot, item.CustomViewmodelScale, out var handAnchoredPosition )
+			? handAnchoredPosition
+			: anchor.Position;
+		var offset = item.CustomViewmodelOffset;
+		_customVisualRoot.WorldPosition = position
+			+ rot.Forward * offset.x
+			+ rot.Right * offset.y
+			+ rot.Up * offset.z;
+		_customVisualRoot.WorldRotation = rot;
+		_customVisualRoot.WorldScale = item.CustomViewmodelScale;
+
+		SetCustomVisualRenderType( ModelRenderer.ShadowRenderType.On );
+	}
+
+	bool TryGetCustomHandAnchoredPose( HeldItem item, Rotation rotation, Vector3 scale, out Vector3 position )
+	{
+		position = default;
+		var total = Vector3.Zero;
+		var count = 0;
+
+		if ( item.RightHandTarget.IsValid() && TryGetStockHandAnchor( true, out var stockRightHand ) )
+		{
+			total += stockRightHand.Position - LocalPointToWorldOffset( item.RightHandTarget.LocalPosition, rotation, scale );
+			count++;
+		}
+
+		if ( item.LeftHandTarget.IsValid() && TryGetStockHandAnchor( false, out var stockLeftHand ) )
+		{
+			total += stockLeftHand.Position - LocalPointToWorldOffset( item.LeftHandTarget.LocalPosition, rotation, scale );
+			count++;
+		}
+
+		if ( count <= 0 )
+			return false;
+
+		position = total / count;
+		return true;
+	}
+
+	bool TryGetStockHandAnchor( bool rightHand, out Transform transform )
+	{
+		transform = default;
+		if ( !_weaponRenderer.IsValid() )
+			return false;
+
+		var names = rightHand
+			? new[] { "ValveBiped.Bip01_R_Hand", "hand_R", "right_hand", "R_Hand", "bip01_r_hand" }
+			: new[] { "ValveBiped.Bip01_L_Hand", "hand_L", "left_hand", "L_Hand", "bip01_l_hand" };
+
+		foreach ( var boneName in names )
+		{
+			if ( _weaponRenderer.TryGetBoneTransform( boneName, out transform ) )
+				return true;
+		}
+
+		return false;
+	}
+
+	static Vector3 LocalPointToWorldOffset( Vector3 localPoint, Rotation rotation, Vector3 scale )
+	{
+		return rotation.Forward * (localPoint.x * scale.x)
+			+ rotation.Right * (localPoint.y * scale.y)
+			+ rotation.Up * (localPoint.z * scale.z);
+	}
+
+	bool TryGetCustomAnimatedVisualAnchor( HeldItem item, out Transform transform )
+	{
+		if ( TryGetStockWeaponAnchor( out transform ) )
+			return true;
+
+		if ( item.Root.IsValid() )
+		{
+			transform = new Transform( item.Root.WorldPosition, item.Root.WorldRotation, item.Root.WorldScale );
+			return true;
+		}
+
+		if ( item.RightHandTarget.IsValid() )
+		{
+			transform = new Transform( item.RightHandTarget.WorldPosition, item.RightHandTarget.WorldRotation, item.RightHandTarget.WorldScale );
+			return true;
+		}
+
+		if ( item.LeftHandTarget.IsValid() )
+		{
+			transform = new Transform( item.LeftHandTarget.WorldPosition, item.LeftHandTarget.WorldRotation, item.LeftHandTarget.WorldScale );
+			return true;
+		}
+
+		transform = default;
+		return false;
+	}
+
+	void SetCustomVisualRenderType( ModelRenderer.ShadowRenderType renderType )
+	{
+		foreach ( var visual in _staticVisuals )
+		{
+			if ( visual.CopyRenderer.IsValid() )
+				visual.CopyRenderer.RenderType = renderType;
+		}
+	}
+
+	bool TryGetStockWeaponAnchor( out Transform transform )
+	{
+		transform = default;
+		if ( !_weaponRenderer.IsValid() )
+			return false;
+
+		foreach ( var attachmentName in new[] { "weapon", "Weapon", "root", "muzzle", "Muzzle", "muzzle_flash", "barrel" } )
+		{
+			var attachment = _weaponRenderer.GetAttachment( attachmentName, true );
+			if ( attachment.HasValue )
+			{
+				transform = attachment.Value;
+				return true;
+			}
+		}
+
+		foreach ( var boneName in new[] { "weapon", "v_weapon", "root", "ValveBiped.Bip01_R_Hand", "hand_R", "right_hand" } )
+		{
+			if ( _weaponRenderer.TryGetBoneTransform( boneName, out transform ) )
+				return true;
+		}
+
+		return false;
+	}
+
 	void UpdateArmsForStaticFallback( HeldItem item )
 	{
-		if ( _activeUsesStockViewmodel || !_armsRenderer.IsValid() )
+		if ( _renderMode != ViewmodelRenderMode.StaticFallback || !_armsRenderer.IsValid() )
 			return;
 
 		GetStaticArmsAnchor( item, out var targetPos, out var targetRot );
@@ -392,7 +693,7 @@ public sealed class FirstPersonViewmodel : Component
 
 	void UpdateStockAnimParameters( GroundPlayerController pc, HeldItem item )
 	{
-		if ( !_activeUsesStockViewmodel || !_weaponRenderer.IsValid() )
+		if ( _renderMode == ViewmodelRenderMode.StaticFallback || !_weaponRenderer.IsValid() )
 			return;
 
 		var grounded = pc.Components.Get<CharacterController>()?.IsOnGround ?? true;
@@ -439,6 +740,7 @@ public sealed class FirstPersonViewmodel : Component
 				LeftHandTarget = deployer.LeftHandIkTarget,
 				RightHandTarget = deployer.RightHandIkTarget,
 				Key = $"deployer:{deployer.GameObject.Id}",
+				RenderMode = ViewmodelRenderMode.StaticFallback,
 				TwoHanded = true,
 				AttackPressed = Input.Pressed( "Attack1" ),
 				AttackDown = Input.Down( "Attack1" ),
@@ -457,10 +759,14 @@ public sealed class FirstPersonViewmodel : Component
 			{
 				Owner = weapon,
 				Root = weapon.GameObject,
+				VisualTarget = weapon.WeaponVisual,
 				LeftHandTarget = weapon.LeftHandIkTarget,
 				RightHandTarget = weapon.RightHandIkTarget,
+				MuzzleTarget = weapon.MuzzleSocket,
 				Key = $"hitscan:{weapon.GameObject.Id}:{(isSmg ? "mp5" : "m4a1")}",
 				StockModelPath = isSmg ? PilotSmgViewmodelPath : AssaultRifleViewmodelPath,
+				CustomModelPath = AssaultRifleCustomModelPath,
+				RenderMode = isSmg ? ViewmodelRenderMode.StockVisible : ViewmodelRenderMode.CustomVisibleStockAnimated,
 				HasStockViewmodel = true,
 				TwoHanded = !isSmg,
 				IsAds = pc.IsAds,
@@ -469,7 +775,10 @@ public sealed class FirstPersonViewmodel : Component
 				AttackPressed = Input.Down( "Attack1" ),
 				AttackDown = Input.Down( "Attack1" ),
 				ReloadPressed = Input.Pressed( "Reload" ),
-				MoveInput = moveInput
+				MoveInput = moveInput,
+				CustomViewmodelOffset = CustomM4ViewmodelOffset,
+				CustomViewmodelRotation = CustomM4ViewmodelRotation,
+				CustomViewmodelScale = CustomM4ViewmodelScale
 			};
 			return true;
 		}
@@ -483,16 +792,26 @@ public sealed class FirstPersonViewmodel : Component
 			{
 				Owner = shotgun,
 				Root = shotgun.GameObject,
+				VisualTarget = shotgun.WeaponVisual,
 				LeftHandTarget = shotgun.LeftHandIkTarget,
 				RightHandTarget = shotgun.RightHandIkTarget,
+				MuzzleTarget = shotgun.MuzzleSocket,
 				Key = $"shotgun:{shotgun.GameObject.Id}",
 				StockModelPath = ShotgunViewmodelPath,
+				CustomModelPath = ShotgunCustomModelPath,
+				RenderMode = ViewmodelRenderMode.CustomVisibleStockAnimated,
 				HasStockViewmodel = true,
 				TwoHanded = true,
 				IsAds = pc.IsAds,
+				IsReloading = shotgun.IsReloading,
+				IsEmpty = shotgun.AmmoInMagazine <= 0,
 				AttackPressed = Input.Pressed( "Attack1" ),
 				AttackDown = Input.Down( "Attack1" ),
-				MoveInput = moveInput
+				ReloadPressed = Input.Pressed( "Reload" ),
+				MoveInput = moveInput,
+				CustomViewmodelOffset = CustomShotgunViewmodelOffset,
+				CustomViewmodelRotation = CustomShotgunViewmodelRotation,
+				CustomViewmodelScale = CustomShotgunViewmodelScale
 			};
 			return true;
 		}
@@ -506,14 +825,23 @@ public sealed class FirstPersonViewmodel : Component
 			{
 				Owner = jammer,
 				Root = jammer.GameObject,
+				VisualTarget = jammer.WeaponVisual,
 				LeftHandTarget = jammer.LeftHandIkTarget,
 				RightHandTarget = jammer.RightHandIkTarget,
+				MuzzleTarget = jammer.MuzzleSocket,
 				Key = $"jammer:{jammer.GameObject.Id}",
+				StockModelPath = JammerStockAnimationPath,
+				CustomModelPath = JammerCustomModelPath,
+				RenderMode = ViewmodelRenderMode.CustomVisibleStockAnimated,
+				HasStockViewmodel = true,
 				TwoHanded = true,
 				IsAds = pc.IsAds,
 				AttackPressed = Input.Pressed( "Attack1" ),
 				AttackDown = Input.Down( "Attack1" ),
-				MoveInput = moveInput
+				MoveInput = moveInput,
+				CustomViewmodelOffset = CustomJammerViewmodelOffset,
+				CustomViewmodelRotation = CustomJammerViewmodelRotation,
+				CustomViewmodelScale = CustomJammerViewmodelScale
 			};
 			return true;
 		}
@@ -531,6 +859,7 @@ public sealed class FirstPersonViewmodel : Component
 				RightHandTarget = grenade.RightHandIkTarget,
 				Key = $"grenade:{grenade.GetType().Name}:{grenade.GameObject.Id}",
 				StockModelPath = GetGrenadeViewmodelPath( grenade ),
+				RenderMode = ViewmodelRenderMode.StockVisible,
 				HasStockViewmodel = true,
 				TwoHanded = false,
 				AttackPressed = Input.Pressed( grenade.ThrowInput ),
@@ -562,7 +891,10 @@ public sealed class FirstPersonViewmodel : Component
 
 	bool HasVisibleViewmodel()
 	{
-		if ( _weaponRenderer.IsValid() && _weaponRenderer.Model is not null && _weaponRenderer.Model.IsValid )
+		if ( _renderMode == ViewmodelRenderMode.StockVisible
+			&& _weaponRenderer.IsValid()
+			&& _weaponRenderer.Model is not null
+			&& _weaponRenderer.Model.IsValid )
 			return true;
 
 		if ( _armsRenderer.IsValid() && _armsRenderer.Model is not null && _armsRenderer.Model.IsValid )
@@ -577,9 +909,10 @@ public sealed class FirstPersonViewmodel : Component
 		_weaponRenderer = null;
 		_armsRenderer = null;
 		_weaponObject = null;
+		_customVisualRoot = null;
 		_armsObject = null;
 		_activeKey = "";
-		_activeUsesStockViewmodel = false;
+		_renderMode = ViewmodelRenderMode.StaticFallback;
 		_wasReloading = false;
 
 		if ( _root.IsValid() )

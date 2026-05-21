@@ -153,18 +153,19 @@ $areaRules = @(
         Checks = @(
             "scripts/agents/docs_roadmap_audit.ps1",
             "scripts/agents/sbox_engine_reference_audit.ps1 -ShowInfo",
+            "scripts/agents/sbox_api_reference_audit.ps1 -ShowInfo",
             "scripts/agents/post_task_training_agent.ps1 -ShowFiles"
         )
         Training = "Docs should capture reusable workflow lessons, not just narrate the specific task."
     },
     [pscustomobject]@{
         Name = "EngineResearch"
-        Patterns = @("docs/sbox_engine_llm_reference.md", ".agents/sbox/sbox-engine-reference-agent.md", "scripts/agents/sbox_engine_reference_audit.ps1")
+        Patterns = @("docs/sbox_engine_llm_reference.md", ".agents/sbox/sbox-engine-reference-agent.md", "scripts/agents/sbox_engine_reference_audit.ps1", "scripts/agents/sbox_api_lookup.ps1", "scripts/agents/sbox_api_reference_audit.ps1", "API.json", "api.json")
         Checks = @(
             "scripts/agents/sbox_engine_reference_audit.ps1 -ShowInfo",
             "scripts/agents/run_agent_checks.ps1 -Suite docs"
         )
-        Training = "External S&Box or Source 2 research should be verified against official docs/public source, captured in the engine reference, routed through the reference agent, and protected by a stale-guidance audit."
+        Training = "External S&Box or Source 2 research should be verified against official docs/public source and local API.json when exact symbols matter, captured in the engine reference, routed through the reference agent, and protected by stale-guidance/API audits."
     }
 )
 
@@ -252,6 +253,8 @@ if ($agentsText -notmatch 'just the word "train"' -or $agentsText -notmatch 'run
 $engineReferencePath = Join-Path $Root "docs/sbox_engine_llm_reference.md"
 $engineAgentPath = Join-Path $Root ".agents/sbox/sbox-engine-reference-agent.md"
 $engineAuditPath = Join-Path $Root "scripts/agents/sbox_engine_reference_audit.ps1"
+$apiLookupPath = Join-Path $Root "scripts/agents/sbox_api_lookup.ps1"
+$apiAuditPath = Join-Path $Root "scripts/agents/sbox_api_reference_audit.ps1"
 
 if (-not (Test-Path -LiteralPath $engineReferencePath)) {
     Add-AgentIssue $issues "Warning" "Post-Task Training" "docs/sbox_engine_llm_reference.md" "Engine research reference doc is missing." "Capture verified S&Box/Source 2 research in a dated project reference instead of leaving it only in chat history."
@@ -265,11 +268,19 @@ if (-not (Test-Path -LiteralPath $engineAuditPath)) {
     Add-AgentIssue $issues "Warning" "Post-Task Training" "scripts/agents/sbox_engine_reference_audit.ps1" "Engine research audit script is missing." "Add a stale-guidance guard for [Net], .qc, manual VMDL advice, and unsourced volatile engine claims."
 }
 
-if ($toolkitText -notmatch 'S&Box Engine Reference Agent' -or $toolkitText -notmatch 'sbox_engine_reference_audit\.ps1') {
+if (-not (Test-Path -LiteralPath $apiLookupPath)) {
+    Add-AgentIssue $issues "Warning" "Post-Task Training" "scripts/agents/sbox_api_lookup.ps1" "S&Box API lookup helper is missing." "Add a local API.json query helper so future agents can verify exact symbols before editing C#."
+}
+
+if (-not (Test-Path -LiteralPath $apiAuditPath)) {
+    Add-AgentIssue $issues "Warning" "Post-Task Training" "scripts/agents/sbox_api_reference_audit.ps1" "S&Box API reference audit is missing." "Protect local API lookup docs, hook, and suite wiring with an audit."
+}
+
+if ($toolkitText -notmatch 'S&Box Engine Reference Agent' -or $toolkitText -notmatch 'sbox_engine_reference_audit\.ps1' -or $toolkitText -notmatch 'sbox_api_lookup\.ps1') {
     Add-AgentIssue $issues "Warning" "Post-Task Training" "docs/agent_toolkit.md" "Agent toolkit docs do not route external S&Box engine research." "Document the engine reference agent and its evidence command."
 }
 
-if ($agentReadmeText -notmatch 'sbox-engine-reference-agent\.md' -or $agentReadmeText -notmatch 'sbox_engine_reference_audit\.ps1') {
+if ($agentReadmeText -notmatch 'sbox-engine-reference-agent\.md' -or $agentReadmeText -notmatch 'sbox_engine_reference_audit\.ps1' -or $agentReadmeText -notmatch 'sbox_api_lookup\.ps1') {
     Add-AgentIssue $issues "Warning" "Post-Task Training" ".agents/sbox/README.md" "Agent routing docs do not mention the S&Box engine reference agent." "Add a routing row for verified engine/API research intake."
 }
 

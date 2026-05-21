@@ -550,12 +550,135 @@ HudPanel {
         }
 
         // ─────── Reticle / crosshair / hitmarker / damage arcs ───────
+        .drone-lcd-overlay {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 4;
+            pointer-events: none;
+            overflow: hidden;
+            background-image:
+                radial-gradient(transparent 58%, rgba(3, 10, 13, 0.48) 100%),
+                linear-gradient(90deg, rgba(82, 210, 230, 0.05) 0%, transparent 16%, transparent 84%, rgba(82, 210, 230, 0.05) 100%);
+
+            .lcd-glass {
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                background-color: rgba(77, 210, 255, 0.035);
+                border: 1px solid rgba(138, 236, 255, 0.16);
+            }
+
+            .lcd-scanlines {
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                opacity: 0.24;
+                background-image: linear-gradient(transparent 0%, transparent 58%, rgba(180, 246, 255, 0.22) 60%, transparent 100%);
+                background-size: 100% 4px;
+            }
+
+            .lcd-corner {
+                position: absolute;
+                width: 52px;
+                height: 52px;
+            }
+
+            .lcd-corner.top-left {
+                top: 18px;
+                left: 18px;
+                border-left: 2px solid rgba(135, 236, 255, 0.62);
+                border-top: 2px solid rgba(135, 236, 255, 0.62);
+            }
+
+            .lcd-corner.top-right {
+                top: 18px;
+                right: 18px;
+                border-right: 2px solid rgba(135, 236, 255, 0.62);
+                border-top: 2px solid rgba(135, 236, 255, 0.62);
+            }
+
+            .lcd-corner.bottom-left {
+                bottom: 18px;
+                left: 18px;
+                border-left: 2px solid rgba(135, 236, 255, 0.62);
+                border-bottom: 2px solid rgba(135, 236, 255, 0.62);
+            }
+
+            .lcd-corner.bottom-right {
+                right: 18px;
+                bottom: 18px;
+                border-right: 2px solid rgba(135, 236, 255, 0.62);
+                border-bottom: 2px solid rgba(135, 236, 255, 0.62);
+            }
+
+            .lcd-label {
+                position: absolute;
+                left: 32px;
+                bottom: 24px;
+                min-width: 120px;
+                padding: 4px 8px;
+                border-radius: 3px;
+                background-color: rgba(0, 8, 10, 0.36);
+                border: 1px solid rgba(135, 236, 255, 0.32);
+                color: rgba(175, 246, 255, 0.88);
+                font-size: 11px;
+                font-weight: 900;
+                letter-spacing: 0;
+                text-align: center;
+                text-shadow: 0 0 6px rgba(77, 210, 255, 0.34);
+            }
+
+            &.fpv {
+                background-image:
+                    radial-gradient(transparent 58%, rgba(3, 12, 8, 0.48) 100%),
+                    linear-gradient(90deg, rgba(139, 255, 151, 0.05) 0%, transparent 16%, transparent 84%, rgba(139, 255, 151, 0.05) 100%);
+
+                .lcd-glass {
+                    background-color: rgba(122, 255, 138, 0.03);
+                    border-color: rgba(145, 255, 158, 0.14);
+                }
+
+                .lcd-scanlines {
+                    background-image: linear-gradient(transparent 0%, transparent 58%, rgba(174, 255, 182, 0.18) 60%, transparent 100%);
+                }
+
+                .lcd-label {
+                    border-color: rgba(145, 255, 158, 0.32);
+                    color: rgba(190, 255, 197, 0.86);
+                    text-shadow: 0 0 6px rgba(122, 255, 138, 0.28);
+                }
+
+                .lcd-corner.top-left,
+                .lcd-corner.top-right,
+                .lcd-corner.bottom-left,
+                .lcd-corner.bottom-right {
+                    border-color: rgba(145, 255, 158, 0.58);
+                }
+            }
+
+            &.fiber {
+                .lcd-label {
+                    border-color: rgba(255, 211, 77, 0.36);
+                    color: rgba(255, 231, 141, 0.88);
+                    text-shadow: 0 0 6px rgba(255, 211, 77, 0.24);
+                }
+            }
+        }
+
         .reticle-stack {
             position: absolute;
             left: 50%;
             top: 50%;
             width: 0;
             height: 0;
+            z-index: 10;
         }
 
         .crosshair {
@@ -608,6 +731,103 @@ HudPanel {
                 .tick {
                     background-color: rgba(255, 245, 224, 0.94);
                 }
+            }
+        }
+
+        .drone-action-prompt {
+            position: absolute;
+            left: -88px;
+            top: 38px;
+            width: 176px;
+            min-height: 32px;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            opacity: 0.94;
+            text-shadow: 0 2px 5px rgba(black, 0.9);
+
+            .mouse-icon {
+                position: relative;
+                width: 22px;
+                height: 30px;
+                border-radius: 10px;
+                border: 1px solid rgba(white, 0.58);
+                background-color: rgba(0, 0, 0, 0.38);
+                box-shadow: 0 0 8px rgba(77, 210, 255, 0.16);
+            }
+
+            .mouse-button {
+                position: absolute;
+                top: 3px;
+                width: 8px;
+                height: 10px;
+                border-radius: 4px;
+                background-color: rgba(white, 0.18);
+            }
+
+            .mouse-button.left {
+                left: 3px;
+                background-color: #4dd2ff;
+                box-shadow: 0 0 7px rgba(77, 210, 255, 0.54);
+            }
+
+            .mouse-button.right {
+                right: 3px;
+            }
+
+            .mouse-wheel {
+                position: absolute;
+                top: 4px;
+                left: 10px;
+                width: 2px;
+                height: 8px;
+                border-radius: 2px;
+                background-color: rgba(white, 0.45);
+            }
+
+            .drone-action-copy {
+                padding: 3px 7px;
+                border-radius: 3px;
+                background-color: rgba(0, 10, 12, 0.36);
+                border: 1px solid rgba(77, 210, 255, 0.26);
+                color: rgba(220, 250, 255, 0.96);
+                font-size: 12px;
+                font-weight: 900;
+                letter-spacing: 0;
+                text-transform: uppercase;
+            }
+
+            &.fpv {
+                .mouse-icon {
+                    box-shadow: 0 0 8px rgba(122, 255, 138, 0.16);
+                }
+
+                .mouse-button.left {
+                    background-color: #91ff9e;
+                    box-shadow: 0 0 7px rgba(122, 255, 138, 0.45);
+                }
+
+                .drone-action-copy {
+                    border-color: rgba(145, 255, 158, 0.24);
+                    color: rgba(225, 255, 228, 0.96);
+                }
+            }
+
+            &.fiber {
+                .mouse-button.left {
+                    background-color: #ffd34d;
+                    box-shadow: 0 0 7px rgba(255, 211, 77, 0.42);
+                }
+
+                .drone-action-copy {
+                    border-color: rgba(255, 211, 77, 0.28);
+                    color: rgba(255, 238, 178, 0.96);
+                }
+            }
+
+            &.arming {
+                opacity: 0.62;
             }
         }
 

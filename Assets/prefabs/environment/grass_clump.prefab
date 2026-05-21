@@ -1,0 +1,265 @@
+{
+  "RootObject": {
+    "__guid": "fd6bd40b-787b-5f6a-93bd-5f083dd30fa0",
+    "Flags": 0,
+    "Name": "GrassClump_CrossCards",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [],
+    "Children": [
+      {
+        "__guid": "81ce2683-5293-5141-ab44-14b1c68ba799",
+        "Flags": 0,
+        "Name": "BladeCard_A_Front",
+        "Position": "0,0,7",
+        "Rotation": "0,0.707106781,0,0.707106781",
+        "Scale": "0.14,0.92,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "03025750-3001-5845-bc45-832c7443b619",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/grass_blade_card.vmat",
+            "Materials": null,
+            "Model": "models/dev/plane.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "64561d17-4764-5442-9cd4-9f27b46e713c",
+        "Flags": 0,
+        "Name": "BladeCard_A_Back",
+        "Position": "0,0,7",
+        "Rotation": "-0.707106781,0,0.707106781,0",
+        "Scale": "0.14,0.92,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "128abbd7-811b-5235-a88a-5ba2bffd05c0",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/grass_blade_card.vmat",
+            "Materials": null,
+            "Model": "models/dev/plane.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "3f92e6e8-4ac2-5bc9-beb0-486fa5b3b026",
+        "Flags": 0,
+        "Name": "BladeCard_B_Front",
+        "Position": "0,0,7",
+        "Rotation": "-0.353553391,0.612372436,0.353553391,0.612372436",
+        "Scale": "0.14,0.92,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "cd7366bb-8ef9-5362-bb1f-7c73f2c25b61",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/grass_blade_card.vmat",
+            "Materials": null,
+            "Model": "models/dev/plane.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "3a51abe3-ccfa-5f76-8f23-9f869217b580",
+        "Flags": 0,
+        "Name": "BladeCard_B_Back",
+        "Position": "0,0,7",
+        "Rotation": "-0.612372436,-0.353553391,0.612372436,-0.353553391",
+        "Scale": "0.14,0.92,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "01c6f71f-aec8-5aaf-9b78-5a4fd5878aa4",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/grass_blade_card.vmat",
+            "Materials": null,
+            "Model": "models/dev/plane.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "cbcc5ea4-b2be-5939-a02d-96fbeba8fd0f",
+        "Flags": 0,
+        "Name": "BladeCard_C_Front",
+        "Position": "0,0,7",
+        "Rotation": "-0.612372436,0.353553391,0.612372436,0.353553391",
+        "Scale": "0.14,0.92,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "9a2d5a6a-8b32-5b68-85a0-77abf620da48",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/grass_blade_card.vmat",
+            "Materials": null,
+            "Model": "models/dev/plane.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "a4429f18-e785-56e6-aed1-a726b5d1084f",
+        "Flags": 0,
+        "Name": "BladeCard_C_Back",
+        "Position": "0,0,7",
+        "Rotation": "-0.353553391,-0.612372436,0.353553391,-0.612372436",
+        "Scale": "0.14,0.92,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "d151a131-27d7-57a2-a910-5820041c7b88",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/grass_blade_card.vmat",
+            "Materials": null,
+            "Model": "models/dev/plane.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ],
+        "Children": []
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Environment/Grass Clump",
+  "MenuIcon": "grass",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}
