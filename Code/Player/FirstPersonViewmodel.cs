@@ -8,10 +8,9 @@ namespace DroneVsPlayers;
 /// <summary>
 /// Local-only first-person held-item renderer. It spawns a viewmodel weapon or
 /// item for the local player, then spawns Facepunch first-person arms on top of
-/// that item. Facepunch stock weapon viewmodels are preferred and use the
-/// documented arms-to-weapon bonemerge path; custom project items fall back to
-/// copied static item visuals plus IK targets sampled from the existing
-/// held-item grip points.
+/// that item. Facepunch stock weapon viewmodels provide arms animation and, for
+/// custom project weapons, stay hidden while copied project visuals are aligned
+/// to the stock hand anchors and existing held-item grip points.
 /// </summary>
 [Title( "First Person Viewmodel" )]
 [Category( "Drone vs Players/Player" )]
@@ -29,16 +28,20 @@ public sealed class FirstPersonViewmodel : Component
 	[Property] public string EmpGrenadeViewmodelPath { get; set; } = "facepunch/v_decoy_grenade";
 
 	[Property] public string AssaultRifleCustomModelPath { get; set; } = "models/weapons/assault_rifle_m4.vmdl";
+	[Property] public string PilotSmgCustomModelPath { get; set; } = "models/weapons/smg_mp7.vmdl";
 	[Property] public string ShotgunCustomModelPath { get; set; } = "models/shotgun.vmdl";
 	[Property] public string JammerCustomModelPath { get; set; } = "models/jammer_gun.vmdl";
 	string JammerStockAnimationPath => AssaultRifleViewmodelPath;
 
-	[Property] public Vector3 StockViewmodelOffset { get; set; } = Vector3.Zero;
+	[Property] public Vector3 StockViewmodelOffset { get; set; } = new( 8f, 0f, 0f );
 	[Property] public Angles StockViewmodelRotationOffset { get; set; } = new( 0f, 0f, 0f );
-	[Property] public Vector3 CustomM4ViewmodelOffset { get; set; } = Vector3.Zero;
+	[Property] public Vector3 CustomM4ViewmodelOffset { get; set; } = new( 2f, 0f, 0f );
 	[Property] public Angles CustomM4ViewmodelRotation { get; set; } = new( 0f, 0f, 0f );
 	[Property] public Vector3 CustomM4ViewmodelScale { get; set; } = new( 1f, 1f, 1f );
-	[Property] public Vector3 CustomShotgunViewmodelOffset { get; set; } = Vector3.Zero;
+	[Property] public Vector3 CustomSmgViewmodelOffset { get; set; } = Vector3.Zero;
+	[Property] public Angles CustomSmgViewmodelRotation { get; set; } = new( 0f, 0f, 0f );
+	[Property] public Vector3 CustomSmgViewmodelScale { get; set; } = new( 1f, 1f, 1f );
+	[Property] public Vector3 CustomShotgunViewmodelOffset { get; set; } = new( 2f, 0f, 0f );
 	[Property] public Angles CustomShotgunViewmodelRotation { get; set; } = new( 0f, 0f, 0f );
 	[Property] public Vector3 CustomShotgunViewmodelScale { get; set; } = new( 1f, 1f, 1f );
 	[Property] public Vector3 CustomJammerViewmodelOffset { get; set; } = Vector3.Zero;
@@ -492,6 +495,15 @@ public sealed class FirstPersonViewmodel : Component
 
 		HideStockAnimationDriver();
 
+		if ( TryGetOneHandCustomVisualPose( item, out var oneHandPosition, out var oneHandRotation ) )
+		{
+			_customVisualRoot.WorldPosition = oneHandPosition;
+			_customVisualRoot.WorldRotation = oneHandRotation;
+			_customVisualRoot.WorldScale = item.CustomViewmodelScale;
+			SetCustomVisualRenderType( ModelRenderer.ShadowRenderType.On );
+			return;
+		}
+
 		if ( !TryGetCustomAnimatedVisualAnchor( item, out var anchor ) )
 		{
 			SetCustomVisualRenderType( ModelRenderer.ShadowRenderType.Off );
@@ -513,9 +525,49 @@ public sealed class FirstPersonViewmodel : Component
 		SetCustomVisualRenderType( ModelRenderer.ShadowRenderType.On );
 	}
 
+	bool TryGetOneHandCustomVisualPose( HeldItem item, out Vector3 position, out Rotation rotation )
+	{
+		position = default;
+		rotation = default;
+
+		if ( item.TwoHanded )
+			return false;
+
+		if ( !TryGetStockWeaponAnchor( out var oneHandWeaponAnchor ) )
+			return false;
+
+		var handTarget = item.RightHandTarget.IsValid() ? item.RightHandTarget : item.LeftHandTarget;
+		if ( !handTarget.IsValid() )
+			return false;
+
+		var rightHand = handTarget == item.RightHandTarget;
+		if ( !TryGetStockHandAnchor( rightHand, out var oneHandGripAnchor ) )
+			return false;
+
+		rotation = oneHandWeaponAnchor.Rotation * item.CustomViewmodelRotation.ToRotation();
+		position = oneHandGripAnchor.Position - LocalPointToWorldOffset( handTarget.LocalPosition, rotation, item.CustomViewmodelScale );
+		return true;
+	}
+
 	bool TryGetCustomHandAnchoredPose( HeldItem item, Rotation rotation, Vector3 scale, out Vector3 position )
 	{
 		position = default;
+
+		if ( !item.TwoHanded )
+		{
+			if ( item.RightHandTarget.IsValid() && TryGetStockHandAnchor( true, out var oneHandRightHand ) )
+			{
+				position = oneHandRightHand.Position - LocalPointToWorldOffset( item.RightHandTarget.LocalPosition, rotation, scale );
+				return true;
+			}
+
+			if ( item.LeftHandTarget.IsValid() && TryGetStockHandAnchor( false, out var oneHandLeftHand ) )
+			{
+				position = oneHandLeftHand.Position - LocalPointToWorldOffset( item.LeftHandTarget.LocalPosition, rotation, scale );
+				return true;
+			}
+		}
+
 		var total = Vector3.Zero;
 		var count = 0;
 
@@ -763,10 +815,10 @@ public sealed class FirstPersonViewmodel : Component
 				LeftHandTarget = weapon.LeftHandIkTarget,
 				RightHandTarget = weapon.RightHandIkTarget,
 				MuzzleTarget = weapon.MuzzleSocket,
-				Key = $"hitscan:{weapon.GameObject.Id}:{(isSmg ? "mp5" : "m4a1")}",
+				Key = $"hitscan:{weapon.GameObject.Id}:{(isSmg ? "mp7" : "m4a1")}",
 				StockModelPath = isSmg ? PilotSmgViewmodelPath : AssaultRifleViewmodelPath,
-				CustomModelPath = AssaultRifleCustomModelPath,
-				RenderMode = isSmg ? ViewmodelRenderMode.StockVisible : ViewmodelRenderMode.CustomVisibleStockAnimated,
+				CustomModelPath = isSmg ? PilotSmgCustomModelPath : AssaultRifleCustomModelPath,
+				RenderMode = ViewmodelRenderMode.CustomVisibleStockAnimated,
 				HasStockViewmodel = true,
 				TwoHanded = !isSmg,
 				IsAds = pc.IsAds,
@@ -776,9 +828,9 @@ public sealed class FirstPersonViewmodel : Component
 				AttackDown = Input.Down( "Attack1" ),
 				ReloadPressed = Input.Pressed( "Reload" ),
 				MoveInput = moveInput,
-				CustomViewmodelOffset = CustomM4ViewmodelOffset,
-				CustomViewmodelRotation = CustomM4ViewmodelRotation,
-				CustomViewmodelScale = CustomM4ViewmodelScale
+				CustomViewmodelOffset = isSmg ? CustomSmgViewmodelOffset : CustomM4ViewmodelOffset,
+				CustomViewmodelRotation = isSmg ? CustomSmgViewmodelRotation : CustomM4ViewmodelRotation,
+				CustomViewmodelScale = isSmg ? CustomSmgViewmodelScale : CustomM4ViewmodelScale
 			};
 			return true;
 		}

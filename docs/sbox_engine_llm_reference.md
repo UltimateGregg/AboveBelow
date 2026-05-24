@@ -10,6 +10,23 @@ Verified against official sources on 2026-05-20:
 - https://sbox.game/dev/doc/editor/model-editor
 - https://github.com/Facepunch/sbox-public
 
+Official Facepunch Learn tutorial reviewed on 2026-05-23:
+
+- https://sbox.game/learn/facepunch/creating-an-entity-for-sandbox
+
+Secondary community tutorial context reviewed on 2026-05-23:
+
+- https://sbox.game/learn
+- https://sbox.game/learn/tesa/ui-buildhash
+- https://sbox.game/learn/shadb/jiggle-101
+- https://sbox.game/learn/gibbard/networked-variable-ui
+- https://sbox.game/learn/brax/ide-setup
+- https://sbox.game/learn/frxxks/beginner-resources
+- https://sbox.game/learn/aqua/node-editor-01
+- https://github.com/internetfishy/Node-Editor-Calculator
+
+Use `.agents/sbox/sbox-learn-intake-agent.md` before turning Learn tutorials into standing project guidance. Use `.agents/sbox/ui-razor-reactivity-agent.md` for tutorials or bugs about Razor refresh behavior.
+
 This is a working reference for agents editing this repo. It is intentionally short. If a task depends on exact API shape, check the current docs, API reference, public source, the local API dump, or local project patterns before changing code.
 
 ## Local API Dump
@@ -51,6 +68,20 @@ Keep broad changes phased:
 - scene authoring in `Assets/scenes/main.scene`,
 - editor tooling under `Libraries/`, `Editor/`, `mcp/`, or `scripts/agents`.
 
+## Sandbox Entity Resources
+
+For spawn-menu Sandbox entities, treat `.sent` files as `ScriptedEntity` resources that point at prefabs. The prefab still owns the actual GameObjects and Components. Do not try to code against `ScriptedEntity` as a normal gameplay component unless a current API lookup confirms a C# symbol for the exact need.
+
+Entity behavior should stay component-first:
+
+- Put behavior in a `Component` subclass.
+- Expose authoring knobs with `[Property]` and range attributes when useful.
+- Use `TimeSince` for lightweight elapsed-time timers; assign `0f` to reset.
+- For physics impulses or owner-authoritative movement in `OnFixedUpdate`, guard proxy execution first, then get and validate `Rigidbody` before applying force.
+- If the entity is meant to be configurable from Sandbox mode's context menu, put `[ClientEditable]` on the intended properties and keep host-authority rules in mind for gameplay state.
+
+Spawn-menu resource setup is an editor/resource workflow: create or update the prefab, create a Sandbox Entity `.sent`, assign the prefab, set title/description/category, and enable IncludeCode when the entity depends on custom C# behavior.
+
 ## Networking
 
 `NetworkSpawn()` makes a GameObject networked so it can use synchronized properties and RPCs. The object owner controls updates for owned state by default. In this repo, security-sensitive gameplay still needs host-authoritative validation.
@@ -77,11 +108,25 @@ Use the existing checks:
 
 For Blender work, verify local config, exported FBX material slots, generated VMDL remaps, prefab renderer state, and a visual editor result before accepting a texture or model fix.
 
+For cosmetic jigglebone work, treat the S&Box Learn jigglebone tutorial as secondary practical context: start from a skinned cosmetic bound to the citizen or human skeleton plus extra jiggle bones, bone-merge it to a body in a simple test scene, author primitive ModelDoc `PhysicsShape` nodes and joints, place joint anchors at the intended pivots, and prove the result in editor play with body motion. This is local bone simulation proof, not world collision proof.
+
 ## UI And Sound
 
 UI uses S&Box panels and Razor panels, not web DOM or Panorama. Follow the local `HudPanel` and menu patterns, keep stylesheet aliases where this repo needs them, and run the UI flow audit after interaction changes.
 
+For dynamic Razor UI, treat `BuildHash()` as the normal refresh contract. Include every value that affects rendered markup, especially `[Sync]` values surfaced in HUDs, scoreboards, timers, health, team labels, objective progress, and menu status. Do not solve stale UI by calling `StateHasChanged()` from `Tick()` unless a task has a very specific measured reason.
+
 Sound should use local `.sound` wrappers for gameplay-facing references. Search existing stock/editor audio before synthesizing fallback WAVs, but import or wrap sources under `Assets/sounds` before wiring them into C#, prefabs, or scenes.
+
+## Editor Node Tools
+
+Reviewed against S&Box Learn tutorial context on 2026-05-23: custom node-editor tooling is editor-only scaffolding, not runtime gameplay UI. Keep it under `Editor/` or a library `Editor/` folder, then compile the relevant editor project and open the tool in the visible editor.
+
+The useful mental model is a set of separate pieces: an `[EditorApp]` widget, a `GraphView`, an optional properties/inspector widget, an `IGraph` data container, `INode` implementations, `INodeType` factories, and `IPlug`/`IPlugIn`/`IPlugOut` plug models. The tutorial relies on `DisplayInfo` and attributes such as `[Title]`, `[Icon]`, `[Description]`, `[Hide]`, and `[ReadOnly]` to populate menus, node labels, plug labels, and property sheets.
+
+Do not copy tutorial scaffolding blindly. Node callbacks can be invoked by hover, paint, menus, selection, and connection actions, so replace `throw new NotImplementedException()` placeholders with safe no-op or null-returning defaults before handoff. Initialize input/output plug collections before `NodeUI` renders, show connections explicitly when plugs should draw links, and add type-compatibility checks for real plug connections because the tutorial's calculator example leaves that as follow-up work.
+
+Local `API.json` may not include every editor Node Editor type. If exact editor-node signatures matter, verify against official API pages, the visible editor assemblies, the tutorial source snapshots, or an existing editor-tool pattern before changing code. Run `scripts/agents/editor_node_tool_audit.ps1 -Root . -ShowInfo` for static placement and placeholder checks.
 
 ## Avoid Source 1 Habits
 

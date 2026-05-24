@@ -29,9 +29,10 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 | Blender procedural look needs to match in S&Box | `procedural-texture-transfer-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production` |
 | Visual preview review for a Blender asset | `visual-review-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/asset_visual_review.ps1 -Blend weapons_model.blend/assault_rifle_m4.blend` |
 | Full asset production readiness | `asset-pipeline-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production` |
+| Cosmetic jigglebone setup | `jigglebone-cosmetic-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite modeldoc` plus editor bone-merge playtest |
 | Sound assets and native editor audio wiring | `sound-control-plane-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite sound -ShowInfo` |
 | Unified editor MCP capability/status check | `sound-control-plane-agent.md` | `control_plane_status` in the S&Box MCP server |
-| UI/startup-flow interaction review | `ui-flow-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/ui_flow_audit.ps1` |
+| UI/startup-flow and Razor refresh review | `ui-flow-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/ui_flow_audit.ps1 -FailOnWarning` |
 | Multiplayer authority review | `networking-review-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/networking_review_audit.ps1` |
 | Manual editor test planning | `playtest-qa-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/playtest_checklist.ps1 -ChangeArea All` |
 | Docs freshness review | `docs-roadmap-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/docs_roadmap_audit.ps1` |
@@ -39,7 +40,10 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 | Changed-file readiness report | `pre-handoff-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/feature_readiness_report.ps1 -ShowFiles` |
 | Current editor/runtime log discovery | `build-log-sentinel.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/current_log_audit.ps1 -RequireFresh` |
 | S&Box engine/API research intake | `sbox-engine-reference-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_engine_reference_audit.ps1 -Root . -ShowInfo` |
+| Editor Node Tool review | `editor-node-tool-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/editor_node_tool_audit.ps1 -Root . -ShowInfo` |
 | S&Box API Lookup for exact symbols | `sbox-engine-reference-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_api_lookup.ps1 -Root . -Type Sandbox.GameObject -Member NetworkSpawn` |
+| S&Box Learn tutorial intake | `sbox-learn-intake-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_learn_intake_audit.ps1 -Root . -ShowInfo` |
+| Dynamic Razor value refresh review | `ui-razor-reactivity-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/ui_flow_audit.ps1 -FailOnWarning -ShowInfo` |
 | Post-task workflow training | `post-task-training-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite train` |
 
 ## Operating Rules
@@ -54,9 +58,11 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 - For collision-heavy tasks, use `collision-chain-agent.md` to split work across explorer, implementer, verifier, and critic roles before final handoff.
 - When the user types exactly `train`, respond with `On it!`, run the post-task training workflow, and apply durable hook, agent, pipeline, or documentation updates that will help future tasks.
 - For Blender-to-S&Box texture transfer, inspect whether the Blender material is procedural or image-backed before editing `.vmat` files. Procedural looks need baked project textures and strict VMDL material-slot validation.
+- For cosmetic jigglebones, route through `jigglebone-cosmetic-agent.md`: prove skeleton binding, bone merge, ModelDoc physics shapes, joint anchors, and editor motion before treating the asset as ready.
 - For sound work, treat `.sound` wrappers as gameplay assets and raw audio as source data. Run the sound suite before wiring or previewing audio in the editor.
 - Prefer the native S&Box MCP server at `http://localhost:29015/mcp` as the unified editor control plane; use CoworkBridge only as a fallback for operations not exposed through MCP.
-- After UI or startup-flow edits, run the UI flow audit and an editor click-test checklist.
+- After UI or startup-flow edits, run the UI flow audit and an editor click-test checklist. Dynamic Razor values should be covered by `BuildHash()` rather than per-frame `StateHasChanged()` refreshes.
 - If runtime logs are stale or unavailable, say that directly and do not overclaim editor validation.
 - Static file audits do not replace an editor playtest or a 2-client multiplayer test when runtime behavior changed.
 - Treat pasted S&Box or Source 2 research as useful input, not authority. Route it through `sbox-engine-reference-agent.md`, prefer official docs/public source, query local `API.json` with `sbox_api_lookup.ps1` for exact symbols, and add source/date markers for volatile API or release claims.
+- Treat S&Box Learn pages as useful community tutorials. Route them through `sbox-learn-intake-agent.md`; if they affect Razor refresh behavior, use `ui-razor-reactivity-agent.md`; if they affect Node Editor tooling, use `editor-node-tool-agent.md`; preserve the focused audits, hook, and `learn` suite.

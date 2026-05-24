@@ -225,6 +225,48 @@ function Test-HeldItemTargets {
     }
 }
 
+function Test-CounterUavJammerGripTargets {
+    param(
+        [string]$Path
+    )
+
+    $json = Read-PrefabJson -Path $Path -FailureContext "counter-UAV jammer grip targets"
+    if ($null -eq $json) {
+        return
+    }
+
+    $weapon = Find-PrefabNodeByName -Node $json.RootObject -Name "Weapon"
+    if ($null -eq $weapon -or -not ($weapon.PSObject.Properties.Name -contains "Children") -or $null -eq $weapon.Children) {
+        Add-AgentIssue $issues "Error" "Prefab" $Path "Counter-UAV jammer weapon is missing hand target children." "Restore LeftHandIk and RightHandIk directly under the jammer Weapon node."
+        return
+    }
+
+    $expectedTargets = @{
+        LeftHandIk = @{
+            Position = "5,-5,-3"
+            Grip = "foregrip"
+        }
+        RightHandIk = @{
+            Position = "-2,5,-4"
+            Grip = "pistol grip"
+        }
+    }
+
+    foreach ($targetName in $expectedTargets.Keys) {
+        $target = @($weapon.Children | Where-Object { $_.Name -eq $targetName } | Select-Object -First 1)[0]
+        if ($null -eq $target) {
+            Add-AgentIssue $issues "Error" "Prefab" $Path "Counter-UAV jammer is missing '$targetName'." "Add a stable hand target on the jammer $($expectedTargets[$targetName].Grip)."
+            continue
+        }
+
+        $expectedPosition = [string]$expectedTargets[$targetName].Position
+        $actualPosition = [string]$target.Position
+        if ($actualPosition -ne $expectedPosition) {
+            Add-AgentIssue $issues "Error" "Prefab" $Path "Counter-UAV jammer $targetName should sit on the $($expectedTargets[$targetName].Grip) at '$expectedPosition', found '$actualPosition'." "Move the IK target onto the modeled jammer grip instead of reusing rifle-style hand points."
+        }
+    }
+}
+
 function Test-LineRendererColorSerialization {
     param(
         [string]$Path
@@ -315,6 +357,7 @@ Test-Prefab -Path "Assets/prefabs/soldier_counter_uav.prefab" `
 Test-NoLegacyFirstPersonArms -Path "Assets/prefabs/soldier_counter_uav.prefab"
 Test-HumanBodyRenderer -Path "Assets/prefabs/soldier_counter_uav.prefab"
 Test-HeldItemTargets -Path "Assets/prefabs/soldier_counter_uav.prefab" -HeldItemNames @("Weapon", "Grenade")
+Test-CounterUavJammerGripTargets -Path "Assets/prefabs/soldier_counter_uav.prefab"
 
 Test-Prefab -Path "Assets/prefabs/soldier_heavy.prefab" `
 	-RequiredComponents ($soldierBase + @("DroneVsPlayers.HeavySoldier", "DroneVsPlayers.ShotgunWeapon", "DroneVsPlayers.EmpGrenade")) `

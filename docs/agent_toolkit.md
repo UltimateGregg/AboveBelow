@@ -23,6 +23,8 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 | Build and Log Sentinel | Compile and check fresh logs | `scripts/agents/build_log_sentinel.ps1` |
 | Gameplay Systems Agent | Review gameplay architecture fit | Uses build and networking audits |
 | Gameplay Regression Guard | Run focused slot and drone-control regression checks | `scripts/agents/gameplay_regression_guard.ps1` |
+| Round Re-Prompt Guard | Keep next-round reset from auto-respawning stale team/loadout choices | `scripts/check_round_reprompt_flow.ps1` |
+| Two-Client Lobby Guard | Keep editor play sessions join-first and preserve round probe commands | `scripts/check_two_client_lobby_flow.ps1` |
 | Prefab and Wiring Agent | Validate prefab shape and AutoWire references | `scripts/agents/prefab_wiring_audit.ps1` |
 | Prefab Graph Audit | Validate GUID refs, component refs, prefab refs, and resource paths | `scripts/agents/prefab_graph_audit.ps1` |
 | Scene Integrity Audit | Validate main scene managers, spawns, and collider patterns | `scripts/agents/scene_integrity_audit.ps1` |
@@ -34,9 +36,10 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 | Collision Critic Agent | Findings-first critique and rework routing | `.agents/sbox/collision-critic-agent.md` |
 | Asset Pipeline Agent | Validate `.blend` configs, targets, and material remaps | `scripts/agents/asset_pipeline_audit.ps1` |
 | ModelDoc Agent | Validate `.vmdl` source meshes, material targets, and config drift | `scripts/agents/modeldoc_audit.ps1` |
+| Jigglebone Cosmetic Agent | Review skinned cosmetic bone merge, ModelDoc physics shapes, joint anchors, and editor motion proof | `scripts/agents/run_agent_checks.ps1 -Suite modeldoc` plus editor playtest |
 | Sound Control Plane Agent | Validate SoundEvent wrappers, attached playback, and editor-native sound workflows | `scripts/agents/run_agent_checks.ps1 -Suite sound` |
 | Team Label Copy Audit | Keep player-facing role labels on Drone Pilots and Soldiers while preserving the project title | `scripts/agents/team_label_copy_audit.ps1` |
-| UI Flow Agent | Catch interactive-looking Razor UI without click behavior | `scripts/agents/ui_flow_audit.ps1` |
+| UI Flow Agent | Catch interactive-looking Razor UI without click behavior, missing `BuildHash()`, and per-frame `StateHasChanged()` refreshes | `scripts/agents/ui_flow_audit.ps1` |
 | Networking Review Agent | Surface authority and replication risks | `scripts/agents/networking_review_audit.ps1` |
 | Playtest QA Agent | Generate editor and multiplayer checklists | `scripts/agents/playtest_checklist.ps1` |
 | Docs and Roadmap Agent | Check doc presence and drift | `scripts/agents/docs_roadmap_audit.ps1` |
@@ -44,6 +47,9 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 | Current Log Audit | Search project and local app log locations for fresh runtime/editor logs | `scripts/agents/current_log_audit.ps1` |
 | S&Box Engine Reference Agent | Verify external S&Box/Source 2 research and guard against obsolete guidance | `scripts/agents/sbox_engine_reference_audit.ps1` |
 | S&Box API Lookup | Query local `API.json` for exact S&Box types, members, attributes, and summaries | `scripts/agents/sbox_api_lookup.ps1` |
+| S&Box Learn Intake Agent | Convert useful S&Box Learn tutorials into project docs, audits, hooks, and routing | `scripts/agents/sbox_learn_intake_audit.ps1` |
+| Editor Node Tool Agent | Keep custom S&Box Node Editor tooling editor-only and free of copied tutorial placeholders | `scripts/agents/editor_node_tool_audit.ps1` |
+| UI Razor Reactivity Agent | Subagent for dynamic Razor values, `BuildHash()`, and stale UI refresh bugs | `scripts/agents/ui_flow_audit.ps1 -FailOnWarning` |
 | Feature Readiness Report | Map changed files to required checks and manual test focus | `scripts/agents/feature_readiness_report.ps1` |
 | Post-Task Training Agent | Inspect recent work and route durable hook, agent, pipeline, and docs improvements | `scripts/agents/post_task_training_agent.ps1` |
 | Pre-Handoff Agent | Orchestrate final checks | `scripts/agents/run_agent_checks.ps1` |
@@ -57,6 +63,9 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 - The build sentinel writes build output to `.tmpbuild/agent-build.log`.
 - The prefab wiring audit checks that code-driven child objects, such as drone propellers, are present in the prefab hierarchy the component scans.
 - The networking audit enforces that `HitscanWeapon.RequestFire` stays a `[Rpc.Host]` intent request so the host owns ammo, cooldown, trace, and damage resolution.
+- The networking audit also enforces that `GameSetup.RequestSpawn` stays a `[Rpc.Host]` intent request so team/class/variant selection is applied only by the host.
+- The UI flow audit checks both interaction affordances and Razor refresh contracts. Dynamic rendered values should be listed in `BuildHash()`, not forced through `StateHasChanged()` in `Tick()`.
+- The Learn intake audit keeps S&Box Learn tutorial lessons wired through a specific agent, Razor subagent, docs, suite, self-test, and Claude hook instead of living only in chat.
 - Full automation is still static unless paired with an editor playtest. Use `current_log_audit.ps1 -RequireFresh` after the playtest to verify current runtime logs.
 
 ## Recommended Usage By Change Type
@@ -75,6 +84,31 @@ Drone input, pilot control, or drone HUD loadout changes:
 powershell -ExecutionPolicy Bypass -File scripts/agents/gameplay_regression_guard.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/playtest_checklist.ps1 -ChangeArea Gameplay
 ```
+
+Round flow, selection, spawn, score, or round-reset changes:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/check_round_reprompt_flow.ps1
+powershell -ExecutionPolicy Bypass -File scripts/check_two_client_lobby_flow.ps1
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite gameplay-regression -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite networking -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/playtest_checklist.ps1 -ChangeArea Gameplay
+```
+
+For local two-editor proof, use the DEBUG console probes when Roslyn scripting is unavailable through MCP:
+
+```text
+dvp_round_probe before-selection
+dvp_connect_local <target>
+dvp_select_drone Gps
+dvp_select_soldier Assault
+dvp_kill_team Pilot
+dvp_round_probe after-reset
+```
+
+With two editors open, MCP autostart should give each process an endpoint (`29015`, then `29016`, etc.). Use `component_get` on `GameSetup.EditorDebugSnapshot` for a direct state read; it includes `SteamId`, address, connection count, teams, pawns, score, and round state. If both editors show the same `SteamId`, lobby queries return zero, or the second host logs `Couldnt start TcpSocket`, record an environment/session-identity blocker and do not claim a true two-client pass until a distinct client identity or supported server setup is available.
+
+If only the host editor has MCP control, run `dvp_round_autodrive host-pilot` in that editor. The host syncs DEBUG autodrive state through `GameSetup`, both editor processes drive one host/client loadout pass, one host-side elimination is forced, and `[RoundProbe]`/`EditorDebugSnapshot` output provides the comparison surface.
 
 The `drone-control-regression-check` Claude hook runs the same guard when `DroneWeapon`, `DroneDeployer`, `RemoteController`, `PilotSoldier`, the drone HUD, or FPV/pilot prefabs change.
 
@@ -123,6 +157,16 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 
 The ModelDoc audit checks source mesh references, material remap targets, config-to-VMDL drift, and strict material source naming rules. It does not replace Blender visual review, prefab wiring checks, or an editor playtest.
 
+Cosmetic jigglebone changes:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite modeldoc
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production
+powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_graph_audit.ps1
+```
+
+Use `.agents/sbox/jigglebone-cosmetic-agent.md` before accepting a skinned cosmetic with local bone physics. Static checks prove the asset graph; the required manual proof is an editor playtest with the cosmetic bone-merged to a citizen or human while an animation or body parameter drives visible motion.
+
 Blender visible MCP or add-on changes:
 
 ```powershell
@@ -170,7 +214,7 @@ UI or startup-flow changes:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/team_label_copy_audit.ps1
-powershell -ExecutionPolicy Bypass -File scripts/agents/ui_flow_audit.ps1
+powershell -ExecutionPolicy Bypass -File scripts/agents/ui_flow_audit.ps1 -FailOnWarning
 powershell -ExecutionPolicy Bypass -File scripts/agents/playtest_checklist.ps1 -ChangeArea UI
 ```
 
@@ -188,9 +232,22 @@ External S&Box or Source 2 research intake:
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_engine_reference_audit.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_api_lookup.ps1 -Root . -Query SyncAttribute -ShowMembers
+powershell -ExecutionPolicy Bypass -File scripts/agents/editor_node_tool_audit.ps1 -Root . -ShowInfo
 ```
 
 Use `.agents/sbox/sbox-engine-reference-agent.md` before turning pasted engine research into standing guidance. Prefer official S&Box docs, the public engine repo, local `API.json`, and local project patterns. Keep volatile claims dated and sourced, and turn recurring stale-guidance risks into audit rules rather than leaving them only in chat history.
+
+For S&Box Node Editor work, use `.agents/sbox/editor-node-tool-agent.md` as the implementation checklist. Keep `GraphView`, `NodeUI`, `INodeType`, and `IPlug` code under `Editor/` or a library `Editor/` folder, replace tutorial `NotImplementedException` placeholders before testing, and manually open the tool in the editor because static audits cannot prove node creation, selection, or connection behavior.
+
+S&Box Learn tutorial intake:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite learn -ShowInfo
+```
+
+Use `.agents/sbox/sbox-learn-intake-agent.md` when reviewing `https://sbox.game/learn` tutorials. Route dynamic Razor UI lessons through `.agents/sbox/ui-razor-reactivity-agent.md`, then protect the lesson with `ui_flow_audit.ps1`, docs, self-test fixtures, and the `sbox-learn-intake-check` hook.
+Route Node Editor lessons through `.agents/sbox/editor-node-tool-agent.md`, then protect editor-only placement and tutorial-placeholder cleanup with `editor_node_tool_audit.ps1`.
+For Facepunch Learn pages, also capture the authoring surface clearly: a Sandbox Entity `.sent` is a spawn-menu resource pointing at a prefab, while behavior still belongs in `Component` code and exact symbols still need local API lookup when they affect C#.
 
 The `sbox-engine-reference-check` Claude hook runs the docs suite when docs, agent routing, `AGENTS.md`, `API.json`, or engine/API reference suite scripts change.
 

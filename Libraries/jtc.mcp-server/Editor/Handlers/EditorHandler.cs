@@ -332,11 +332,17 @@ public static class EditorHandler
 		try
 		{
 			// SetPlaying requires a game scene — create one from the editor scene
+			if ( EditorSession.TryPlayNative() )
+			{
+				Log.Info( "[MCP] editor.play dispatched via EditorScene.Play" );
+				return Task.FromResult<object>( (object)new { success = true, action = "play", method = "EditorScene.Play" } );
+			}
+
 			var gameScene = Scene.CreateEditorScene();
 			gameScene.Load( editorScene.Source );
 			EditorSession.SetPlaying( gameScene );
-			Log.Info( "[MCP] editor.play dispatched" );
-			return Task.FromResult<object>( (object)new { success = true, action = "play" } );
+			Log.Info( "[MCP] editor.play dispatched via SetPlaying fallback" );
+			return Task.FromResult<object>( (object)new { success = true, action = "play", method = "SetPlaying fallback" } );
 		}
 		catch ( Exception ex )
 		{

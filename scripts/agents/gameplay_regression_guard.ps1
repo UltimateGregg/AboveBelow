@@ -64,6 +64,8 @@ Invoke-GuardScript -RelativePath "scripts\check_match_length.ps1" -ScriptArgs @(
 Invoke-GuardScript -RelativePath "scripts\check_hud_sprint_meter.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_hud_damage_arc_attribution.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_ui_scale_default.ps1" -ScriptArgs @("-Root", $Root)
+Invoke-GuardScript -RelativePath "scripts\check_round_reprompt_flow.ps1" -ScriptArgs @("-Root", $Root)
+Invoke-GuardScript -RelativePath "scripts\check_two_client_lobby_flow.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_first_person_viewmodel_spawn.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_shotgun_reload_and_hud.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\agents\drone_propeller_spin_audit.ps1" -ScriptArgs @("-Root", $Root)

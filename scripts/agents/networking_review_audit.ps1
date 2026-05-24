@@ -42,6 +42,20 @@ if (Test-Path -LiteralPath $hitscanWeaponPath) {
     }
 }
 
+$gameSetupPath = Join-Path $codeRoot "Game\GameSetup.cs"
+if (Test-Path -LiteralPath $gameSetupPath) {
+    $gameSetupText = Get-Content -LiteralPath $gameSetupPath -Raw
+    $gameSetupRelative = ConvertTo-AgentRelativePath -Path $gameSetupPath -Root $Root
+    $requestSpawnMatch = [regex]::Match($gameSetupText, '(?s)\[Rpc\.(?<kind>Broadcast|Host)\]\s*\r?\n\s*void\s+RequestSpawn\s*\((?<args>[^\)]*)\)')
+
+    if (-not $requestSpawnMatch.Success) {
+        Add-AgentIssue $issues "Error" "RPC Authority" $gameSetupRelative "GameSetup.RequestSpawn is not an explicit host RPC." "Class/team/variant selection is client intent; route it through [Rpc.Host] and let only the host spawn pawns."
+    }
+    elseif ($requestSpawnMatch.Groups["kind"].Value -ne "Host") {
+        Add-AgentIssue $issues "Error" "RPC Authority" $gameSetupRelative "GameSetup.RequestSpawn uses [Rpc.$($requestSpawnMatch.Groups["kind"].Value)] instead of [Rpc.Host]." "Use [Rpc.Host] for spawn requests so non-host clients do not run host-only spawn logic locally."
+    }
+}
+
 foreach ($file in $files) {
     $relative = ConvertTo-AgentRelativePath -Path $file.FullName -Root $Root
     $raw = Get-Content -LiteralPath $file.FullName -Raw

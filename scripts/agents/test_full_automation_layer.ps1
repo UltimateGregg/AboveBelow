@@ -23,6 +23,7 @@ $requiredScripts = @(
     "scripts/agents/feature_readiness_report.ps1",
     "scripts/agents/post_task_training_agent.ps1",
     "scripts/agents/gameplay_regression_guard.ps1",
+    "scripts/check_round_reprompt_flow.ps1",
     "scripts/agents/blender_quality_audit.ps1",
     "scripts/agents/material_texture_audit.ps1",
     "scripts/agents/modeldoc_audit.ps1",
@@ -35,6 +36,8 @@ $requiredScripts = @(
     "scripts/agents/sbox_engine_reference_audit.ps1",
     "scripts/agents/sbox_api_lookup.ps1",
     "scripts/agents/sbox_api_reference_audit.ps1",
+    "scripts/agents/sbox_learn_intake_audit.ps1",
+    "scripts/agents/editor_node_tool_audit.ps1",
     "scripts/agents/asset_visual_review.ps1",
     "scripts/agents/blender_live_toolkit_self_test.ps1"
 )
@@ -53,7 +56,7 @@ if (Test-Path -LiteralPath $runner) {
         Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner does not declare a ValidateSet for suites." "Restore suite validation on the Suite parameter."
     }
 
-    foreach ($suite in @("ui", "prefab-graph", "scene", "logs", "readiness", "train", "asset-production", "modeldoc", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain", "api")) {
+    foreach ($suite in @("ui", "prefab-graph", "scene", "logs", "readiness", "train", "asset-production", "modeldoc", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain", "api", "learn", "editor-node-tool")) {
         $quotedSuite = '"' + [regex]::Escape($suite) + '"'
         if ($validateSetMatch.Success -and $validateSetMatch.Groups["values"].Value -notmatch $quotedSuite) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner ValidateSet does not expose suite '$suite'." "Add the suite to the Suite parameter ValidateSet."
@@ -67,6 +70,14 @@ if (Test-Path -LiteralPath $runner) {
 }
 else {
     Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner script is missing." "Restore the runner."
+}
+
+$gameplayRegressionGuard = Join-Path $Root "scripts/agents/gameplay_regression_guard.ps1"
+if (Test-Path -LiteralPath $gameplayRegressionGuard) {
+    $gameplayRegressionText = Get-Content -LiteralPath $gameplayRegressionGuard -Raw
+    if ($gameplayRegressionText -notmatch [regex]::Escape("scripts\check_round_reprompt_flow.ps1")) {
+        Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/gameplay_regression_guard.ps1" "Gameplay regression suite does not run the round re-prompt guard." "Wire scripts/check_round_reprompt_flow.ps1 into gameplay_regression_guard.ps1."
+    }
 }
 
 $collisionChainAudit = Join-Path $Root "scripts/agents/collision_agent_chain_audit.ps1"
@@ -360,6 +371,59 @@ if (Test-Path -LiteralPath $uiAudit) {
         & powershell -NoProfile -ExecutionPolicy Bypass -File $uiAudit -Root $tempRoot -FailOnWarning | Out-Host
         if ($LASTEXITCODE -ne 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/ui_flow_audit.ps1" "UI flow audit failed on a fixture with an onclick handler." "Avoid false positives for valid clickable elements."
+        }
+
+        @'
+@using Sandbox.UI;
+@inherits Panel
+<root><label>@Count</label></root>
+@code {
+    public int Count { get; set; }
+}
+'@ | Set-Content -LiteralPath $fixturePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $uiAudit -Root $tempRoot -FailOnWarning | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/ui_flow_audit.ps1" "UI flow audit did not fail on dynamic Razor output without BuildHash." "Keep dynamic HUD and menu values tied to BuildHash so Razor refreshes intentionally."
+        }
+
+        @'
+@using System;
+@using Sandbox.UI;
+@inherits Panel
+<root><label>@Count</label></root>
+@code {
+    public int Count { get; set; }
+
+    protected override int BuildHash() => HashCode.Combine( Count );
+}
+'@ | Set-Content -LiteralPath $fixturePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $uiAudit -Root $tempRoot -FailOnWarning | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/ui_flow_audit.ps1" "UI flow audit failed on a dynamic Razor fixture with BuildHash." "Avoid false positives for correctly hashed Razor state."
+        }
+
+        @'
+@using System;
+@using Sandbox.UI;
+@inherits Panel
+<root><label>@Count</label></root>
+@code {
+    public int Count { get; set; }
+
+    public override void Tick()
+    {
+        StateHasChanged();
+    }
+
+    protected override int BuildHash() => HashCode.Combine( Count );
+}
+'@ | Set-Content -LiteralPath $fixturePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $uiAudit -Root $tempRoot -FailOnWarning | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/ui_flow_audit.ps1" "UI flow audit did not fail on StateHasChanged() in Tick()." "Keep per-frame Razor rebuilds out of routine HUD and menu work."
         }
     }
     finally {
@@ -1438,9 +1502,11 @@ Verified against official sources on 2026-05-20:
 
 - https://sbox.game/dev/doc
 - https://github.com/Facepunch/sbox-public
+- https://sbox.game/learn/facepunch/creating-an-entity-for-sandbox
 
 Use `[Sync]` for replicated state.
 Use ModelDoc for VMDL work.
+Sandbox Entity `.sent` resources point at prefabs. Use ClientEditable and TimeSince when appropriate.
 
 ## Avoid Source 1 Habits
 
@@ -1493,6 +1559,108 @@ scripts/agents/sbox_engine_reference_audit.ps1
     }
 }
 
+$sboxLearnIntakeAudit = Join-Path $Root "scripts/agents/sbox_learn_intake_audit.ps1"
+if (Test-Path -LiteralPath $sboxLearnIntakeAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-learn-intake-audit-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "docs") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot ".agents\sbox") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot ".claude") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "scripts\agents") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "dronevsplayers.sbproj") | Out-Null
+
+        "S&Box Learn was reviewed." | Set-Content -LiteralPath (Join-Path $tempRoot "docs\sbox_engine_llm_reference.md") -Encoding UTF8
+        "S&Box Engine Reference Agent" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\sbox-learn-intake-agent.md") -Encoding UTF8
+        "UI Flow Agent" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\ui-razor-reactivity-agent.md") -Encoding UTF8
+        "BuildHash" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\ui-flow-agent.md") -Encoding UTF8
+        "scripts/agents/ui_flow_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\ui_flow_audit.ps1") -Encoding UTF8
+        "S&Box Learn Intake Agent" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
+        "sbox-learn-intake-agent.md" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
+        '"learn"' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
+        "sbox_learn_intake_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
+        "sbox_learn_intake_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\post_task_training_agent.ps1") -Encoding UTF8
+        '{"hooks":[]}' | Set-Content -LiteralPath (Join-Path $tempRoot ".claude\settings.json") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxLearnIntakeAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_learn_intake_audit.ps1" "Learn intake audit did not fail on incomplete routing fixtures." "Keep the fixture strict enough to catch missing Learn agents, subagent, hook, and UI audit wiring."
+        }
+
+        @'
+# S&Box Engine LLM Reference
+
+Secondary community tutorial context reviewed on 2026-05-23:
+
+- https://sbox.game/learn
+- https://sbox.game/learn/tesa/ui-buildhash
+- https://sbox.game/learn/gibbard/networked-variable-ui
+
+Use BuildHash() for dynamic Razor UI and do not call StateHasChanged() from Tick().
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "docs\sbox_engine_llm_reference.md") -Encoding UTF8
+
+        @'
+# S&Box Learn Intake Agent
+
+## Purpose
+
+Route S&Box Learn tutorial context.
+
+Sources:
+- https://sbox.game/learn
+
+Evidence:
+scripts/agents/sbox_learn_intake_audit.ps1
+ui-razor-reactivity-agent.md
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\sbox-learn-intake-agent.md") -Encoding UTF8
+
+        @'
+# UI Razor Reactivity Agent
+
+## Purpose
+
+Review [Sync] UI values for BuildHash() coverage and avoid StateHasChanged() in Tick().
+
+Evidence:
+scripts/agents/ui_flow_audit.ps1
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\ui-razor-reactivity-agent.md") -Encoding UTF8
+
+        @'
+# Editor Node Tool Agent
+
+## Purpose
+
+Review S&Box Learn Node Editor examples.
+
+Sources:
+- https://sbox.game/learn/aqua/node-editor-01
+
+Evidence:
+GraphView
+IPlug
+scripts/agents/editor_node_tool_audit.ps1
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\editor-node-tool-agent.md") -Encoding UTF8
+
+        "BuildHash() StateHasChanged()" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\ui-flow-agent.md") -Encoding UTF8
+        "Test-HasDynamicRazorOutput Test-HasBuildHash Test-CallsStateHasChangedFromTick Dynamic Razor output has no BuildHash Razor Tick() calls StateHasChanged()" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\ui_flow_audit.ps1") -Encoding UTF8
+        "S&Box Learn Intake Agent UI Razor Reactivity Agent Editor Node Tool Agent sbox_learn_intake_audit.ps1 ui-razor-reactivity-agent.md editor-node-tool-agent.md" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
+        "sbox-learn-intake-agent.md ui-razor-reactivity-agent.md editor-node-tool-agent.md sbox_learn_intake_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
+        '"learn" sbox_learn_intake_audit.ps1 editor_node_tool_audit.ps1' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
+        "sbox_learn_intake_audit.ps1 S&Box Learn Intake Agent UI Razor Reactivity Agent editor_node_tool_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
+        "LearnResearch EditorNodeTools sbox_learn_intake_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\post_task_training_agent.ps1") -Encoding UTF8
+        '{"hooks":[{"id":"sbox-learn-intake-check","action":{"args":["-Suite","learn",".\\scripts\\agents\\sbox_learn_intake_audit.ps1"]}}]}' | Set-Content -LiteralPath (Join-Path $tempRoot ".claude\settings.json") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxLearnIntakeAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_learn_intake_audit.ps1" "Learn intake audit failed on complete routing fixtures." "Avoid false positives for valid Learn intake workflow wiring."
+        }
+    }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
+        }
+    }
+}
+
 $sboxApiReferenceAudit = Join-Path $Root "scripts/agents/sbox_api_reference_audit.ps1"
 if (Test-Path -LiteralPath $sboxApiReferenceAudit) {
     $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-api-reference-audit-" + [System.Guid]::NewGuid().ToString("N"))
@@ -1534,6 +1702,8 @@ if (Test-Path -LiteralPath $sboxApiReferenceAudit) {
         $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.Rpc.BroadcastAttribute"; Name = "BroadcastAttribute" })
         $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.Rpc.HostAttribute"; Name = "HostAttribute" })
         $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.Rpc.OwnerAttribute"; Name = "OwnerAttribute" })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.ClientEditableAttribute"; Name = "ClientEditableAttribute" })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.TimeSince"; Name = "TimeSince" })
         for ($i = 0; $i -lt 100; $i++) {
             $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.FixtureType$i"; Name = "FixtureType$i" })
         }
@@ -1542,6 +1712,73 @@ if (Test-Path -LiteralPath $sboxApiReferenceAudit) {
         & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxApiReferenceAudit -Root $tempRoot | Out-Host
         if ($LASTEXITCODE -ne 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_api_reference_audit.ps1" "API reference audit failed on complete lookup docs, suite wiring, and required API symbols." "Avoid false positives for valid local API-reference setup."
+        }
+    }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
+        }
+    }
+}
+
+$editorNodeToolAudit = Join-Path $Root "scripts/agents/editor_node_tool_audit.ps1"
+if (Test-Path -LiteralPath $editorNodeToolAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-editor-node-tool-audit-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "docs") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot ".agents\sbox") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "scripts\agents") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Editor") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "dronevsplayers.sbproj") | Out-Null
+
+        "Editor Node Tools https://sbox.game/learn/aqua/node-editor-01" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\sbox_engine_llm_reference.md") -Encoding UTF8
+        "Editor Node Tool Agent Node Editor GraphView editor_node_tool_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\editor-node-tool-agent.md") -Encoding UTF8
+        "Editor Node Tool Agent editor_node_tool_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
+        "editor-node-tool-agent.md editor_node_tool_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
+        '"editor-node-tool" editor_node_tool_audit.ps1' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
+        "EditorNodeTools editor_node_tool_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\post_task_training_agent.ps1") -Encoding UTF8
+        "editor_node_tool_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
+
+        @'
+using System;
+using Editor.NodeEditor;
+
+public class BadNodeToolView : GraphView
+{
+    public BadNodeToolView( Editor.Widget parent ) : base( parent )
+    {
+    }
+
+    public void OnPaintSomething()
+    {
+        throw new NotImplementedException();
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Editor\BadNodeToolView.cs") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $editorNodeToolAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/editor_node_tool_audit.ps1" "Editor node-tool audit did not fail on copied NotImplementedException scaffolding." "Keep the fixture red/green test aligned with the node-editor tutorial placeholder rule."
+        }
+
+        @'
+using Editor.NodeEditor;
+
+public class GoodNodeToolView : GraphView
+{
+    public GoodNodeToolView( Editor.Widget parent ) : base( parent )
+    {
+    }
+
+    public void OnPaintSomething()
+    {
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Editor\BadNodeToolView.cs") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $editorNodeToolAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/editor_node_tool_audit.ps1" "Editor node-tool audit failed on valid editor-only scaffolding." "Avoid false positives for editor-contained GraphView code with safe callback bodies."
         }
     }
     finally {

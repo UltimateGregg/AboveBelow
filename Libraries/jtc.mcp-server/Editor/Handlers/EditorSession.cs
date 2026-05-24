@@ -148,6 +148,30 @@ public static class EditorSession
 		session?.GetType().GetMethod( "SetPlaying", new[] { typeof( Scene ) } )?.Invoke( session, new object[] { scene } );
 	}
 
+	public static bool TryPlayNative()
+	{
+		var session = ActiveObject;
+		if ( session is null ) return false;
+
+		var editorSceneType = Type.GetType( "Editor.EditorScene, Sandbox.Tools" )
+			?? AppDomain.CurrentDomain.GetAssemblies()
+				.Select( a => a.GetType( "Editor.EditorScene" ) )
+				.FirstOrDefault( t => t is not null );
+		if ( editorSceneType is null ) return false;
+
+		var play = editorSceneType.GetMethods( BindingFlags.Public | BindingFlags.Static )
+			.FirstOrDefault( m =>
+			{
+				if ( m.Name != "Play" ) return false;
+				var parameters = m.GetParameters();
+				return parameters.Length == 1 && parameters[0].ParameterType.IsInstanceOfType( session );
+			} );
+		if ( play is null ) return false;
+
+		play.Invoke( null, new[] { session } );
+		return true;
+	}
+
 	public static void OnEdited()
 	{
 		var session = ActiveObject;

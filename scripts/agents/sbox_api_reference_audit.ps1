@@ -127,7 +127,9 @@ else {
             "Sandbox.RpcAttribute",
             "Sandbox.Rpc.BroadcastAttribute",
             "Sandbox.Rpc.HostAttribute",
-            "Sandbox.Rpc.OwnerAttribute"
+            "Sandbox.Rpc.OwnerAttribute",
+            "Sandbox.ClientEditableAttribute",
+            "Sandbox.TimeSince"
         )) {
             if (@(Find-ApiType -Types $types -FullName $requiredType).Count -eq 0) {
                 Add-AgentIssue $issues "Error" "API Dump" (ConvertTo-AgentRelativePath -Path $apiPath -Root $Root) "API dump is missing required type '$requiredType'." "Refresh API.json from the official S&Box API export."

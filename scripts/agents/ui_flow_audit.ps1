@@ -75,10 +75,51 @@ function Test-HasOnClick {
     return $TagText -match '(?i)\bonclick\s*='
 }
 
+function Test-HasBuildHash {
+    param([string]$Text)
+
+    return $Text -match '(?m)\bprotected\s+override\s+int\s+BuildHash\s*\('
+}
+
+function Test-HasDynamicRazorOutput {
+    param([string]$Text)
+
+    $patterns = @(
+        '>[ \t]*@(?:\(|[A-Za-z_])',
+        '(?i)\b(?:class|style|id|value|title)\s*=\s*@',
+        '(?i)\b[A-Za-z_][A-Za-z0-9_]*:bind\s*=\s*@',
+        '(?s)<[A-Z][A-Za-z0-9_.]*[^>]*\s+(?!on)[A-Za-z_][A-Za-z0-9_]*(?::bind)?\s*=\s*@'
+    )
+
+    foreach ($pattern in $patterns) {
+        if ($Text -match $pattern) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Test-CallsStateHasChangedFromTick {
+    param([string]$Text)
+
+    return $Text -match '(?s)\boverride\s+void\s+Tick\s*\(\s*\).*?\bStateHasChanged\s*\('
+}
+
 $razorFiles = @(Get-ChildItem -LiteralPath $uiRoot -Recurse -File -Filter "*.razor" -ErrorAction SilentlyContinue)
 foreach ($file in $razorFiles) {
     $relative = ConvertTo-AgentRelativePath -Path $file.FullName -Root $Root
     $lines = @(Get-Content -LiteralPath $file.FullName)
+    $text = Get-Content -LiteralPath $file.FullName -Raw
+
+    if ((Test-HasDynamicRazorOutput -Text $text) -and -not (Test-HasBuildHash -Text $text)) {
+        Add-AgentIssue $issues "Warning" "UI Flow" $relative "Dynamic Razor output has no BuildHash override." "Override BuildHash() and include every value that can change rendered markup, especially [Sync] values shown in the HUD."
+    }
+
+    if (Test-CallsStateHasChangedFromTick -Text $text) {
+        Add-AgentIssue $issues "Warning" "UI Flow" $relative "Razor Tick() calls StateHasChanged()." "Use BuildHash(), event-driven state changes, or a narrower invalidation path instead of rebuilding the panel every frame."
+    }
+
     $capturing = $false
     $tagText = ""
     $startLine = 0
@@ -126,7 +167,7 @@ if ($razorFiles.Count -eq 0) {
     Add-AgentIssue $issues "Info" "UI Flow" "Code/UI" "No Razor files found."
 }
 else {
-    Add-AgentIssue $issues "Info" "UI Flow" "Code/UI" "Scanned $($razorFiles.Count) Razor UI file(s) for dead-looking interactive elements."
+    Add-AgentIssue $issues "Info" "UI Flow" "Code/UI" "Scanned $($razorFiles.Count) Razor UI file(s) for dead-looking interactive elements and Razor refresh hazards."
 }
 
 Write-AgentIssues -Issues $issues -ShowInfo:$ShowInfo

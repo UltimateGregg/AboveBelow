@@ -57,6 +57,10 @@ if (Test-Path -LiteralPath $referencePath) {
         "Verified against official sources on \d{4}-\d{2}-\d{2}",
         "https://sbox.game/dev/doc",
         "https://github.com/Facepunch/sbox-public",
+        "https://sbox.game/learn/facepunch/creating-an-entity-for-sandbox",
+        "\.sent",
+        "ClientEditable",
+        "TimeSince",
         "\[Sync\]",
         "ModelDoc",
         "Avoid Source 1 Habits"

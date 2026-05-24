@@ -1,6 +1,6 @@
 param(
     [string]$Root = "",
-    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "scene", "collision", "collision-chain", "asset", "asset-production", "modeldoc", "blender-live", "sound", "networking", "gameplay-regression", "docs", "api", "balance", "playtest", "logs", "readiness", "train", "self-test")]
+    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "scene", "collision", "collision-chain", "asset", "asset-production", "modeldoc", "blender-live", "sound", "networking", "gameplay-regression", "docs", "api", "learn", "editor-node-tool", "balance", "playtest", "logs", "readiness", "train", "self-test")]
     [string]$Suite = "quick",
     [switch]$ShowInfo,
     [switch]$FailOnWarning
@@ -69,6 +69,8 @@ switch ($Suite) {
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
+            @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
             @{ Name = "current_log_audit.ps1"; Args = $quickLogArgs },
             @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root) }
         )
@@ -96,6 +98,8 @@ switch ($Suite) {
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
+            @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
             @{ Name = "current_log_audit.ps1"; Args = $commonArgs },
             @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root, "-ShowFiles") },
             @{ Name = "balance_tuning_report.ps1"; Args = @("-Root", $Root) },
@@ -170,7 +174,9 @@ switch ($Suite) {
         $scripts = @(
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
-            @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs }
+            @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
+            @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs }
         )
     }
     "api" {
@@ -179,6 +185,15 @@ switch ($Suite) {
             @{ Name = "sbox_api_lookup.ps1"; Args = @("-Root", $Root, "-Query", "SyncAttribute", "-Limit", "5") }
         )
     }
+    "learn" {
+        $scripts = @(
+            @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
+            @{ Name = "ui_flow_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
+            @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs }
+        )
+    }
+    "editor-node-tool" { $scripts = @(@{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs }) }
     "balance" { $scripts = @(@{ Name = "balance_tuning_report.ps1"; Args = @("-Root", $Root) }) }
     "playtest" { $scripts = @(@{ Name = "playtest_checklist.ps1"; Args = @("-Root", $Root, "-ChangeArea", "All") }) }
     "logs" { $scripts = @(@{ Name = "current_log_audit.ps1"; Args = $commonArgs }) }
@@ -187,7 +202,9 @@ switch ($Suite) {
         $scripts = @(
             @{ Name = "post_task_training_agent.ps1"; Args = @("-Root", $Root, "-ShowFiles", "-WriteReport") },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
-            @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs }
+            @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
+            @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs }
         )
     }
     "self-test" { $scripts = @(@{ Name = "test_full_automation_layer.ps1"; Args = @("-Root", $Root) }) }

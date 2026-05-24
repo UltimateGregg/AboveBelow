@@ -76,7 +76,21 @@ If missing any, that's the problem - add them!
 **Setup:**
 - Launch two S&Box instances
 - First instance: Host a new lobby
-- Second instance: Join the lobby
+- Second instance: Join the lobby. In editor play sessions, the second instance should join the existing `ultimategregg.dronevsplayers` lobby before creating its own.
+- MCP-driven editor play should use the native `EditorScene.Play` path. With two editors open, MCP should expose the first editor at `http://localhost:29015/mcp` and the second at the next available port such as `29016`.
+- If both editors report the same `SteamId`, `Networking.QueryLobbies` returns zero, or the second editor logs `Couldnt start TcpSocket`, stop and treat that as an environment/session-identity blocker. Do not count it as a gameplay pass; use a second Steam/S&Box identity, a remote client, or a supported dedicated-server setup before claiming true two-client proof.
+
+**Agent/Console Probe Path:**
+```
+dvp_round_probe before-selection
+dvp_connect_local <target>     // DEBUG fallback for direct Networking.Connect/TryConnect diagnosis
+dvp_select_drone Gps          // run on the host editor, or enable autodrive below
+dvp_select_soldier Assault    // run on the second editor/client
+dvp_kill_team Pilot           // host only; forces the round-end path
+dvp_round_probe after-reset
+```
+
+When the second editor cannot be driven directly by MCP, run `dvp_round_autodrive host-pilot` on the MCP-controlled host. The host syncs DEBUG autodrive state through `GameSetup`, both editor processes pick host/client loadouts, one pilot elimination is forced after the round becomes active, and `[RoundProbe]`/`EditorDebugSnapshot` output captures connection, SteamId, pawn, score, and reset state.
 
 **Host Console Should Show:**
 ```
@@ -128,7 +142,7 @@ If missing any, that's the problem - add them!
    - [ ] When all pilot ground avatars dead: "Soldiers win"
    - [ ] When all soldiers dead: "Pilots win"
    - [ ] Victory screen lasts 8 seconds
-   - [ ] Next round prompts class picker again (or uses legacy auto-respawn fallback)
+   - [ ] Next round prompts team/class/variant picker again before any player respawns
 
 ### Phase 3: Console Validation (5 min)
 

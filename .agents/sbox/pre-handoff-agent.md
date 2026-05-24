@@ -28,7 +28,8 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/feature_readiness_report
 - Run the build/log sentinel after meaningful C# or prefab-facing edits.
 - Run `gameplay_regression_guard.ps1` after gameplay, drone-control, pilot-control, or HUD loadout edits.
 - Run graph, scene, and readiness reports before broad handoff.
-- Run `ui_flow_audit.ps1` and the UI playtest checklist after UI/startup-flow changes.
+- Run `ui_flow_audit.ps1 -FailOnWarning` and the UI playtest checklist after UI/startup-flow changes.
+- Run `run_agent_checks.ps1 -Suite learn -ShowInfo` after changing Learn-derived docs, UI/Razor agent routing, or tutorial-intake hooks.
 - Summarize changed files by responsibility.
 - State unrun editor or multiplayer tests.
 - Do not imply menu, button, or card click behavior was validated unless it was clicked in the editor.

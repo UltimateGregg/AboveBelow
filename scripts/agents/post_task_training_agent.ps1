@@ -166,6 +166,24 @@ $areaRules = @(
             "scripts/agents/run_agent_checks.ps1 -Suite docs"
         )
         Training = "External S&Box or Source 2 research should be verified against official docs/public source and local API.json when exact symbols matter, captured in the engine reference, routed through the reference agent, and protected by stale-guidance/API audits."
+    },
+    [pscustomobject]@{
+        Name = "LearnResearch"
+        Patterns = @("docs/sbox_engine_llm_reference.md", ".agents/sbox/sbox-learn-intake-agent.md", ".agents/sbox/ui-razor-reactivity-agent.md", ".agents/sbox/ui-flow-agent.md", ".agents/sbox/editor-node-tool-agent.md", "scripts/agents/sbox_learn_intake_audit.ps1", "scripts/agents/ui_flow_audit.ps1", "scripts/agents/editor_node_tool_audit.ps1")
+        Checks = @(
+            "scripts/agents/run_agent_checks.ps1 -Suite learn -ShowInfo",
+            "scripts/agents/ui_flow_audit.ps1 -FailOnWarning -ShowInfo"
+        )
+        Training = "S&Box Learn tutorial lessons should become focused agents, subagents, docs, hooks, and audit fixtures before they become standing guidance."
+    },
+    [pscustomobject]@{
+        Name = "EditorNodeTools"
+        Patterns = @("Editor/*", "Libraries/*/Editor/*", ".agents/sbox/editor-node-tool-agent.md", "scripts/agents/editor_node_tool_audit.ps1")
+        Checks = @(
+            "scripts/agents/run_agent_checks.ps1 -Suite editor-node-tool -ShowInfo",
+            "scripts/agents/sbox_engine_reference_audit.ps1 -ShowInfo"
+        )
+        Training = "Custom Node Editor tools should stay editor-only, use verified editor API shapes, clear tutorial placeholders, and keep manual editor-open verification in the handoff."
     }
 )
 

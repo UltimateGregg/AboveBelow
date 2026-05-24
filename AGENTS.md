@@ -94,6 +94,8 @@ Code/
 - Document new public methods with XML comments
 - Link to S&Box docs: https://sbox.game/docs
 - Add known issues to `/docs/known_sbox_patterns.md`
+- When reviewing S&Box Learn tutorials, route useful lessons through `.agents/sbox/sbox-learn-intake-agent.md`, update the short engine reference, and run `scripts/agents/run_agent_checks.ps1 -Suite learn -ShowInfo`.
+- For Razor UI reactivity lessons, use `.agents/sbox/ui-razor-reactivity-agent.md` and keep dynamic rendered values covered by `BuildHash()` instead of per-frame `StateHasChanged()`.
 
 ### Common Pitfalls to Avoid
 - Don't subscribe to events without unsubscribing (memory leaks)
@@ -164,3 +166,12 @@ If the hook is interfering with development, disable it temporarily:
 - **Permission error**: Ensure PowerShell execution policy allows script execution: `Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope CurrentUser`
 
 For detailed hook logs and diagnostics, see `docs/automation.md`.
+
+## S&Box Learn Intake Hook
+
+**Hook ID:** `sbox-learn-intake-check`
+**Configuration File:** `./.claude/settings.json`
+**Trigger:** Changes to Learn-derived docs, UI/Razor agent docs, `ui_flow_audit.ps1`, `sbox_learn_intake_audit.ps1`, or suite wiring.
+**Action:** Runs `.\scripts\agents\run_agent_checks.ps1 -Suite learn -ShowInfo`.
+
+Use this hook to keep community tutorial lessons grounded in project agents, subagents, docs, self-tests, and focused audits instead of leaving them only in chat history.

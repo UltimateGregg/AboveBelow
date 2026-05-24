@@ -52,7 +52,7 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/scene_integrity_audit.ps
 
 ### UI Changes
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/agents/ui_flow_audit.ps1
+powershell -ExecutionPolicy Bypass -File scripts/agents/ui_flow_audit.ps1 -FailOnWarning
 powershell -ExecutionPolicy Bypass -File scripts/agents/build_log_sentinel.ps1
 ```
 
@@ -72,6 +72,7 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 |------|---------|--------|
 | `blend-auto-export` | Any `.blend` file saved | Exports FBX → VMDL → prefab |
 | `drone-control-regression-check` | Drone-related files saved | Runs gameplay_regression_guard.ps1 |
+| `sbox-learn-intake-check` | Learn-derived docs, UI/Razor agent docs, or related audit/suite files saved | Runs `run_agent_checks.ps1 -Suite learn -ShowInfo` |
 
 ## Key Documentation Sections to Read First
 

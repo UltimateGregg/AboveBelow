@@ -26,7 +26,7 @@ Agent gates:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite quick
-powershell -ExecutionPolicy Bypass -File scripts/agents/ui_flow_audit.ps1
+powershell -ExecutionPolicy Bypass -File scripts/agents/ui_flow_audit.ps1 -FailOnWarning
 powershell -ExecutionPolicy Bypass -File scripts/agents/playtest_checklist.ps1 -ChangeArea UI
 ```
 

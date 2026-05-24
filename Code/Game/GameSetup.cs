@@ -2,6 +2,7 @@ using Sandbox;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DroneVsPlayers;
@@ -10,8 +11,8 @@ namespace DroneVsPlayers;
 /// Entry-point networking component. Drop this on a "GameManager" GameObject
 /// in your main scene. It:
 ///   - creates a lobby if one isn't active (so single-player playtesting works)
-///   - listens for connections and assigns each one to the smaller team
-///     (Pilot team vs Soldier team)
+///   - listens for connections and waits for each client to choose a team
+///     and loadout before spawning when role choice is enabled
 ///   - spawns the chosen prefab once a player picks a class / drone type
 ///   - for pilots, also spawns the chosen drone and links the two together
 ///
@@ -51,6 +52,7 @@ public sealed class GameSetup : Component, Component.INetworkListener
 	[Property] public string TrainingDummyPrefabPath { get; set; } = "prefabs/training_dummy.prefab";
 
 	[Property] public bool RequireRoleChoice { get; set; } = true;
+	[Property] public bool JoinExistingEditorLobbyOnStart { get; set; } = true;
 	[Property] public bool EnableSoloTrainingDummies { get; set; } = true;
 	[Property, Range( 0, 8 )] public int SoloTrainingDummyCount { get; set; } = 3;
 	[Property] public RoundManager Round { get; set; }
@@ -61,6 +63,18 @@ public sealed class GameSetup : Component, Component.INetworkListener
 
 	/// <summary>Connection IDs assigned to the Soldier team.</summary>
 	[Sync] public NetList<Guid> SoldierTeam { get; set; } = new();
+
+	/// <summary>Increments each time the host reopens team/loadout selection.</summary>
+	[Sync] public int SelectionGeneration { get; set; }
+
+#if DEBUG
+	[Property] public bool EditorRuntimePlaytestEnabled { get; set; }
+	[Sync] public string EditorAutodriveMode { get; set; } = "";
+	[Sync] public int EditorAutodriveToken { get; set; }
+	public string EditorDebugSnapshot => RoundFlowDebugCommands.BuildSnapshot( "component", this );
+#endif
+
+	public int LocalSelectionGeneration { get; private set; }
 
 	// Backwards-compat: original single-pilot field. The first connection on
 	// PilotTeam mirrors here so legacy systems (PromotePilot, HudPanel) keep
@@ -83,32 +97,117 @@ public sealed class GameSetup : Component, Component.INetworkListener
 	PlayerRole _soloTrainingDummyRole = PlayerRole.Spectator;
 	TimeSince _timeSinceSpawnRetry = 10f;
 	TimeSince _timeSinceTrainingDummyCheck = 10f;
+	bool _editorLobbyDataStamped;
+	bool _networkStartupStarted;
 
 	readonly record struct TrainingDummySpawnPoint( Vector3 Position, Rotation Rotation, PlayerRole PreferredRole );
 
 	protected override async Task OnLoad()
 	{
-		if ( Scene.IsEditor ) return;
+		if ( ShouldSkipRuntimeScene() ) return;
 
-		if ( !Networking.IsActive )
+		await EnsureNetworkingActive();
+	}
+
+	async Task EnsureNetworkingActive()
+	{
+		if ( Networking.IsActive ) return;
+		if ( _networkStartupStarted ) return;
+
+		_networkStartupStarted = true;
+
+		if ( Game.IsEditor && JoinExistingEditorLobbyOnStart && await TryJoinExistingEditorLobby() )
+			return;
+
+		LoadingScreen.Title = "Creating Lobby";
+		await Task.DelayRealtimeSeconds( 0.1f );
+		Networking.CreateLobby( new()
 		{
-			LoadingScreen.Title = "Creating Lobby";
-			await Task.DelayRealtimeSeconds( 0.1f );
-			Networking.CreateLobby( new() );
+			Name = "ABOVE / BELOW Local Editor",
+			MaxPlayers = 8,
+		} );
+	}
+
+	async Task<bool> TryJoinExistingEditorLobby()
+	{
+		var projectIdent = Project.Current?.Config?.FullIdent;
+		if ( string.IsNullOrWhiteSpace( projectIdent ) )
+			return false;
+
+		LoadingScreen.Title = "Joining Local Lobby";
+		await Task.DelayRealtimeSeconds( 0.35f );
+
+		if ( Networking.IsActive )
+			return true;
+
+		try
+		{
+			var joined = await Networking.JoinBestLobby( projectIdent );
+			if ( joined )
+			{
+				Log.Info( $"[GameSetup] Joined existing editor lobby for {projectIdent}." );
+				return true;
+			}
+
+			if ( await TryJoinQueriedEditorLobby( projectIdent ) )
+				return true;
 		}
+		catch ( Exception ex )
+		{
+			Log.Warning( $"[GameSetup] Could not join existing editor lobby: {ex.Message}" );
+		}
+
+		Log.Info( $"[GameSetup] No existing editor lobby found for {projectIdent}; creating one." );
+		return false;
+	}
+
+	async Task<bool> TryJoinQueriedEditorLobby( string projectIdent )
+	{
+		var filters = new Dictionary<string, string>
+		{
+			{ "game", projectIdent },
+		};
+		var lobbies = await Networking.QueryLobbies( filters, includeServers: false, CancellationToken.None );
+		var lobby = lobbies
+			.Where( l => !l.IsFull )
+			.FirstOrDefault( l =>
+				l.Get( "dvp_local_editor", "" ) == "1"
+				|| l.Get( "dvp_project_ident", "" ) == projectIdent
+				|| l.Name == "ABOVE / BELOW Local Editor" );
+
+		Log.Info( $"[GameSetup] Queried {lobbies.Count} editor lobby candidate(s) for {projectIdent}." );
+		if ( lobby.LobbyId == 0 )
+			return false;
+
+		Log.Info( $"[GameSetup] Connecting to editor lobby '{lobby.Name}' lobby={lobby.LobbyId} owner={lobby.OwnerId} members={lobby.Members}/{lobby.MaxMembers}." );
+		if ( await Networking.TryConnectSteamId( lobby.LobbyId ) )
+		{
+			Log.Info( $"[GameSetup] Connected to editor lobby '{lobby.Name}'." );
+			return true;
+		}
+
+		return false;
 	}
 
 	protected override void OnStart()
 	{
-		if ( Scene.IsEditor ) return;
+		if ( ShouldSkipRuntimeScene() ) return;
 		ResolveManagerRefs();
 		CaptureTrainingDummySpawnPoints();
 	}
 
 	protected override void OnUpdate()
 	{
-		if ( Scene.IsEditor ) return;
+		if ( ShouldSkipRuntimeScene() ) return;
+		if ( !Networking.IsActive )
+			_ = EnsureNetworkingActive();
+
 		ResolveManagerRefs();
+		TryStampEditorLobbyData();
+
+#if DEBUG
+		RoundFlowDebugCommands.TickEditorAutodrive( this );
+#endif
 
 		if ( Networking.IsHost && _timeSinceTrainingDummyCheck > 1f )
 		{
@@ -129,6 +228,23 @@ public sealed class GameSetup : Component, Component.INetworkListener
 		SpawnSelectedLocalRole( local );
 	}
 
+	protected override void OnDestroy()
+	{
+		if ( Game.IsEditor && Networking.IsActive )
+			Networking.Disconnect();
+	}
+
+	void TryStampEditorLobbyData()
+	{
+		if ( _editorLobbyDataStamped ) return;
+		if ( !Game.IsEditor || !Networking.IsHost ) return;
+
+		var projectIdent = Project.Current?.Config?.FullIdent ?? "unknown";
+		Networking.SetData( "dvp_local_editor", "1" );
+		Networking.SetData( "dvp_project_ident", projectIdent );
+		_editorLobbyDataStamped = true;
+	}
+
 	public void OnActive( Connection channel )
 	{
 		Log.Info( $"[GameSetup] {channel.DisplayName} joined." );
@@ -137,15 +253,15 @@ public sealed class GameSetup : Component, Component.INetworkListener
 			DespawnSoloTrainingDummies();
 
 		var isLocalConnection = Connection.Local is not null && channel.Id == Connection.Local.Id;
-		if ( RequireRoleChoice && isLocalConnection )
+		if ( RequireRoleChoice )
 		{
-			if ( _hasLocalLoadout )
+			if ( isLocalConnection && _hasLocalLoadout )
 			{
 				SpawnSelectedLocalRole( channel );
 				return;
 			}
 
-			Log.Info( "[GameSetup] Waiting for local class selection." );
+			Log.Info( $"[GameSetup] Waiting for {channel.DisplayName} to choose a team and loadout." );
 			return;
 		}
 
@@ -233,7 +349,7 @@ public sealed class GameSetup : Component, Component.INetworkListener
 		RequestSpawn( local.Id, (int)PlayerRole.Pilot, (int)SoldierClass.Assault, (int)type );
 	}
 
-	[Rpc.Broadcast]
+	[Rpc.Host]
 	void RequestSpawn( Guid connId, int roleInt, int soldierClassInt, int droneTypeInt )
 	{
 		if ( !Networking.IsHost ) return;
@@ -407,6 +523,50 @@ public sealed class GameSetup : Component, Component.INetworkListener
 		_soloTrainingDummyRole = PlayerRole.Spectator;
 	}
 
+	public void BeginNextRoundSelection()
+	{
+		if ( !Networking.IsHost ) return;
+
+		foreach ( var connId in _pawns.Keys.Concat( _drones.Keys ).Distinct().ToList() )
+		{
+			DespawnPawn( connId );
+		}
+
+		DespawnSoloTrainingDummies();
+		_selectedSoldierClasses.Clear();
+		_selectedDroneTypes.Clear();
+		PilotTeam.Clear();
+		SoldierTeam.Clear();
+		PilotConnectionId = default;
+		SelectionGeneration++;
+
+		ClearLocalLoadoutChoice( SelectionGeneration );
+	}
+
+	[Rpc.Broadcast]
+	void ClearLocalLoadoutChoice( int generation )
+	{
+		LocalSelectionGeneration = Math.Max( LocalSelectionGeneration, generation );
+		_selectedLocalRole = PlayerRole.Spectator;
+		_selectedLocalSoldier = SoldierClass.Assault;
+		_selectedLocalDrone = DroneType.Gps;
+		_hasLocalLoadout = false;
+		_timeSinceSpawnRetry = 0f;
+	}
+
+	public bool HasReadyPlayers( int minPlayers )
+	{
+		var connected = Connection.All.ToList();
+		if ( connected.Count < minPlayers )
+			return false;
+
+		if ( !RequireRoleChoice )
+			return true;
+
+		return connected.All( c =>
+			_pawns.TryGetValue( c.Id, out var pawn ) && pawn.IsValid() );
+	}
+
 	bool CanHostSpawn( Connection channel )
 	{
 		if ( channel is null )
@@ -483,12 +643,22 @@ public sealed class GameSetup : Component, Component.INetworkListener
 
 	public bool NeedsLocalRoleChoice()
 	{
-		if ( Scene.IsEditor ) return false;
+		if ( ShouldSkipRuntimeScene() ) return false;
 		if ( !RequireRoleChoice ) return false;
 
 		var hasLocalDrone = Scene.GetAllComponents<DroneController>().Any( d => !d.IsProxy );
 		var hasLocalSoldier = Scene.GetAllComponents<GroundPlayerController>().Any( p => !p.IsProxy );
 		return !hasLocalDrone && !hasLocalSoldier;
+	}
+
+	bool ShouldSkipRuntimeScene()
+	{
+#if DEBUG
+		if ( EditorRuntimePlaytestEnabled )
+			return false;
+#endif
+
+		return Scene.IsEditor;
 	}
 
 	Transform PickSpawn( PlayerRole role )
@@ -597,8 +767,7 @@ public sealed class GameSetup : Component, Component.INetworkListener
 	}
 
 	// ── Legacy: kept so RoundManager + HUD continue to compile while we
-	// migrate. Promotes a pilot in the old single-pilot model while preserving
-	// each connection's latest selected class / drone variant.
+	// migrate. It is not used by the next-round re-prompt flow.
 	[Rpc.Broadcast]
 	public void PromotePilot( Guid newPilotId )
 	{

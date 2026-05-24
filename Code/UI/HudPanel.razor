@@ -387,6 +387,7 @@
 
     PlayerRole SelectedLoadoutTeam { get; set; } = PlayerRole.Spectator;
     int SelectedLoadoutSlot { get; set; } = 1;
+    int ObservedSelectionGeneration { get; set; } = -1;
     bool MainMenuOpen { get; set; } = true;
 
     bool OptionsMenuOpen => LocalOptionsState.IsOpen;
@@ -563,6 +564,7 @@
 
     protected override void OnUpdate()
     {
+        SyncSelectionGeneration();
         HandleOptionsInput();
         LocalOptionsState.ApplyTo( Components.Get<ScreenPanel>() );
         if ( MainMenuOpen && !NeedsRoleChoice )
@@ -632,6 +634,21 @@
 
             _prevRoundState = state;
         }
+    }
+
+    void SyncSelectionGeneration()
+    {
+        var setup = Setup;
+        if ( !setup.IsValid() )
+            return;
+
+        var generation = Math.Max( setup.SelectionGeneration, setup.LocalSelectionGeneration );
+        if ( ObservedSelectionGeneration == generation )
+            return;
+
+        ObservedSelectionGeneration = generation;
+        SelectedLoadoutTeam = PlayerRole.Spectator;
+        SelectedLoadoutSlot = 1;
     }
 
     void HandleOptionsInput()
@@ -1349,6 +1366,7 @@
                 ),
                 ShowJamWarning,
                 SelectedLoadoutTeam,
+                ObservedSelectionGeneration,
                 ShowScoreboard,
                 HashCode.Combine( VignetteClass, ShowSprintMeter, SprintMeterPercent ),
                 Round?.LastWinnerInt ?? -1,

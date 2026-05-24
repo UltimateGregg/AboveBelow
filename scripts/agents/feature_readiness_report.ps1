@@ -37,7 +37,7 @@ $areas = [ordered]@{
 
 foreach ($file in $changed) {
     $path = $file.Path
-    $isAgentTooling = $path -match "^scripts/agents/|^\.agents/|^\.codex/|^docs/agent_toolkit\.md$"
+    $isAgentTooling = $path -match "^scripts/agents/|^\.agents/|^\.codex/|^\.claude/|^docs/agent_toolkit\.md$"
     $isProductionAssetTool = $path -match "^scripts/blender_asset_audit\.py$|^scripts/render_asset_preview\.py$|^scripts/asset_quality_profiles\.json$|^scripts/agents/(blender_quality_audit|material_texture_audit|asset_visual_review|new_asset_brief)\.ps1$"
     $isSoundTooling = $path -match "^scripts/agents/(sound_asset_audit|ambient_noise_audit)\.ps1$|^scripts/audio/|^\.agents/sbox/sound-|^docs/editor_control_plane\.md$|^Libraries/jtc\.mcp-server/Editor/(Handlers/(Sound|ControlPlane)Handler|Mcp/Tools/(Sound|ControlPlane)Tools)\.cs$"
     $isAssetPipelineDoc = $path -match "^docs/(asset_pipeline|automation)\.md$"
@@ -95,6 +95,10 @@ foreach ($file in $changed) {
 
 $touchesDroneControlFlow = @($changed | Where-Object {
     $_.Path -match "^(Code/(Drone/DroneWeapon|Player/(DroneDeployer|PilotSoldier|RemoteController))\.cs|Code/UI/HudPanel\.razor|Assets/prefabs/(drone_fpv|drone_fpv_fiber|pilot_ground)\.prefab|scripts/(check_drone_kamikaze_primary|check_loadout_slots)\.ps1)"
+}).Count -gt 0
+
+$touchesLearnIntake = @($changed | Where-Object {
+    $_.Path -match "^(docs/(sbox_engine_llm_reference|known_sbox_patterns|agent_toolkit)\.md|\.agents/sbox/(sbox-learn-intake-agent|ui-razor-reactivity-agent|ui-flow-agent|README)\.md|scripts/agents/(sbox_learn_intake_audit|ui_flow_audit|run_agent_checks|test_full_automation_layer|post_task_training_agent)\.ps1|\.claude/settings\.json)$"
 }).Count -gt 0
 
 $lines = New-Object System.Collections.Generic.List[string]
@@ -155,7 +159,7 @@ if ($areas.Sound.Count -gt 0) {
     Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite sound -ShowInfo`'
 }
 if ($areas.UI.Count -gt 0) {
-    Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/ui_flow_audit.ps1`'
+    Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/ui_flow_audit.ps1 -FailOnWarning`'
     Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/playtest_checklist.ps1 -ChangeArea UI`'
 }
 if ($areas.Networking.Count -gt 0) {
@@ -167,6 +171,9 @@ if ($areas.Balance.Count -gt 0) {
 }
 if ($areas.Docs.Count -gt 0 -or $areas.Tooling.Count -gt 0) {
     Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/docs_roadmap_audit.ps1`'
+}
+if ($touchesLearnIntake) {
+    Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite learn -ShowInfo`'
 }
 Add-Line $lines '- [ ] `powershell -ExecutionPolicy Bypass -File scripts/agents/current_log_audit.ps1 -RequireFresh` after editor playtest, if runtime behavior changed'
 Add-Line $lines ""

@@ -48,6 +48,7 @@ if (Include-Area "Gameplay") {
     Add-Line $lines "- [ ] FPV and Fiber FPV: first ground-side LMB launches, second ground-side LMB or F enters drone control, and LMB while in drone view detonates."
     Add-Line $lines "- [ ] FPV and Fiber FPV detonation starts redeploy cooldown and does not prematurely end the round before the intended drone death state is reached."
     Add-Line $lines "- [ ] Killing all members of one team ends the round with the expected winner."
+    Add-Line $lines "- [ ] After the victory screen, stale pawns clear and every client sees the team/class/variant picker again before the next countdown."
     Add-Line $lines ""
 }
 

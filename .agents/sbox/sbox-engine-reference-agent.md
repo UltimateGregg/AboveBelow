@@ -17,11 +17,12 @@ Prefer official sources first:
 
 - `https://sbox.game/dev/doc`
 - `https://sbox.game/api`
+- official Facepunch Learn pages, such as `https://sbox.game/learn/facepunch/creating-an-entity-for-sandbox`
 - `https://github.com/Facepunch/sbox-public`
 - local `API.json` / `api.json` queried with `scripts/agents/sbox_api_lookup.ps1`
 - existing project code and audits in this checkout
 
-Use community posts, wikis, and third-party tools only as secondary context. Label anything volatile with an `as of YYYY-MM-DD` source marker.
+Use community posts, wikis, and third-party tools only as secondary context. Label anything volatile with an `as of YYYY-MM-DD` source marker. For Facepunch Learn tutorials, separate editor/resource concepts such as `.sent` files from exact C# API symbols, and query the local API dump before turning sample code into standing implementation guidance.
 
 ## Work
 
@@ -29,6 +30,7 @@ Use community posts, wikis, and third-party tools only as secondary context. Lab
 - For exact API shape, query the local API dump before adding unfamiliar S&Box symbols.
 - Reject or soften claims that are not backed by official docs, public source, or local evidence.
 - Update `docs/sbox_engine_llm_reference.md` or `docs/known_sbox_patterns.md` when the lesson is broadly useful.
+- For `https://sbox.game/learn` tutorial reviews, hand off workflow-specific lessons to `sbox-learn-intake-agent.md` so community guidance becomes focused docs, audits, hooks, or routing.
 - Add or update a focused audit if the lesson prevents a repeatable failure.
 - Keep product-specific gameplay, scene, prefab, UI, and asset edits out of this workflow unless they are tiny fixtures for the audit.
 

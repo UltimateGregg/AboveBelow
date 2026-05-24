@@ -166,7 +166,7 @@ recommended next tuning.
 Soldiers Win: All PilotSoldier ground avatars IsDead   OR   round timer expires
 Pilots Win:   All SoldierBase soldiers IsDead
 Round End:    5-second victory screen by default
-Next Round:   Respawns players with their latest selected soldier class / drone variant
+Next Round:   Clears stale pawns and reopens team/class/variant selection
 ```
 
 ## Statistics Tracking
@@ -196,4 +196,4 @@ Player A shoots Player B for N damage:
 
 ---
 
-Version: 2.1 - Two-team class system with RPS balance target
+Version: 2.2 - Two-team class system with next-round re-prompt baseline

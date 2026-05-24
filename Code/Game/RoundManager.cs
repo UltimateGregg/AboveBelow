@@ -94,7 +94,7 @@ public sealed class RoundManager : Component
 		switch ( State )
 		{
 			case RoundState.WaitingForPlayers:
-				if ( Connection.All.Count >= MinPlayers )
+				if ( IsReadyToStartRound() )
 					EnterCountdown();
 				break;
 
@@ -217,6 +217,22 @@ public sealed class RoundManager : Component
 		UpdateStateTimer();
 	}
 
+	void EnterWaitingForPlayers()
+	{
+		State = RoundState.WaitingForPlayers;
+		StateEndsAt = 0f;
+		StateSecondsRemaining = 0;
+		LastWinnerInt = -1;
+	}
+
+	bool IsReadyToStartRound()
+	{
+		if ( Connection.All.Count < MinPlayers )
+			return false;
+
+		return !Setup.IsValid() || Setup.HasReadyPlayers( MinPlayers );
+	}
+
 	void EnterActive()
 	{
 		ApplyRules();
@@ -271,6 +287,8 @@ public sealed class RoundManager : Component
 
 	void EndRound( WinningSide winner )
 	{
+		if ( State == RoundState.Ended ) return;
+
 		State = RoundState.Ended;
 		var endScreenSeconds = Rules.IsValid() ? Rules.RoundEndScreenSeconds : 8f;
 		StateEndsAt = Time.Now + MathF.Max( 0.1f, endScreenSeconds );
@@ -288,35 +306,10 @@ public sealed class RoundManager : Component
 		if ( Stats.IsValid() )
 			Stats.ResetRound();
 
-		// Rotate the pilot role - simplest fairness: pilot becomes soldier,
-		// next connection in line becomes pilot. Replace with skill / random
-		// later if you want.
 		if ( Setup.IsValid() )
-		{
-			var allConns = Connection.All.ToList();
-			if ( allConns.Count == 0 )
-			{
-				EnterCountdown();
-				return;
-			}
+			Setup.BeginNextRoundSelection();
 
-			var idx = allConns.FindIndex( c => c.Id == Setup.PilotConnectionId );
-			var nextIdx = (idx + 1) % allConns.Count;
-			var newPilotId = allConns[nextIdx].Id;
-			var oldPilotId = Setup.PilotConnectionId;
-
-			// Respawn current soldiers (the new and old pilots are handled by PromotePilot below).
-			foreach ( var conn in allConns )
-			{
-				if ( conn.Id == oldPilotId ) continue;              // current pilot, will be demoted
-				if ( conn.Id == newPilotId ) continue;              // about to be promoted
-				Setup.RespawnWithSelectedLoadout( conn, PlayerRole.Soldier );
-			}
-
-			Setup.PromotePilot( newPilotId );
-		}
-
-		EnterCountdown();
+		EnterWaitingForPlayers();
 	}
 
 	void ApplyRules()

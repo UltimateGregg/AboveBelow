@@ -70,6 +70,40 @@ pawn.NetworkSpawn(connection);  // Sets Network.Owner = connection
 - Treat older Source 1 or legacy S&Box examples as migration context, not implementation authority. In particular, do not revive `[Net]`, `.qc` model scripts, entity/I/O gameplay, or manual `.vmdl` text editing as active defaults.
 - Capture useful research in `docs/sbox_engine_llm_reference.md`; use `scripts/agents/sbox_api_lookup.ps1` for exact local API symbols and run `scripts/agents/run_agent_checks.ps1 -Suite docs` after docs or agent-routing changes.
 
+### S&Box Learn Tutorial Intake
+
+**Pattern:** S&Box Learn pages are useful day-to-day context, but most are community-written tutorials. Convert them into project behavior only through a small researched workflow.
+
+**Workflow:**
+- Use `.agents/sbox/sbox-learn-intake-agent.md` to decide whether a tutorial lesson should become docs, an audit, a hook, or a routing card.
+- Use `.agents/sbox/ui-razor-reactivity-agent.md` for Learn lessons about Razor refresh, `[Sync]` values in UI, or `BuildHash()`.
+- Keep source URLs and review dates in `docs/sbox_engine_llm_reference.md`.
+- Run `scripts\agents\run_agent_checks.ps1 -Suite learn -ShowInfo` after changing Learn-derived guidance.
+
+### Editor Node Tool Scaffolding
+
+**Pattern:** S&Box Node Editor work is an editor-tooling surface, not runtime gameplay UI. Custom graph tools should live under `Editor/` or a library `Editor/` folder and be verified separately from gameplay components.
+
+**Workflow:**
+- Split the tool into an `[EditorApp]` widget, a `GraphView`, a properties/inspector widget if needed, an `IGraph` data container, `INode` implementations, `INodeType` factories, and `IPlug`/`IPlugIn`/`IPlugOut` plug models.
+- Use `[Title]`, `[Icon]`, `[Description]`, `[Hide]`, `[ReadOnly]`, and `DisplayInfo` to drive node menus, labels, tooltips, and property sheets instead of duplicating display strings in several places.
+- Initialize node `Inputs` and `Outputs` to empty or reflected plug collections before `NodeUI` renders. Null plug collections can fail before a tool does anything visible.
+- Replace tutorial `NotImplementedException` placeholders with safe no-op or null-returning defaults before testing. Paint, hover, context menu, selection, and plug callbacks can run immediately.
+- Add real type checks when connecting plugs; the calculator tutorial demonstrates value propagation but intentionally does not enforce type compatibility.
+- Run `scripts\agents\editor_node_tool_audit.ps1 -Root . -ShowInfo`, then manually open the tool from the editor Tools tab and test node creation, selection, properties, and connections.
+
+### Sandbox Entity .sent Resources
+
+**Pattern:** A Sandbox Entity `.sent` is a spawn-menu resource that points to a prefab; the prefab contains the actual GameObjects, Components, model renderer, physics, and custom behavior.
+
+**Workflow:**
+- Implement the behavior as a normal `Component` subclass first.
+- Put tunables on `[Property]` members; use `[ClientEditable]` only for values that Sandbox-mode players should be able to change from the context menu.
+- Use `TimeSince` for simple elapsed-time timers instead of manually tracking `Time.Now` deltas.
+- For physics-driven entities, run impulse and movement work from `OnFixedUpdate`, skip proxy execution before mutating physics, and validate `Rigidbody` before applying force.
+- Author the prefab with the renderer, `Rigidbody`, and behavior component, then create the `.sent` resource through the Sandbox Entity asset workflow with prefab, title, description, category, and IncludeCode when custom C# is required.
+- Verify unfamiliar exact symbols with `scripts/agents/sbox_api_lookup.ps1`; `ClientEditableAttribute` and `TimeSince` are C# API symbols in the local dump, while `ScriptedEntity` may be an editor/resource concept rather than a gameplay component type.
+
 ### OnAwake vs OnStart
 
 **Pattern:**
@@ -266,6 +300,19 @@ Body.Gravity = false;  // Custom hover physics
 - Use solid-color wireframes for blocking colliders and trigger-color wireframes for trigger volumes.
 - Keep the visual transform at the root/prefab origin when possible; if a scene instance needs scaling or rotation, apply it to the root so visual and collision children stay aligned.
 
+### Cosmetic Jigglebone ModelDoc Setup
+
+**Pattern:** Cosmetic jigglebones are local ModelDoc physics for skinned, bone-merged attachments. They need a citizen or human skeleton binding, extra jiggle bones parented to that skeleton, primitive `PhysicsShape` nodes, and joints with correctly placed anchors. This is separate from world collision and cannot be proven by a static asset audit alone.
+
+**Workflow:**
+- Skin the cosmetic to the main citizen or human skeleton and to the extra jiggle bones, then test it as a bone-merged skinned model on a citizen or human.
+- Add at least one solid attachment `PhysicsShape` to a stable body bone such as spine, head, or hand, then add primitive shapes to each jiggle bone. Prefer boxes, spheres, or capsules over hull collision unless the shape truly needs it.
+- Pick the joint by motion: conical for hanging swing with limits, weld for configurable position and rotation stiffness, spherical for unrestricted flop controlled mostly by collision.
+- Move each joint anchor to the intended pivot. If twist or swing limits are enabled, use nonzero values; zeroed limits do not clamp as expected.
+- For weld joints, tune linear and angular behavior separately. Higher position frequency keeps the part attached, lower frequency feels weaker, and higher damping creates more lag with less spring.
+- Playtest in the editor with an animation or body parameter moving the citizen or human. Unattached jiggle bones can fall away during play, and bad anchors show up as pivot drift or stretching.
+- Route future work through `.agents\sbox\jigglebone-cosmetic-agent.md`, then run `scripts\agents\run_agent_checks.ps1 -Suite modeldoc` and `-Suite asset-production` before final editor proof.
+
 ## Event & Callback Quirks
 
 ### Memory Leaks from Event Subscriptions
@@ -338,6 +385,16 @@ protected override void OnDestroy()
 - Never assume [Sync] collection is populated
 
 ## Common Workarounds
+
+### Razor BuildHash Reactivity
+
+**Pattern:** Razor panels only rebuild when the UI system sees a state change. Dynamic markup that displays C# values, synced state, parent-bound properties, status text, ammo, health, timers, or team scores should override `BuildHash()` and combine every value that can affect the rendered result.
+
+**Workflow:**
+- Use `[Sync]` on the gameplay/component state that must replicate, then read that state from Razor through an explicit `[Property]` component reference or an existing local HUD lookup.
+- In the Razor file, return `HashCode.Combine(...)` with every rendered value that can change. For collections, include stable count/version values or a compact hash of the displayed fields.
+- Avoid `StateHasChanged()` from `Tick()` as a general refresh fix. It hides missing hash inputs and rebuilds the panel every frame.
+- Run `scripts\agents\ui_flow_audit.ps1 -FailOnWarning` after Razor changes; it warns on dynamic output without `BuildHash()` and per-frame `StateHasChanged()` calls.
 
 ### PanelComponent Stylesheet Lookup
 
@@ -506,5 +563,5 @@ public void TakeDamage(DamageInfo info)
 
 ---
 
-Last Updated: May 20, 2026
-Version: 1.10 - Added verified S&Box engine research intake guidance
+Last Updated: May 23, 2026
+Version: 1.14 - Added S&Box Learn intake agent, Razor subagent, and hook guidance

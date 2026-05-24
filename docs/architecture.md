@@ -170,10 +170,10 @@ Active (300 seconds / 5 minutes)
 Ended (`GameRules.RoundEndScreenSeconds`, 5 seconds by default)
   ↓ (Screen expires)
 ResetForNextRound()
-  ├─ Rotates the pilot role through the connected players
-  └─ Respawns each player with their latest selected class or drone variant
+  - Clears stale pawns, teams, and local loadout choices through GameSetup
+  - Returns to WaitingForPlayers until connected players choose again
   ↓
-Countdown (5 seconds) [back to top]
+Fresh team/class/variant picker, then Countdown (5 seconds) [back to top]
 ```
 
 ### Pilot-Death Cascade
@@ -375,4 +375,4 @@ public sealed class Loadout
 ---
 
 **Architecture Last Reviewed:** May 6, 2026
-**Current Version:** 1.0 (Standardized). Player-facing team labels use Drone Pilots and Soldiers; internal `PlayerRole.Pilot`/`.Soldier` enum unchanged.
+**Current Version:** 1.1 (Standardized). Player-facing team labels use Drone Pilots and Soldiers; internal `PlayerRole.Pilot`/`.Soldier` enum unchanged. Round reset reopens team/class/variant selection instead of auto-respawning stale loadouts.

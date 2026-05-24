@@ -25,6 +25,114 @@ function Read-Text {
     return Get-Content -LiteralPath $path -Raw
 }
 
+function Read-Json {
+    param([string]$RelativePath)
+    $text = Read-Text $RelativePath
+    if ([string]::IsNullOrWhiteSpace($text)) {
+        return $null
+    }
+
+    try {
+        return $text | ConvertFrom-Json
+    }
+    catch {
+        Add-Error "Invalid JSON in ${RelativePath}: $($_.Exception.Message)"
+        return $null
+    }
+}
+
+function Get-GameObjects {
+    param($Object)
+    if ($null -eq $Object) {
+        return @()
+    }
+
+    $objects = @($Object)
+    foreach ($child in @($Object.Children)) {
+        $objects += Get-GameObjects $child
+    }
+
+    return $objects
+}
+
+function Get-Vector3 {
+    param(
+        [string]$Value,
+        [string]$Context
+    )
+
+    $parts = @($Value -split ',' | ForEach-Object { $_.Trim() })
+    if ($parts.Count -ne 3) {
+        Add-Error "$Context must be a Vector3 string, got '$Value'."
+        return $null
+    }
+
+    $values = New-Object double[] 3
+    for ($i = 0; $i -lt 3; $i++) {
+        $parsed = 0.0
+        if (-not [double]::TryParse($parts[$i], [Globalization.NumberStyles]::Float, [Globalization.CultureInfo]::InvariantCulture, [ref]$parsed)) {
+            Add-Error "$Context contains a non-numeric coordinate '$($parts[$i])'."
+            return $null
+        }
+        $values[$i] = $parsed
+    }
+
+    return $values
+}
+
+function Has-M4Visual {
+    param($Weapon)
+
+    foreach ($child in @($Weapon.Children)) {
+        if ($child.Name -ne "WeaponVisual") {
+            continue
+        }
+
+        foreach ($component in @($child.Components)) {
+            if ($component.Model -eq "models/weapons/assault_rifle_m4.vmdl") {
+                return $true
+            }
+        }
+    }
+
+    return $false
+}
+
+function Assert-M4HandguardGripAnchor {
+    param([string]$RelativePath)
+
+    $prefab = Read-Json $RelativePath
+    if ($null -eq $prefab -or $null -eq $prefab.RootObject) {
+        return
+    }
+
+    $m4Weapons = @(Get-GameObjects $prefab.RootObject | Where-Object {
+        $_.Name -eq "Weapon" -and (Has-M4Visual $_)
+    })
+
+    if ($m4Weapons.Count -eq 0) {
+        Add-Error "$RelativePath should contain an M4 Weapon object for first-person handguard anchoring."
+        return
+    }
+
+    foreach ($weapon in $m4Weapons) {
+        $leftHand = @($weapon.Children | Where-Object { $_.Name -eq "LeftHandIk" } | Select-Object -First 1)
+        if ($leftHand.Count -eq 0) {
+            Add-Error "$RelativePath M4 weapon is missing LeftHandIk."
+            continue
+        }
+
+        $position = Get-Vector3 $leftHand[0].Position "$RelativePath M4 LeftHandIk.Position"
+        if ($null -eq $position) {
+            continue
+        }
+
+        if ($position[0] -lt 6 -or $position[0] -gt 13 -or $position[2] -lt 0.5 -or $position[2] -gt 2.5) {
+            Add-Error "$RelativePath M4 LeftHandIk should sit on the handguard grip zone (x 6-13, z 0.5-2.5), got '$($leftHand[0].Position)'."
+        }
+    }
+}
+
 function Require-Pattern {
     param(
         [string]$Text,
@@ -56,7 +164,7 @@ if ($viewmodel -match 'Cloud\.Model\s*\(\s*ident\s*\)') {
 Require-Pattern $viewmodel 'facepunch/v_first_person_arms_human' "FirstPersonViewmodel should default to the Facepunch human first-person arms cloud asset."
 Require-Pattern $viewmodel 'facepunch/v_m4a1' "M4 and jammer should keep the Facepunch M4A1 viewmodel as the stock animation driver."
 Require-Pattern $viewmodel 'facepunch/v_spaghellim4' "Shotgun should keep the Facepunch Spaghelli viewmodel as the stock animation driver."
-Require-Pattern $viewmodel 'facepunch/v_mp5' "Pilot SMG should map to the Facepunch ViewModel MP5 cloud asset."
+Require-Pattern $viewmodel 'facepunch/v_mp5' "Pilot SMG should keep the Facepunch ViewModel MP5 as a hidden animation driver."
 Require-Pattern $viewmodel 'facepunch/v_he_grenade' "Frag grenade should map to the Facepunch ViewModel HE Grenade cloud asset."
 Require-Pattern $viewmodel 'facepunch/v_smoke_grenade' "Chaff grenade should map to the Facepunch ViewModel Smoke Grenade cloud asset."
 Require-Pattern $viewmodel 'facepunch/v_decoy_grenade' "EMP grenade should map to a Facepunch throwable viewmodel cloud asset."
@@ -72,11 +180,28 @@ Require-Pattern $viewmodel 'AddCustomAnimatedVisualCopies\s*\(' "Custom animated
 Require-Pattern $viewmodel 'sourceIsWeaponRoot\s*=\s*source\.GameObject\s*==\s*item\.Root' "Custom animated visual copy path must detect renderers that live directly on the weapon root."
 Require-Pattern $viewmodel 'LocalPosition\s*=\s*sourceIsWeaponRoot\s*\?\s*Vector3\.Zero' "Custom animated root-level renderers must be copied at local zero, not at the third-person weapon root offset."
 Require-Pattern $viewmodel 'TryGetCustomHandAnchoredPose\s*\(' "Custom animated weapons must align their held-item IK targets to the stock animated hand bones."
+Require-Pattern $viewmodel 'TryGetOneHandCustomVisualPose\s*\(' "One-handed custom weapons must solve a dedicated hand-grip pose so the visible model moves in sync with the gripping hand."
+Require-Pattern $viewmodel 'oneHandWeaponAnchor\.Rotation\s*\*\s*item\.CustomViewmodelRotation\.ToRotation\(\)' "One-handed custom weapons must keep the stable stock weapon orientation instead of rotating the whole weapon from the wrist bone."
+if ($viewmodel -match 'oneHandAnchor\.Rotation\s*\*\s*item\.CustomViewmodelRotation\.ToRotation\(\)') {
+    Add-Error "One-handed custom weapons must not rotate the entire visible model directly from the hand bone; align the grip point to the hand and keep stock weapon orientation."
+}
 Require-Pattern $viewmodel 'TryGetStockHandAnchor\s*\(' "Custom animated weapon placement must read stock left/right hand bone transforms."
 Require-Pattern $viewmodel 'LocalPointToWorldOffset\s*\(' "Custom animated weapon placement must transform local held-item hand offsets into viewmodel space."
+Require-Pattern $viewmodel 'if\s*\(\s*!item\.TwoHanded\s*\)[\s\S]{0,360}TryGetStockHandAnchor\(\s*true' "One-handed custom weapons such as the pilot MP7 must anchor to the right hand instead of averaging both hand targets."
 Require-Pattern $viewmodel 'models/weapons/assault_rifle_m4\.vmdl' "Assault rifle first-person custom path must reference the Blender M4 model."
+Require-Pattern $viewmodel 'models/weapons/smg_mp7\.vmdl' "Pilot SMG first-person custom path must reference the Blender MP7 model."
 Require-Pattern $viewmodel 'models/shotgun\.vmdl' "Shotgun first-person custom path must reference the Blender shotgun model."
 Require-Pattern $viewmodel 'models/jammer_gun\.vmdl' "Jammer first-person custom path must reference the Blender jammer model."
+Require-Pattern $viewmodel 'StockViewmodelOffset\s*\{\s*get;\s*set;\s*\}\s*=\s*new\(\s*(?:[6-9]|[1-9][0-9]+)f,\s*0f,\s*0f\s*\)' "First-person viewmodel root needs positive forward camera clearance so held items do not clip through the camera."
+Require-Pattern $viewmodel 'CustomM4ViewmodelOffset\s*\{\s*get;\s*set;\s*\}\s*=\s*new\(\s*(?:[1-9]|[1-9][0-9]+)f,\s*0f,\s*0f\s*\)' "Custom M4 viewmodel needs a non-zero forward offset after hand anchoring."
+Require-Pattern $viewmodel 'CustomSmgViewmodelOffset\s*\{\s*get;\s*set;\s*\}\s*=\s*(?:Vector3\.Zero|new\(\s*0f,\s*0f,\s*0f\s*\))' "Pilot MP7 viewmodel must not add a secondary offset after grip anchoring; camera clearance belongs on the shared stock viewmodel root."
+Require-Pattern $viewmodel 'CustomShotgunViewmodelOffset\s*\{\s*get;\s*set;\s*\}\s*=\s*new\(\s*(?:[1-9]|[1-9][0-9]+)f,\s*0f,\s*0f\s*\)' "Custom shotgun viewmodel needs a non-zero forward offset after hand anchoring."
+Require-Pattern $viewmodel 'CustomJammerViewmodelOffset\s*\{\s*get;\s*set;\s*\}\s*=\s*(?:Vector3\.Zero|new\(\s*0f,\s*0f,\s*0f\s*\))' "Custom jammer viewmodel should not add a secondary forward offset after hand anchoring; tune its foregrip and pistol-grip IK targets instead."
+Require-Pattern $viewmodel 'CustomModelPath\s*=\s*isSmg\s*\?\s*PilotSmgCustomModelPath\s*:\s*AssaultRifleCustomModelPath' "Pilot SMG first-person viewmodel must copy the Blender MP7 visual instead of the assault rifle fallback."
+Require-Pattern $viewmodel 'Key\s*=\s*\$"hitscan:\{weapon\.GameObject\.Id\}:\{\(isSmg\s*\?\s*"mp7"\s*:\s*"m4a1"\)\}"' "Pilot SMG viewmodel cache key must identify the visible custom MP7, not the old MP5 stock mesh."
+if ($viewmodel -match 'RenderMode\s*=\s*isSmg\s*\?\s*ViewmodelRenderMode\.StockVisible') {
+    Add-Error "Pilot SMG must not render the stock MP5 as the visible first-person weapon."
+}
 Require-Pattern $viewmodel 'TryGetStockWeaponAnchor' "Custom visible weapons must follow a stock animated attachment or bone anchor."
 Require-Pattern $viewmodel 'GetAttachment\s*\(' "Custom visible weapons should try stock viewmodel attachments before falling back to bones/root transform."
 Require-Pattern $viewmodel 'TryGetBoneTransform\s*\(' "Custom visible weapons should fall back to stock viewmodel bones when attachments are unavailable."
@@ -115,6 +240,9 @@ foreach ($entry in @(
 )) {
     Require-Pattern $entry.Text 'FirstPersonViewmodel\.ShouldHideWorldHeldItem' "$($entry.Path) must hide its old local world-held visual when the spawned viewmodel is active."
 }
+
+Assert-M4HandguardGripAnchor "Assets\prefabs\soldier_assault.prefab"
+Assert-M4HandguardGripAnchor "Assets\prefabs\soldier.prefab"
 
 if ($errors.Count -gt 0) {
     Write-Host "First-person viewmodel spawn guard failed:"
