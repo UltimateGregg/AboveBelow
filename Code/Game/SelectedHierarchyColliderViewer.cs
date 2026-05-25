@@ -11,13 +11,14 @@ namespace DroneVsPlayers;
 [Icon( "select_all" )]
 public sealed class SelectedHierarchyColliderViewer : Component, Component.ExecuteInEditor
 {
+	[Property] public bool AlwaysDraw { get; set; }
 	[Property] public bool IncludeTriggers { get; set; } = true;
 	[Property] public Color SolidColliderColor { get; set; } = new( 1f, 0.55f, 0.12f, 1f );
 	[Property] public Color TriggerColliderColor { get; set; } = new( 0.25f, 0.75f, 1f, 1f );
 
 	protected override void OnUpdate()
 	{
-		if ( !Gizmo.IsSelected && !Gizmo.IsChildSelected )
+		if ( !AlwaysDraw && !Gizmo.IsSelected && !Gizmo.IsChildSelected )
 			return;
 
 		foreach ( var collider in Components.GetAll<BoxCollider>( FindMode.EverythingInSelfAndDescendants ) )

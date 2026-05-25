@@ -185,6 +185,15 @@ $areaRules = @(
             "scripts/agents/sbox_engine_reference_audit.ps1 -ShowInfo"
         )
         Training = "Custom Node Editor tools should stay editor-only, use verified editor API shapes, clear tutorial placeholders, and keep manual editor-open verification in the handoff."
+    },
+    [pscustomobject]@{
+        Name = "EditorFirstWorkflow"
+        Patterns = @(".mcp.json", ".claude/*", ".agents/sbox/editor-first-workflow-agent.md", "docs/editor_control_plane.md", "docs/agent_toolkit.md", "AGENTS.md", "scripts/agents/editor_first_workflow_audit.ps1", "scripts/agents/run_agent_checks.ps1", "scripts/agents/test_full_automation_layer.ps1")
+        Checks = @(
+            "scripts/agents/run_agent_checks.ps1 -Suite editor-first -ShowInfo",
+            "scripts/agents/test_full_automation_layer.ps1"
+        )
+        Training = "When a task can be done through the S&Box editor, start with live MCP status/capability checks, mutate through native editor tools where available, and report static fallbacks as environment limits."
     }
 )
 

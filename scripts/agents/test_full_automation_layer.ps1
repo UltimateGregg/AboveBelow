@@ -44,6 +44,12 @@ $requiredScripts = @(
     "scripts/agents/prefab_wiring_audit.ps1",
     "scripts/agents/prefab_graph_audit.ps1",
     "scripts/agents/scene_integrity_audit.ps1",
+    "scripts/agents/terrain_floor_audit.ps1",
+    "scripts/agents/sandbag_cover_audit.ps1",
+    "scripts/agents/road_cover_barrier_audit.ps1",
+    "scripts/agents/road_lane_marking_audit.ps1",
+    "scripts/agents/road_edge_wear_audit.ps1",
+    "scripts/agents/burnt_vehicle_block_audit.ps1",
     "scripts/agents/collision_authoring_agent.ps1",
     "scripts/agents/collision_agent_chain_audit.ps1",
     "scripts/agents/collision_chain_report.ps1",
@@ -67,6 +73,7 @@ $requiredScripts = @(
     "scripts/agents/sbox_api_reference_audit.ps1",
     "scripts/agents/sbox_learn_intake_audit.ps1",
     "scripts/agents/editor_node_tool_audit.ps1",
+    "scripts/agents/editor_first_workflow_audit.ps1",
     "scripts/agents/asset_visual_review.ps1",
     "scripts/agents/blender_live_toolkit_self_test.ps1"
 )
@@ -85,7 +92,7 @@ if (Test-Path -LiteralPath $runner) {
         Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner does not declare a ValidateSet for suites." "Restore suite validation on the Suite parameter."
     }
 
-    foreach ($suite in @("ui", "prefab-graph", "scene", "logs", "readiness", "train", "asset-production", "modeldoc", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain", "api", "learn", "editor-node-tool")) {
+    foreach ($suite in @("ui", "prefab-graph", "scene", "terrain", "logs", "readiness", "train", "asset-production", "modeldoc", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain", "api", "learn", "editor-node-tool", "editor-first")) {
         $quotedSuite = '"' + [regex]::Escape($suite) + '"'
         if ($validateSetMatch.Success -and $validateSetMatch.Groups["values"].Value -notmatch $quotedSuite) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner ValidateSet does not expose suite '$suite'." "Add the suite to the Suite parameter ValidateSet."
@@ -391,6 +398,16 @@ foreach ($source in $requiredMcpSources) {
     }
 }
 
+$editorFirstAudit = Join-Path $Root "scripts/agents/editor_first_workflow_audit.ps1"
+if (Test-Path -LiteralPath $editorFirstAudit) {
+    $editorFirstAuditText = Get-Content -LiteralPath $editorFirstAudit -Raw
+    foreach ($marker in @("Editor-First Workflow Audit", "editor-first-workflow-agent.md", "control_plane_status", "tools/list", "editor_save_scene", "sbox-editor-first-workflow-check")) {
+        if ($editorFirstAuditText -notmatch [regex]::Escape($marker)) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/editor_first_workflow_audit.ps1" "Editor-first workflow audit is missing marker '$marker'." "Keep the audit strict enough to protect live-editor-first routing, capability checks, save proof, and hook wiring."
+        }
+    }
+}
+
 if ($ProjectSmoke) {
     foreach ($script in $requiredScripts) {
         if ($script -eq "scripts/agents/asset_visual_review.ps1") {
@@ -624,6 +641,8 @@ public sealed class RoundManager
     <div>Take down drone pilots.</div>
     <span>Fly drones as drone pilots</span>
     <span>Fight as soldiers</span>
+    <div>Drone Pilot Loadout</div>
+    <div>Soldier Class</div>
 </root>
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\UI\HudPanel.razor") -Encoding UTF8
 
@@ -1064,6 +1083,99 @@ if (Test-Path -LiteralPath $sceneAudit) {
         & powershell -NoProfile -ExecutionPolicy Bypass -File $sceneAudit -Root $tempRoot | Out-Host
         if ($LASTEXITCODE -ne 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit failed on a water tower fixture with a trigger LadderVolume." "Avoid false positives for valid water tower ladder authoring."
+        }
+
+        @'
+{
+  "GameObjects": [
+    {
+      "Name": "GameManager",
+      "Components": [
+        { "__type": "DroneVsPlayers.GameRules" },
+        { "__type": "DroneVsPlayers.GameStats" },
+        { "__type": "DroneVsPlayers.GameSetup" },
+        { "__type": "DroneVsPlayers.RoundManager" },
+        { "__type": "DroneVsPlayers.AutoWireHelper" }
+      ],
+      "Children": []
+    },
+    {
+      "Name": "HUD",
+      "Components": [
+        { "__type": "DroneVsPlayers.HudPanel" }
+      ],
+      "Children": []
+    },
+    {
+      "Name": "Spawns",
+      "Components": [],
+      "Children": [
+        { "Name": "PilotSpawn", "Components": [ { "__type": "DroneVsPlayers.PlayerSpawn", "Role": "Pilot" } ], "Children": [] },
+        { "Name": "SoldierSpawn", "Components": [ { "__type": "DroneVsPlayers.PlayerSpawn", "Role": "Soldier" } ], "Children": [] }
+      ]
+    },
+    {
+      "Name": "BlockoutMap",
+      "Components": [],
+      "Children": [
+        {
+          "Name": "NorthBoundary",
+          "Components": [
+            { "__type": "Sandbox.ModelRenderer", "Model": "models/dev/box.vmdl", "RenderType": "On" },
+            { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "50,50,50" }
+          ],
+          "Children": []
+        },
+        {
+          "Name": "SouthBoundary",
+          "Components": [
+            { "__type": "Sandbox.ModelRenderer", "Model": "models/dev/box.vmdl", "RenderType": "Off" },
+            { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "50,50,50" },
+            { "__type": "DroneVsPlayers.SelectedHierarchyColliderViewer", "AlwaysDraw": true, "IncludeTriggers": true }
+          ],
+          "Children": []
+        },
+        {
+          "Name": "EastBoundary",
+          "Components": [
+            { "__type": "Sandbox.ModelRenderer", "Model": "models/dev/box.vmdl", "RenderType": "Off" },
+            { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "50,50,50" },
+            { "__type": "DroneVsPlayers.SelectedHierarchyColliderViewer", "AlwaysDraw": true, "IncludeTriggers": true }
+          ],
+          "Children": []
+        },
+        {
+          "Name": "WestBoundary",
+          "Components": [
+            { "__type": "Sandbox.ModelRenderer", "Model": "models/dev/box.vmdl", "RenderType": "Off" },
+            { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "50,50,50" },
+            { "__type": "DroneVsPlayers.SelectedHierarchyColliderViewer", "AlwaysDraw": true, "IncludeTriggers": true }
+          ],
+          "Children": []
+        }
+      ]
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sceneAudit -ScriptArgs @("-Root", $tempRoot) -Label "solid-rendered invisible boundary wall" -SourcePath "scripts/agents/scene_integrity_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit did not fail on a boundary wall with RenderType On." "Keep boundary walls collider-backed and editor-wireframed, not solid-rendered in play."
+        }
+
+        $validBoundaryFixture = (Get-Content -LiteralPath $scenePath -Raw).Replace('"RenderType": "On"', '"RenderType": "Off"')
+        $validBoundaryFixture = [regex]::Replace(
+            $validBoundaryFixture,
+            '"Sandbox\.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "50,50,50" \}',
+            '"Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "50,50,50" }, { "__type": "DroneVsPlayers.SelectedHierarchyColliderViewer", "AlwaysDraw": true, "IncludeTriggers": true }',
+            1
+        )
+        $validBoundaryFixture | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sceneAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit failed on a valid invisible boundary wireframe fixture." "Avoid false positives when boundary walls are hidden as renderers but visible through editor wireframe gizmos."
         }
     }
     finally {

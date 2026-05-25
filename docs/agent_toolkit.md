@@ -20,6 +20,7 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 
 | Agent | Purpose | Script |
 |---|---|---|
+| Editor-First Workflow Agent | Route editor-capable tasks through live S&Box MCP inspection, mutation, save, screenshot, play, and log proof before static fallback | `scripts/agents/run_agent_checks.ps1 -Suite editor-first -ShowInfo` |
 | Build and Log Sentinel | Compile and check fresh logs | `scripts/agents/build_log_sentinel.ps1` |
 | Gameplay Systems Agent | Review gameplay architecture fit | Uses build and networking audits |
 | Gameplay Regression Guard | Run focused slot and drone-control regression checks | `scripts/agents/gameplay_regression_guard.ps1` |
@@ -28,6 +29,8 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 | Prefab and Wiring Agent | Validate prefab shape and AutoWire references | `scripts/agents/prefab_wiring_audit.ps1` |
 | Prefab Graph Audit | Validate GUID refs, component refs, prefab refs, and resource paths | `scripts/agents/prefab_graph_audit.ps1` |
 | Scene Integrity Audit | Validate main scene managers, spawns, and collider patterns | `scripts/agents/scene_integrity_audit.ps1` |
+| Terrain Floor Audit | Keep `ArenaFloor` backed by native `Sandbox.Terrain` and a source-controlled `.terrain` asset | `scripts/agents/run_agent_checks.ps1 -Suite terrain -ShowInfo` |
+| Editor-Native Cover Agent | Review S&Box-editor primitive cover, spacing, material, and preserved deletions | `scripts/agents/sandbag_cover_audit.ps1`; `scripts/agents/burnt_vehicle_block_audit.ps1` |
 | Collision Authoring Agent | Validate `Collision_*`, building-root coverage, ladder triggers, visual/collider alignment, and water-tower collision coverage | `scripts/agents/collision_authoring_agent.ps1` |
 | Collision Agent Chain | Coordinate Codex explorer, implementer, verifier, and critic roles for collision-heavy work | `scripts/agents/collision_chain_report.ps1` |
 | Collision Explorer Agent | Read-only collision discovery before edits | `.agents/sbox/collision-explorer-agent.md` |
@@ -70,6 +73,14 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 - Full automation is still static unless paired with an editor playtest. Use `current_log_audit.ps1 -RequireFresh` after the playtest to verify current runtime logs.
 
 ## Recommended Usage By Change Type
+
+Editor-capable scene, prefab, component, asset, sound, screenshot, terrain, or playtest work:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite editor-first -ShowInfo
+```
+
+Start with `.agents/sbox/editor-first-workflow-agent.md`. Check `control_plane_status` or JSON-RPC `tools/list`, inspect with `editor_scene_info` plus scene/component tools, mutate through native MCP where available, save with `editor_save_scene` only when the editor was not already dirty and the edits are agent-owned, and use screenshot/play/log tools for proof. If the editor is pre-dirty, the editor or required tool domain is unavailable, or save ownership is uncertain, report that clearly and separate static fallback work from live-editor proof.
 
 Gameplay or C# changes:
 
@@ -120,6 +131,21 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_wiring_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_graph_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/scene_integrity_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/collision_authoring_agent.ps1 -ShowInfo
+```
+
+For arena floor terrain or heightmap/sculpting changes, use the native terrain workflow:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite terrain -ShowInfo
+```
+
+`ArenaFloor` should stay as one stable scene object with a `Sandbox.Terrain` component linked to `terrain/arena_floor.terrain`. Because `Sandbox.Terrain` is corner-origin, the 21600-unit arena terrain is positioned at `-10800,-10800,-8` so it remains centered on the arena. If the terrain asset is missing, has drifted from the expected footprint, or will not load in the editor, run the DEBUG editor console command `dvp_link_arena_terrain`; it creates or repairs the terrain through S&Box `TerrainStorage` and saves the active scene. To rebuild the current rolling heightmap and grass variation splat layer, run `dvp_generate_arena_terrain_variance`; the terrain audit decodes the compressed maps and samples road/building protected points.
+
+For editor-native cover or small scene-only blockout props, start with `.agents/sbox/editor-native-cover-agent.md`. Inspect the live editor scene before file edits, preserve user-deleted primitive children, avoid Blender unless the request becomes a bespoke mesh, and run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/sandbag_cover_audit.ps1 -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/burnt_vehicle_block_audit.ps1 -ShowInfo
 ```
 
 For prop collision specifically, also run:
@@ -189,6 +215,7 @@ workflow through tools such as `blender_sbox_setup_asset_scene`,
 Native S&Box editor control-plane or sound changes:
 
 ```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite editor-first -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite sound -ShowInfo
 python scripts/audio/generate_project_sounds.py --root .
 dotnet build Libraries\jtc.mcp-server\Editor\mcp-server.editor.csproj --no-restore

@@ -404,7 +404,7 @@ foreach ($object in $solidColliderObjects) {
 $visualMarkers = @(Get-VisualMarkerObjects -Group $levelPass)
 foreach ($marker in $visualMarkers) {
     $name = Get-ObjectName -Object $marker
-    if ($name -notmatch "Paint|Marker|Glow|Breach|Stripe|Read") {
+    if ($name -notmatch "Paint|Marker|Glow|Breach|Stripe|Read|BurntVehicle_(Ash|BrokenGlass|SootScale|HotWarning)") {
         Add-AgentIssue $issues "Warning" "Readability VFX" $relative "$name is visual-only but does not use a known marker/readability name." "Confirm this is intentional and not missing collision."
     }
 }

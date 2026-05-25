@@ -40,7 +40,7 @@ public sealed class FirstPersonViewmodel : Component
 	[Property] public Vector3 CustomM4ViewmodelScale { get; set; } = new( 1f, 1f, 1f );
 	[Property] public Vector3 CustomSmgViewmodelOffset { get; set; } = Vector3.Zero;
 	[Property] public Angles CustomSmgViewmodelRotation { get; set; } = new( 0f, 0f, 0f );
-	[Property] public Vector3 CustomSmgViewmodelScale { get; set; } = new( 1f, 1f, 1f );
+	[Property] public Vector3 CustomSmgViewmodelScale { get; set; } = new( 0.5f, 0.5f, 0.5f );
 	[Property] public Vector3 CustomShotgunViewmodelOffset { get; set; } = new( 2f, 0f, 0f );
 	[Property] public Angles CustomShotgunViewmodelRotation { get; set; } = new( 0f, 0f, 0f );
 	[Property] public Vector3 CustomShotgunViewmodelScale { get; set; } = new( 1f, 1f, 1f );

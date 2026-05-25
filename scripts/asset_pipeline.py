@@ -299,9 +299,11 @@ def write_vmdl(
     material_source_suffix: Any = ".vmat",
     use_global_default: bool = True,
     global_default_material: str = "materials/default.vmat",
+    import_scale: float = 1.0,
     physics_shapes: list[dict[str, Any]] | None = None,
 ) -> None:
     remaps = material_remaps or {}
+    import_scale_text = str(float(import_scale))
     remap_blocks = []
     for source, target in sorted(remaps.items()):
         source_name = modeldoc_material_source_name(source, material_source_suffix)
@@ -349,7 +351,7 @@ def write_vmdl(
 \t\t\t\t\t\tfilename = "{fbx_resource_path}"
 \t\t\t\t\t\timport_translation = [ 0.0, 0.0, 0.0 ]
 \t\t\t\t\t\timport_rotation = [ 0.0, 0.0, 0.0 ]
-\t\t\t\t\t\timport_scale = 1.0
+\t\t\t\t\t\timport_scale = {import_scale_text}
 \t\t\t\t\t\talign_origin_x_type = "None"
 \t\t\t\t\t\talign_origin_y_type = "None"
 \t\t\t\t\t\talign_origin_z_type = "None"
@@ -684,6 +686,7 @@ def update_vmdl(args: argparse.Namespace, root: Path, fbx_resource_path: str) ->
         args.vmdl_material_source_suffix,
         args.vmdl_use_global_default,
         args.vmdl_global_default_material,
+        args.vmdl_import_scale,
         getattr(args, "physics_shapes", None),
     )
     print(f"Updated model document: {target_vmdl}")
@@ -737,6 +740,12 @@ def build_parser(defaults: dict[str, Any]) -> argparse.ArgumentParser:
         "--vmdl-global-default-material",
         default=defaults.get("vmdl_global_default_material", "materials/default.vmat"),
         help="ModelDoc global_default_material resource used when vmdl_use_global_default is enabled.",
+    )
+    parser.add_argument(
+        "--vmdl-import-scale",
+        type=float,
+        default=defaults.get("vmdl_import_scale", 1.0),
+        help="RenderMeshFile import_scale to write into the generated S&Box ModelDoc.",
     )
     parser.add_argument(
         "--strict-vmdl-material-sources",

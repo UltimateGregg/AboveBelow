@@ -66,6 +66,7 @@ Invoke-GuardScript -RelativePath "scripts\check_hud_damage_arc_attribution.ps1" 
 Invoke-GuardScript -RelativePath "scripts\check_ui_scale_default.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_round_reprompt_flow.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_two_client_lobby_flow.ps1" -ScriptArgs @("-Root", $Root)
+Invoke-GuardScript -RelativePath "scripts\check_editor_menu_click_probe.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_first_person_viewmodel_spawn.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_drone_deployer_visuals.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_shotgun_reload_and_hud.ps1" -ScriptArgs @("-Root", $Root)

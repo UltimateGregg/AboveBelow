@@ -98,6 +98,27 @@ function Has-M4Visual {
     return $false
 }
 
+function Has-VisualModel {
+    param(
+        $Weapon,
+        [string]$ModelPath
+    )
+
+    foreach ($child in @($Weapon.Children)) {
+        if ($child.Name -ne "WeaponVisual") {
+            continue
+        }
+
+        foreach ($component in @($child.Components)) {
+            if ($component.Model -eq $ModelPath) {
+                return $true
+            }
+        }
+    }
+
+    return $false
+}
+
 function Assert-M4HandguardGripAnchor {
     param([string]$RelativePath)
 
@@ -131,6 +152,79 @@ function Assert-M4HandguardGripAnchor {
             Add-Error "$RelativePath M4 LeftHandIk should sit on the handguard grip zone (x 6-13, z 0.5-2.5), got '$($leftHand[0].Position)'."
         }
     }
+}
+
+function Assert-PilotMp7HeldScale {
+    $relativePath = "Assets\prefabs\pilot_ground.prefab"
+    $prefab = Read-Json $relativePath
+    if ($null -eq $prefab -or $null -eq $prefab.RootObject) {
+        return
+    }
+
+    $mp7Weapons = @(Get-GameObjects $prefab.RootObject | Where-Object {
+        $_.Name -eq "Weapon" -and (Has-VisualModel $_ "models/weapons/smg_mp7.vmdl")
+    })
+
+    if ($mp7Weapons.Count -eq 0) {
+        Add-Error "$relativePath should contain the pilot MP7 Weapon object."
+        return
+    }
+
+    foreach ($weapon in $mp7Weapons) {
+        if (-not ($weapon.PSObject.Properties.Name -contains "Scale")) {
+            Add-Error "$relativePath pilot MP7 Weapon should declare Scale 0.5,0.5,0.5 so the held model and IK/muzzle sockets shrink together."
+            continue
+        }
+
+        if ($weapon.Scale -ne "0.5,0.5,0.5") {
+            Add-Error "$relativePath pilot MP7 Weapon Scale should be 0.5,0.5,0.5, got '$($weapon.Scale)'."
+        }
+    }
+}
+
+function Assert-M4ModelDocScale {
+    $relativePath = "Assets\models\weapons\assault_rifle_m4.vmdl"
+    $raw = Read-Text $relativePath
+    if ([string]::IsNullOrWhiteSpace($raw)) {
+        return
+    }
+
+    $scaleMatch = [regex]::Match($raw, 'import_scale\s*=\s*([0-9.]+)')
+    if (-not $scaleMatch.Success) {
+        Add-Error "$relativePath must declare RenderMeshFile import_scale so the M4 does not silently reimport at source scale."
+        return
+    }
+
+    $scale = 0.0
+    if (-not [double]::TryParse($scaleMatch.Groups[1].Value, [Globalization.NumberStyles]::Float, [Globalization.CultureInfo]::InvariantCulture, [ref]$scale)) {
+        Add-Error "$relativePath import_scale is not numeric: '$($scaleMatch.Groups[1].Value)'."
+        return
+    }
+
+    if ([Math]::Abs($scale - 0.013) -gt 0.000001) {
+        Add-Error "$relativePath import_scale should stay at 0.013 for first-person M4 camera clearance, got '$($scaleMatch.Groups[1].Value)'."
+    }
+}
+
+function Assert-M4AssetPipelineScale {
+    $relativePath = "scripts\assault_rifle_m4_asset_pipeline.json"
+    $config = Read-Json $relativePath
+    if ($null -eq $config) {
+        return
+    }
+
+    if (-not ($config.PSObject.Properties.Name -contains "vmdl_import_scale")) {
+        Add-Error "$relativePath must declare vmdl_import_scale 0.013 so a future M4 export cannot restore the oversized ModelDoc scale."
+        return
+    }
+
+    $configuredScale = [double]$config.vmdl_import_scale
+    if ([Math]::Abs($configuredScale - 0.013) -gt 0.000001) {
+        Add-Error "$relativePath vmdl_import_scale should be 0.013, got '$($config.vmdl_import_scale)'."
+    }
+
+    $pipeline = Read-Text "scripts\asset_pipeline.py"
+    Require-Pattern $pipeline 'vmdl_import_scale' "scripts\asset_pipeline.py must write the configured vmdl_import_scale instead of hardcoding import_scale = 1.0."
 }
 
 function Require-Pattern {
@@ -195,6 +289,7 @@ Require-Pattern $viewmodel 'models/jammer_gun\.vmdl' "Jammer first-person custom
 Require-Pattern $viewmodel 'StockViewmodelOffset\s*\{\s*get;\s*set;\s*\}\s*=\s*new\(\s*(?:[6-9]|[1-9][0-9]+)f,\s*0f,\s*0f\s*\)' "First-person viewmodel root needs positive forward camera clearance so held items do not clip through the camera."
 Require-Pattern $viewmodel 'CustomM4ViewmodelOffset\s*\{\s*get;\s*set;\s*\}\s*=\s*new\(\s*(?:[1-9]|[1-9][0-9]+)f,\s*0f,\s*0f\s*\)' "Custom M4 viewmodel needs a non-zero forward offset after hand anchoring."
 Require-Pattern $viewmodel 'CustomSmgViewmodelOffset\s*\{\s*get;\s*set;\s*\}\s*=\s*(?:Vector3\.Zero|new\(\s*0f,\s*0f,\s*0f\s*\))' "Pilot MP7 viewmodel must not add a secondary offset after grip anchoring; camera clearance belongs on the shared stock viewmodel root."
+Require-Pattern $viewmodel 'CustomSmgViewmodelScale\s*\{\s*get;\s*set;\s*\}\s*=\s*new\(\s*0\.5f,\s*0\.5f,\s*0\.5f\s*\)' "Pilot MP7 first-person custom viewmodel scale should stay at 50% so it fits the pilot hand."
 Require-Pattern $viewmodel 'CustomShotgunViewmodelOffset\s*\{\s*get;\s*set;\s*\}\s*=\s*new\(\s*(?:[1-9]|[1-9][0-9]+)f,\s*0f,\s*0f\s*\)' "Custom shotgun viewmodel needs a non-zero forward offset after hand anchoring."
 Require-Pattern $viewmodel 'CustomJammerViewmodelOffset\s*\{\s*get;\s*set;\s*\}\s*=\s*(?:Vector3\.Zero|new\(\s*0f,\s*0f,\s*0f\s*\))' "Custom jammer viewmodel should not add a secondary forward offset after hand anchoring; tune its foregrip and pistol-grip IK targets instead."
 Require-Pattern $viewmodel 'CustomModelPath\s*=\s*isSmg\s*\?\s*PilotSmgCustomModelPath\s*:\s*AssaultRifleCustomModelPath' "Pilot SMG first-person viewmodel must copy the Blender MP7 visual instead of the assault rifle fallback."
@@ -243,6 +338,9 @@ foreach ($entry in @(
 
 Assert-M4HandguardGripAnchor "Assets\prefabs\soldier_assault.prefab"
 Assert-M4HandguardGripAnchor "Assets\prefabs\soldier.prefab"
+Assert-PilotMp7HeldScale
+Assert-M4ModelDocScale
+Assert-M4AssetPipelineScale
 
 if ($errors.Count -gt 0) {
     Write-Host "First-person viewmodel spawn guard failed:"

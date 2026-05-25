@@ -10,6 +10,7 @@
 - When editing scenes through MCP, summarize objects changed.
 - After changes, check compile errors and editor logs.
 - Do not invent S&Box APIs. Check docs, `API.json`, or existing project patterns first; use `scripts/agents/sbox_api_lookup.ps1` for exact local API symbols before adding unfamiliar calls or attributes.
+- For commands that can reasonably be done in the S&Box editor, start with `.agents/sbox/editor-first-workflow-agent.md`: check `control_plane_status` or JSON-RPC `tools/list`, inspect live editor state before file edits, prefer native MCP mutations, save with `editor_save_scene` only when the editor was not already dirty and the edits are agent-owned, and report any fallback when the editor/MCP surface is unavailable.
 - AI Workflow Discipline:
 - Break large tasks into small, verifiable phases.
 - Complete one gameplay/system change at a time before starting another.
@@ -177,3 +178,12 @@ For detailed hook logs and diagnostics, see `docs/automation.md`.
 **Action:** Runs `.\scripts\agents\run_agent_checks.ps1 -Suite learn -ShowInfo`.
 
 Use this hook to keep community tutorial lessons grounded in project agents, subagents, docs, self-tests, and focused audits instead of leaving them only in chat history.
+
+## Editor-First Workflow Hook
+
+**Hook ID:** `sbox-editor-first-workflow-check`
+**Configuration File:** `./.claude/settings.json`
+**Trigger:** Changes to editor-control-plane docs, editor-first agent routing, MCP manifest, suite wiring, training wiring, or the editor-first workflow audit.
+**Action:** Runs `.\scripts\agents\run_agent_checks.ps1 -Suite editor-first -ShowInfo`.
+
+Use this hook to keep future Codex/agent tasks biased toward live S&Box editor inspection, mutation, save, screenshot, playtest, and log proof before falling back to static scene or prefab JSON edits.

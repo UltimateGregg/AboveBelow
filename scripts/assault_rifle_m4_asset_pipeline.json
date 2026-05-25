@@ -10,6 +10,7 @@
   "visual_tint": "1,1,1,1",
   "clear_material_override": true,
   "vmdl_material_source_suffix": "",
+  "vmdl_import_scale": 0.013,
   "vmdl_use_global_default": false,
   "strict_vmdl_material_sources": true,
   "clear_visual_children": false,

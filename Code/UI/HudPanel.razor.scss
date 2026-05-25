@@ -41,21 +41,34 @@ HudPanel {
 
                 .main-menu-title {
                     position: absolute;
-                    top: 16%;
-                    left: 50%;
-                    font-size: 68px;
+                    top: 0;
+                    right: 0;
+                    bottom: 0;
+                    left: 0;
+                    width: 100%;
+                    justify-content: center;
+                    align-items: center;
+                    text-align: center;
+                    pointer-events: none;
+                }
+
+                .main-menu-title-text {
+                    font-size: 72px;
                     font-weight: 900;
                     color: white;
-                    text-align: center;
                     text-shadow: 0 0 18px rgba(77, 210, 255, 0.34);
-                    transform: translatex(-50%);
+                    white-space: nowrap;
                 }
 
                 .main-menu-panel {
+                    position: absolute;
+                    top: 68%;
+                    left: 50%;
                     width: 430px;
                     max-width: 88%;
                     padding: 16px;
                     gap: 10px;
+                    transform: translatex(-50%);
                 }
 
                 .main-menu-actions,
@@ -80,6 +93,36 @@ HudPanel {
 
                 .main-menu-play {
                     min-height: 68px;
+                }
+
+                .main-menu-scanline {
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    bottom: -6px;
+                    height: 3px;
+                    pointer-events: none;
+                    background-color: rgba(77, 210, 255, 0.72);
+                    box-shadow: 0 0 22px rgba(77, 210, 255, 0.68);
+                    animation: mainMenuScanUp 0.5s ease-in;
+                }
+
+                &.play-transition-exit {
+                    pointer-events: none;
+
+                    .main-menu-title {
+                        animation: mainMenuTitleExit 0.36s ease-out forwards;
+                    }
+
+                    .main-menu-panel {
+                        animation: mainMenuPanelExit 0.36s ease-out forwards;
+                    }
+                }
+            }
+
+            &.play-transition-enter {
+                .role-panel {
+                    animation: rolePickerEnter 0.34s ease-out;
                 }
             }
 
@@ -226,6 +269,23 @@ HudPanel {
                 &.pilot:hover {
                     background-color: rgba(9, 99, 150, 0.96);
                     border-color: rgba(105, 217, 255, 0.88);
+                }
+
+                &.back {
+                    width: 100%;
+                    min-height: 48px;
+                    background-color: rgba(255, 255, 255, 0.08);
+                    border-color: rgba(255, 255, 255, 0.2);
+                    box-shadow: none;
+
+                    .label {
+                        font-size: 16px;
+                    }
+
+                    &:hover {
+                        background-color: rgba(255, 255, 255, 0.14);
+                        border-color: rgba(255, 255, 255, 0.36);
+                    }
                 }
             }
         }
@@ -1252,6 +1312,26 @@ HudPanel {
             }
         }
     }
+}
+
+@keyframes mainMenuPanelExit {
+    0%   { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes mainMenuTitleExit {
+    0%   { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes rolePickerEnter {
+    0%   { transform: translatey(18px); opacity: 0; }
+    100% { transform: translatey(0); opacity: 1; }
+}
+
+@keyframes mainMenuScanUp {
+    0%   { bottom: 0%; opacity: 1; }
+    100% { bottom: 104%; opacity: 0; }
 }
 
 @keyframes low-hp-pulse {

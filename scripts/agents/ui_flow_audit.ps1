@@ -106,11 +106,199 @@ function Test-CallsStateHasChangedFromTick {
     return $Text -match '(?s)\boverride\s+void\s+Tick\s*\(\s*\).*?\bStateHasChanged\s*\('
 }
 
+function Test-HudRolePickerStagedTeamAndLoadouts {
+    param(
+        [string]$Text,
+        [string]$Relative,
+        [System.Collections.Generic.List[object]]$Issues
+    )
+
+    if ($Relative -ne "Code/UI/HudPanel.razor") {
+        return
+    }
+
+    if ($Text -notmatch 'RolePickerTitle') {
+        return
+    }
+
+    if ($Text -match 'class="team-option"' -or $Text -match 'class="choices nested"') {
+        Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Team picker loadout options are nested vertically under individual team cards." "Keep team choice and loadout choice as separate picker stages."
+    }
+
+    $titlePattern = '(?s)<div\s+class="title">@RolePickerTitle</div>.*?string\s+RolePickerTitle\s*=>\s*SelectedLoadoutTeam\s+switch.*?PlayerRole\.Pilot\s*=>\s*"Drone Pilot Loadout".*?PlayerRole\.Soldier\s*=>\s*"Soldiers Loadout".*?_\s*=>\s*"Select team"'
+    if ($Text -notmatch $titlePattern) {
+        Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Role picker title must match the active picker stage." "Render Select team for the team stage, Drone Pilot Loadout for the pilot loadout stage, and Soldiers Loadout for the soldier loadout stage."
+    }
+
+    $teamPattern = '(?s)@if\s*\(\s*SelectedLoadoutTeam\s*==\s*PlayerRole\.Spectator\s*\).*?<div\s+class="team-choices">.*?SelectLoadoutTeam\s*\(\s*PlayerRole\.Pilot\s*\).*?DRONE PILOTS.*?SelectLoadoutTeam\s*\(\s*PlayerRole\.Soldier\s*\).*?SOLDIERS.*?onclick=@BackToMainMenu.*?GO BACK'
+    if ($Text -notmatch $teamPattern) {
+        Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Role picker must show a standalone team selection stage with its own Back button." "Render Drone Pilots/Soldiers choices only while SelectedLoadoutTeam is Spectator, followed by a Back action to the main menu."
+    }
+
+    $pilotPattern = '(?s)@if\s*\(\s*SelectedLoadoutTeam\s*==\s*PlayerRole\.Pilot\s*\).*?<div\s+class="loadout-section">.*?<div\s+class="choices">.*?GPS DRONE.*?FPV DRONE.*?FIBER FPV.*?onclick=@ClearLoadoutTeam.*?GO BACK'
+    if ($Text -notmatch $pilotPattern) {
+        Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Drone Pilot loadout options must render as the second-stage Pilot picker." "Render GPS, FPV, and Fiber FPV only after the Pilot team is selected, followed by a Back action to team selection."
+    }
+
+    $soldierPattern = '(?s)@if\s*\(\s*SelectedLoadoutTeam\s*==\s*PlayerRole\.Soldier\s*\).*?<div\s+class="loadout-section">.*?<div\s+class="choices">.*?ASSAULT.*?COUNTER-UAV.*?HEAVY.*?onclick=@ClearLoadoutTeam.*?GO BACK'
+    if ($Text -notmatch $soldierPattern) {
+        Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Soldier class options must render as the second-stage Soldier picker." "Render Assault, Counter-UAV, and Heavy only after the Soldier team is selected, followed by a Back action to team selection."
+    }
+
+    $backCount = [regex]::Matches($Text, 'GO BACK').Count
+    if ($backCount -lt 3) {
+        Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Role picker needs Back buttons on team, pilot loadout, and soldier class stages." "Add one Back action to the main menu stage and one Back action for each selected-team loadout stage."
+    }
+}
+
+function Test-HudMainMenuTransitionContract {
+    param(
+        [string]$Text,
+        [string]$Relative,
+        [System.Collections.Generic.List[object]]$Issues
+    )
+
+    if ($Relative -ne "Code/UI/HudPanel.razor") {
+        return
+    }
+
+    $checks = @(
+        @{
+            Pattern = 'ShowMainMenuShell'
+            Message = "Main menu should remain rendered while the Play transition exits."
+            Recommendation = "Use a separate shell visibility property so the exit animation can finish before the role picker owns the screen."
+        },
+        @{
+            Pattern = 'PlayTransitionActive'
+            Message = "Main menu Play transition state is missing."
+            Recommendation = "Track local transition state and include it in BuildHash() instead of forcing StateHasChanged() from Tick()."
+        },
+        @{
+            Pattern = 'onclick=@StartMainMenuPlayTransition'
+            Message = "Play should start the animated main-menu transition."
+            Recommendation = "Route the Play button through StartMainMenuPlayTransition instead of immediately hiding the main menu."
+        },
+        @{
+            Pattern = 'main-menu-scanline'
+            Message = "Play transition should render the upward drone scan overlay."
+            Recommendation = "Render a scanline element only with the main menu Play transition shell."
+        },
+        @{
+            Pattern = 'class="main-menu-title-text">ABOVE / BELOW</span>'
+            Message = "Main menu title should be a centered child element."
+            Recommendation = "Wrap the title text in a child span so the full-screen flex container can center it reliably in S&Box UI."
+        },
+        @{
+            Pattern = 'MainMenuTransitionHashTick'
+            Message = "BuildHash() should include a quantized main-menu transition tick."
+            Recommendation = "Hash a short transition tick so Razor refreshes when the exit animation should be removed."
+        },
+        @{
+            Pattern = 'bool\s+ShowRolePicker\s*=>\s*NeedsRoleChoice\s*&&\s*!MainMenuOpen\s*&&\s*!PlayTransitionActive;'
+            Message = "Role picker should not render over the exiting main menu during the Play scan."
+            Recommendation = "Keep the role picker unmounted until the Play transition completes so the old and new menu layouts cannot overlap or appear to shift."
+        }
+    )
+
+    foreach ($check in $checks) {
+        if ($Text -notmatch $check.Pattern) {
+            Add-AgentIssue $Issues "Error" "UI Flow" $Relative $check.Message $check.Recommendation
+        }
+    }
+}
+
+function Test-HudMainMenuStylesheetContract {
+    param(
+        [string]$Root,
+        [System.Collections.Generic.List[object]]$Issues
+    )
+
+    $relativePaths = @(
+        "Code/UI/HudPanel.razor.scss",
+        "Code/UI/HudPanel.cs.scss",
+        "Assets/ui/hudpanel.cs.scss"
+    )
+
+    $texts = @{}
+    foreach ($relative in $relativePaths) {
+        $path = Join-Path $Root $relative
+        if (-not (Test-Path -LiteralPath $path)) {
+            Add-AgentIssue $Issues "Error" "UI Flow" $relative "HUD stylesheet alias is missing." "Keep the Razor stylesheet and S&Box alias stylesheets in sync."
+            continue
+        }
+
+        $texts[$relative] = Get-Content -LiteralPath $path -Raw
+    }
+
+    if (-not $texts.ContainsKey("Code/UI/HudPanel.razor.scss")) {
+        return
+    }
+
+    $canonical = $texts["Code/UI/HudPanel.razor.scss"]
+    foreach ($relative in @("Code/UI/HudPanel.cs.scss", "Assets/ui/hudpanel.cs.scss")) {
+        if ($texts.ContainsKey($relative) -and $texts[$relative] -ne $canonical) {
+            Add-AgentIssue $Issues "Error" "UI Flow" $relative "HUD stylesheet alias is out of sync with HudPanel.razor.scss." "Copy the accepted HUD style changes to all S&Box stylesheet aliases."
+        }
+    }
+
+    $styleChecks = @(
+        @{
+            Pattern = '\.main-menu-title\s*\{[^}]*top:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*left:\s*0;[^}]*justify-content:\s*center;[^}]*align-items:\s*center;'
+            Message = "Main menu title must be flex-centered across the full viewport."
+            Recommendation = "Use a full-screen absolute title overlay with centered flex alignment instead of percentage translate centering."
+        },
+        @{
+            Pattern = '\.main-menu-panel\s*\{[^}]*position:\s*absolute;[^}]*top:\s*68%;'
+            Message = "Main menu buttons must sit in the lower third."
+            Recommendation = "Position the main menu panel absolutely near top: 68% with horizontal centering."
+        },
+        @{
+            Pattern = '\.main-menu-scanline'
+            Message = "Main menu upward scanline style is missing."
+            Recommendation = "Style the Play-only scanline overlay in the main menu startup block."
+        },
+        @{
+            Pattern = 'animation:\s*mainMenuScanUp\s+0\.5s\s+ease-in'
+            Message = "Upward drone scan must last 0.5 seconds and accelerate."
+            Recommendation = "Use a 0.5s accelerating timing curve for mainMenuScanUp."
+        },
+        @{
+            Pattern = '(?s)@keyframes\s+mainMenuScanUp\s*\{\s*0%\s*\{\s*bottom:\s*0%;\s*opacity:\s*1;\s*\}\s*100%\s*\{\s*bottom:\s*104%;\s*opacity:\s*0;\s*\}\s*\}'
+            Message = "Upward drone scan keyframes should be one smooth eased arc."
+            Recommendation = "Use only start and end keyframes with ease-in timing; do not add intermediate scan positions that create stepped speed bands."
+        },
+        @{
+            Pattern = '(?s)&\.play-transition-exit\s*\{.*?\.main-menu-title\s*\{[^}]*animation:\s*mainMenuTitleExit\s+0\.36s\s+ease-out\s+forwards;.*?\.main-menu-panel\s*\{[^}]*animation:\s*mainMenuPanelExit\s+0\.36s\s+ease-out\s+forwards;'
+            Message = "Main menu exit transition should hold title and buttons hidden after the fade."
+            Recommendation = "Use forwards fill-mode on the main-menu title and panel exit animations so the menu does not reappear during the scan."
+        },
+        @{
+            Pattern = '(?s)@keyframes\s+mainMenuPanelExit\s*\{\s*0%\s*\{\s*opacity:\s*1;\s*\}\s*100%\s*\{\s*opacity:\s*0;\s*\}\s*\}'
+            Message = "Main menu panel exit should not animate transform during the Play scan."
+            Recommendation = "Fade the already-centered panel out without transform keyframes; S&Box can compose animated transforms with the centering transform and create a one-frame lateral jump."
+        },
+        @{
+            Pattern = '\.main-menu-title-text\s*\{[^}]*font-size:\s*72px;[^}]*font-weight:\s*900;'
+            Message = "Main menu title text style is missing."
+            Recommendation = "Style the title text child directly so S&Box centers the child panel and applies the title typography to it."
+        }
+    )
+
+    foreach ($check in $styleChecks) {
+        if ($canonical -notmatch $check.Pattern) {
+            Add-AgentIssue $Issues "Error" "UI Flow" "Code/UI/HudPanel.razor.scss" $check.Message $check.Recommendation
+        }
+    }
+}
+
 $razorFiles = @(Get-ChildItem -LiteralPath $uiRoot -Recurse -File -Filter "*.razor" -ErrorAction SilentlyContinue)
 foreach ($file in $razorFiles) {
     $relative = ConvertTo-AgentRelativePath -Path $file.FullName -Root $Root
     $lines = @(Get-Content -LiteralPath $file.FullName)
     $text = Get-Content -LiteralPath $file.FullName -Raw
+
+    Test-HudRolePickerStagedTeamAndLoadouts -Text $text -Relative $relative -Issues $issues
+    Test-HudMainMenuTransitionContract -Text $text -Relative $relative -Issues $issues
 
     if ((Test-HasDynamicRazorOutput -Text $text) -and -not (Test-HasBuildHash -Text $text)) {
         Add-AgentIssue $issues "Warning" "UI Flow" $relative "Dynamic Razor output has no BuildHash override." "Override BuildHash() and include every value that can change rendered markup, especially [Sync] values shown in the HUD."
@@ -162,6 +350,8 @@ foreach ($file in $razorFiles) {
         $tagText = ""
     }
 }
+
+Test-HudMainMenuStylesheetContract -Root $Root -Issues $issues
 
 if ($razorFiles.Count -eq 0) {
     Add-AgentIssue $issues "Info" "UI Flow" "Code/UI" "No Razor files found."

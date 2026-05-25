@@ -1132,6 +1132,7 @@ def main() -> None:
         MODELS / "terrain_pine.vmdl",
         "models/terrain_pine.fbx",
         PINE_MATERIAL_REMAPS,
+        use_global_default=False,
     )
     write_vmdl(
         MODELS / "terrain_rock.vmdl",

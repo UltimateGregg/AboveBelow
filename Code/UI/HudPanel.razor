@@ -23,15 +23,17 @@
 
 <root>
     <div class="hud @VignetteClass">
-        @if ( ShowMainMenu )
+        @if ( ShowMainMenuShell )
         {
-            <div class="role-select main-menu-startup">
-                <div class="main-menu-title">ABOVE / BELOW</div>
+            <div class="@MainMenuShellClass">
+                <div class="main-menu-title">
+                    <span class="main-menu-title-text">ABOVE / BELOW</span>
+                </div>
                 <div class="role-panel main-menu-panel">
                     <div class="loadout-section main-menu-actions">
                         <div class="section-title">Main Menu</div>
                         <div class="choices main-menu-choices">
-                            <div class="choice pilot main-menu-play" onclick=@StartFromMainMenu>
+                            <div class="choice pilot main-menu-play" onclick=@StartMainMenuPlayTransition>
                                 <span class="label">PLAY</span>
                                 <span class="desc">Choose team and loadout</span>
                             </div>
@@ -48,30 +50,65 @@
                         </div>
                     </div>
                 </div>
+                @if ( PlayTransitionActive )
+                {
+                    <div class="main-menu-scanline"></div>
+                }
             </div>
         }
 
         @if ( ShowRolePicker )
         {
-            <div class="role-select">
+            <div class="@RolePickerShellClass">
                 <div class="role-panel">
-                    <div class="title">Choose Team</div>
-                    <div class="subtitle">Drone Pilots or Soldiers.</div>
-                    <div class="team-choices">
-                        <div class="@TeamChoiceClass(PlayerRole.Pilot)" onclick=@(() => SelectLoadoutTeam(PlayerRole.Pilot))>
-                            <span class="label">DRONE PILOTS</span>
-                            <span class="desc">Fly drones as drone pilots</span>
+                    <div class="title">@RolePickerTitle</div>
+
+                    @if ( SelectedLoadoutTeam == PlayerRole.Spectator )
+                    {
+                        <div class="team-choices">
+                            <div class="@TeamChoiceClass(PlayerRole.Pilot)" onclick=@(() => SelectLoadoutTeam(PlayerRole.Pilot))>
+                                <span class="label">DRONE PILOTS</span>
+                                <span class="desc">Fly drones as drone pilots</span>
+                            </div>
+                            <div class="@TeamChoiceClass(PlayerRole.Soldier)" onclick=@(() => SelectLoadoutTeam(PlayerRole.Soldier))>
+                                <span class="label">SOLDIERS</span>
+                                <span class="desc">Fight as soldiers</span>
+                            </div>
                         </div>
-                        <div class="@TeamChoiceClass(PlayerRole.Soldier)" onclick=@(() => SelectLoadoutTeam(PlayerRole.Soldier))>
-                            <span class="label">SOLDIERS</span>
-                            <span class="desc">Fight as soldiers</span>
+
+                        <div class="choice back" onclick=@BackToMainMenu>
+                            <span class="label">GO BACK</span>
+                            <span class="desc">Return to main menu</span>
                         </div>
-                    </div>
+                    }
+
+                    @if ( SelectedLoadoutTeam == PlayerRole.Pilot )
+                    {
+                        <div class="loadout-section">
+                            <div class="choices">
+                                <div class="choice pilot" onclick=@(() => Setup?.SelectLocalDrone(DroneType.Gps))>
+                                    <span class="label">GPS DRONE</span>
+                                    <span class="desc">Long range vs heavy</span>
+                                </div>
+                                <div class="choice pilot" onclick=@(() => Setup?.SelectLocalDrone(DroneType.Fpv))>
+                                    <span class="label">FPV DRONE</span>
+                                    <span class="desc">Fast dive vs assault</span>
+                                </div>
+                                <div class="choice pilot" onclick=@(() => Setup?.SelectLocalDrone(DroneType.FiberOpticFpv))>
+                                    <span class="label">FIBER FPV</span>
+                                    <span class="desc">RF immune vs jammer</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="choice back" onclick=@ClearLoadoutTeam>
+                            <span class="label">GO BACK</span>
+                            <span class="desc">Choose a different team</span>
+                        </div>
+                    }
 
                     @if ( SelectedLoadoutTeam == PlayerRole.Soldier )
                     {
                         <div class="loadout-section">
-                            <div class="section-title">Soldier Class</div>
                             <div class="choices">
                                 <div class="choice soldier" onclick=@(() => Setup?.SelectLocalSoldier(SoldierClass.Assault))>
                                     <span class="label">ASSAULT</span>
@@ -87,25 +124,9 @@
                                 </div>
                             </div>
                         </div>
-                    }
-                    else if ( SelectedLoadoutTeam == PlayerRole.Pilot )
-                    {
-                        <div class="loadout-section">
-                            <div class="section-title">Drone Pilot Loadout</div>
-                            <div class="choices">
-                                <div class="choice pilot" onclick=@(() => Setup?.SelectLocalDrone(DroneType.Gps))>
-                                    <span class="label">GPS DRONE</span>
-                                    <span class="desc">Long range vs heavy</span>
-                                </div>
-                                <div class="choice pilot" onclick=@(() => Setup?.SelectLocalDrone(DroneType.Fpv))>
-                                    <span class="label">FPV DRONE</span>
-                                    <span class="desc">Fast dive vs assault</span>
-                                </div>
-                                <div class="choice pilot" onclick=@(() => Setup?.SelectLocalDrone(DroneType.FiberOpticFpv))>
-                                    <span class="label">FIBER FPV</span>
-                                    <span class="desc">RF immune vs jammer</span>
-                                </div>
-                            </div>
+                        <div class="choice back" onclick=@ClearLoadoutTeam>
+                            <span class="label">GO BACK</span>
+                            <span class="desc">Choose a different team</span>
                         </div>
                     }
                 </div>
@@ -385,16 +406,40 @@
     GameStats Stats => Scene.GetAllComponents<GameStats>().FirstOrDefault();
     KillFeedTracker KillFeed => Scene.GetAllComponents<KillFeedTracker>().FirstOrDefault();
 
+    const float MainMenuPlayTransitionSeconds = 0.5f;
+    const float RolePickerEnterTransitionSeconds = 0.34f;
+    const float MainMenuTransitionInactiveTime = -1000f;
+
     PlayerRole SelectedLoadoutTeam { get; set; } = PlayerRole.Spectator;
     int SelectedLoadoutSlot { get; set; } = 1;
     int ObservedSelectionGeneration { get; set; } = -1;
     bool MainMenuOpen { get; set; } = true;
+    float _mainMenuPlayTransitionStartedAt = MainMenuTransitionInactiveTime;
 
     bool OptionsMenuOpen => LocalOptionsState.IsOpen;
     bool NeedsRoleChoice => Setup?.NeedsLocalRoleChoice() ?? false;
     bool ShowMainMenu => MainMenuOpen && NeedsRoleChoice;
-    bool ShowRolePicker => !ShowMainMenu && NeedsRoleChoice;
-    bool GameplayUiBlocked => ShowMainMenu || ShowRolePicker;
+    float MainMenuPlayTransitionElapsed => Time.Now - _mainMenuPlayTransitionStartedAt;
+    bool PlayTransitionActive => NeedsRoleChoice
+        && _mainMenuPlayTransitionStartedAt > 0f
+        && MainMenuPlayTransitionElapsed < MainMenuPlayTransitionSeconds;
+    bool RolePickerTransitionActive => NeedsRoleChoice
+        && !MainMenuOpen
+        && _mainMenuPlayTransitionStartedAt > 0f
+        && MainMenuPlayTransitionElapsed >= MainMenuPlayTransitionSeconds
+        && MainMenuPlayTransitionElapsed < MainMenuPlayTransitionSeconds + RolePickerEnterTransitionSeconds;
+    bool ShowMainMenuShell => NeedsRoleChoice && (MainMenuOpen || PlayTransitionActive);
+    bool ShowRolePicker => NeedsRoleChoice && !MainMenuOpen && !PlayTransitionActive;
+    bool GameplayUiBlocked => ShowMainMenuShell || ShowRolePicker;
+    string MainMenuShellClass => PlayTransitionActive
+        ? "role-select main-menu-startup play-transition-exit"
+        : "role-select main-menu-startup";
+    string RolePickerShellClass => RolePickerTransitionActive
+        ? "role-select play-transition-enter"
+        : "role-select";
+    int MainMenuTransitionHashTick => PlayTransitionActive || RolePickerTransitionActive
+        ? (int)(MainMenuPlayTransitionElapsed * 30f)
+        : -1;
     bool ShowLoadoutHud => !GameplayUiBlocked && !LocalDroneViewActive && LocalRole is PlayerRole.Pilot or PlayerRole.Soldier;
     bool ShowReticle => !GameplayUiBlocked && LocalRole is PlayerRole.Pilot or PlayerRole.Soldier;
     bool ShowDroneLcdOverlay => !GameplayUiBlocked
@@ -569,12 +614,14 @@
         LocalOptionsState.ApplyTo( Components.Get<ScreenPanel>() );
         if ( MainMenuOpen && !NeedsRoleChoice )
             MainMenuOpen = false;
+        if ( !NeedsRoleChoice )
+            _mainMenuPlayTransitionStartedAt = MainMenuTransitionInactiveTime;
 
-        Mouse.Visibility = OptionsMenuOpen || ShowMainMenu || ShowRolePicker
+        Mouse.Visibility = OptionsMenuOpen || GameplayUiBlocked
             ? MouseVisibility.Visible
             : MouseVisibility.Auto;
 
-        if ( OptionsMenuOpen || ShowMainMenu )
+        if ( OptionsMenuOpen || GameplayUiBlocked )
             LocalOptionsState.ClearGameplayActions();
 
         var soldierLoadout = LocalSoldierComponent<SoldierLoadout>();
@@ -589,7 +636,7 @@
                 SelectedLoadoutSlot = 2;
         }
 
-        ShowScoreboard = !OptionsMenuOpen && !ShowMainMenu && Input.Down( "Score" );
+        ShowScoreboard = !OptionsMenuOpen && !GameplayUiBlocked && Input.Down( "Score" );
 
         // Subscribe to any new Health components — for hitmarker (we attacked
         // them) and damage-direction (we got hit).
@@ -664,6 +711,24 @@
         MainMenuOpen = false;
         SelectedLoadoutTeam = PlayerRole.Spectator;
         LocalOptionsState.SetOpen( false );
+        _mainMenuPlayTransitionStartedAt = MainMenuTransitionInactiveTime;
+    }
+
+    void StartMainMenuPlayTransition()
+    {
+        if ( PlayTransitionActive )
+            return;
+
+        if ( !NeedsRoleChoice )
+        {
+            StartFromMainMenu();
+            return;
+        }
+
+        MainMenuOpen = false;
+        SelectedLoadoutTeam = PlayerRole.Spectator;
+        LocalOptionsState.SetOpen( false );
+        _mainMenuPlayTransitionStartedAt = Time.Now;
     }
 
     void OpenMainMenuOptions()
@@ -835,6 +900,26 @@
 
         SelectedLoadoutTeam = team;
     }
+
+    void BackToMainMenu()
+    {
+        MainMenuOpen = true;
+        _mainMenuPlayTransitionStartedAt = MainMenuTransitionInactiveTime;
+        ClearLoadoutTeam();
+    }
+
+    void ClearLoadoutTeam()
+    {
+        SelectedLoadoutTeam = PlayerRole.Spectator;
+        SelectedLoadoutSlot = 1;
+    }
+
+    string RolePickerTitle => SelectedLoadoutTeam switch
+    {
+        PlayerRole.Pilot => "Drone Pilot Loadout",
+        PlayerRole.Soldier => "Soldiers Loadout",
+        _ => "Select team",
+    };
 
     string TeamChoiceClass( PlayerRole team )
     {
@@ -1370,7 +1455,16 @@
                 ShowScoreboard,
                 HashCode.Combine( VignetteClass, ShowSprintMeter, SprintMeterPercent ),
                 Round?.LastWinnerInt ?? -1,
-                HashCode.Combine( RoundEndVisible, (int)(SunGlareOpacity * 100f), OptionsMenuOpen, ShowMainMenu )
+                HashCode.Combine(
+                    RoundEndVisible,
+                    (int)(SunGlareOpacity * 100f),
+                    OptionsMenuOpen,
+                    ShowMainMenu,
+                    ShowMainMenuShell,
+                    PlayTransitionActive,
+                    RolePickerTransitionActive,
+                    MainMenuTransitionHashTick
+                )
             ),
             HashCode.Combine(
                 ShowLoadoutHud,

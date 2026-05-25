@@ -93,6 +93,59 @@
       }
     },
     {
+      "id": "sbox-editor-first-workflow-check",
+      "name": "S&Box Editor-First Workflow Check",
+      "description": "Runs editor-first workflow routing checks when MCP docs, agent routing, hooks, or suite wiring change",
+      "enabled": true,
+      "trigger": {
+        "type": "file_pattern_change",
+        "patterns": [
+          "AGENTS.md",
+          ".mcp.json",
+          "docs/editor_control_plane.md",
+          "docs/agent_toolkit.md",
+          "docs/known_sbox_patterns.md",
+          ".agents/sbox/README.md",
+          ".agents/sbox/editor-first-workflow-agent.md",
+          "scripts/agents/editor_first_workflow_audit.ps1",
+          "scripts/agents/run_agent_checks.ps1",
+          "scripts/agents/post_task_training_agent.ps1",
+          "scripts/agents/test_full_automation_layer.ps1"
+        ],
+        "events": ["modified", "saved"],
+        "debounce_ms": 1500
+      },
+      "action": {
+        "type": "script",
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          ".\\scripts\\agents\\run_agent_checks.ps1",
+          "-Root",
+          "${WORKSPACE_ROOT}",
+          "-Suite",
+          "editor-first",
+          "-ShowInfo"
+        ],
+        "cwd": "${WORKSPACE_ROOT}",
+        "timeout_seconds": 90,
+        "capture_output": true,
+        "on_success": {
+          "notify": false,
+          "message": "S&Box editor-first workflow checks passed",
+          "level": "info"
+        },
+        "on_failure": {
+          "notify": true,
+          "message": "S&Box editor-first workflow check failed",
+          "level": "error"
+        }
+      }
+    },
+    {
       "id": "sbox-engine-reference-check",
       "name": "S&Box Engine/API Reference Check",
       "description": "Runs stale engine-guidance and local API-reference checks when docs, agent routing, API dump, or reference audits change",

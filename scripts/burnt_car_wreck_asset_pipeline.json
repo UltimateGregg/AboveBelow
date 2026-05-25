@@ -1,0 +1,57 @@
+{
+  "source_blend": "environment_model.blend/burnt_car_wreck.blend",
+  "root_object": "BurntCarRoot",
+  "target_fbx": "Assets/models/burnt_car_wreck.fbx",
+  "target_vmdl": "Assets/models/burnt_car_wreck.vmdl",
+  "model_resource_path": "models/burnt_car_wreck.vmdl",
+  "prefab": "Assets/prefabs/environment/burnt_car_wreck.prefab",
+  "visual_object": "Visual",
+  "visual_scale": "1,1,1",
+  "visual_tint": "1,1,1,1",
+  "clear_material_override": true,
+  "clear_visual_children": false,
+  "category": "environment",
+  "verify_fbx": true,
+  "required_object": [
+    "BurntCarWreckMesh"
+  ],
+  "object_type": [
+    "EMPTY",
+    "MESH"
+  ],
+  "combine_meshes": true,
+  "combined_object_name": "BurntCarWreckMesh",
+  "material_remap": {
+    "BurntCar_CharredPaint": "materials/environment/burnt_car_charred_paint.vmat",
+    "BurntCar_BlisteredMetal": "materials/environment/burnt_car_blistered_metal.vmat",
+    "BurntCar_Rust": "materials/environment/burnt_car_rust.vmat",
+    "BurntCar_SootInterior": "materials/environment/burnt_car_soot_interior.vmat",
+    "BurntCar_Rubber": "materials/environment/burnt_car_rubber.vmat",
+    "BurntCar_Glass": "materials/environment/burnt_car_broken_glass.vmat",
+    "BurntCar_Ash": "materials/environment/burnt_car_ash.vmat"
+  },
+  "vmdl_material_source_suffix": "",
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
+  "allow_default_color_texture": false,
+  "global_scale": 1.0,
+  "axis_forward": "-Y",
+  "axis_up": "Z",
+  "physics_shapes": [
+    {
+      "type": "box",
+      "surface_prop": "metal",
+      "collision_tags": "solid",
+      "origin": [
+        0,
+        0,
+        34
+      ],
+      "dimensions": [
+        252,
+        112,
+        68
+      ]
+    }
+  ]
+}

@@ -243,6 +243,33 @@ public static class ComponentHandler
 		if ( targetType == typeof( int ) )
 			return int.Parse( rawValue );
 
+		if ( targetType.IsEnum )
+			return Enum.Parse( targetType, rawValue, true );
+
+		if ( typeof( GameResource ).IsAssignableFrom( targetType ) )
+		{
+			var normalized = rawValue.Replace( "\\", "/" ).TrimStart( '/' );
+			if ( normalized.StartsWith( "Assets/", StringComparison.OrdinalIgnoreCase ) )
+				normalized = normalized["Assets/".Length..];
+
+			var getMethod = typeof( ResourceLibrary )
+				.GetMethods( BindingFlags.Public | BindingFlags.Static )
+				.FirstOrDefault( m =>
+					m.Name == nameof( ResourceLibrary.Get ) &&
+					m.IsGenericMethodDefinition &&
+					m.GetParameters() is [{ ParameterType: var parameterType }] &&
+					parameterType == typeof( string ) );
+
+			if ( getMethod is not null )
+			{
+				var resource = getMethod.MakeGenericMethod( targetType ).Invoke( null, new object[] { normalized } );
+				if ( resource is not null )
+					return resource;
+			}
+
+			throw new InvalidOperationException( $"Could not load {targetType.Name}: {rawValue}" );
+		}
+
 		return Convert.ChangeType( rawValue, targetType );
 	}
 

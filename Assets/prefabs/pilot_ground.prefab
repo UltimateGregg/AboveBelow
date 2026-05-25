@@ -87,6 +87,7 @@
             "Flags": 0,
             "Name": "Weapon",
             "Position": "20,15,55",
+            "Scale": "0.5,0.5,0.5",
             "Enabled": true,
             "Components": [
               {

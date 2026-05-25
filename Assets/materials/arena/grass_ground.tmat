@@ -1,0 +1,18 @@
+{
+  "AlbedoImage": "materials/arena/grass_ground_color.png",
+  "RoughnessImage": "materials/arena/grass_ground_rough.png",
+  "NormalImage": "materials/arena/grass_ground_normal.png",
+  "HeightImage": "materials/arena/grass_ground_height.png",
+  "AOImage": "materials/arena/grass_ground_ao.png",
+  "UVScale": 12,
+  "Metalness": 0,
+  "NormalStrength": 1,
+  "HeightBlendStrength": 0,
+  "DisplacementScale": 1,
+  "NoTiling": false,
+  "Flags": "None",
+  "Surface": null,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

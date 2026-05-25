@@ -1,6 +1,6 @@
 {
   "source_blend": "weapons_model.blend/smg_mp7.blend",
-  "root_object": "SMG_MP7",
+  "root_object": "SMG_MP7_Root",
   "target_fbx": "Assets/models/weapons/smg_mp7.fbx",
   "target_vmdl": "Assets/models/weapons/smg_mp7.vmdl",
   "model_resource_path": "models/weapons/smg_mp7.vmdl",

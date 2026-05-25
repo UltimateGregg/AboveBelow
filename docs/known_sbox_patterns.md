@@ -238,6 +238,21 @@ if (!_cachedRules.IsValid())
 
 ## Physics & Collision Quirks
 
+### Native Terrain Floor
+
+**Pattern:** Use `Sandbox.Terrain` for arena floor surfaces that need heightmap/sculpt editing. A scaled dev plane plus `BoxCollider` cannot preserve terrain height edits or make collision follow sculpted ground.
+
+**Workflow:**
+- Keep `ArenaFloor` as the stable scene anchor in `Assets/scenes/main.scene`.
+- The object should have exactly one `Sandbox.Terrain` component, no dev-plane `ModelRenderer`, and no broad floor `BoxCollider`.
+- Link `Terrain.Storage` to `terrain/arena_floor.terrain`; initial values are `Resolution = 512`, `TerrainSize = 21600`, and `TerrainHeight = 512`.
+- `Sandbox.Terrain` is corner-origin, unlike the old centered dev plane. For the 21600-unit arena floor, place `ArenaFloor` at `-10800,-10800,-8` so the terrain stays centered on the arena.
+- Use `.tmat` layers such as `materials/arena/grass_ground.tmat` and `materials/arena/terrain_dirt_patch.tmat` for terrain paint materials. `terrain_dirt_patch.tmat` is intentionally grass-textured for this terrain pass so elevated areas stay grassy instead of reading as dirt. The generated control map keeps road and building samples flat/base-painted while adding grass variation overlay to open terrain.
+- In `.tmat` files, texture slots must be omitted or point at real project textures. Do not leave `AlbedoImage`, `RoughnessImage`, `NormalImage`, `AOImage`, or `HeightImage` as empty strings; S&Box passes blank slots to the texture compiler and can spam resource-compile failures.
+- If a hand-authored `.terrain` JSON will not load, repair it through the editor command `dvp_link_arena_terrain`; it uses `AssetSystem` and `TerrainStorage.SaveToDisk` so the resource matches the engine serializer.
+- To regenerate the current procedural rolling heightmap and splat layer, run the editor command `dvp_generate_arena_terrain_variance`; it keeps protected masks around `RoadCorridor_Main` and the six house footprints.
+- Run `scripts\agents\run_agent_checks.ps1 -Suite terrain -ShowInfo` after terrain, floor, or heightmap edits.
+
 ### Dev Box Collider Scale
 
 **Issue:** The editor may show a selected blockout object with a light green collision box much larger than the visible box.
@@ -483,6 +498,18 @@ public void TakeDamage(DamageInfo info)
 - If native `mcp__sbox__...` tools are not exposed in a session, use the HTTP JSON-RPC fallback against `http://localhost:29015/mcp`.
 - Use ClaudeBridge only as a fallback after checking its handler surface for the exact operation needed.
 
+### Editor-First Command Routing
+
+**Pattern:** When a task can be performed in the S&Box editor, the agent should start from live editor state and only fall back to static file edits after checking the native MCP surface.
+
+**Workflow:**
+- Route through `.agents/sbox/editor-first-workflow-agent.md` for scene, prefab, component, asset, sound, screenshot, playtest, terrain, or editor-tooling work.
+- Start with `control_plane_status`, then `tools/list` or `control_plane_capabilities` so the agent uses tools that are actually exposed in the running editor.
+- Inspect with `editor_scene_info`, `scene_get_hierarchy`, `scene_find_objects`, `scene_list_objects`, `component_list`, and `component_get` before mutation.
+- Prefer editor mutations such as `scene_create_object`, `component_set`, `asset_*`, and `sound_*`; save live changes with `editor_save_scene`.
+- Verify live state and saved files after editor edits, and use `editor_take_screenshot`, `editor_play`, and `editor_console_output` when visual or runtime behavior matters.
+- Run `scripts\agents\run_agent_checks.ps1 -Suite editor-first -ShowInfo` after workflow, agent, hook, or control-plane routing changes.
+
 ### ModelRenderer Material Overrides
 
 **Pattern:** Renderer-level `MaterialOverride` paths are reliable for single-material blockout props and playtest spot checks. They are unsafe as a durable fix for multi-material foliage: overriding the renderer can collapse bark and foliage card slots to one material. Generated ModelDoc material remaps may compile down to `materials/default.vmat` if the model compiler does not match the source FBX material names exactly.
@@ -492,6 +519,18 @@ public void TakeDamage(DamageInfo info)
 - For multi-material foliage, fix the Blender material names, exported FBX slots, asset config, and `.vmdl` remaps instead of adding scene `MaterialOverride` or `Materials.indexed`.
 - For live editor scenes, set the override on the currently loaded object with the bridge and then save only after confirming no runtime transform drift is being persisted.
 - Check the live component with `component_get` and expect `MaterialOverride` to show as `Material:<name>` when the override is loaded.
+
+### Editor-Native Cover Props
+
+**Pattern:** Small tactical cover made from S&Box editor primitives should stay scene-native when the user asks for a fast map prop and explicitly avoids Blender.
+
+**Workflow:**
+- Query the active editor scene before file edits; unsaved user deletions can be present only in live editor state.
+- Preserve missing primitive children unless the user asks to restore them. Do not recreate deleted seam strips or detail pieces during a tightening or material pass.
+- Use local material/texture assets and `ModelRenderer.MaterialOverride` for single-material primitive groups that need to read as sandbags, crates, barricades, or tarp-covered shapes.
+- When using MCP `scene_create_object` under a parent, pass a world position. The saved scene stores the child as a local offset, so grouped scene assets need `parentWorld + intendedLocalOffset` during creation and a saved-JSON check afterward.
+- Validate repeated cover pieces with a focused row-spacing and bounds audit, then verify with a live editor save/screenshot.
+- Route future work through `.agents/sbox/editor-native-cover-agent.md` and run focused guards such as `scripts/agents/sandbag_cover_audit.ps1 -ShowInfo` or `scripts/agents/burnt_vehicle_block_audit.ps1 -ShowInfo` for current editor-native cover contracts.
 
 ### AAA Blender Asset Quality Gate
 
