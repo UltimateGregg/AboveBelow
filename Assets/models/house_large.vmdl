@@ -15,28 +15,48 @@
 						[
 
 							{
-								from = "Material_Brick.vmat"
-								to = "materials/arena/concrete_wall.vmat"
+								from = "M_HouseLarge_DirtMask.vmat"
+								to = "materials/environment/house_large_dirt_mask.vmat"
 							},
 
 							{
-								from = "Material_Concrete.vmat"
-								to = "materials/arena/concrete_wall.vmat"
+								from = "M_HouseLarge_Foundation.vmat"
+								to = "materials/environment/house_large_foundation.vmat"
 							},
 
 							{
-								from = "Material_Glass.vmat"
-								to = "materials/arena/asphalt_cover.vmat"
+								from = "M_HouseLarge_Glass.vmat"
+								to = "materials/environment/house_large_glass.vmat"
 							},
 
 							{
-								from = "Material_Metal.vmat"
-								to = "materials/arena/metal_pad.vmat"
+								from = "M_HouseLarge_InteriorWood.vmat"
+								to = "materials/environment/house_large_interior_wood.vmat"
 							},
 
 							{
-								from = "Material_Wood.vmat"
-								to = "materials/arena/asphalt_cover.vmat"
+								from = "M_HouseLarge_Metal.vmat"
+								to = "materials/environment/house_large_metal.vmat"
+							},
+
+							{
+								from = "M_HouseLarge_Roof.vmat"
+								to = "materials/environment/house_large_roof.vmat"
+							},
+
+							{
+								from = "M_HouseLarge_Siding.vmat"
+								to = "materials/environment/house_large_siding.vmat"
+							},
+
+							{
+								from = "M_HouseLarge_TacticalPatch.vmat"
+								to = "materials/environment/house_large_tactical_patch.vmat"
+							},
+
+							{
+								from = "M_HouseLarge_Trim.vmat"
+								to = "materials/environment/house_large_trim.vmat"
 							},
 						]
 						use_global_default = false
@@ -67,6 +87,7 @@
 					},
 				]
 			},
+
 		]
 		model_archetype = ""
 		primary_associated_entity = ""

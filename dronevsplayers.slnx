@@ -5,7 +5,7 @@
   <Project Path="Code/dronevsplayers.csproj" />
   <Project Path="Editor/dronevsplayers.editor.csproj" />
   <Folder Name="/Addons/">
-    <Project Path="D:/SteamLibrary/steamapps/common/sbox/addons/base/code/Base Library.csproj" />
+    <Project Path="../sbox-public/game/addons/base/code/Base Library.csproj" />
   </Folder>
   <Folder Name="/Libraries/">
     <Project Path="Libraries/jtc.mcp-server/Editor/mcp-server.editor.csproj" />
@@ -15,11 +15,11 @@
     <Project Path="Libraries/sboxskinsgg.claudebridge/UnitTests/claudebridge.unittest.csproj" />
   </Folder>
   <Folder Name="/Tools/">
-    <Project Path="D:/SteamLibrary/steamapps/common/sbox/addons/tools/Code/Base Editor Library.csproj" />
-    <Project Path="D:/SteamLibrary/steamapps/common/sbox/editor/ActionGraph/Code/actiongraph.csproj" />
-    <Project Path="D:/SteamLibrary/steamapps/common/sbox/editor/DooEditor/Code/dooeditor.csproj" />
-    <Project Path="D:/SteamLibrary/steamapps/common/sbox/editor/Hammer/Code/hammer.csproj" />
-    <Project Path="D:/SteamLibrary/steamapps/common/sbox/editor/MovieMaker/Code/moviemaker.csproj" />
-    <Project Path="D:/SteamLibrary/steamapps/common/sbox/editor/ShaderGraph/Code/shadergraph.csproj" />
+    <Project Path="../sbox-public/game/addons/tools/Code/Base Editor Library.csproj" />
+    <Project Path="../sbox-public/game/editor/ActionGraph/Code/actiongraph.csproj" />
+    <Project Path="../sbox-public/game/editor/DooEditor/Code/dooeditor.csproj" />
+    <Project Path="../sbox-public/game/editor/Hammer/Code/hammer.csproj" />
+    <Project Path="../sbox-public/game/editor/MovieMaker/Code/moviemaker.csproj" />
+    <Project Path="../sbox-public/game/editor/ShaderGraph/Code/shadergraph.csproj" />
   </Folder>
 </Solution>

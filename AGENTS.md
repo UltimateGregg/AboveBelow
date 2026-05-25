@@ -146,6 +146,8 @@ For assets that need custom settings (material remaps, scale overrides), create 
 
 **Asset naming rule:** the filename, config name, and editor-visible model name should match by default. For example, `environment_model.blend/terrain_assets.blend` uses `scripts/terrain_assets_asset_pipeline.json` and writes `Assets/models/terrain_assets.vmdl`. Do not point a newly named Blender file at an old model name such as `terrain_pine.vmdl` unless the user explicitly asks for a legacy alias.
 
+**AAA asset quality rule:** high-polish Blender asset work starts with `.agents/sbox/aaa-asset-quality-agent.md` and a generated asset brief from `scripts/agents/new_asset_brief.ps1`. The brief must make reference requirements, Production Quality Targets, material roles, sockets, scale/orientation, and visual review checks explicit before detailed modeling. Before handoff, run `scripts/agents/aaa_asset_quality_audit.ps1 -ShowInfo` plus the relevant asset-production checks and include Blender preview/contact-sheet/editor proof when the asset needs visual approval.
+
 **Terrain assets material rule:** `terrain_assets` is a strict multi-material foliage asset. Its config must keep raw FBX material source names with `"vmdl_material_source_suffix": ""`, `"vmdl_use_global_default": false`, and `"strict_vmdl_material_sources": true`. Do not fix this model with scene `MaterialOverride` or `Materials.indexed`; that can collapse bark and foliage cards to one material. After export, run `.\scripts\agents\fbx_material_slot_audit.ps1 -Config .\scripts\terrain_assets_asset_pipeline.json` or the `modeldoc` suite.
 
 **No manual script execution needed.** The asset pipeline runs automatically on every `.blend` save, for any asset.

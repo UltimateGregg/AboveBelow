@@ -37,6 +37,7 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 | Asset Pipeline Agent | Validate `.blend` configs, targets, and material remaps | `scripts/agents/asset_pipeline_audit.ps1` |
 | ModelDoc Agent | Validate `.vmdl` source meshes, material targets, and config drift | `scripts/agents/modeldoc_audit.ps1` |
 | Jigglebone Cosmetic Agent | Review skinned cosmetic bone merge, ModelDoc physics shapes, joint anchors, and editor motion proof | `scripts/agents/run_agent_checks.ps1 -Suite modeldoc` plus editor playtest |
+| AAA Asset Quality Agent | Coordinate reference, Production Quality Targets, material roles, visual proof, and S&Box import validation for high-polish Blender assets | `scripts/agents/aaa_asset_quality_audit.ps1` |
 | Sound Control Plane Agent | Validate SoundEvent wrappers, attached playback, and editor-native sound workflows | `scripts/agents/run_agent_checks.ps1 -Suite sound` |
 | Team Label Copy Audit | Keep player-facing role labels on Drone Pilots and Soldiers while preserving the project title | `scripts/agents/team_label_copy_audit.ps1` |
 | UI Flow Agent | Catch interactive-looking Razor UI without click behavior, missing `BuildHash()`, and per-frame `StateHasChanged()` refreshes | `scripts/agents/ui_flow_audit.ps1` |
@@ -137,6 +138,7 @@ Blender or asset pipeline changes:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/new_asset_brief.ps1 -Name my_asset -Category weapon
+powershell -ExecutionPolicy Bypass -File scripts/agents/aaa_asset_quality_audit.ps1 -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/blender_quality_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/material_texture_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/asset_visual_review.ps1 -Blend weapons_model.blend/assault_rifle_m4_realistic.blend
@@ -145,6 +147,8 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/modeldoc_audit.ps1 -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production
 ```
+
+For AAA-quality or otherwise high-polish assets, use `.agents/sbox/aaa-asset-quality-agent.md` first. The generated brief should include reference requirements, Production Quality Targets, material roles, sockets, scale/orientation notes, and a Visual Review Plan before detailed modeling. The proof chain is brief -> Blender source quality -> material/texture audit -> visual preview/contact sheet -> export/import -> ModelDoc and FBX material-slot validation -> S&Box prefab or editor screenshot.
 
 Use the texture contact sheet for alpha-cutout assets such as tree foliage cards before accepting a Blender render. The Blender preview confirms shape; the contact sheet and S&Box editor screenshot confirm the material and transparent background behavior.
 
@@ -226,6 +230,8 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_engine_reference_au
 powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_api_reference_audit.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/test_full_automation_layer.ps1
 ```
+
+`test_full_automation_layer.ps1` defaults to wiring and fixture red/green checks so `run_agent_checks.ps1 -Suite self-test` stays fast and has a clean success transcript. Use `test_full_automation_layer.ps1 -ProjectSmoke` only when you also want the old broad pass that runs each agent script directly against the current project; `run_agent_checks.ps1 -Suite full` already covers current-project audit execution.
 
 External S&Box or Source 2 research intake:
 

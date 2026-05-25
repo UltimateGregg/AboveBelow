@@ -17,7 +17,8 @@ Validate Blender to S&Box asset pipeline inputs and outputs.
 
 ## Review Rules
 
-- Use the production lane before export: asset brief, Blender quality audit, material/texture audit, then the export path.
+- Use the production lane before export: asset brief, AAA asset quality audit, Blender quality audit, material/texture audit, then the export path.
+- For high-polish assets, confirm the brief's Production Quality Targets and Visual Review Plan exist before exporting. Pipeline success without reference, material, preview, and S&Box proof is not enough.
 - Prefer the existing smart export path for `.blend` saves.
 - Use asset-specific configs when scale, material remaps, or target paths differ from the generic convention.
 - Keep generated outputs under normal S&Box asset folders.
@@ -34,6 +35,7 @@ Validate Blender to S&Box asset pipeline inputs and outputs.
 ## Evidence Command
 
 ```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/aaa_asset_quality_audit.ps1 -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_graph_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/fbx_material_slot_audit.ps1

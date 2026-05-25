@@ -493,6 +493,16 @@ public void TakeDamage(DamageInfo info)
 - For live editor scenes, set the override on the currently loaded object with the bridge and then save only after confirming no runtime transform drift is being persisted.
 - Check the live component with `component_get` and expect `MaterialOverride` to show as `Material:<name>` when the override is loaded.
 
+### AAA Blender Asset Quality Gate
+
+**Pattern:** High-polish Blender assets need a concrete quality target before modeling starts. A passing export, `.vmdl`, or Blender preview only proves the pipeline moved data; it does not prove the result has strong references, material separation, readable silhouette, authored sockets, or in-engine presentation.
+
+**Workflow:**
+- Start with `.agents/sbox/aaa-asset-quality-agent.md` and generate a brief with `scripts/agents/new_asset_brief.ps1` so reference requirements, Production Quality Targets, material roles, sockets, scale, and visual review checks are explicit.
+- Run `scripts/agents/aaa_asset_quality_audit.ps1 -ShowInfo` before detailed asset work and keep it in the `asset-production` proof stack.
+- For final proof, combine Blender quality, material/texture, visual preview/contact sheet, asset pipeline, ModelDoc, FBX material-slot, prefab graph, and an S&Box editor or prefab screenshot when the user needs visual approval.
+- Do not accept a single flattering Blender render for assets that must read in first person, third person, drone-height, or scene-placement views.
+
 ### Held-Item Slot Visibility
 
 **Pattern:** Every visible held-item renderer needs to be hidden at the item root when its loadout slot is not selected. Hiding only a named visual child can leave extra mesh children visible or casting shadows.

@@ -132,11 +132,12 @@ $areaRules = @(
         Name = "Assets"
         Patterns = @("*.blend", "*.blend.blend", "*_model.blend/*", "Assets/models/*", "Assets/materials/*", "scripts/*_asset_pipeline.json", "scripts/asset_pipeline.*", "scripts/smart_asset_export.ps1")
         Checks = @(
+            "scripts/agents/aaa_asset_quality_audit.ps1 -ShowInfo",
             "scripts/agents/asset_pipeline_audit.ps1",
             "scripts/agents/modeldoc_audit.ps1 -ShowInfo",
             "scripts/agents/fbx_material_slot_audit.ps1 -ShowInfo"
         )
-        Training = "If an asset roundtrip failed, make the config, ModelDoc, material-slot, and visual-review path reproducible before accepting the asset."
+        Training = "If an asset roundtrip or quality target failed, make the brief, reference requirements, config, ModelDoc, material-slot, and visual-review path reproducible before accepting the asset."
     },
     [pscustomobject]@{
         Name = "Tooling"

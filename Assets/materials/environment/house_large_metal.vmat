@@ -1,0 +1,15 @@
+"Layer0"
+{
+	"shader"		"shaders/complex.shader"
+	"TextureColor"		"materials/environment/house_large_metal_color.png"
+	"TextureRoughness"		"materials/environment/house_large_metal_rough.png"
+	"TextureAmbientOcclusion"		"materials/environment/house_large_metal_ao.png"
+	"g_flModelTintAmount"		"1.000000"
+	"g_vColorTint"		"[0.370000 0.380000 0.370000 0.000000]"
+	"g_flMetalness"		"0.550000"
+	"g_flRoughness"		"0.610000"
+	"g_bFogEnabled"		"1"
+	"g_vTexCoordScale"		"[1.000 1.000]"
+	"g_vTexCoordOffset"		"[0.000 0.000]"
+	"g_vTexCoordScrollSpeed"		"[0.000 0.000]"
+}

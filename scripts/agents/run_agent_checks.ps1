@@ -57,6 +57,7 @@ switch ($Suite) {
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
             @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs },
+            @{ Name = "aaa_asset_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
             @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
             @{ Name = "sound_asset_audit.ps1"; Args = $commonArgs },
@@ -85,6 +86,7 @@ switch ($Suite) {
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
             @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs },
+            @{ Name = "aaa_asset_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
             @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
             @{ Name = "fbx_material_slot_audit.ps1"; Args = $commonArgs },
@@ -120,6 +122,7 @@ switch ($Suite) {
     "scene" {
         $scripts = @(
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
+            @{ Name = "floating_center_ladder_audit.ps1"; Args = $commonArgs },
             @{ Name = "level_layout_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs }
         )
@@ -127,6 +130,7 @@ switch ($Suite) {
     "collision" {
         $scripts = @(
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
+            @{ Name = "floating_center_ladder_audit.ps1"; Args = $commonArgs },
             @{ Name = "level_layout_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs }
         )
@@ -151,6 +155,7 @@ switch ($Suite) {
     }
     "asset-production" {
         $scripts = @(
+            @{ Name = "aaa_asset_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "blender_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "material_texture_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
@@ -201,6 +206,7 @@ switch ($Suite) {
     "train" {
         $scripts = @(
             @{ Name = "post_task_training_agent.ps1"; Args = @("-Root", $Root, "-ShowFiles", "-WriteReport") },
+            @{ Name = "aaa_asset_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },

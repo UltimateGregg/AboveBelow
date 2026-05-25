@@ -32,7 +32,7 @@
         "__guid": "ddd7cb8b-9285-551f-b0c1-229aed1e6d91",
         "Flags": 0,
         "Name": "Collision_Floor_Ground",
-        "Position": "0,0,10",
+        "Position": "0,0,8",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
@@ -41,7 +41,7 @@
             "__type": "Sandbox.BoxCollider",
             "__guid": "d7f7f4db-30e7-50e9-b7d7-6b174e5030c0",
             "Center": "0,0,0",
-            "Scale": "180,180,20",
+            "Scale": "304,220,16",
             "Static": true,
             "IsTrigger": false
           }
@@ -52,7 +52,7 @@
         "__guid": "93b1f337-56da-538c-8905-a243b7bacfd3",
         "Flags": 0,
         "Name": "Collision_Floor_Loft",
-        "Position": "0,-38,240",
+        "Position": "-28,-32,206",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
@@ -61,7 +61,7 @@
             "__type": "Sandbox.BoxCollider",
             "__guid": "7b9e613f-9913-578d-9afc-b8084d2d8ffb",
             "Center": "0,0,0",
-            "Scale": "110,95,18",
+            "Scale": "196,136,16",
             "Static": true,
             "IsTrigger": false
           }
@@ -69,19 +69,19 @@
         "Children": []
       },
       {
-        "__guid": "e510bfc6-fe2f-5202-9455-78c093dce2be",
+        "__guid": "a685d792-9889-5cc9-ad00-84b179f473cb",
         "Flags": 0,
-        "Name": "Collision_Roof",
-        "Position": "0,0,365",
+        "Name": "Collision_Roof_Main",
+        "Position": "-12,0,330",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "e54952cb-50bd-5235-90ce-2fc9a6b1e52d",
+            "__guid": "3f60cd99-bff9-593c-9124-584f9a9d0eab",
             "Center": "0,0,0",
-            "Scale": "195,195,26",
+            "Scale": "350,260,34",
             "Static": true,
             "IsTrigger": false
           }
@@ -89,19 +89,19 @@
         "Children": []
       },
       {
-        "__guid": "77fd03a9-bdc2-523f-9117-b4a742fd1423",
+        "__guid": "9de5ed2c-3bcc-54e8-93f8-3bfa9b45494a",
         "Flags": 0,
-        "Name": "Collision_Wall_South_Left",
-        "Position": "-60,90,110",
+        "Name": "Collision_Porch_Deck",
+        "Position": "-54,148,22",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "08fa5fd8-abae-5cbf-8801-c2541f80725d",
+            "__guid": "e34b1106-55fd-5632-88e2-2ccdc9dcdb51",
             "Center": "0,0,0",
-            "Scale": "60,10,220",
+            "Scale": "188,58,18",
             "Static": true,
             "IsTrigger": false
           }
@@ -109,19 +109,19 @@
         "Children": []
       },
       {
-        "__guid": "5712a52c-e5e1-5f61-8165-93056f06d1f7",
+        "__guid": "f99c6b68-e9b4-566e-afae-444a043901fc",
         "Flags": 0,
-        "Name": "Collision_Wall_South_Right",
-        "Position": "60,90,110",
+        "Name": "Collision_Porch_Rail_Left",
+        "Position": "-98,174,72",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "3d82965a-0aa7-5059-9646-9caad3deb8ee",
+            "__guid": "a699bcf0-3775-51ac-9b15-5901443d128c",
             "Center": "0,0,0",
-            "Scale": "60,10,220",
+            "Scale": "64,9,28",
             "Static": true,
             "IsTrigger": false
           }
@@ -129,19 +129,59 @@
         "Children": []
       },
       {
-        "__guid": "9286f9b2-f5a9-5f78-ac41-89e38d1c1933",
+        "__guid": "b0025828-0f28-5fa4-a272-852c39ba59a9",
         "Flags": 0,
-        "Name": "Collision_Wall_South_Lintel",
-        "Position": "0,90,185",
+        "Name": "Collision_LeanTo_Floor",
+        "Position": "170,38,12",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "da6ef1b3-f2fe-50bc-9b4f-85a335b67f43",
+            "__guid": "5f4960b7-4f8f-5e60-a06c-991f8b04a12d",
             "Center": "0,0,0",
-            "Scale": "60,10,70",
+            "Scale": "56,126,14",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "c9daf079-2845-5b87-bb01-91272f796f9b",
+        "Flags": 0,
+        "Name": "Collision_LeanTo_Wall_East",
+        "Position": "204,38,76",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "48be16dd-3d22-599a-b87d-2bba25502cdd",
+            "Center": "0,0,0",
+            "Scale": "10,126,128",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "51c843cb-c6cf-5499-b311-31f86be84db2",
+        "Flags": 0,
+        "Name": "Collision_LeanTo_Wall_North",
+        "Position": "170,-28,76",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "43f7c3e1-eec9-55d5-9738-a27da984e4f5",
+            "Center": "0,0,0",
+            "Scale": "56,10,128",
             "Static": true,
             "IsTrigger": false
           }
@@ -152,7 +192,7 @@
         "__guid": "36ed0e97-6013-5858-9bbe-27f31aed9e68",
         "Flags": 0,
         "Name": "Collision_Wall_North_Left",
-        "Position": "-62,-90,110",
+        "Position": "-88,-114,104",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
@@ -161,7 +201,7 @@
             "__type": "Sandbox.BoxCollider",
             "__guid": "df0aaa4a-4ea4-51ba-94e8-70fdf52e3036",
             "Center": "0,0,0",
-            "Scale": "56,10,220",
+            "Scale": "116,12,192",
             "Static": true,
             "IsTrigger": false
           }
@@ -172,7 +212,7 @@
         "__guid": "9a2eb80f-6c22-5562-a84b-ef503aeafc9b",
         "Flags": 0,
         "Name": "Collision_Wall_North_Right",
-        "Position": "62,-90,110",
+        "Position": "94,-114,104",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
@@ -181,7 +221,7 @@
             "__type": "Sandbox.BoxCollider",
             "__guid": "cd1c92e8-99ae-5340-bdcb-50765a516268",
             "Center": "0,0,0",
-            "Scale": "56,10,220",
+            "Scale": "112,12,192",
             "Static": true,
             "IsTrigger": false
           }
@@ -189,19 +229,19 @@
         "Children": []
       },
       {
-        "__guid": "2875a415-e9c6-561c-8ed2-ee5faa428812",
+        "__guid": "77fd03a9-bdc2-523f-9117-b4a742fd1423",
         "Flags": 0,
-        "Name": "Collision_Wall_North_Sill",
-        "Position": "0,-90,42",
+        "Name": "Collision_Wall_South_Left",
+        "Position": "-108,114,104",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "525b7484-77e8-523e-b126-9807edb2fd0b",
+            "__guid": "08fa5fd8-abae-5cbf-8801-c2541f80725d",
             "Center": "0,0,0",
-            "Scale": "68,10,84",
+            "Scale": "76,12,192",
             "Static": true,
             "IsTrigger": false
           }
@@ -209,19 +249,19 @@
         "Children": []
       },
       {
-        "__guid": "dd28ad6b-1174-5929-88cd-2862030e45d4",
+        "__guid": "5712a52c-e5e1-5f61-8165-93056f06d1f7",
         "Flags": 0,
-        "Name": "Collision_Wall_North_Header",
-        "Position": "0,-90,185",
+        "Name": "Collision_Wall_South_Right",
+        "Position": "104,114,104",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "8e339f7b-6226-5a88-a77a-914f695f3a3b",
+            "__guid": "3d82965a-0aa7-5059-9646-9caad3deb8ee",
             "Center": "0,0,0",
-            "Scale": "68,10,70",
+            "Scale": "88,12,192",
             "Static": true,
             "IsTrigger": false
           }
@@ -229,19 +269,19 @@
         "Children": []
       },
       {
-        "__guid": "778b890e-895f-54d3-aca9-723a618cbfd8",
+        "__guid": "e99d4419-aedf-5131-b485-fbd609815bc8",
         "Flags": 0,
-        "Name": "Collision_Wall_West_Lower",
-        "Position": "-90,-55,110",
+        "Name": "Collision_Wall_West",
+        "Position": "-154,0,104",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "9ecd8e92-68d0-56df-bc3b-2a7cea7d8404",
+            "__guid": "c6fc2e6e-235a-55f5-a915-24f48d9becd2",
             "Center": "0,0,0",
-            "Scale": "10,70,220",
+            "Scale": "12,220,192",
             "Static": true,
             "IsTrigger": false
           }
@@ -249,19 +289,19 @@
         "Children": []
       },
       {
-        "__guid": "a57b7dcf-b390-56a1-8c58-eac59bea8cba",
+        "__guid": "4dbad91e-6c8d-5c57-adb7-12c83223d8e0",
         "Flags": 0,
-        "Name": "Collision_Wall_West_Upper",
-        "Position": "-90,55,110",
+        "Name": "Collision_Wall_East_Back",
+        "Position": "154,-54,104",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "a68635dc-216e-5033-9f3e-5bcfcdf277fc",
+            "__guid": "972ab242-81a3-5a63-a1df-c8d5802bb168",
             "Center": "0,0,0",
-            "Scale": "10,70,220",
+            "Scale": "12,112,192",
             "Static": true,
             "IsTrigger": false
           }
@@ -269,19 +309,19 @@
         "Children": []
       },
       {
-        "__guid": "6ab45c29-13d9-568b-afdd-cad73700e0e7",
+        "__guid": "cd854f72-fd63-543e-b374-c0b434d8cbb6",
         "Flags": 0,
-        "Name": "Collision_Wall_West_Sill",
-        "Position": "-90,0,42",
+        "Name": "Collision_Wall_East_Front",
+        "Position": "154,70,104",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "9d7125ec-d687-5ea5-bf58-d8f3bf9772e2",
+            "__guid": "4d92bdb7-dec6-56d1-a879-5bda42a3d426",
             "Center": "0,0,0",
-            "Scale": "10,70,84",
+            "Scale": "12,76,192",
             "Static": true,
             "IsTrigger": false
           }
@@ -289,19 +329,19 @@
         "Children": []
       },
       {
-        "__guid": "fa125249-11e4-59b7-9eeb-cd346a17d604",
+        "__guid": "87652caa-0b89-5e3b-bfc3-2620b1bfbe58",
         "Flags": 0,
-        "Name": "Collision_Wall_West_Header",
-        "Position": "-90,0,185",
+        "Name": "Collision_Wall_Loft_North",
+        "Position": "-28,-118,258",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "9ce53694-f3df-547e-b0dd-e8dbb4610830",
+            "__guid": "6c96f28e-da1a-5462-b2d3-3fe255362ea6",
             "Center": "0,0,0",
-            "Scale": "10,70,70",
+            "Scale": "190,10,92",
             "Static": true,
             "IsTrigger": false
           }
@@ -309,19 +349,19 @@
         "Children": []
       },
       {
-        "__guid": "4bdc7959-882d-5699-b5a8-3e7b8e62df08",
+        "__guid": "43dfd359-3481-5251-8ba3-1a9d03983078",
         "Flags": 0,
-        "Name": "Collision_Wall_East",
-        "Position": "90,0,110",
+        "Name": "Collision_Wall_Loft_West",
+        "Position": "-130,-32,258",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "4d6eec80-5217-51fa-ba0f-4ec194ad45cc",
+            "__guid": "34cba1fe-e2d8-54f1-b542-2fd7278ed9a8",
             "Center": "0,0,0",
-            "Scale": "10,180,220",
+            "Scale": "10,136,92",
             "Static": true,
             "IsTrigger": false
           }
@@ -329,19 +369,19 @@
         "Children": []
       },
       {
-        "__guid": "23cff9c1-e208-5e3e-b283-3a01186e7477",
+        "__guid": "724ee0a3-9963-5cc0-8c76-95be5559771d",
         "Flags": 0,
-        "Name": "Collision_UpperWall_South_Left",
-        "Position": "-48,74,295",
+        "Name": "Collision_InteriorCover_HalfWall",
+        "Position": "38,18,86",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "eefdf091-32b2-5b70-a517-d67eb36d1666",
+            "__guid": "f2cf8cb0-084a-52a3-8228-b552e1fb174f",
             "Center": "0,0,0",
-            "Scale": "42,10,110",
+            "Scale": "12,138,140",
             "Static": true,
             "IsTrigger": false
           }
@@ -349,19 +389,19 @@
         "Children": []
       },
       {
-        "__guid": "d6fd0cc6-7cc0-5447-a13e-951fed5ccd88",
+        "__guid": "6288c255-85b2-5367-bf60-a602d70b3502",
         "Flags": 0,
-        "Name": "Collision_UpperWall_South_Right",
-        "Position": "48,74,295",
+        "Name": "Collision_InteriorCover_Crate",
+        "Position": "-78,30,48",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "226328f1-553e-51ea-b0d2-b042048c1b80",
+            "__guid": "2e5fab79-4533-576f-a11c-ea71f20876b5",
             "Center": "0,0,0",
-            "Scale": "42,10,110",
+            "Scale": "58,42,56",
             "Static": true,
             "IsTrigger": false
           }
@@ -369,19 +409,19 @@
         "Children": []
       },
       {
-        "__guid": "f1fe05d6-4153-5d90-97ac-c099d5050806",
+        "__guid": "f36a0c89-a143-52e1-ad83-397092ff06fb",
         "Flags": 0,
-        "Name": "Collision_UpperWall_South_Header",
-        "Position": "0,74,328",
+        "Name": "Collision_InteriorCover_LeanToBlock",
+        "Position": "202,80,50",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "88586afa-f2fb-56b6-8048-ca1e26b91181",
+            "__guid": "25cfbb27-e437-5fa8-85e7-d1e02d966579",
             "Center": "0,0,0",
-            "Scale": "54,10,44",
+            "Scale": "42,42,62",
             "Static": true,
             "IsTrigger": false
           }
@@ -389,19 +429,19 @@
         "Children": []
       },
       {
-        "__guid": "735be0de-669f-5c86-9f9b-b5bc9d2569ed",
+        "__guid": "4654e960-c755-5a06-99a8-bcff270eaa9a",
         "Flags": 0,
-        "Name": "Collision_UpperWall_North_Left",
-        "Position": "-48,-74,295",
+        "Name": "Collision_RoofCover_LowCover",
+        "Position": "54,-84,322",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "02dbb4d2-6f07-5cdf-a2f4-216c739dd024",
+            "__guid": "99fda117-96e1-55f9-856a-c5abde89e5df",
             "Center": "0,0,0",
-            "Scale": "42,10,110",
+            "Scale": "92,14,38",
             "Static": true,
             "IsTrigger": false
           }
@@ -409,259 +449,19 @@
         "Children": []
       },
       {
-        "__guid": "22d69824-7fad-55dc-9b8b-59bc786ad13c",
+        "__guid": "b62463e4-a613-53df-bd1f-d25b2d647d27",
         "Flags": 0,
-        "Name": "Collision_UpperWall_North_Right",
-        "Position": "48,-74,295",
+        "Name": "Collision_RoofCover_Bag",
+        "Position": "12,-88,342",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.BoxCollider",
-            "__guid": "e83ef43b-43a5-5f17-a5b2-90f5360ee085",
+            "__guid": "0852be1c-ced9-57e0-bec3-f1241e16dac6",
             "Center": "0,0,0",
-            "Scale": "42,10,110",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "e5b3b16e-a184-593e-a8e7-65b05e2b76cf",
-        "Flags": 0,
-        "Name": "Collision_UpperWall_North_Sill",
-        "Position": "0,-74,260",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "b63a73be-fe52-588c-af4f-807018a4b98f",
-            "Center": "0,0,0",
-            "Scale": "54,10,38",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "9dd98025-dd45-54f1-af4a-15ef1f1739f5",
-        "Flags": 0,
-        "Name": "Collision_UpperWall_North_Header",
-        "Position": "0,-74,328",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "610f289b-fb6c-5a1a-b4a8-89b75910bde2",
-            "Center": "0,0,0",
-            "Scale": "54,10,44",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "0e6efaf8-e750-5644-99a8-48c5b38db25c",
-        "Flags": 0,
-        "Name": "Collision_UpperWall_West_Lower",
-        "Position": "-74,-46,295",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "82d2b12d-6b26-5b59-ba68-3868a7efb27b",
-            "Center": "0,0,0",
-            "Scale": "10,46,110",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "d73039e1-f3ce-5a0d-9ea6-2a7bf178434a",
-        "Flags": 0,
-        "Name": "Collision_UpperWall_West_Upper",
-        "Position": "-74,46,295",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "a0c90df9-15fe-5976-aa52-c7c2e3a72a08",
-            "Center": "0,0,0",
-            "Scale": "10,46,110",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "c5b32c12-0323-5c8a-b5d6-ad7e349d6c11",
-        "Flags": 0,
-        "Name": "Collision_UpperWall_West_Sill",
-        "Position": "-74,0,260",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "ff81e96f-7878-5f44-b54e-5528ec07fd11",
-            "Center": "0,0,0",
-            "Scale": "10,50,38",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "c72c1cc4-d60f-5a8e-a31b-49f74877c8ab",
-        "Flags": 0,
-        "Name": "Collision_UpperWall_West_Header",
-        "Position": "-74,0,328",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "ba98cd93-4ad9-595c-9ddd-0c0d477f287c",
-            "Center": "0,0,0",
-            "Scale": "10,50,44",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "cf91944f-3131-5279-863f-575361357f3b",
-        "Flags": 0,
-        "Name": "Collision_UpperWall_East",
-        "Position": "74,0,295",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "dbd2cbb4-0b91-56e8-9489-ffe7dc9ffe40",
-            "Center": "0,0,0",
-            "Scale": "10,145,110",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "fb3e0829-05f3-563b-822d-589dcb7197fd",
-        "Flags": 0,
-        "Name": "Collision_Interior_Wall",
-        "Position": "25,12,110",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "0b536334-7c2d-51bc-bd2a-8fcc6116ed90",
-            "Center": "0,0,0",
-            "Scale": "85,10,200",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "2e7ffde8-ffc5-5570-ad38-f1b043f8fba2",
-        "Flags": 0,
-        "Name": "Collision_Parapet_North",
-        "Position": "0,-98,392",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "90c7e56f-e96b-518d-be27-c75474c89930",
-            "Center": "0,0,0",
-            "Scale": "195,10,42",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "9d872c25-d9cd-5e9d-b976-c3b5754aed5c",
-        "Flags": 0,
-        "Name": "Collision_Parapet_South",
-        "Position": "0,98,392",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "2cab6609-a272-5c54-a9de-4bc3e0b4d8cb",
-            "Center": "0,0,0",
-            "Scale": "195,10,42",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "f8bb2de6-2302-51e5-9b74-e9d2fa1baa51",
-        "Flags": 0,
-        "Name": "Collision_Parapet_East",
-        "Position": "98,0,392",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "ad88dd06-6d55-5889-a6cf-b5857f08015f",
-            "Center": "0,0,0",
-            "Scale": "10,195,42",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "8e07b6b0-770f-5f64-a485-5e12dc5bfbb5",
-        "Flags": 0,
-        "Name": "Collision_Parapet_West",
-        "Position": "-98,0,392",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "7ba25cfd-832c-54a4-8f7e-f71eb1da2139",
-            "Center": "0,0,0",
-            "Scale": "10,195,42",
+            "Scale": "74,18,16",
             "Static": true,
             "IsTrigger": false
           }
@@ -672,7 +472,7 @@
         "__guid": "d6654ee8-49cf-59d4-b874-71a7bbf21cb1",
         "Flags": 0,
         "Name": "Ladder_To_Loft",
-        "Position": "0,-82,0",
+        "Position": "-94,-78,18",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
@@ -683,15 +483,15 @@
             "AutoConfigureCollider": true,
             "GrabPadding": 18,
             "UseTopExit": true,
-            "TopExitLocalOffset": "0,52,252",
+            "TopExitLocalOffset": "0,50,188",
             "TopExitTriggerDistance": 32,
             "BottomExitTriggerDistance": 8
           },
           {
             "__type": "Sandbox.BoxCollider",
             "__guid": "df520c70-b105-5689-a36e-64a3676cf5c4",
-            "Center": "0,0,121",
-            "Scale": "24,26,242",
+            "Center": "0,0,94",
+            "Scale": "32,34,188",
             "Static": true,
             "IsTrigger": true
           }
@@ -702,7 +502,7 @@
         "__guid": "45c8da5d-e484-5d0d-b8ff-38b4465e31e5",
         "Flags": 0,
         "Name": "Ladder_To_Roof",
-        "Position": "0,-35,240",
+        "Position": "-72,-82,212",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
@@ -713,15 +513,15 @@
             "AutoConfigureCollider": true,
             "GrabPadding": 18,
             "UseTopExit": true,
-            "TopExitLocalOffset": "0,50,140",
+            "TopExitLocalOffset": "0,48,104",
             "TopExitTriggerDistance": 32,
             "BottomExitTriggerDistance": 8
           },
           {
             "__type": "Sandbox.BoxCollider",
             "__guid": "25f187c3-fe05-5d36-9958-be25aca9e5cc",
-            "Center": "0,0,70",
-            "Scale": "24,26,140",
+            "Center": "0,0,52",
+            "Scale": "30,32,104",
             "Static": true,
             "IsTrigger": true
           }
@@ -732,7 +532,7 @@
         "__guid": "15444a82-3b41-548f-b9a8-677f21e9a158",
         "Flags": 0,
         "Name": "Zone_Entry",
-        "Position": "0,70,70",
+        "Position": "-54,110,72",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
@@ -741,7 +541,7 @@
             "__type": "Sandbox.BoxCollider",
             "__guid": "ca0870f7-ad73-5176-8343-5f365440d746",
             "Center": "0,0,0",
-            "Scale": "95,50,100",
+            "Scale": "116,70,116",
             "Static": true,
             "IsTrigger": true
           }
@@ -752,7 +552,7 @@
         "__guid": "112eb3ef-521a-57d1-a57b-44d95273d9e0",
         "Flags": 0,
         "Name": "Zone_MainRoom",
-        "Position": "-35,-15,90",
+        "Position": "-42,-6,90",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
@@ -761,7 +561,7 @@
             "__type": "Sandbox.BoxCollider",
             "__guid": "b61dee1b-b2a8-5ca7-b4b6-83b58127db89",
             "Center": "0,0,0",
-            "Scale": "110,110,130",
+            "Scale": "190,180,138",
             "Static": true,
             "IsTrigger": true
           }
@@ -772,7 +572,7 @@
         "__guid": "1cce16ac-b77d-56c8-8049-42416665a04d",
         "Flags": 0,
         "Name": "Zone_SideRoom",
-        "Position": "55,20,90",
+        "Position": "118,38,82",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
@@ -781,7 +581,7 @@
             "__type": "Sandbox.BoxCollider",
             "__guid": "c5602436-16e2-5ecc-8fc6-b3a35d3aa9bf",
             "Center": "0,0,0",
-            "Scale": "70,110,130",
+            "Scale": "112,130,120",
             "Static": true,
             "IsTrigger": true
           }
@@ -792,7 +592,7 @@
         "__guid": "7758532d-a0e2-5bca-a980-fc743243f229",
         "Flags": 0,
         "Name": "Zone_Loft",
-        "Position": "0,-38,265",
+        "Position": "-28,-32,234",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
@@ -801,7 +601,7 @@
             "__type": "Sandbox.BoxCollider",
             "__guid": "b0cb26e8-feb2-5a00-b2d1-7437b789067f",
             "Center": "0,0,0",
-            "Scale": "110,95,70",
+            "Scale": "196,136,72",
             "Static": true,
             "IsTrigger": true
           }
@@ -812,7 +612,7 @@
         "__guid": "d0da2fb1-216c-5f5e-a5f8-bf52cbea85a4",
         "Flags": 0,
         "Name": "Zone_Roof",
-        "Position": "0,0,392",
+        "Position": "-12,-18,334",
         "Rotation": "0,0,0,1",
         "Scale": "1,1,1",
         "Enabled": true,
@@ -821,7 +621,27 @@
             "__type": "Sandbox.BoxCollider",
             "__guid": "6bba5183-f49a-59e1-a588-e1b08f5e77c0",
             "Center": "0,0,0",
-            "Scale": "195,195,60",
+            "Scale": "240,190,82",
+            "Static": true,
+            "IsTrigger": true
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "67b3d25a-8a3e-5b18-b7c8-df9c890c9244",
+        "Flags": 0,
+        "Name": "Zone_Porch",
+        "Position": "-54,148,70",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "ef31a02a-7f68-5ab1-b378-29005ace7a97",
+            "Center": "0,0,0",
+            "Scale": "188,72,108",
             "Static": true,
             "IsTrigger": true
           }

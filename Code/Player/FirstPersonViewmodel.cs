@@ -81,6 +81,7 @@ public sealed class FirstPersonViewmodel : Component
 		public Component Owner;
 		public GameObject Root;
 		public GameObject VisualTarget;
+		public GameObject HiddenStaticVisualRoot;
 		public GameObject LeftHandTarget;
 		public GameObject RightHandTarget;
 		public GameObject MuzzleTarget;
@@ -283,6 +284,8 @@ public sealed class FirstPersonViewmodel : Component
 		{
 			if ( !source.IsValid() || source.Model is null || !source.Model.IsValid )
 				continue;
+			if ( IsSameOrDescendant( source.GameObject, item.HiddenStaticVisualRoot ) )
+				continue;
 
 			var copyObject = new GameObject( parent, true, source.GameObject.Name )
 			{
@@ -307,6 +310,23 @@ public sealed class FirstPersonViewmodel : Component
 		}
 
 		return copiedAny;
+	}
+
+	static bool IsSameOrDescendant( GameObject candidate, GameObject root )
+	{
+		if ( !candidate.IsValid() || !root.IsValid() )
+			return false;
+
+		var current = candidate;
+		while ( current.IsValid() )
+		{
+			if ( current == root )
+				return true;
+
+			current = current.Parent;
+		}
+
+		return false;
 	}
 
 	bool AddCustomAnimatedVisualCopies( HeldItem item, GameObject parent )
@@ -785,13 +805,17 @@ public sealed class FirstPersonViewmodel : Component
 			if ( !deployer.IsValid() || !deployer.IsSelected || IsDroneViewActive() )
 				continue;
 
+			var pilot = deployer.Components.GetInAncestors<PilotSoldier>();
+			var chosenDrone = pilot.IsValid() ? pilot.ChosenDrone : DroneType.Fpv;
+
 			item = new HeldItem
 			{
 				Owner = deployer,
 				Root = deployer.GameObject,
+				HiddenStaticVisualRoot = deployer.DroneInFlight ? deployer.RightHandVisual : null,
 				LeftHandTarget = deployer.LeftHandIkTarget,
-				RightHandTarget = deployer.RightHandIkTarget,
-				Key = $"deployer:{deployer.GameObject.Id}",
+				RightHandTarget = deployer.DroneInFlight ? deployer.LeftHandIkTarget : deployer.RightHandIkTarget,
+				Key = $"deployer:{deployer.GameObject.Id}:{chosenDrone}:{deployer.DroneInFlight}",
 				RenderMode = ViewmodelRenderMode.StaticFallback,
 				TwoHanded = true,
 				AttackPressed = Input.Pressed( "Attack1" ),

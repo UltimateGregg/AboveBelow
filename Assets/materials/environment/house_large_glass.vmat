@@ -1,0 +1,13 @@
+"Layer0"
+{
+	"shader"		"shaders/complex.shader"
+	"TextureColor"		"materials/environment/house_large_glass_color.png"
+	"g_flModelTintAmount"		"1.000000"
+	"g_vColorTint"		"[0.220000 0.350000 0.390000 0.250000]"
+	"g_flMetalness"		"0.000000"
+	"g_flRoughness"		"0.240000"
+	"g_bFogEnabled"		"1"
+	"g_vTexCoordScale"		"[1.000 1.000]"
+	"g_vTexCoordOffset"		"[0.000 0.000]"
+	"g_vTexCoordScrollSpeed"		"[0.000 0.000]"
+}

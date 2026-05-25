@@ -95,6 +95,8 @@ public sealed class KillFeedTracker : Component
 
 	void OnHealthKilled( Health victim, DamageInfo info )
 	{
+		if ( info.AttackerId == default ) return;
+
 		var stats = Scene.GetAllComponents<GameStats>().FirstOrDefault();
 		var victimConn = victim.GameObject.Network.Owner;
 		var victimId = victimConn?.Id ?? default;

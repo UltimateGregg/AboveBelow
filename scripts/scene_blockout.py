@@ -104,6 +104,27 @@ def box_collider(name: str, scale: str, static: bool = True) -> dict[str, Any]:
     }
 
 
+def trigger_box_collider(name: str, scale: str, static: bool = True) -> dict[str, Any]:
+    collider = box_collider(name, scale, static)
+    collider["IsTrigger"] = True
+    return collider
+
+
+def ladder_volume(name: str, top_exit: str) -> dict[str, Any]:
+    return {
+        "__type": "DroneVsPlayers.LadderVolume",
+        "__guid": stable_guid(name, "ladder_volume"),
+        "__enabled": True,
+        "Flags": 0,
+        "AutoConfigureCollider": True,
+        "GrabPadding": 18,
+        "UseTopExit": True,
+        "TopExitLocalOffset": top_exit,
+        "TopExitTriggerDistance": 28,
+        "BottomExitTriggerDistance": 8,
+    }
+
+
 def point_light(name: str, color: str, radius: float) -> dict[str, Any]:
     return {
         "__type": "Sandbox.PointLight",
@@ -537,6 +558,90 @@ def build_above_below_level_pass() -> dict[str, Any]:
     )
 
 
+def ladder_visual_box(name: str, position: str, scale: str, tint: str = "0.64,0.70,0.72,1") -> dict[str, Any]:
+    return visual_box(
+        name,
+        position,
+        scale,
+        material="materials/arena/metal_pad.vmat",
+        tint=tint,
+    )
+
+
+def ladder_trigger_child(name: str, position: str, scale: str, top_exit: str) -> dict[str, Any]:
+    return {
+        "__guid": stable_guid(name),
+        "__version": 2,
+        "Flags": 0,
+        "Name": name,
+        "Position": position,
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Tags": "",
+        "Enabled": True,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": True,
+        "OwnerTransfer": 1,
+        "Components": [
+            trigger_box_collider(name, scale),
+            ladder_volume(name, top_exit),
+        ],
+        "Children": [],
+    }
+
+
+def build_floating_center_ladder() -> dict[str, Any]:
+    children: list[dict[str, Any]] = [
+        solid_box(
+            "TopLanding",
+            "0,92,470",
+            "2.6,2.0,0.28",
+            material="materials/arena/metal_pad.vmat",
+            tint="0.38,0.46,0.48,1",
+        ),
+        solid_box(
+            "TopLanding_BackStop",
+            "0,152,515",
+            "2.6,0.18,1.8",
+            material="materials/arena/concrete_wall.vmat",
+            tint="0.58,0.62,0.62,1",
+        ),
+        ladder_trigger_child(
+            "Collision_Ladder",
+            "0,0,245",
+            "82,58,450",
+            "0,92,486",
+        ),
+        ladder_visual_box("Visual_Rail_Left", "-32,0,245", "0.12,0.12,8.9"),
+        ladder_visual_box("Visual_Rail_Right", "32,0,245", "0.12,0.12,8.9"),
+    ]
+
+    for index, z in enumerate(range(58, 431, 34), start=1):
+        children.append(
+            ladder_visual_box(
+                f"Visual_Rung_{index:02}",
+                f"0,0,{z}",
+                "1.42,0.12,0.10",
+                tint="0.74,0.78,0.76,1",
+            )
+        )
+
+    children.extend(
+        [
+            ladder_visual_box("Visual_TopCue", "0,74,492", "1.9,0.12,0.12", tint="0.9,0.74,0.22,1"),
+            light_marker("FloatingCenterLadder_ReadLight", "0,62,535", "1,0.68,0.22,1", 360, marker_scale="0.44,0.44,0.08"),
+        ]
+    )
+
+    return game_object(
+        "FloatingCenterLadder",
+        f"{ROAD_CENTER_X},0,0",
+        children=children,
+    )
+
+
 def install_group(parent: dict[str, Any], group: dict[str, Any], aliases: set[str] | None = None) -> tuple[int, int]:
     children = parent.setdefault("Children", [])
     before = len(children)
@@ -545,6 +650,24 @@ def install_group(parent: dict[str, Any], group: dict[str, Any], aliases: set[st
     children[:] = [child for child in children if child.get("Name") not in removable_names]
     removed = before - len(children)
     insert_at = 1 if children and children[0].get("Name") == "ArenaFloor" else len(children)
+    children.insert(insert_at, group)
+    return len(group.get("Children", []) or []), removed
+
+
+def install_group_after(parent: dict[str, Any], group: dict[str, Any], after_name: str, aliases: set[str] | None = None) -> tuple[int, int]:
+    children = parent.setdefault("Children", [])
+    before = len(children)
+    removable_names = aliases or {group["Name"]}
+    removable_names.add(group["Name"])
+    children[:] = [child for child in children if child.get("Name") not in removable_names]
+    removed = before - len(children)
+
+    insert_at = len(children)
+    for index, child in enumerate(children):
+        if child.get("Name") == after_name:
+            insert_at = index + 1
+            break
+
     children.insert(insert_at, group)
     return len(group.get("Children", []) or []), removed
 
@@ -644,9 +767,29 @@ def apply_above_below_level_pass(scene_path: Path, dry_run: bool) -> None:
     print(f"Installed LevelDesignPass_AboveBelow with {count} child groups")
 
 
+def add_floating_center_ladder(scene_path: Path, dry_run: bool) -> None:
+    root = project_root()
+    data = json.loads(scene_path.read_text(encoding="utf-8"))
+    blockout_map = find_object(data, "BlockoutMap")
+    if blockout_map is None:
+        raise RuntimeError("BlockoutMap was not found in the scene")
+
+    group = build_floating_center_ladder()
+    count, removed = install_group_after(blockout_map, group, after_name="RoadCorridor_Main")
+
+    if dry_run:
+        print(f"Dry run: would install {count} FloatingCenterLadder child objects; replaced groups: {removed}")
+        return
+
+    backup_path = backup(scene_path, root)
+    scene_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    print(f"Backup: {backup_path}")
+    print(f"Installed FloatingCenterLadder with {count} child objects")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Repeatable S&Box scene blockout edits.")
-    parser.add_argument("command", choices=["add-road-corridor", "add-road-intersection", "apply-above-below-level-pass"])
+    parser.add_argument("command", choices=["add-road-corridor", "add-road-intersection", "apply-above-below-level-pass", "add-floating-center-ladder"])
     parser.add_argument("--scene", default="Assets/scenes/main.scene")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
@@ -663,6 +806,8 @@ def main() -> int:
         add_road_intersection(scene_path, args.dry_run)
     elif args.command == "apply-above-below-level-pass":
         apply_above_below_level_pass(scene_path, args.dry_run)
+    elif args.command == "add-floating-center-ladder":
+        add_floating_center_ladder(scene_path, args.dry_run)
     return 0
 
 

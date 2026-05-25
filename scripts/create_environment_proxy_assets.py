@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import argparse
 import math
 import random
+import sys
 from pathlib import Path
 
 import bpy
@@ -12,6 +14,11 @@ ROOT = Path(__file__).resolve().parents[1]
 MODELS = ROOT / "Assets" / "models"
 MATERIALS = ROOT / "Assets" / "materials" / "environment"
 BLEND_DIR = ROOT / "environment_model.blend"
+PINE_MATERIAL_REMAPS = [
+    ("TerrainPineBark", "materials/environment/terrain_pine_bark.vmat"),
+    ("TerrainPineNeedlesCardA", "materials/environment/terrain_pine_needles_card_a.vmat"),
+    ("TerrainPineNeedlesCardB", "materials/environment/terrain_pine_needles_card_b.vmat"),
+]
 
 
 def reset_scene() -> None:
@@ -959,6 +966,34 @@ def create_pine() -> list[bpy.types.Object]:
     return [root, joined]
 
 
+def deform_pine_variant(mesh: bpy.types.Object, variant: str) -> None:
+    for vertex in mesh.data.vertices:
+        point = vertex.co
+        height_factor = clamp01((point.z - 8.2) / 6.8)
+
+        if variant == "windswept":
+            lean = height_factor**1.35
+            point.x = point.x * (0.82 + height_factor * 0.08) + lean * 0.82
+            point.y *= 0.78 + height_factor * 0.12
+            point.z *= 1.08
+        elif variant == "broad":
+            crown = height_factor**0.75
+            point.x *= 1.05 + crown * 0.32
+            point.y *= 1.08 + crown * 0.24
+            point.z *= 0.90 + height_factor * 0.03
+        else:
+            raise ValueError(f"Unknown pine variant: {variant}")
+
+
+def create_pine_variant(root_name: str, mesh_name: str, variant: str) -> list[bpy.types.Object]:
+    root, joined = create_pine()
+    root.name = root_name
+    joined.name = mesh_name
+    joined.data.name = f"{mesh_name}_mesh"
+    deform_pine_variant(joined, variant)
+    return [root, joined]
+
+
 def create_rock() -> list[bpy.types.Object]:
     rock_mat = make_material("TerrainRock", (0.38, 0.36, 0.32, 1.0))
     bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=0.8, location=(0, 0, 0.62))
@@ -986,6 +1021,41 @@ def create_rock() -> list[bpy.types.Object]:
         poly.use_smooth = False
 
     return [rock]
+
+
+def write_tree_variant_assets() -> None:
+    MODELS.mkdir(parents=True, exist_ok=True)
+    BLEND_DIR.mkdir(parents=True, exist_ok=True)
+
+    reset_scene()
+    windswept_objects = create_pine_variant("TerrainPineWindswept_Root", "TerrainPineWindswept_SourceMesh", "windswept")
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in windswept_objects:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = windswept_objects[0]
+    export_selected(MODELS / "terrain_pine_windswept.fbx")
+    write_vmdl(
+        MODELS / "terrain_pine_windswept.vmdl",
+        "models/terrain_pine_windswept.fbx",
+        PINE_MATERIAL_REMAPS,
+        use_global_default=False,
+    )
+    bpy.ops.wm.save_as_mainfile(filepath=str(BLEND_DIR / "terrain_pine_windswept.blend"))
+
+    reset_scene()
+    broad_objects = create_pine_variant("TerrainPineBroad_Root", "TerrainPineBroad_SourceMesh", "broad")
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in broad_objects:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = broad_objects[0]
+    export_selected(MODELS / "terrain_pine_broad.fbx")
+    write_vmdl(
+        MODELS / "terrain_pine_broad.vmdl",
+        "models/terrain_pine_broad.fbx",
+        PINE_MATERIAL_REMAPS,
+        use_global_default=False,
+    )
+    bpy.ops.wm.save_as_mainfile(filepath=str(BLEND_DIR / "terrain_pine_broad.blend"))
 
 
 def main() -> None:
@@ -1061,11 +1131,7 @@ def main() -> None:
     write_vmdl(
         MODELS / "terrain_pine.vmdl",
         "models/terrain_pine.fbx",
-        [
-            ("TerrainPineBark", "materials/environment/terrain_pine_bark.vmat"),
-            ("TerrainPineNeedlesCardA", "materials/environment/terrain_pine_needles_card_a.vmat"),
-            ("TerrainPineNeedlesCardB", "materials/environment/terrain_pine_needles_card_b.vmat"),
-        ],
+        PINE_MATERIAL_REMAPS,
     )
     write_vmdl(
         MODELS / "terrain_rock.vmdl",
@@ -1076,6 +1142,16 @@ def main() -> None:
 
     bpy.ops.wm.save_as_mainfile(filepath=str(BLEND_DIR / "terrain_assets.blend"))
 
+    write_tree_variant_assets()
+
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--only-tree-variants", action="store_true")
+    script_args = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
+    args = parser.parse_args(script_args)
+
+    if args.only_tree_variants:
+        write_tree_variant_assets()
+    else:
+        main()

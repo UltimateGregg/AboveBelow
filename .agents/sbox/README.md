@@ -23,6 +23,7 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 | Blender or generated asset review | `asset-pipeline-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1` |
 | Designing the ModelDoc automation agent | `modeldoc-agent-builder.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite modeldoc` |
 | ModelDoc/VMDL validation | `modeldoc-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/modeldoc_audit.ps1 -ShowInfo` |
+| AAA-quality Blender asset production | `aaa-asset-quality-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/aaa_asset_quality_audit.ps1 -ShowInfo` |
 | New asset request or source brief | `asset-brief-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/new_asset_brief.ps1 -Name my_asset -Category weapon` |
 | Blender source-scene production quality | `blender-quality-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/blender_quality_audit.ps1` |
 | Material and texture production quality | `material-texture-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/material_texture_audit.ps1` |
@@ -57,6 +58,7 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 - After map prop or building collision edits, run the collision authoring agent and then verify in the live editor; saved scene JSON and active editor state can diverge after Save As or MCP edits.
 - For collision-heavy tasks, use `collision-chain-agent.md` to split work across explorer, implementer, verifier, and critic roles before final handoff.
 - When the user types exactly `train`, respond with `On it!`, run the post-task training workflow, and apply durable hook, agent, pipeline, or documentation updates that will help future tasks.
+- When the user asks for AAA-quality Blender/S&Box assets, route through `aaa-asset-quality-agent.md`: start from a brief with reference requirements and Production Quality Targets, then prove Blender quality, material/texture readiness, visual previews, export/import, ModelDoc/FBX slots, and S&Box prefab/editor appearance.
 - For Blender-to-S&Box texture transfer, inspect whether the Blender material is procedural or image-backed before editing `.vmat` files. Procedural looks need baked project textures and strict VMDL material-slot validation.
 - For cosmetic jigglebones, route through `jigglebone-cosmetic-agent.md`: prove skeleton binding, bone merge, ModelDoc physics shapes, joint anchors, and editor motion before treating the asset as ready.
 - For sound work, treat `.sound` wrappers as gameplay assets and raw audio as source data. Run the sound suite before wiring or previewing audio in the editor.

@@ -17,6 +17,7 @@ Create production asset briefs that translate asset intent into S&Box-ready targ
 
 - Use one of the supported category profiles: `weapon`, `drone`, `character`, or `environment`.
 - Keep generated briefs as planning documents; do not treat them as prefab, collider, or gameplay changes.
+- For high-polish or "AAA quality" requests, make the brief the first quality gate: reference requirements, production quality targets, material roles, sockets, scale, and visual review checks should be explicit before modeling.
 - Record intended prefab and model targets when known.
 - Keep collision expectations separate from visual mesh export unless a later task explicitly changes collider workflow.
 - Preserve existing SoldierBase, DroneBase, weapon, and equipment prefab identities.

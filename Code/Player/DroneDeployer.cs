@@ -38,13 +38,35 @@ public sealed class DroneDeployer : Component
 
 	[Property] public Vector3 LeftHandFpOffset { get; set; } = new( 28f, -6f, -10f );
 	[Property] public Angles LeftHandFpRotation { get; set; } = new( 0f, 0f, 0f );
+	[Property] public Vector3 LeftHandIkFpOffset { get; set; } = new( 28f, -10f, -12f );
+	[Property] public Angles LeftHandIkFpRotation { get; set; } = new( 0f, 180f, 0f );
 	[Property] public Vector3 RightHandFpOffset { get; set; } = new( 26f, 6f, -10f );
 	[Property] public Angles RightHandFpRotation { get; set; } = new( 0f, 0f, 0f );
+	[Property] public Vector3 RightHandIkFpOffset { get; set; } = new( 32f, 10f, -10f );
+	[Property] public Angles RightHandIkFpRotation { get; set; } = new( 0f, 0f, 0f );
+	[Property] public Vector3 RightHandControllerIkFpOffset { get; set; } = new( 29f, -2f, -12f );
+	[Property] public Angles RightHandControllerIkFpRotation { get; set; } = new( 0f, 180f, 0f );
 
 	[Property] public Vector3 LeftHandTpLocalPos { get; set; } = new( 20f, 0f, 47f );
 	[Property] public Angles LeftHandTpLocalAngles { get; set; } = new( 0f, 0f, 0f );
+	[Property] public Vector3 LeftHandIkTpLocalPos { get; set; } = new( 28f, -8f, 44f );
+	[Property] public Angles LeftHandIkTpLocalAngles { get; set; } = new( 0f, 0f, 0f );
 	[Property] public Vector3 RightHandTpLocalPos { get; set; } = new( 22f, 14f, 49f );
 	[Property] public Angles RightHandTpLocalAngles { get; set; } = new( 0f, 0f, 0f );
+	[Property] public Vector3 RightHandIkTpLocalPos { get; set; } = new( 34f, 10f, 46f );
+	[Property] public Angles RightHandIkTpLocalAngles { get; set; } = new( 0f, 0f, 0f );
+	[Property] public Vector3 RightHandControllerIkTpLocalPos { get; set; } = new( 24f, 4f, 44f );
+	[Property] public Angles RightHandControllerIkTpLocalAngles { get; set; } = new( 0f, 0f, 0f );
+
+	[Property] public string GpsHeldDroneModelPath { get; set; } = "models/drone_high.vmdl";
+	[Property] public string FpvHeldDroneModelPath { get; set; } = "models/drone_fpv.vmdl";
+	[Property] public string FiberHeldDroneModelPath { get; set; } = "models/drone_fpv.vmdl";
+	[Property] public Vector3 GpsHeldDroneScale { get; set; } = new( 0.075f, 0.075f, 0.075f );
+	[Property] public Vector3 FpvHeldDroneScale { get; set; } = new( 0.3f, 0.3f, 0.3f );
+	[Property] public Vector3 FiberHeldDroneScale { get; set; } = new( 0.3f, 0.3f, 0.3f );
+	[Property] public Color GpsHeldDroneTint { get; set; } = Color.White;
+	[Property] public Color FpvHeldDroneTint { get; set; } = Color.White;
+	[Property] public Color FiberHeldDroneTint { get; set; } = new( 1f, 0.95f, 0.7f, 1f );
 
 	[Property, Range( 1f, 30f )] public float SwayLerpRate { get; set; } = 18f;
 
@@ -55,15 +77,19 @@ public sealed class DroneDeployer : Component
 	public bool CanLaunch => IsSelected && !DroneInFlight && Time.Now >= LaunchReadyAt;
 	public float CooldownRemaining => MathF.Max( 0f, LaunchReadyAt - Time.Now );
 
+	string _activeHeldDroneModelPath = "";
+
 	protected override void OnStart()
 	{
 		ResolvePrefabReferences();
+		UpdateChosenDroneVisual();
 		ApplySelectionVisualState();
 	}
 
 	protected override void OnUpdate()
 	{
 		ResolvePrefabReferences();
+		UpdateChosenDroneVisual();
 
 		var pc = Components.GetInAncestors<GroundPlayerController>();
 		var remote = Components.GetInAncestors<RemoteController>();
@@ -73,8 +99,33 @@ public sealed class DroneDeployer : Component
 
 		if ( selected )
 		{
-			UpdateHandVisual( LeftHandVisual, LeftHandIkTarget, pc, droneViewActive, LeftHandFpOffset, LeftHandFpRotation, LeftHandTpLocalPos, LeftHandTpLocalAngles );
-			UpdateHandVisual( RightHandVisual, RightHandIkTarget, pc, droneViewActive, RightHandFpOffset, RightHandFpRotation, RightHandTpLocalPos, RightHandTpLocalAngles );
+			UpdateHandVisual(
+				LeftHandVisual,
+				LeftHandIkTarget,
+				pc,
+				droneViewActive,
+				LeftHandFpOffset,
+				LeftHandFpRotation,
+				LeftHandIkFpOffset,
+				LeftHandIkFpRotation,
+				LeftHandTpLocalPos,
+				LeftHandTpLocalAngles,
+				LeftHandIkTpLocalPos,
+				LeftHandIkTpLocalAngles );
+
+			UpdateHandVisual(
+				RightHandVisual,
+				RightHandIkTarget,
+				pc,
+				droneViewActive,
+				RightHandFpOffset,
+				RightHandFpRotation,
+				DroneInFlight ? RightHandControllerIkFpOffset : RightHandIkFpOffset,
+				DroneInFlight ? RightHandControllerIkFpRotation : RightHandIkFpRotation,
+				RightHandTpLocalPos,
+				RightHandTpLocalAngles,
+				DroneInFlight ? RightHandControllerIkTpLocalPos : RightHandIkTpLocalPos,
+				DroneInFlight ? RightHandControllerIkTpLocalAngles : RightHandIkTpLocalAngles );
 		}
 		UpdateCitizenHands( pc, droneViewActive );
 
@@ -130,8 +181,60 @@ public sealed class DroneDeployer : Component
 			RightHandIkTarget = GameObject.Children.FirstOrDefault( x => x.Name == "RightHandIk" );
 	}
 
+	void UpdateChosenDroneVisual()
+	{
+		if ( !RightHandVisual.IsValid() )
+			return;
+
+		var renderer = RightHandVisual.Components.Get<ModelRenderer>();
+		if ( !renderer.IsValid() )
+			return;
+
+		var pilot = Components.GetInAncestors<PilotSoldier>();
+		var chosenDrone = pilot.IsValid() ? pilot.ChosenDrone : DroneType.Fpv;
+
+		var modelPath = chosenDrone switch
+		{
+			DroneType.Gps => GpsHeldDroneModelPath,
+			DroneType.Fpv => FpvHeldDroneModelPath,
+			DroneType.FiberOpticFpv => FiberHeldDroneModelPath,
+			_ => FpvHeldDroneModelPath
+		};
+
+		if ( !string.IsNullOrWhiteSpace( modelPath ) && _activeHeldDroneModelPath != modelPath )
+		{
+			var model = Model.Load( modelPath );
+			if ( model is not null && model.IsValid )
+			{
+				renderer.Model = model;
+				_activeHeldDroneModelPath = modelPath;
+			}
+			else
+			{
+				Log.Warning( $"[DroneDeployer] Could not load held drone model '{modelPath}' for {chosenDrone}" );
+			}
+		}
+
+		RightHandVisual.LocalScale = chosenDrone switch
+		{
+			DroneType.Gps => GpsHeldDroneScale,
+			DroneType.Fpv => FpvHeldDroneScale,
+			DroneType.FiberOpticFpv => FiberHeldDroneScale,
+			_ => FpvHeldDroneScale
+		};
+
+		renderer.Tint = chosenDrone switch
+		{
+			DroneType.Gps => GpsHeldDroneTint,
+			DroneType.Fpv => FpvHeldDroneTint,
+			DroneType.FiberOpticFpv => FiberHeldDroneTint,
+			_ => FpvHeldDroneTint
+		};
+	}
+
 	void UpdateHandVisual( GameObject visual, GameObject ikTarget, GroundPlayerController pc, bool forceThirdPerson,
-		Vector3 fpOffset, Angles fpRot, Vector3 tpPos, Angles tpRot )
+		Vector3 visualFpOffset, Angles visualFpRot, Vector3 ikFpOffset, Angles ikFpRot,
+		Vector3 visualTpPos, Angles visualTpRot, Vector3 ikTpPos, Angles ikTpRot )
 	{
 		if ( !visual.IsValid() && !ikTarget.IsValid() ) return;
 
@@ -139,32 +242,44 @@ public sealed class DroneDeployer : Component
 
 		if ( !firstPersonMode )
 		{
-			ApplyLocalPose( visual, tpPos, tpRot.ToRotation() );
-			ApplyLocalPose( ikTarget, tpPos, tpRot.ToRotation() );
+			ApplyLocalPose( visual, visualTpPos, visualTpRot.ToRotation() );
+			ApplyLocalPose( ikTarget, ikTpPos, ikTpRot.ToRotation() );
 			return;
 		}
 
 		var look = pc.EyeAngles.ToRotation();
-		var targetPos = pc.Eye.WorldPosition
-			+ look.Forward * fpOffset.x
-			+ look.Right * fpOffset.y
-			+ look.Up * fpOffset.z;
-		var targetRot = look * fpRot.ToRotation();
+		var visualPos = EyeOffsetToWorld( pc, look, visualFpOffset );
+		var visualRot = look * visualFpRot.ToRotation();
+		var ikPos = EyeOffsetToWorld( pc, look, ikFpOffset );
+		var ikRot = look * ikFpRot.ToRotation();
 
-		var poseRoot = visual.IsValid() ? visual : ikTarget;
-		var current = poseRoot.WorldPosition;
+		ApplySmoothedWorldPose( visual, visualPos, visualRot );
+		ApplySmoothedWorldPose( ikTarget, ikPos, ikRot );
+	}
+
+	static Vector3 EyeOffsetToWorld( GroundPlayerController pc, Rotation look, Vector3 offset )
+	{
+		return pc.Eye.WorldPosition
+			+ look.Forward * offset.x
+			+ look.Right * offset.y
+			+ look.Up * offset.z;
+	}
+
+	void ApplySmoothedWorldPose( GameObject go, Vector3 targetPos, Rotation targetRot )
+	{
+		if ( !go.IsValid() ) return;
+
+		var current = go.WorldPosition;
 		if ( current.LengthSquared < 0.01f )
 		{
-			ApplyWorldPose( visual, targetPos, targetRot );
-			ApplyWorldPose( ikTarget, targetPos, targetRot );
+			ApplyWorldPose( go, targetPos, targetRot );
 		}
 		else
 		{
 			var k = 1f - MathF.Exp( -SwayLerpRate * Time.Delta );
 			var displayPos = Vector3.Lerp( current, targetPos, k );
-			var displayRot = Rotation.Slerp( poseRoot.WorldRotation, targetRot, k );
-			ApplyWorldPose( visual, displayPos, displayRot );
-			ApplyWorldPose( ikTarget, displayPos, displayRot );
+			var displayRot = Rotation.Slerp( go.WorldRotation, targetRot, k );
+			ApplyWorldPose( go, displayPos, displayRot );
 		}
 	}
 

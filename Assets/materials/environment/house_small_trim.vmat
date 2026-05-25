@@ -1,0 +1,16 @@
+"Layer0"
+{
+	"shader"		"shaders/complex.shader"
+	"TextureColor"		"materials/environment/house_small_trim_color.png"
+	"TextureNormal"		"materials/environment/house_small_trim_normal.png"
+	"TextureRoughness"		"materials/environment/house_small_trim_rough.png"
+	"TextureAmbientOcclusion"		"materials/environment/house_small_trim_ao.png"
+	"g_flModelTintAmount"		"1.000000"
+	"g_vColorTint"		"[0.660000 0.640000 0.550000 0.000000]"
+	"g_flMetalness"		"0.000000"
+	"g_flRoughness"		"0.740000"
+	"g_bFogEnabled"		"1"
+	"g_vTexCoordScale"		"[1.000 1.000]"
+	"g_vTexCoordOffset"		"[0.000 0.000]"
+	"g_vTexCoordScrollSpeed"		"[0.000 0.000]"
+}

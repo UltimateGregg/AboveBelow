@@ -15,6 +15,22 @@
       "grip"
     ],
     "scale_note": "Confirm first-person and world scale against the owning weapon prefab.",
+    "reference_requirements": [
+      "Collect front, side, top, and close-up reference for the intended weapon family or equipment role.",
+      "Call out real material zones, wear patterns, decals, labels, lights, and moving parts before modeling.",
+      "Record first-person and third-person readability goals so viewmodel polish does not break world pickup clarity."
+    ],
+    "quality_targets": [
+      "Silhouette reads clearly in first person and as a world-held item.",
+      "Materials separate metal, polymer, rubber, glass, tape, lights, and dirt without collapsing into flat grey.",
+      "Edges use believable bevels and weighted normals instead of razor-sharp blockout geometry.",
+      "Sockets, muzzle/effect origins, and grip orientation are authored as visible named helpers or empties."
+    ],
+    "visual_review_checks": [
+      "Render a Blender preview from first-person, side, and three-quarter angles before export.",
+      "After import, inspect the owning prefab in S&Box for scale, pose, material remaps, and socket placement.",
+      "For alpha, emissive, glass, or decals, include a texture/contact-sheet or editor screenshot proof."
+    ],
     "acceptance_checks": [
       "Muzzle or effect origin is documented when the asset fires or emits effects.",
       "Grip and attachment orientation are documented for soldier mounting.",
@@ -39,6 +55,22 @@
       "camera"
     ],
     "scale_note": "Confirm visual bounds against DroneController prefab scale and flight readability.",
+    "reference_requirements": [
+      "Collect reference for the exact drone class, arm geometry, motor layout, camera pod, antenna layout, and battery/body shell.",
+      "Document variant-specific cues for GPS, FPV, and fiber FPV so gameplay identity is visible without UI.",
+      "Record expected gameplay viewing distances for airborne silhouette, ground pickup, and chase-camera framing."
+    ],
+    "quality_targets": [
+      "Silhouette stays readable at gameplay distance and does not disappear into the map background.",
+      "Frame, motor, propeller, lens, antenna, battery, and fastener materials are visually distinct.",
+      "Propeller pivots, camera orientation, and antenna/fiber attachments are authored as stable named children or helpers.",
+      "Bounds and origin support prefab placement, camera follow, crash behavior, and collision authoring."
+    ],
+    "visual_review_checks": [
+      "Render Blender previews from top, front, side, and chase-camera angles.",
+      "After import, inspect the drone prefab with propeller children, scale, material remaps, and camera framing visible.",
+      "For transparent props, lights, decals, or fiber cables, include contact-sheet or editor screenshot proof."
+    ],
     "acceptance_checks": [
       "Silhouette is readable from gameplay distance.",
       "Variant identity is distinct for GPS, FPV, or fiber FPV.",
@@ -61,6 +93,22 @@
       "body"
     ],
     "scale_note": "Confirm proportions against existing GroundPlayerController and first-person visibility assumptions.",
+    "reference_requirements": [
+      "Collect full-body, gear, material, and class/team reference before changing character-facing assets.",
+      "Document skeleton, rig, attachment, material-group, and first-person visibility assumptions.",
+      "Record how the asset should look under Soldier, Pilot, and training-dummy presentation rules."
+    ],
+    "quality_targets": [
+      "Proportions, gear breakup, and team/class cues read in third person without relying only on HUD text.",
+      "Skin, cloth, armor, straps, gloves, lenses, and gear use separate believable material responses.",
+      "Attachment sockets and animation/rig assumptions are explicit before prefab wiring.",
+      "First-person arms or held-item visibility remains consistent with the real human-body/IK path."
+    ],
+    "visual_review_checks": [
+      "Render front, side, back, and gameplay-distance Blender previews before export.",
+      "After import, inspect the owning character prefab in S&Box with animation helper, material groups, and held-item pose visible.",
+      "For cloth/cards/hair/transparency, include texture/contact-sheet or editor screenshot proof."
+    ],
     "acceptance_checks": [
       "Rig, armature, or attachment readiness is documented when animation is expected.",
       "Class or team material groups are documented when relevant.",
@@ -81,6 +129,22 @@
       "root"
     ],
     "scale_note": "Confirm origin and dimensions are sensible for scene placement.",
+    "reference_requirements": [
+      "Collect scale, construction, material, wear, and gameplay-cover reference before detailed modeling.",
+      "Document intended placement context, repetition count, collision expectations, and player traversal impact.",
+      "Record material breakup for surface, trim, glass, metal, dirt, foliage, decals, and damage states when relevant."
+    ],
+    "quality_targets": [
+      "Large forms read from drone height while close surfaces hold up for soldier-scale inspection.",
+      "Materials avoid one-note color fills and include believable roughness, normal, dirt, trim, and edge variation.",
+      "Origins, pivots, and root empties support scene placement, repeated props, and authored collision helpers.",
+      "Foliage and alpha-card assets include clean cutout masks and do not rely on default textures."
+    ],
+    "visual_review_checks": [
+      "Render Blender previews from ground, drone-height, and three-quarter angles before export.",
+      "After import, inspect the asset in S&Box lighting with material remaps, collision helpers, and scale visible.",
+      "For foliage or cards, review color texture, translucency/cutout mask, and checkerboard contact sheet."
+    ],
     "acceptance_checks": [
       "Collision expectations are documented separately from visual mesh export.",
       "Repeated props have stable names and avoid giant bounds.",

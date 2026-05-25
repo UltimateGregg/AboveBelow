@@ -2,13 +2,13 @@
 
 ## Purpose
 
-Convert S&Box Learn tutorials and other community-written guidance into small, verified project workflow improvements.
+Convert S&Box Learn tutorials, official editor-doc sweeps, and other external guidance into small, verified project workflow improvements.
 
 Use this agent when:
 
-- a user asks whether material from `https://sbox.game/learn` should change day-to-day Codex behavior,
-- a tutorial suggests a repeatable workflow rule for UI, networking, assets, shaders, editor setup, or ModelDoc,
-- community guidance should become durable docs, audits, hooks, or routing rather than a one-off chat answer.
+- a user asks whether material from `https://sbox.game/learn` or `https://sbox.game/dev/doc/editor/` should change day-to-day Codex behavior,
+- a tutorial or docs section suggests a repeatable workflow rule for UI, networking, assets, shaders, editor setup, editor tools, or ModelDoc,
+- external guidance should become durable docs, audits, hooks, or routing rather than a one-off chat answer.
 
 ## Sources
 
@@ -19,7 +19,7 @@ Treat S&Box Learn as useful secondary context. Before turning a tutorial into st
 - existing project code and known working patterns,
 - existing specialized agents under `.agents/sbox/`.
 
-If a tutorial is volatile or recently updated, record the review date and source URL in `docs/sbox_engine_llm_reference.md`.
+Treat official S&Box docs as primary context, but still verify exact C# symbols against local `API.json` or existing project patterns before implementation. If a tutorial or official docs sweep is volatile, broad, or recently updated, record the review date and source URL in `docs/sbox_engine_llm_reference.md`.
 
 ## Work
 
@@ -27,6 +27,7 @@ If a tutorial is volatile or recently updated, record the review date and source
 - Route exact API claims through `sbox-engine-reference-agent.md` and the local API lookup helper.
 - Route Razor refresh, HUD, or menu lessons through `ui-razor-reactivity-agent.md` and `ui_flow_audit.ps1`.
 - Route Node Editor or custom graph-tool lessons through `editor-node-tool-agent.md` and `editor_node_tool_audit.ps1`.
+- Route official editor-doc lessons into the engine reference as short workflow rules, especially editor-only placement, `UndoScope`, `EditorEvent`, inspector attributes, `AssetPreview`, and `TextureGenerator` guidance.
 - Prefer focused audit rules, hook patterns, and agent routing over broad prose.
 - Do not make gameplay, scene, prefab, or asset edits from tutorial research unless the user explicitly asks for product changes.
 
