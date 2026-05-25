@@ -61,6 +61,7 @@ public sealed class DroneDeployer : Component
 	[Property] public string GpsHeldDroneModelPath { get; set; } = "models/drone_high.vmdl";
 	[Property] public string FpvHeldDroneModelPath { get; set; } = "models/drone_fpv.vmdl";
 	[Property] public string FiberHeldDroneModelPath { get; set; } = "models/drone_fpv_fiber.vmdl";
+	[Property] public string FpvHeldPropellerModelPath { get; set; } = "models/drone_fpv_prop.vmdl";
 	[Property] public Vector3 GpsHeldDroneScale { get; set; } = new( 0.075f, 0.075f, 0.075f );
 	[Property] public Vector3 FpvHeldDroneScale { get; set; } = new( 0.3f, 0.3f, 0.3f );
 	[Property] public Vector3 FiberHeldDroneScale { get; set; } = new( 0.3f, 0.3f, 0.3f );
@@ -78,6 +79,31 @@ public sealed class DroneDeployer : Component
 	public float CooldownRemaining => MathF.Max( 0f, LaunchReadyAt - Time.Now );
 
 	string _activeHeldDroneModelPath = "";
+	string _activeHeldPropellerModelPath = "";
+	string _warnedHeldPropellerModelPath = "";
+	Model _activeHeldPropellerModel;
+
+	static readonly HeldPropellerVisualSpec[] HeldPropellers =
+	{
+		new( "HeldPropeller_FL", new Vector3( 6.71f, 6.71f, 1.8f ), new Angles( 0f, 0f, 0f ) ),
+		new( "HeldPropeller_FR", new Vector3( 6.71f, -6.71f, 1.8f ), new Angles( 0f, 180f, 0f ) ),
+		new( "HeldPropeller_BL", new Vector3( -6.71f, 6.71f, 1.8f ), new Angles( 0f, 180f, 0f ) ),
+		new( "HeldPropeller_BR", new Vector3( -6.71f, -6.71f, 1.8f ), new Angles( 0f, 0f, 0f ) ),
+	};
+
+	readonly struct HeldPropellerVisualSpec
+	{
+		public readonly string Name;
+		public readonly Vector3 LocalPosition;
+		public readonly Angles LocalRotation;
+
+		public HeldPropellerVisualSpec( string name, Vector3 localPosition, Angles localRotation )
+		{
+			Name = name;
+			LocalPosition = localPosition;
+			LocalRotation = localRotation;
+		}
+	}
 
 	protected override void OnStart()
 	{
@@ -230,6 +256,94 @@ public sealed class DroneDeployer : Component
 			DroneType.FiberOpticFpv => FiberHeldDroneTint,
 			_ => FpvHeldDroneTint
 		};
+
+		UpdateHeldPropellerVisuals( chosenDrone );
+	}
+
+	void EnsureHeldPropellerVisuals()
+	{
+		if ( !RightHandVisual.IsValid() )
+			return;
+
+		foreach ( var spec in HeldPropellers )
+		{
+			var propeller = RightHandVisual.Children.FirstOrDefault( child => child.Name == spec.Name );
+			if ( !propeller.IsValid() )
+			{
+				propeller = new GameObject( RightHandVisual, true, spec.Name )
+				{
+					NetworkMode = NetworkMode.Never
+				};
+			}
+
+			propeller.LocalPosition = spec.LocalPosition;
+			propeller.LocalRotation = spec.LocalRotation.ToRotation();
+			propeller.LocalScale = Vector3.One;
+
+			if ( !propeller.Components.Get<ModelRenderer>().IsValid() )
+				propeller.Components.Create<ModelRenderer>();
+		}
+	}
+
+	void UpdateHeldPropellerVisuals( DroneType chosenDrone )
+	{
+		EnsureHeldPropellerVisuals();
+
+		var showPropellers = chosenDrone is DroneType.Fpv or DroneType.FiberOpticFpv;
+		var propellerModel = showPropellers ? LoadHeldPropellerModel() : null;
+
+		foreach ( var spec in HeldPropellers )
+		{
+			var propeller = RightHandVisual.IsValid()
+				? RightHandVisual.Children.FirstOrDefault( child => child.Name == spec.Name )
+				: null;
+			if ( !propeller.IsValid() )
+				continue;
+
+			var renderer = propeller.Components.Get<ModelRenderer>();
+			if ( !renderer.IsValid() )
+				continue;
+
+			if ( !showPropellers || propellerModel is null || !propellerModel.IsValid )
+			{
+				renderer.Model = null;
+				renderer.RenderType = ModelRenderer.ShadowRenderType.Off;
+				continue;
+			}
+
+			renderer.Model = propellerModel;
+			renderer.Tint = Color.White;
+			renderer.RenderType = ModelRenderer.ShadowRenderType.On;
+		}
+	}
+
+	Model LoadHeldPropellerModel()
+	{
+		if ( string.IsNullOrWhiteSpace( FpvHeldPropellerModelPath ) )
+			return null;
+
+		if ( _activeHeldPropellerModelPath == FpvHeldPropellerModelPath
+			&& _activeHeldPropellerModel is not null
+			&& _activeHeldPropellerModel.IsValid )
+		{
+			return _activeHeldPropellerModel;
+		}
+
+		var model = Model.Load( FpvHeldPropellerModelPath );
+		if ( model is not null && model.IsValid )
+		{
+			_activeHeldPropellerModel = model;
+			_activeHeldPropellerModelPath = FpvHeldPropellerModelPath;
+			return model;
+		}
+
+		if ( _warnedHeldPropellerModelPath != FpvHeldPropellerModelPath )
+		{
+			Log.Warning( $"[DroneDeployer] Could not load held drone propeller model '{FpvHeldPropellerModelPath}'" );
+			_warnedHeldPropellerModelPath = FpvHeldPropellerModelPath;
+		}
+
+		return null;
 	}
 
 	void UpdateHandVisual( GameObject visual, GameObject ikTarget, GroundPlayerController pc, bool forceThirdPerson,

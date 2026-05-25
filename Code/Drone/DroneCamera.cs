@@ -28,10 +28,16 @@ public sealed class DroneCamera : Component
 
 	bool _firstPersonActive;
 
+	public void SetFirstPersonActive( bool active )
+	{
+		FirstPerson = active;
+		_firstPersonActive = active;
+	}
+
 	protected override void OnStart()
 	{
 		ResolvePrefabReferences();
-		_firstPersonActive = FirstPerson;
+		SetFirstPersonActive( FirstPerson );
 	}
 
 	protected override void OnUpdate()

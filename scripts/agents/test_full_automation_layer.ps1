@@ -470,7 +470,10 @@ if (Test-Path -LiteralPath $droneVariantVisualAudit) {
   }
 }
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot "Assets\prefabs\drone_fpv.prefab") -Encoding UTF8
-        'public string FpvHeldDroneModelPath { get; set; } = "models/drone_fpv.vmdl";' | Set-Content -LiteralPath (Join-Path $tempRoot "Code\Player\DroneDeployer.cs") -Encoding UTF8
+        @'
+public string FpvHeldDroneModelPath { get; set; } = "models/drone_fpv.vmdl";
+public string FiberHeldDroneModelPath { get; set; } = "models/drone_fpv_fiber.vmdl";
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\Player\DroneDeployer.cs") -Encoding UTF8
         @'
 {
   "source_blend": "drone_model.blend/drone_fpv.blend",
@@ -482,6 +485,42 @@ if (Test-Path -LiteralPath $droneVariantVisualAudit) {
   }
 }
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\drone_fpv_asset_pipeline.json") -Encoding UTF8
+
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "drone_model.blend\drone_fpv_fiber.blend") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "Assets\models\drone_fpv_fiber.fbx") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "Assets\models\drone_fpv_fiber.vmdl") | Out-Null
+        '"Layer0" { "TextureColor" "materials/drone_fpv_fiber_motor_color.png" }' | Set-Content -LiteralPath (Join-Path $tempRoot "Assets\materials\drone_fpv_fiber_motor.vmat") -Encoding UTF8
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "Assets\materials\drone_fpv_fiber_motor_color.png") | Out-Null
+
+        @'
+{
+  "RootObject": {
+    "Name": "Drone (Fiber-Optic FPV)",
+    "Children": [
+      {
+        "Name": "Visual",
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "Model": "models/drone_fpv_fiber.vmdl"
+          }
+        ]
+      }
+    ]
+  }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Assets\prefabs\drone_fpv_fiber.prefab") -Encoding UTF8
+        @'
+{
+  "source_blend": "drone_model.blend/drone_fpv_fiber.blend",
+  "target_fbx": "Assets/models/drone_fpv_fiber.fbx",
+  "target_vmdl": "Assets/models/drone_fpv_fiber.vmdl",
+  "model_resource_path": "models/drone_fpv_fiber.vmdl",
+  "material_remap": {
+    "Motor_Aluminum": "materials/drone_fpv_fiber_motor.vmat"
+  }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\drone_fpv_fiber_asset_pipeline.json") -Encoding UTF8
 
         & powershell -NoProfile -ExecutionPolicy Bypass -File $droneVariantVisualAudit -Root $tempRoot | Out-Host
         if ($LASTEXITCODE -ne 0) {

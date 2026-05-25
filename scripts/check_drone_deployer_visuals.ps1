@@ -121,6 +121,7 @@ function Assert-TruthyJsonOption {
 $deployer = Read-Text "Code\Player\DroneDeployer.cs"
 $viewmodel = Read-Text "Code\Player\FirstPersonViewmodel.cs"
 $droneCamera = Read-Text "Code\Drone\DroneCamera.cs"
+$gameSetup = Read-Text "Code\Game\GameSetup.cs"
 
 Require-Pattern $viewmodel 'HiddenStaticVisualRoot' `
     "FirstPersonViewmodel needs a hidden static visual root so a launched/stowed hand drone cannot stay visible as a floating first-person copy."
@@ -145,10 +146,37 @@ Require-Pattern $deployer 'FpvHeldDroneModelPath\s*\{\s*get;\s*set;\s*\}\s*=\s*"
     "DroneDeployer FPV held visual must use the textured FPV drone model path."
 Require-Pattern $deployer 'FiberHeldDroneModelPath\s*\{\s*get;\s*set;\s*\}\s*=\s*"models/drone_fpv_fiber\.vmdl"' `
     "DroneDeployer Fiber FPV held visual must use the distinct Fiber FPV model path."
+Require-Pattern $deployer 'FpvHeldPropellerModelPath\s*\{\s*get;\s*set;\s*\}\s*=\s*"models/drone_fpv_prop\.vmdl"' `
+    "DroneDeployer needs a held FPV propeller model path so the first-person FPV/Fiber preview includes props."
+Require-Pattern $deployer 'EnsureHeldPropellerVisuals\(' `
+    "DroneDeployer should create or resolve held propeller children for prefab compatibility."
+Require-Pattern $deployer 'UpdateHeldPropellerVisuals\(' `
+    "DroneDeployer should update held propeller visibility when the selected drone variant changes."
+Require-Pattern $deployer 'chosenDrone\s+is\s+DroneType\.Fpv\s+or\s+DroneType\.FiberOpticFpv' `
+    "DroneDeployer held propellers should be visible for FPV and Fiber FPV, but hidden for GPS."
 Require-Pattern $droneCamera 'ShowVisualInFirstPerson\s*\{\s*get;\s*set;\s*\}\s*=\s*true' `
     "DroneCamera needs first-person self-visual rendering enabled by default so FPV pilots can see the full textured drone model."
 Require-Pattern $droneCamera 'SetPilotVisualHidden\(\s*firstPersonActive\s*&&\s*!ShowVisualInFirstPerson\s*\)' `
     "DroneCamera must not force the drone Visual to ShadowsOnly in first-person mode when ShowVisualInFirstPerson is enabled."
+Require-Pattern $deployer 'pilot\.LinkedDroneId\s*=\s*clone\.Id' `
+    "DroneDeployer should be the code path that links a launched drone to the pilot."
+Require-Pattern $deployer 'DroneInFlight\s*=\s*true' `
+    "DroneDeployer should set DroneInFlight only after a manual launch clone is created."
+
+$spawnPilotStart = $gameSetup.IndexOf("void SpawnPilotPawn")
+$spawnSoldierStart = if ($spawnPilotStart -ge 0) { $gameSetup.IndexOf("void SpawnSoldierPawn", $spawnPilotStart) } else { -1 }
+if ($spawnPilotStart -lt 0 -or $spawnSoldierStart -lt 0) {
+    Add-Error "GameSetup SpawnPilotPawn/SpawnSoldierPawn boundaries could not be found for the no-auto-launch guard."
+}
+else {
+    $spawnPilotBody = $gameSetup.Substring($spawnPilotStart, $spawnSoldierStart - $spawnPilotStart)
+    foreach ($forbidden in @("ResolveDronePrefab", "LinkedDroneId\s*=", "_drones\s*\[")) {
+        if ($spawnPilotBody -match $forbidden) {
+            Add-Error "GameSetup.SpawnPilotPawn must not auto-spawn, track, or link a drone; launch should stay manual through DroneDeployer.ServerLaunchDrone."
+            break
+        }
+    }
+}
 
 $pilotPrefab = Read-Json "Assets\prefabs\pilot_ground.prefab"
 if ($null -ne $pilotPrefab -and $null -ne $pilotPrefab.RootObject) {
@@ -157,6 +185,14 @@ if ($null -ne $pilotPrefab -and $null -ne $pilotPrefab.RootObject) {
         Add-Error "Assets/prefabs/pilot_ground.prefab is missing the DroneDeployer object."
     }
     else {
+        $deployerComponent = Get-ComponentByType $droneDeployerObject[0] "DroneVsPlayers.DroneDeployer"
+        if ($null -ne $deployerComponent) {
+            if (-not ($deployerComponent.PSObject.Properties.Name -contains "FiberHeldDroneModelPath") -or
+                [string]$deployerComponent.FiberHeldDroneModelPath -ne "models/drone_fpv_fiber.vmdl") {
+                Add-Error "pilot_ground DroneDeployer must serialize FiberHeldDroneModelPath as models/drone_fpv_fiber.vmdl so Fiber pilots preview the correct model before launch."
+            }
+        }
+
         $rightHand = Get-ChildByName $droneDeployerObject[0] "RightHand"
         if ($null -eq $rightHand) {
             Add-Error "pilot_ground DroneDeployer is missing the RightHand held-drone visual."
@@ -168,6 +204,19 @@ if ($null -ne $pilotPrefab -and $null -ne $pilotPrefab.RootObject) {
             }
             elseif ([string]$renderer.Tint -ne "1,1,1,1") {
                 Add-Error "pilot_ground DroneDeployer/RightHand should use neutral tint 1,1,1,1; gray tint makes the selected held drone read as untextured."
+            }
+
+            foreach ($propellerName in @("HeldPropeller_FL", "HeldPropeller_FR", "HeldPropeller_BL", "HeldPropeller_BR")) {
+                $propeller = Get-ChildByName $rightHand $propellerName
+                if ($null -eq $propeller) {
+                    Add-Error "pilot_ground DroneDeployer/RightHand is missing $propellerName, so the first-person FPV/Fiber held drone can render without propellers."
+                    continue
+                }
+
+                $propellerRenderer = Get-ComponentByType $propeller "Sandbox.ModelRenderer"
+                if ($null -eq $propellerRenderer -or [string]$propellerRenderer.Model -ne "models/drone_fpv_prop.vmdl") {
+                    Add-Error "pilot_ground DroneDeployer/RightHand/$propellerName must render models/drone_fpv_prop.vmdl."
+                }
             }
         }
     }

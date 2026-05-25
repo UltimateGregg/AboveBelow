@@ -233,7 +233,8 @@ public sealed class GroundPlayerController : Component
 
 		if ( !IsProxy )
 		{
-			if ( LocalOptionsState.ConsumesGameplayInput )
+			var inputBlocked = LocalOptionsState.ConsumesGameplayInput || IsDroneViewInputBlocked();
+			if ( inputBlocked )
 			{
 				ClearSprintIntent();
 				_adsRequested = false;
@@ -467,7 +468,7 @@ public sealed class GroundPlayerController : Component
 	{
 		if ( IsProxy ) return;
 
-		var inputBlocked = LocalOptionsState.ConsumesGameplayInput;
+		var inputBlocked = LocalOptionsState.ConsumesGameplayInput || IsDroneViewInputBlocked();
 		if ( inputBlocked )
 		{
 			WishVelocity = Vector3.Zero;
@@ -597,6 +598,12 @@ public sealed class GroundPlayerController : Component
 	{
 		IsSprinting = false;
 		_sprintToggled = false;
+	}
+
+	bool IsDroneViewInputBlocked()
+	{
+		var remote = Components.Get<RemoteController>();
+		return remote.IsValid() && !remote.IsProxy && remote.DroneViewActive;
 	}
 
 	void UpdateStamina( bool moving )

@@ -57,6 +57,7 @@ Invoke-GuardScript -RelativePath "scripts\check_loadout_slots.ps1" -ScriptArgs @
 Invoke-GuardScript -RelativePath "scripts\check_drone_kamikaze_primary.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_drone_explosion_feedback.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_drone_weapon_arming.ps1" -ScriptArgs @("-Root", $Root)
+Invoke-GuardScript -RelativePath "scripts\check_drone_pilot_look_decoupling.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_ground_crouch_toggle.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_ground_sprint_toggle.ps1" -ScriptArgs @("-Root", $Root)
 Invoke-GuardScript -RelativePath "scripts\check_sprint_footstep_cadence.ps1" -ScriptArgs @("-Root", $Root)
