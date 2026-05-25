@@ -60,13 +60,13 @@ public sealed class DroneDeployer : Component
 
 	[Property] public string GpsHeldDroneModelPath { get; set; } = "models/drone_high.vmdl";
 	[Property] public string FpvHeldDroneModelPath { get; set; } = "models/drone_fpv.vmdl";
-	[Property] public string FiberHeldDroneModelPath { get; set; } = "models/drone_fpv.vmdl";
+	[Property] public string FiberHeldDroneModelPath { get; set; } = "models/drone_fpv_fiber.vmdl";
 	[Property] public Vector3 GpsHeldDroneScale { get; set; } = new( 0.075f, 0.075f, 0.075f );
 	[Property] public Vector3 FpvHeldDroneScale { get; set; } = new( 0.3f, 0.3f, 0.3f );
 	[Property] public Vector3 FiberHeldDroneScale { get; set; } = new( 0.3f, 0.3f, 0.3f );
 	[Property] public Color GpsHeldDroneTint { get; set; } = Color.White;
 	[Property] public Color FpvHeldDroneTint { get; set; } = Color.White;
-	[Property] public Color FiberHeldDroneTint { get; set; } = new( 1f, 0.95f, 0.7f, 1f );
+	[Property] public Color FiberHeldDroneTint { get; set; } = Color.White;
 
 	[Property, Range( 1f, 30f )] public float SwayLerpRate { get; set; } = 18f;
 

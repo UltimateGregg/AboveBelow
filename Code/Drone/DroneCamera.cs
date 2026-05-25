@@ -16,6 +16,7 @@ public sealed class DroneCamera : Component
 	[Property] public DroneController Drone { get; set; }
 	[Property] public GameObject CameraSocket { get; set; }
 	[Property] public bool FirstPerson { get; set; } = true;
+	[Property] public bool ShowVisualInFirstPerson { get; set; } = true;
 	[Property] public string CameraToggleInput { get; set; } = "ToggleDroneCamera";
 	[Property] public float ChaseDistance { get; set; } = 220f;
 	[Property] public float ChaseHeight { get; set; } = 80f;
@@ -71,7 +72,7 @@ public sealed class DroneCamera : Component
 
 		var lookRot = Drone.EyeAngles.ToRotation();
 		var firstPersonActive = _firstPersonActive && CameraSocket.IsValid();
-		SetPilotVisualHidden( firstPersonActive );
+		SetPilotVisualHidden( firstPersonActive && !ShowVisualInFirstPerson );
 
 		if ( firstPersonActive )
 		{

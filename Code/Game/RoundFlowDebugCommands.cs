@@ -24,6 +24,83 @@ public static class RoundFlowDebugCommands
 		LogProbe( label );
 	}
 
+	[ConCmd( "dvp_fpv_visual_probe" )]
+	public static void FpvVisualProbe()
+	{
+		if ( !Networking.IsHost )
+		{
+			Log.Warning( "[RoundProbe] dvp_fpv_visual_probe must run on the host." );
+			LogProbe( "fpv-visual-not-host" );
+			return;
+		}
+
+		var scene = Game.ActiveScene;
+		var setup = Find<GameSetup>();
+		var local = Connection.Local ?? Connection.All.FirstOrDefault();
+		if ( scene is null || local is null )
+		{
+			Log.Warning( "[RoundProbe] Cannot run FPV visual probe without an active scene and local connection." );
+			LogProbe( "fpv-visual-no-local" );
+			return;
+		}
+
+		if ( setup is not null && setup.IsValid() )
+		{
+			setup.SelectLocalDrone( DroneType.Fpv );
+			setup.SpawnPawnFor( local, PlayerRole.Pilot );
+		}
+
+		var pilot = scene.GetAllComponents<PilotSoldier>()
+			.FirstOrDefault( p => !p.IsProxy && p.GameObject.Network.Owner?.Id == local.Id )
+			?? scene.GetAllComponents<PilotSoldier>().FirstOrDefault( p => !p.IsProxy );
+
+		if ( !pilot.IsValid() )
+		{
+			Log.Warning( "[RoundProbe] FPV visual probe could not find a local pilot pawn." );
+			LogProbe( "fpv-visual-no-pilot" );
+			return;
+		}
+
+		pilot.ChosenDrone = DroneType.Fpv;
+
+		var existing = pilot.ResolveDrone();
+		var droneObject = existing.IsValid() ? existing.GameObject : null;
+		if ( !droneObject.IsValid() )
+		{
+			var prefab = GameObject.GetPrefab( "prefabs/drone_fpv.prefab" );
+			if ( !prefab.IsValid() )
+			{
+				Log.Warning( "[RoundProbe] FPV drone prefab could not be loaded." );
+				LogProbe( "fpv-visual-no-prefab" );
+				return;
+			}
+
+			var spawnRotation = Rotation.FromYaw( pilot.GameObject.WorldRotation.Yaw() );
+			var spawnPosition = pilot.GameObject.WorldPosition + spawnRotation.Forward * 120f + Vector3.Up * 72f;
+			droneObject = prefab.Clone( new Transform( spawnPosition, spawnRotation ), name: $"FPV Visual Probe - {local.DisplayName}" );
+
+			var link = droneObject.Components.Get<PilotLink>( FindMode.EverythingInSelfAndDescendants );
+			if ( link.IsValid() )
+				link.PilotId = local.Id;
+
+			if ( Networking.IsActive )
+				droneObject.NetworkSpawn( local );
+
+			pilot.LinkedDroneId = droneObject.Id;
+		}
+
+		var remote = pilot.Components.Get<RemoteController>( FindMode.EverythingInSelfAndDescendants );
+		if ( remote.IsValid() )
+			remote.SetDroneViewActive( true );
+
+		var camera = droneObject.Components.Get<DroneCamera>( FindMode.EverythingInSelfAndDescendants );
+		if ( camera.IsValid() )
+			camera.ShowVisualInFirstPerson = true;
+
+		Log.Info( "[RoundProbe] FPV visual probe active: local pilot is flying an FPV drone with first-person visual rendering enabled." );
+		LogProbe( "fpv-visual-active" );
+	}
+
 	[ConCmd( "dvp_select_soldier" )]
 	public static void SelectSoldier( string soldierClass = "Assault" )
 	{

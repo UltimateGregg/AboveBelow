@@ -170,11 +170,14 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/material_texture_audit.p
 powershell -ExecutionPolicy Bypass -File scripts/agents/asset_visual_review.ps1 -Blend weapons_model.blend/assault_rifle_m4_realistic.blend
 python scripts/texture_contact_sheet.py --config scripts/terrain_assets_asset_pipeline.json --out screenshots/asset_previews/terrain_assets_texture_sheet.png
 powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1
+powershell -ExecutionPolicy Bypass -File scripts/agents/drone_variant_visual_audit.ps1 -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/modeldoc_audit.ps1 -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production
 ```
 
 For AAA-quality or otherwise high-polish assets, use `.agents/sbox/aaa-asset-quality-agent.md` first. The generated brief should include reference requirements, Production Quality Targets, material roles, sockets, scale/orientation notes, and a Visual Review Plan before detailed modeling. The proof chain is brief -> Blender source quality -> material/texture audit -> visual preview/contact sheet -> export/import -> ModelDoc and FBX material-slot validation -> S&Box prefab or editor screenshot.
+
+For drone variants with a distinct visible identity, run `scripts/agents/drone_variant_visual_audit.ps1` before accepting the handoff. It catches the specific drift where a variant prefab or held preview still points at a shared/base body even though the variant now has its own Blender source, VMDL, and material identity.
 
 Use the texture contact sheet for alpha-cutout assets such as tree foliage cards before accepting a Blender render. The Blender preview confirms shape; the contact sheet and S&Box editor screenshot confirm the material and transparent background behavior.
 

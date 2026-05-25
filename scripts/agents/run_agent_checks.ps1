@@ -155,6 +155,7 @@ switch ($Suite) {
     "asset" {
         $scripts = @(
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
+            @{ Name = "drone_variant_visual_audit.ps1"; Args = $commonArgs },
             @{ Name = "fbx_material_slot_audit.ps1"; Args = $commonArgs }
         )
     }
@@ -170,6 +171,7 @@ switch ($Suite) {
             @{ Name = "blender_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "material_texture_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
+            @{ Name = "drone_variant_visual_audit.ps1"; Args = $commonArgs },
             @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
             @{ Name = "fbx_material_slot_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs },
@@ -193,7 +195,8 @@ switch ($Suite) {
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
-            @{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs }
+            @{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs },
+            @{ Name = "drone_variant_visual_audit.ps1"; Args = $commonArgs }
         )
     }
     "api" {

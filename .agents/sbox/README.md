@@ -31,6 +31,7 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 | Material and texture production quality | `material-texture-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/material_texture_audit.ps1` |
 | Blender procedural look needs to match in S&Box | `procedural-texture-transfer-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production` |
 | Visual preview review for a Blender asset | `visual-review-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/asset_visual_review.ps1 -Blend weapons_model.blend/assault_rifle_m4.blend` |
+| Drone variant model identity | `asset-pipeline-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/drone_variant_visual_audit.ps1 -ShowInfo` |
 | Full asset production readiness | `asset-pipeline-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production` |
 | Cosmetic jigglebone setup | `jigglebone-cosmetic-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite modeldoc` plus editor bone-merge playtest |
 | Sound assets and native editor audio wiring | `sound-control-plane-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite sound -ShowInfo` |

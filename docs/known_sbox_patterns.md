@@ -104,6 +104,15 @@ pawn.NetworkSpawn(connection);  // Sets Network.Owner = connection
 - Author the prefab with the renderer, `Rigidbody`, and behavior component, then create the `.sent` resource through the Sandbox Entity asset workflow with prefab, title, description, category, and IncludeCode when custom C# is required.
 - Verify unfamiliar exact symbols with `scripts/agents/sbox_api_lookup.ps1`; `ClientEditableAttribute` and `TimeSince` are C# API symbols in the local dump, while `ScriptedEntity` may be an editor/resource concept rather than a gameplay component type.
 
+### Drone Variant Visual Identity
+
+**Pattern:** A gameplay variant can share controller code and propeller models while still needing a separate visible body model.
+
+**Workflow:**
+- Give the variant its own `.blend`, asset-pipeline config, FBX, VMDL, and variant-specific material remaps when the silhouette or accent color should differ from the base drone.
+- Wire the prefab `Visual` renderer and any held/selection preview path to the variant VMDL, not the base FPV body.
+- Run `scripts\agents\drone_variant_visual_audit.ps1 -ShowInfo` with the asset-production checks before accepting the change.
+
 ### OnAwake vs OnStart
 
 **Pattern:**

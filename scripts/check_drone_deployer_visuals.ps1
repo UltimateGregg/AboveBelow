@@ -120,6 +120,7 @@ function Assert-TruthyJsonOption {
 
 $deployer = Read-Text "Code\Player\DroneDeployer.cs"
 $viewmodel = Read-Text "Code\Player\FirstPersonViewmodel.cs"
+$droneCamera = Read-Text "Code\Drone\DroneCamera.cs"
 
 Require-Pattern $viewmodel 'HiddenStaticVisualRoot' `
     "FirstPersonViewmodel needs a hidden static visual root so a launched/stowed hand drone cannot stay visible as a floating first-person copy."
@@ -142,6 +143,12 @@ Require-Pattern $deployer 'GpsHeldDroneModelPath\s*\{\s*get;\s*set;\s*\}\s*=\s*"
     "DroneDeployer GPS held visual must use the textured GPS drone model path."
 Require-Pattern $deployer 'FpvHeldDroneModelPath\s*\{\s*get;\s*set;\s*\}\s*=\s*"models/drone_fpv\.vmdl"' `
     "DroneDeployer FPV held visual must use the textured FPV drone model path."
+Require-Pattern $deployer 'FiberHeldDroneModelPath\s*\{\s*get;\s*set;\s*\}\s*=\s*"models/drone_fpv_fiber\.vmdl"' `
+    "DroneDeployer Fiber FPV held visual must use the distinct Fiber FPV model path."
+Require-Pattern $droneCamera 'ShowVisualInFirstPerson\s*\{\s*get;\s*set;\s*\}\s*=\s*true' `
+    "DroneCamera needs first-person self-visual rendering enabled by default so FPV pilots can see the full textured drone model."
+Require-Pattern $droneCamera 'SetPilotVisualHidden\(\s*firstPersonActive\s*&&\s*!ShowVisualInFirstPerson\s*\)' `
+    "DroneCamera must not force the drone Visual to ShadowsOnly in first-person mode when ShowVisualInFirstPerson is enabled."
 
 $pilotPrefab = Read-Json "Assets\prefabs\pilot_ground.prefab"
 if ($null -ne $pilotPrefab -and $null -ne $pilotPrefab.RootObject) {
@@ -167,6 +174,7 @@ if ($null -ne $pilotPrefab -and $null -ne $pilotPrefab.RootObject) {
 }
 
 Assert-TruthyJsonOption "scripts\drone_fpv_asset_pipeline.json" "verify_vmdl_sources_against_fbx"
+Assert-TruthyJsonOption "scripts\drone_fpv_fiber_asset_pipeline.json" "verify_vmdl_sources_against_fbx"
 Assert-TruthyJsonOption "scripts\drone_fpv_prop_asset_pipeline.json" "verify_vmdl_sources_against_fbx"
 
 if ($errors.Count -gt 0) {

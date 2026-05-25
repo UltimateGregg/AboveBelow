@@ -61,6 +61,7 @@ $requiredScripts = @(
     "scripts/agents/aaa_asset_quality_audit.ps1",
     "scripts/agents/blender_quality_audit.ps1",
     "scripts/agents/material_texture_audit.ps1",
+    "scripts/agents/drone_variant_visual_audit.ps1",
     "scripts/agents/modeldoc_audit.ps1",
     "scripts/agents/fbx_material_slot_audit.ps1",
     "scripts/agents/sound_asset_audit.ps1",
@@ -404,6 +405,92 @@ if (Test-Path -LiteralPath $editorFirstAudit) {
     foreach ($marker in @("Editor-First Workflow Audit", "editor-first-workflow-agent.md", "control_plane_status", "tools/list", "editor_save_scene", "sbox-editor-first-workflow-check")) {
         if ($editorFirstAuditText -notmatch [regex]::Escape($marker)) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/editor_first_workflow_audit.ps1" "Editor-first workflow audit is missing marker '$marker'." "Keep the audit strict enough to protect live-editor-first routing, capability checks, save proof, and hook wiring."
+        }
+    }
+}
+
+$droneVariantVisualAudit = Join-Path $Root "scripts/agents/drone_variant_visual_audit.ps1"
+if (Test-Path -LiteralPath $droneVariantVisualAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-drone-variant-visual-audit-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Assets\prefabs") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Assets\models") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Assets\materials") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Code\Player") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "drone_model.blend") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "scripts") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "dronevsplayers.sbproj") | Out-Null
+
+        @'
+{
+  "RootObject": {
+    "Name": "Drone (FPV)",
+    "Children": [
+      {
+        "Name": "Visual",
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "Model": "models/drone_high.vmdl"
+          }
+        ]
+      }
+    ]
+  }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Assets\prefabs\drone_fpv.prefab") -Encoding UTF8
+        'public string FpvHeldDroneModelPath { get; set; } = "models/drone_high.vmdl";' | Set-Content -LiteralPath (Join-Path $tempRoot "Code\Player\DroneDeployer.cs") -Encoding UTF8
+
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $droneVariantVisualAudit -ScriptArgs @("-Root", $tempRoot) -Label "FPV reuses shared GPS visual model" -SourcePath "scripts/agents/drone_variant_visual_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/drone_variant_visual_audit.ps1" "Drone variant visual audit did not fail when the FPV prefab reused the shared GPS body." "Keep the fixture red/green test aligned with the separate-variant model contract."
+        }
+
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "drone_model.blend\drone_fpv.blend") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "Assets\models\drone_fpv.fbx") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "Assets\models\drone_fpv.vmdl") | Out-Null
+        '"Layer0" { "TextureColor" "materials/drone_fpv_motor_color.png" }' | Set-Content -LiteralPath (Join-Path $tempRoot "Assets\materials\drone_fpv_motor.vmat") -Encoding UTF8
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "Assets\materials\drone_fpv_motor_color.png") | Out-Null
+
+        @'
+{
+  "RootObject": {
+    "Name": "Drone (FPV)",
+    "Children": [
+      {
+        "Name": "Visual",
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "Model": "models/drone_fpv.vmdl"
+          }
+        ]
+      }
+    ]
+  }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Assets\prefabs\drone_fpv.prefab") -Encoding UTF8
+        'public string FpvHeldDroneModelPath { get; set; } = "models/drone_fpv.vmdl";' | Set-Content -LiteralPath (Join-Path $tempRoot "Code\Player\DroneDeployer.cs") -Encoding UTF8
+        @'
+{
+  "source_blend": "drone_model.blend/drone_fpv.blend",
+  "target_fbx": "Assets/models/drone_fpv.fbx",
+  "target_vmdl": "Assets/models/drone_fpv.vmdl",
+  "model_resource_path": "models/drone_fpv.vmdl",
+  "material_remap": {
+    "Motor_Aluminum": "materials/drone_fpv_motor.vmat"
+  }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\drone_fpv_asset_pipeline.json") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $droneVariantVisualAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/drone_variant_visual_audit.ps1" "Drone variant visual audit failed on a valid FPV visual-contract fixture." "Avoid false positives for a distinct source blend, VMDL, prefab body model, motor material, and held preview path."
+        }
+    }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
         }
     }
 }
