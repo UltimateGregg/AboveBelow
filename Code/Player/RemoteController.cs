@@ -7,7 +7,7 @@ namespace DroneVsPlayers;
 /// Pilot's "weapon slot" item. Toggles the local camera between the pilot's
 /// ground POV and the linked drone's DroneCamera. While drone-POV is
 /// active, the existing DroneController on the drone reads input as normal
-/// (input is ignored on the ground avatar's controller during that time).
+/// and the ground avatar's controller blocks local look and movement input.
 ///
 /// First pass: input is global, so leaving the drone POV simply hands control
 /// back to the GroundPlayerController. The drone's input gating is owned by
@@ -100,16 +100,14 @@ public sealed class RemoteController : Component
 		// drone takes over because its OnUpdate runs (drone is not a proxy
 		// to its owner). When drone view is off, GroundPlayerController.HandleLook
 		// runs and drives the camera back to first person on the avatar.
-		// All we do here is gate the local soldier's input so they don't
-		// strafe while flying.
-		if ( _groundController.IsValid() )
-			_groundController.Enabled = !DroneViewActive;
+		// GroundPlayerController owns the drone-view input block so the pilot's
+		// EyeAngles stay frozen while the drone consumes mouse look.
 
 		// While flying the drone, make the ground avatar's body visible to
 		// the local player (the pilot wants to see their own body from the
 		// drone's POV). GroundPlayerController.HandleLook would otherwise set
-		// it to ShadowsOnly for its own first-person rendering, but it's now
-		// disabled during drone view, so we must override.
+		// it to ShadowsOnly for its own first-person rendering, but look is
+		// blocked during drone view, so we must override.
 		if ( DroneViewActive )
 		{
 			SetGroundBodyVisible( true );

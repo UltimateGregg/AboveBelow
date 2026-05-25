@@ -87,6 +87,9 @@ $modelText = if ([string]::IsNullOrWhiteSpace($Model)) { "TBD" } else { $Model }
 $materialRoles = Format-BriefList -Items $profile.required_material_roles
 $textureMaps = Format-BriefList -Items $profile.optional_texture_maps
 $nameHints = Format-BriefList -Items $profile.required_name_hints
+$referenceRequirements = Format-BriefList -Items $profile.reference_requirements
+$qualityTargets = Format-BriefList -Items $profile.quality_targets
+$visualReviewChecks = Format-BriefList -Items $profile.visual_review_checks
 $checklist = Format-BriefChecklist -Items $profile.acceptance_checks
 
 $brief = @"
@@ -118,6 +121,14 @@ $nameHints
 
 - TBD
 
+## Reference Requirements
+
+$referenceRequirements
+
+## Production Quality Targets
+
+$qualityTargets
+
 ## Material Plan
 
 - TBD
@@ -129,6 +140,10 @@ $($profile.scale_note)
 ## Sockets and Attachments
 
 - TBD
+
+## Visual Review Plan
+
+$visualReviewChecks
 
 ## Acceptance Checklist
 

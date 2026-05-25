@@ -11,23 +11,139 @@
         "__guid": "6cfca9e0-c9ca-45c9-9381-316a22daa70a",
         "Flags": 0,
         "Name": "Hill_Base",
-        "Position": "0,0,48",
+        "Position": "0,0,58",
         "Rotation": "0,0,0,1",
-        "Scale": "12,12,1.92",
+        "Scale": "18,16,2.72",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.ModelRenderer",
             "__guid": "c95e2a9a-e9b7-4310-9cf0-db4b95e3284a",
             "BodyGroups": 18446744073709551615,
-            "Model": "models/dev/box.vmdl",
+            "Model": "models/dev/sphere.vmdl",
             "MaterialOverride": "materials/arena/grass_ground.vmat",
             "RenderType": "On",
-            "Tint": "1,1,1,1"
+            "Tint": "0.8,0.95,0.62,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
             "__guid": "b8d89571-4a33-4bc7-9bd6-7831477e5f5e",
+            "Center": "0,0,-8",
+            "Scale": "48,48,16",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "8a0a04b5-0b09-5ca5-83df-5ffec6c07da5",
+        "Flags": 0,
+        "Name": "Hill_Slope_East",
+        "Position": "305,0,58",
+        "Rotation": "0,0.17364818,0,0.98480775",
+        "Scale": "7.2,8.2,0.7",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "47f3cb45-86f1-57c5-b32a-2e6b897e402d",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/grass_ground.vmat",
+            "RenderType": "On",
+            "Tint": "0.78,0.92,0.58,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "c79f64b6-b0ab-5454-aeb8-0e4b3d94d54c",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "ace9b3ed-18a8-531f-8c9a-37c317058f70",
+        "Flags": 0,
+        "Name": "Hill_Slope_West",
+        "Position": "-305,0,58",
+        "Rotation": "0,-0.17364818,0,0.98480775",
+        "Scale": "7.2,8.2,0.7",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20e2ed61-0828-5271-bf68-45844cd94f1d",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/grass_ground.vmat",
+            "RenderType": "On",
+            "Tint": "0.78,0.92,0.58,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "d8720c81-d20b-5f55-822d-e9e9b958b514",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "0aaad6af-156c-55b4-8fe2-eb69f9297dcc",
+        "Flags": 0,
+        "Name": "Hill_Slope_North",
+        "Position": "0,305,58",
+        "Rotation": "-0.17364818,0,0,0.98480775",
+        "Scale": "8.2,7.2,0.7",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "cc38a7c7-e59b-5d38-b4bf-33f13fccb7f4",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/grass_ground.vmat",
+            "RenderType": "On",
+            "Tint": "0.78,0.92,0.58,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "87714d6c-5b95-5dfb-9db1-d3d68fc8c84e",
+            "Center": "0,0,0",
+            "Scale": "50,50,50",
+            "Static": true,
+            "IsTrigger": false
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "49b2715f-ba6d-59a3-a6a1-a6c010697257",
+        "Flags": 0,
+        "Name": "Hill_Slope_South",
+        "Position": "0,-305,58",
+        "Rotation": "0.17364818,0,0,0.98480775",
+        "Scale": "8.2,7.2,0.7",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "4f53ced6-b38d-557c-aec6-c0880068889d",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/arena/grass_ground.vmat",
+            "RenderType": "On",
+            "Tint": "0.78,0.92,0.58,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "ca608ba0-aaf8-5d5d-9bd6-eb88eee06a98",
             "Center": "0,0,0",
             "Scale": "50,50,50",
             "Static": true,
@@ -42,23 +158,23 @@
         "Name": "Hill_Top",
         "Position": "0,0,128",
         "Rotation": "0,0,0,1",
-        "Scale": "8,8,1.28",
+        "Scale": "8.5,7.5,1.28",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.ModelRenderer",
             "__guid": "57141a6a-f05c-45f7-ba0b-b8f2f76f414d",
             "BodyGroups": 18446744073709551615,
-            "Model": "models/dev/box.vmdl",
+            "Model": "models/dev/sphere.vmdl",
             "MaterialOverride": "materials/arena/grass_ground.vmat",
             "RenderType": "On",
-            "Tint": "1,1,1,1"
+            "Tint": "0.9,1,0.72,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
             "__guid": "3c3cfc30-b338-4d92-836c-7e4d734cd27b",
-            "Center": "0,0,0",
-            "Scale": "50,50,50",
+            "Center": "0,0,-4",
+            "Scale": "42,42,24",
             "Static": true,
             "IsTrigger": false
           }

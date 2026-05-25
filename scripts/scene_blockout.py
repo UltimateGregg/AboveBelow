@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
+import random
 import shutil
 import uuid
 from datetime import datetime
@@ -50,7 +52,7 @@ def render_options() -> dict[str, bool]:
     }
 
 
-def model_renderer(name: str, material: str, tint: str = "1,1,1,1", model: str = "models/dev/box.vmdl") -> dict[str, Any]:
+def model_renderer(name: str, material: str | None, tint: str = "1,1,1,1", model: str = "models/dev/box.vmdl") -> dict[str, Any]:
     return {
         "__type": "Sandbox.ModelRenderer",
         "__guid": stable_guid(name, "renderer"),
@@ -101,6 +103,41 @@ def box_collider(name: str, scale: str, static: bool = True) -> dict[str, Any]:
         "Static": static,
         "Surface": None,
         "SurfaceVelocity": "0,0,0",
+    }
+
+
+def model_collider(name: str, model: str, static: bool = True) -> dict[str, Any]:
+    return {
+        "__type": "Sandbox.ModelCollider",
+        "__guid": stable_guid(name, "model_collider"),
+        "__enabled": True,
+        "Flags": 0,
+        "IsTrigger": False,
+        "Model": model,
+        "Static": static,
+        "Surface": None,
+        "SurfaceVelocity": "0,0,0",
+    }
+
+
+def trigger_box_collider(name: str, scale: str, static: bool = True) -> dict[str, Any]:
+    collider = box_collider(name, scale, static)
+    collider["IsTrigger"] = True
+    return collider
+
+
+def ladder_volume(name: str, top_exit: str) -> dict[str, Any]:
+    return {
+        "__type": "DroneVsPlayers.LadderVolume",
+        "__guid": stable_guid(name, "ladder_volume"),
+        "__enabled": True,
+        "Flags": 0,
+        "AutoConfigureCollider": True,
+        "GrabPadding": 18,
+        "UseTopExit": True,
+        "TopExitLocalOffset": top_exit,
+        "TopExitTriggerDistance": 28,
+        "BottomExitTriggerDistance": 8,
     }
 
 
@@ -197,6 +234,56 @@ def visual_box(
     )
 
 
+def solid_primitive(
+    name: str,
+    position: str,
+    scale: str,
+    material: str,
+    tint: str,
+    model: str = "models/dev/box.vmdl",
+) -> dict[str, Any]:
+    return game_object(
+        name,
+        position,
+        scale=scale,
+        material=material,
+        tint=tint,
+        model=model,
+        collider_scale="50,50,50",
+    )
+
+
+def model_prop(
+    name: str,
+    position: str,
+    model: str,
+    rotation: str = "0,0,0,1",
+    scale: str = "1,1,1",
+    tint: str = "1,1,1,1",
+) -> dict[str, Any]:
+    return {
+        "__guid": stable_guid(name),
+        "__version": 2,
+        "Flags": 0,
+        "Name": name,
+        "Position": position,
+        "Rotation": rotation,
+        "Scale": scale,
+        "Tags": "",
+        "Enabled": True,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": True,
+        "OwnerTransfer": 1,
+        "Components": [
+            model_renderer(name, None, tint=tint, model=model),
+            model_collider(name, model),
+        ],
+        "Children": [],
+    }
+
+
 def light_marker(
     name: str,
     position: str,
@@ -234,6 +321,28 @@ def find_object(scene: dict[str, Any], name: str) -> dict[str, Any] | None:
 
 
 ROAD_CENTER_X = 416.190948
+ROAD_LENGTH_SCALE = 218.529922
+ROAD_DASH_SPACING = 260
+ROAD_DASH_EDGE_MARGIN = 260
+ROAD_EDGE_WEAR_COUNT_PER_SIDE = 12
+ROAD_EDGE_WEAR_EDGE_MARGIN = 620
+ROAD_EDGE_WEAR_SEED = 416190948
+DEV_BOX_UNIT = 50
+
+
+def scene_float(value: float) -> str:
+    text = f"{value:.3f}".rstrip("0").rstrip(".")
+    return text if text else "0"
+
+
+def vector_text(*values: float) -> str:
+    return ",".join(scene_float(value) for value in values)
+
+
+def z_rotation(degrees: float) -> str:
+    radians = math.radians(degrees)
+    half_angle = radians / 2
+    return vector_text(0, 0, math.sin(half_angle), math.cos(half_angle))
 
 
 def road_surface(name: str, position: str, scale: str) -> dict[str, Any]:
@@ -268,6 +377,17 @@ def road_marking(name: str, position: str, scale: str, tint: str) -> dict[str, A
     )
 
 
+def road_edge_wear_decal(name: str, position: str, scale: str, rotation: str) -> dict[str, Any]:
+    return game_object(
+        name,
+        position,
+        scale=scale,
+        rotation=rotation,
+        material="materials/arena/road_edge_wear.vmat",
+        model="models/dev/plane.vmdl",
+    )
+
+
 def road_curb(name: str, position: str, scale: str) -> dict[str, Any]:
     return game_object(
         name,
@@ -279,9 +399,72 @@ def road_curb(name: str, position: str, scale: str) -> dict[str, Any]:
     )
 
 
+def road_cover_northwest_barrier(position: str) -> dict[str, Any]:
+    concrete = "materials/arena/concrete_wall.vmat"
+    metal = "materials/arena/metal_pad.vmat"
+    amber = "materials/emp_glow.vmat"
+
+    children = [
+        solid_box("NWBarrier_Base_Foot", "0,0,4.5", "3.42,0.62,0.18", concrete, "0.50,0.52,0.48,1"),
+        solid_box("NWBarrier_Lower_Block", "0,0,25", "3.28,0.48,0.72", concrete, "0.58,0.60,0.55,1"),
+        solid_box("NWBarrier_Upper_Core", "0,0,52", "3.05,0.32,0.72", concrete, "0.64,0.66,0.60,1"),
+        solid_box("NWBarrier_Top_Cap", "0,0,75", "2.88,0.22,0.32", concrete, "0.70,0.71,0.66,1"),
+        solid_box("NWBarrier_North_Sloped_Face", "0,11,44", "3.25,0.10,0.88", concrete, "0.55,0.57,0.52,1", rotation="0.0871557,0,0,0.9961947"),
+        solid_box("NWBarrier_South_Sloped_Face", "0,-11,44", "3.25,0.10,0.88", concrete, "0.60,0.62,0.57,1", rotation="-0.0871557,0,0,0.9961947"),
+        solid_box("NWBarrier_Left_End_Cap", "-84,0,42", "0.14,0.52,1.44", concrete, "0.48,0.50,0.47,1"),
+        solid_box("NWBarrier_Right_End_Cap", "84,0,42", "0.14,0.52,1.44", concrete, "0.48,0.50,0.47,1"),
+        solid_box("NWBarrier_North_Toe", "0,16,12", "3.26,0.12,0.22", concrete, "0.46,0.48,0.44,1"),
+        solid_box("NWBarrier_South_Toe", "0,-16,12", "3.26,0.12,0.22", concrete, "0.46,0.48,0.44,1"),
+        visual_box("NWBarrier_Reflector_Left", "-64,-16.4,54", "0.26,0.025,0.16", amber, "1,0.62,0.15,1"),
+        visual_box("NWBarrier_Reflector_Right", "64,-16.4,54", "0.26,0.025,0.16", amber, "1,0.62,0.15,1"),
+        visual_box("NWBarrier_HazardStripe_Left", "-44,-16.8,53", "0.18,0.026,0.72", metal, "0.96,0.74,0.12,1", rotation="0,0.173648,0,0.984807"),
+        visual_box("NWBarrier_HazardStripe_Mid", "0,-16.8,53", "0.18,0.026,0.72", metal, "0.08,0.08,0.07,1", rotation="0,0.173648,0,0.984807"),
+        visual_box("NWBarrier_HazardStripe_Right", "44,-16.8,53", "0.18,0.026,0.72", metal, "0.96,0.74,0.12,1", rotation="0,0.173648,0,0.984807"),
+        visual_box("NWBarrier_ConcreteChip_Left", "-74,-16.7,30", "0.34,0.024,0.18", concrete, "0.34,0.35,0.32,1"),
+        visual_box("NWBarrier_ConcreteChip_Right", "72,16.7,36", "0.28,0.024,0.22", concrete, "0.38,0.39,0.36,1"),
+        visual_box("NWBarrier_DirtScuff_Lower", "-12,-16.9,18", "1.15,0.022,0.12", concrete, "0.28,0.25,0.20,1"),
+        visual_box("NWBarrier_DirtScuff_Top", "28,16.9,66", "0.74,0.022,0.09", concrete, "0.42,0.40,0.34,1"),
+    ]
+
+    return game_object("RoadCover_Northwest_Barrier", position, children=children)
+
+
+def build_road_edge_wear_decals(cx: float) -> list[dict[str, Any]]:
+    rng = random.Random(ROAD_EDGE_WEAR_SEED)
+    road_half_length = (ROAD_LENGTH_SCALE * DEV_BOX_UNIT) / 2
+    min_y = -road_half_length + ROAD_EDGE_WEAR_EDGE_MARGIN
+    max_y = road_half_length - ROAD_EDGE_WEAR_EDGE_MARGIN
+    bucket_span = (max_y - min_y) / ROAD_EDGE_WEAR_COUNT_PER_SIDE
+    decals: list[dict[str, Any]] = []
+
+    for side_name, direction in (("West", -1), ("East", 1)):
+        side_values: list[tuple[float, float, float, float, float, float]] = []
+        for index in range(ROAD_EDGE_WEAR_COUNT_PER_SIDE):
+            base_y = min_y + bucket_span * (index + 0.5)
+            y = base_y + rng.uniform(-bucket_span * 0.36, bucket_span * 0.36)
+            x = cx + direction * rng.uniform(132, 174)
+            z = rng.uniform(0.39, 0.45)
+            scale_x = rng.uniform(0.74, 1.48)
+            scale_y = rng.uniform(3.0, 6.9)
+            yaw = rng.uniform(-4.2, 4.2)
+            side_values.append((y, x, z, scale_x, scale_y, yaw))
+
+        side_values.sort(key=lambda values: values[0])
+        for index, (y, x, z, scale_x, scale_y, yaw) in enumerate(side_values, start=1):
+            decals.append(
+                road_edge_wear_decal(
+                    f"RoadEdgeWear_{side_name}_{index:02}",
+                    vector_text(x, y, z),
+                    vector_text(scale_x, scale_y, 1),
+                    z_rotation(yaw),
+                )
+            )
+
+    return decals
+
+
 def build_road_corridor() -> dict[str, Any]:
     yellow = "1,0.78,0.16,1"
-    white = "0.86,0.84,0.74,1"
     dirt = "0.50,0.43,0.28,1"
     concrete = "materials/arena/concrete_wall.vmat"
     grass = "materials/arena/grass_ground.vmat"
@@ -293,23 +476,23 @@ def build_road_corridor() -> dict[str, Any]:
     east_shoulder_x = cx + 275
 
     children: list[dict[str, Any]] = [
-        road_plane("RoadShoulder_West", f"{west_shoulder_x},0,0.16", "2.2,88,1", grass, dirt),
-        road_plane("RoadShoulder_East", f"{east_shoulder_x},0,0.16", "2.2,88,1", grass, dirt),
-        road_surface("RoadSurface_Main", f"{cx},0,0.2", "7.2,86,1"),
-        road_curb("RoadCurb_West", f"{west_curb_x},0,5", "0.32,86,0.2"),
-        road_curb("RoadCurb_East", f"{east_curb_x},0,5", "0.32,86,0.2"),
+        road_plane("RoadShoulder_West", f"{west_shoulder_x},0,0.16", f"2.2,{ROAD_LENGTH_SCALE},1", grass, dirt),
+        road_plane("RoadShoulder_East", f"{east_shoulder_x},0,0.16", f"2.2,{ROAD_LENGTH_SCALE},1", grass, dirt),
+        road_surface("RoadSurface_Main", f"{cx},0,0.2", f"7.2,{ROAD_LENGTH_SCALE},1"),
+        road_curb("RoadCurb_West", f"{west_curb_x},0,5", f"0.32,{ROAD_LENGTH_SCALE},0.2"),
+        road_curb("RoadCurb_East", f"{east_curb_x},0,5", f"0.32,{ROAD_LENGTH_SCALE},0.2"),
     ]
 
-    for index, y in enumerate((-1820, -1560, -1300, -1040, -780, -520, -260, 260, 520, 780, 1040, 1300, 1560, 1820), start=1):
+    road_half_length = (ROAD_LENGTH_SCALE * DEV_BOX_UNIT) / 2
+    dash_extent = int((road_half_length - ROAD_DASH_EDGE_MARGIN) // ROAD_DASH_SPACING) * ROAD_DASH_SPACING
+    for index, y in enumerate(range(-dash_extent, dash_extent + 1, ROAD_DASH_SPACING), start=1):
         children.append(road_marking(f"RoadDash_{index:02}", f"{cx},{y},2", "0.16,2.4,0.04", yellow))
 
-    for index, y in enumerate((-1740, -920, -180, 640, 1460), start=1):
-        children.append(road_marking(f"RoadEdgeWear_West_{index:02}", f"{cx - 154},{y},1.4", "0.42,5.4,0.025", white))
-        children.append(road_marking(f"RoadEdgeWear_East_{index:02}", f"{cx + 154},{y + 120},1.4", "0.34,4.8,0.025", white))
+    children.extend(build_road_edge_wear_decals(cx))
 
     children.extend(
         [
-            solid_box("RoadCover_Northwest_Barrier", f"{cx - 305},1185,42", "3.4,0.52,1.7", concrete, "0.62,0.64,0.58,1"),
+            road_cover_northwest_barrier(f"{cx - 305},1185,0"),
             solid_box("RoadCover_Northeast_Barrier", f"{cx + 335},1510,42", "0.56,3.1,1.7", concrete, "0.62,0.64,0.58,1"),
             solid_box("RoadCover_Southwest_Barrier", f"{cx - 335},-1335,42", "0.56,3.2,1.7", concrete, "0.62,0.64,0.58,1"),
             solid_box("RoadCover_Southeast_Barrier", f"{cx + 305},-980,42", "3.2,0.52,1.7", concrete, "0.62,0.64,0.58,1"),
@@ -399,6 +582,43 @@ def build_north_lane() -> dict[str, Any]:
     return game_object("Lane_North_Infiltration", "0,0,0", children=children)
 
 
+def center_lane_burnt_vehicle_block_north() -> dict[str, Any]:
+    metal = "materials/arena/metal_pad.vmat"
+    asphalt = "materials/arena/asphalt_cover.vmat"
+    glow = "materials/emp_glow.vmat"
+    box = "models/dev/box.vmdl"
+    sphere = "models/dev/sphere.vmdl"
+
+    children = [
+        solid_primitive("BurntVehicle_CrushedLowerShell", "0,0,33", "4.85,2.04,0.56", metal, "0.10,0.11,0.11,1", box),
+        solid_primitive("BurntVehicle_LeftRocker_RustedSplit", "0,-57,29", "4.55,0.18,0.34", metal, "0.42,0.18,0.08,1", box),
+        solid_primitive("BurntVehicle_RightRocker_RustedSplit", "0,57,29", "4.55,0.18,0.34", metal, "0.38,0.16,0.07,1", box),
+        solid_primitive("BurntVehicle_Hood_WarpedBlackPlate", "75,0,58", "1.82,1.78,0.16", metal, "0.07,0.075,0.07,1", box),
+        solid_primitive("BurntVehicle_Trunk_CavedRustPlate", "-86,0,54", "1.55,1.74,0.18", metal, "0.34,0.17,0.08,1", box),
+        solid_primitive("BurntVehicle_Cabin_SootVoid", "-5,0,66", "1.72,1.48,0.72", metal, "0.025,0.025,0.025,1", box),
+        solid_primitive("BurntVehicle_Roof_CollapsedSootPlate", "-10,0,96", "1.96,1.42,0.18", metal, "0.055,0.052,0.048,1", box),
+        solid_primitive("BurntVehicle_Engine_ExposedBlock", "110,0,41", "0.62,0.90,0.46", metal, "0.03,0.03,0.028,1", box),
+        solid_primitive("BurntVehicle_FrontBumper_HangingSteel", "137,0,25", "0.18,2.14,0.22", metal, "0.26,0.20,0.17,1", box),
+        solid_primitive("BurntVehicle_RearBumper_SaggedRust", "-137,0,25", "0.18,2.04,0.22", metal, "0.39,0.17,0.08,1", box),
+        solid_primitive("BurntVehicle_Wheel_FL_CharredTire", "82,-62,24", "0.74,0.28,0.74", metal, "0.018,0.018,0.016,1", sphere),
+        solid_primitive("BurntVehicle_Wheel_FR_CharredTire", "82,62,24", "0.74,0.28,0.74", metal, "0.018,0.018,0.016,1", sphere),
+        solid_primitive("BurntVehicle_Wheel_RL_ExposedRim", "-82,-62,24", "0.68,0.24,0.68", metal, "0.20,0.18,0.15,1", sphere),
+        solid_primitive("BurntVehicle_Wheel_RR_BurnedHub", "-82,62,24", "0.68,0.24,0.68", metal, "0.24,0.12,0.06,1", sphere),
+        visual_box("BurntVehicle_AshBed_GroundScorch", "0,0,2", "5.80,2.75,0.04", asphalt, "0.055,0.052,0.047,1"),
+        visual_box("BurntVehicle_AshDrift_Front", "128,-28,8", "0.75,0.38,0.12", asphalt, "0.16,0.15,0.13,1"),
+        visual_box("BurntVehicle_AshDrift_Rear", "-122,34,8", "0.82,0.42,0.12", asphalt, "0.13,0.12,0.105,1"),
+        visual_box("BurntVehicle_BrokenGlass_WindshieldShard", "42,-39,83", "0.60,0.035,0.24", metal, "0.06,0.10,0.12,0.58"),
+        visual_box("BurntVehicle_BrokenGlass_SideShard", "-43,39,75", "0.50,0.035,0.22", metal, "0.05,0.09,0.105,0.56"),
+        visual_box("BurntVehicle_RustStripe_LeftPanel", "16,-59,50", "1.45,0.035,0.13", metal, "0.52,0.20,0.07,1"),
+        visual_box("BurntVehicle_RustStripe_RightPanel", "-18,59,49", "1.30,0.035,0.13", metal, "0.49,0.18,0.06,1"),
+        visual_box("BurntVehicle_SootScale_Hood", "78,-46,65", "0.72,0.035,0.18", asphalt, "0.015,0.015,0.013,1"),
+        visual_box("BurntVehicle_SootScale_Roof", "-18,42,105", "0.65,0.035,0.14", asphalt, "0.012,0.012,0.011,1"),
+        visual_box("BurntVehicle_HotWarning_Reflector", "136,-55,37", "0.18,0.026,0.18", glow, "1,0.42,0.12,0.85"),
+    ]
+
+    return game_object("CenterLane_BurntVehicleBlock_North", "923.058044,690,0", children=children)
+
+
 def build_center_lane() -> dict[str, Any]:
     concrete = "materials/arena/concrete_wall.vmat"
     metal = "materials/arena/metal_pad.vmat"
@@ -407,7 +627,7 @@ def build_center_lane() -> dict[str, Any]:
         solid_box("CenterLane_GPSBreak_EastTall", "520,-160,145", "0.78,4.8,5.8", concrete, "0.52,0.55,0.57,1"),
         solid_box("CenterLane_MedianLowCover_North", "-220,455,44", "5.4,0.58,1.75", concrete, "0.74,0.75,0.70,1"),
         solid_box("CenterLane_MedianLowCover_South", "235,-455,44", "5.4,0.58,1.75", concrete, "0.74,0.75,0.70,1"),
-        solid_box("CenterLane_BurntVehicleBlock_North", "365,690,62", "2.8,1.35,2.45", metal, "0.32,0.36,0.37,1"),
+        center_lane_burnt_vehicle_block_north(),
         solid_box("CenterLane_BurntVehicleBlock_South", "-415,-710,62", "2.8,1.35,2.45", metal, "0.32,0.36,0.37,1"),
         solid_box("CenterLane_ServiceBarricade_West", "-1090,-205,54", "0.68,3.8,2.15", concrete, "0.62,0.64,0.62,1"),
         solid_box("CenterLane_ServiceBarricade_East", "1120,245,54", "0.68,3.8,2.15", concrete, "0.62,0.64,0.62,1"),
@@ -510,14 +730,13 @@ def build_readability_vfx() -> dict[str, Any]:
 
 def build_asset_replacement_placeholders() -> dict[str, Any]:
     metal = "materials/arena/metal_pad.vmat"
-    concrete = "materials/arena/concrete_wall.vmat"
     children = [
         solid_box("AssetPlaceholder_SignalMast_East", "2380,0,210", "0.22,0.22,8.4", metal, "0.36,0.42,0.46,1"),
         solid_box("AssetPlaceholder_SignalMast_Mid", "2240,690,205", "0.2,0.2,7.8", metal, "0.36,0.42,0.46,1"),
         solid_box("AssetPlaceholder_RooftopHVAC_North", "1250,1630,285", "1.9,1.1,0.72", metal, "0.38,0.43,0.45,1"),
         solid_box("AssetPlaceholder_RooftopHVAC_South", "1460,-1605,285", "1.9,1.1,0.72", metal, "0.38,0.43,0.45,1"),
-        solid_box("AssetPlaceholder_Barricade_NorthLane", "540,1700,42", "3.4,0.52,1.7", concrete, "0.63,0.66,0.62,1"),
-        solid_box("AssetPlaceholder_Barricade_SouthLane", "1040,-1460,42", "3.4,0.52,1.7", concrete, "0.63,0.66,0.62,1"),
+        model_prop("BurntCarWreck_NorthLane", "891.141296,2359.74512,0.2", "models/burnt_car_wreck.vmdl", rotation="0,0,0.0436193869,0.999048233"),
+        model_prop("BurntCarWreck_SouthLane", "1040,-1460,0.2", "models/burnt_car_wreck.vmdl", rotation="0,0,-0.0610485412,0.998134792"),
     ]
     return game_object("AssetProductionPlaceholders", "0,0,0", children=children)
 
@@ -537,6 +756,90 @@ def build_above_below_level_pass() -> dict[str, Any]:
     )
 
 
+def ladder_visual_box(name: str, position: str, scale: str, tint: str = "0.64,0.70,0.72,1") -> dict[str, Any]:
+    return visual_box(
+        name,
+        position,
+        scale,
+        material="materials/arena/metal_pad.vmat",
+        tint=tint,
+    )
+
+
+def ladder_trigger_child(name: str, position: str, scale: str, top_exit: str) -> dict[str, Any]:
+    return {
+        "__guid": stable_guid(name),
+        "__version": 2,
+        "Flags": 0,
+        "Name": name,
+        "Position": position,
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Tags": "",
+        "Enabled": True,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": True,
+        "OwnerTransfer": 1,
+        "Components": [
+            trigger_box_collider(name, scale),
+            ladder_volume(name, top_exit),
+        ],
+        "Children": [],
+    }
+
+
+def build_floating_center_ladder() -> dict[str, Any]:
+    children: list[dict[str, Any]] = [
+        solid_box(
+            "TopLanding",
+            "0,92,470",
+            "2.6,2.0,0.28",
+            material="materials/arena/metal_pad.vmat",
+            tint="0.38,0.46,0.48,1",
+        ),
+        solid_box(
+            "TopLanding_BackStop",
+            "0,152,515",
+            "2.6,0.18,1.8",
+            material="materials/arena/concrete_wall.vmat",
+            tint="0.58,0.62,0.62,1",
+        ),
+        ladder_trigger_child(
+            "Collision_Ladder",
+            "0,0,245",
+            "82,58,450",
+            "0,92,486",
+        ),
+        ladder_visual_box("Visual_Rail_Left", "-32,0,245", "0.12,0.12,8.9"),
+        ladder_visual_box("Visual_Rail_Right", "32,0,245", "0.12,0.12,8.9"),
+    ]
+
+    for index, z in enumerate(range(58, 431, 34), start=1):
+        children.append(
+            ladder_visual_box(
+                f"Visual_Rung_{index:02}",
+                f"0,0,{z}",
+                "1.42,0.12,0.10",
+                tint="0.74,0.78,0.76,1",
+            )
+        )
+
+    children.extend(
+        [
+            ladder_visual_box("Visual_TopCue", "0,74,492", "1.9,0.12,0.12", tint="0.9,0.74,0.22,1"),
+            light_marker("FloatingCenterLadder_ReadLight", "0,62,535", "1,0.68,0.22,1", 360, marker_scale="0.44,0.44,0.08"),
+        ]
+    )
+
+    return game_object(
+        "FloatingCenterLadder",
+        f"{ROAD_CENTER_X},0,0",
+        children=children,
+    )
+
+
 def install_group(parent: dict[str, Any], group: dict[str, Any], aliases: set[str] | None = None) -> tuple[int, int]:
     children = parent.setdefault("Children", [])
     before = len(children)
@@ -545,6 +848,24 @@ def install_group(parent: dict[str, Any], group: dict[str, Any], aliases: set[st
     children[:] = [child for child in children if child.get("Name") not in removable_names]
     removed = before - len(children)
     insert_at = 1 if children and children[0].get("Name") == "ArenaFloor" else len(children)
+    children.insert(insert_at, group)
+    return len(group.get("Children", []) or []), removed
+
+
+def install_group_after(parent: dict[str, Any], group: dict[str, Any], after_name: str, aliases: set[str] | None = None) -> tuple[int, int]:
+    children = parent.setdefault("Children", [])
+    before = len(children)
+    removable_names = aliases or {group["Name"]}
+    removable_names.add(group["Name"])
+    children[:] = [child for child in children if child.get("Name") not in removable_names]
+    removed = before - len(children)
+
+    insert_at = len(children)
+    for index, child in enumerate(children):
+        if child.get("Name") == after_name:
+            insert_at = index + 1
+            break
+
     children.insert(insert_at, group)
     return len(group.get("Children", []) or []), removed
 
@@ -644,9 +965,29 @@ def apply_above_below_level_pass(scene_path: Path, dry_run: bool) -> None:
     print(f"Installed LevelDesignPass_AboveBelow with {count} child groups")
 
 
+def add_floating_center_ladder(scene_path: Path, dry_run: bool) -> None:
+    root = project_root()
+    data = json.loads(scene_path.read_text(encoding="utf-8"))
+    blockout_map = find_object(data, "BlockoutMap")
+    if blockout_map is None:
+        raise RuntimeError("BlockoutMap was not found in the scene")
+
+    group = build_floating_center_ladder()
+    count, removed = install_group_after(blockout_map, group, after_name="RoadCorridor_Main")
+
+    if dry_run:
+        print(f"Dry run: would install {count} FloatingCenterLadder child objects; replaced groups: {removed}")
+        return
+
+    backup_path = backup(scene_path, root)
+    scene_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    print(f"Backup: {backup_path}")
+    print(f"Installed FloatingCenterLadder with {count} child objects")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Repeatable S&Box scene blockout edits.")
-    parser.add_argument("command", choices=["add-road-corridor", "add-road-intersection", "apply-above-below-level-pass"])
+    parser.add_argument("command", choices=["add-road-corridor", "add-road-intersection", "apply-above-below-level-pass", "add-floating-center-ladder"])
     parser.add_argument("--scene", default="Assets/scenes/main.scene")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
@@ -663,6 +1004,8 @@ def main() -> int:
         add_road_intersection(scene_path, args.dry_run)
     elif args.command == "apply-above-below-level-pass":
         apply_above_below_level_pass(scene_path, args.dry_run)
+    elif args.command == "add-floating-center-ladder":
+        add_floating_center_ladder(scene_path, args.dry_run)
     return 0
 
 

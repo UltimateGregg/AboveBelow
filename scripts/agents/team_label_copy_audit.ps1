@@ -19,6 +19,10 @@ $forbiddenChecks = @(
     @{
         Path = "Code/UI/HudPanel.razor"
         Patterns = @(
+            '<div class="title">Choose Team</div>',
+            '<div class="subtitle">Drone Pilots or Soldiers.</div>',
+            '<div class="section-title">Drone Pilot Loadout</div>',
+            '<div class="section-title">Soldier Class</div>',
             "ABOVE WINS",
             "BELOW WINS",
             "Take down above.",
@@ -85,7 +89,11 @@ $requiredCopy = @(
             "Take down drone pilots.",
             "Fly drones as drone pilots",
             "Fight as soldiers",
-            "main-menu-title"">ABOVE / BELOW"
+            "RolePickerTitle",
+            "Select team",
+            "Drone Pilot Loadout",
+            "Soldiers Loadout",
+            "main-menu-title-text"">ABOVE / BELOW"
         )
     },
     @{

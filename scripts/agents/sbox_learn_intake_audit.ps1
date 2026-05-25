@@ -40,6 +40,12 @@ Test-FileHasPatterns "docs/sbox_engine_llm_reference.md" @(
     "https://sbox\.game/learn",
     "https://sbox\.game/learn/tesa/ui-buildhash",
     "https://sbox\.game/learn/gibbard/networked-variable-ui",
+    "https://sbox\.game/dev/doc/editor/",
+    "Editor Tooling And Inspector Workflows",
+    "UndoScope",
+    "EditorEvent",
+    "AssetPreview",
+    "TextureGenerator",
     "BuildHash\(\)",
     "StateHasChanged\(\)"
 ) "Learn Reference"
@@ -47,6 +53,8 @@ Test-FileHasPatterns "docs/sbox_engine_llm_reference.md" @(
 Test-FileHasPatterns ".agents/sbox/sbox-learn-intake-agent.md" @(
     "Purpose",
     "https://sbox\.game/learn",
+    "https://sbox\.game/dev/doc/editor/",
+    "official editor-doc",
     "S&Box Learn",
     "sbox_learn_intake_audit\.ps1",
     "ui-razor-reactivity-agent\.md"
@@ -106,6 +114,7 @@ Test-FileHasPatterns "scripts/agents/run_agent_checks.ps1" @(
 Test-FileHasPatterns "scripts/agents/test_full_automation_layer.ps1" @(
     "sbox_learn_intake_audit\.ps1",
     "S&Box Learn Intake Agent",
+    "https://sbox\.game/dev/doc/editor/",
     "UI Razor Reactivity Agent",
     "editor_node_tool_audit\.ps1"
 ) "Self Test"

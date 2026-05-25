@@ -10,6 +10,22 @@ Verified against official sources on 2026-05-20:
 - https://sbox.game/dev/doc/editor/model-editor
 - https://github.com/Facepunch/sbox-public
 
+Official editor docs reviewed on 2026-05-25:
+
+- https://sbox.game/dev/doc/editor/
+- https://sbox.game/dev/doc/editor/editor-project
+- https://sbox.game/dev/doc/editor/editor-tools
+- https://sbox.game/dev/doc/editor/editor-tools/component-editor-tools
+- https://sbox.game/dev/doc/editor/editor-events
+- https://sbox.game/dev/doc/editor/editor-widgets
+- https://sbox.game/dev/doc/editor/custom-editors
+- https://sbox.game/dev/doc/editor/asset-previews
+- https://sbox.game/dev/doc/editor/property-attributes
+- https://sbox.game/dev/doc/editor/texture-generators
+- https://sbox.game/dev/doc/editor/undo-system
+- https://sbox.game/dev/doc/editor/mapping/
+- https://sbox.game/dev/doc/editor/mapping/shortcuts
+
 Official Facepunch Learn tutorial reviewed on 2026-05-23:
 
 - https://sbox.game/learn/facepunch/creating-an-entity-for-sandbox
@@ -25,7 +41,7 @@ Secondary community tutorial context reviewed on 2026-05-23:
 - https://sbox.game/learn/aqua/node-editor-01
 - https://github.com/internetfishy/Node-Editor-Calculator
 
-Use `.agents/sbox/sbox-learn-intake-agent.md` before turning Learn tutorials into standing project guidance. Use `.agents/sbox/ui-razor-reactivity-agent.md` for tutorials or bugs about Razor refresh behavior.
+Use `.agents/sbox/sbox-learn-intake-agent.md` before turning Learn tutorials or broad official editor-doc sweeps into standing project guidance. Use `.agents/sbox/ui-razor-reactivity-agent.md` for tutorials or bugs about Razor refresh behavior.
 
 This is a working reference for agents editing this repo. It is intentionally short. If a task depends on exact API shape, check the current docs, API reference, public source, the local API dump, or local project patterns before changing code.
 
@@ -67,6 +83,26 @@ Keep broad changes phased:
 - prefab wiring in `Assets/prefabs` and `Code/code/Wiring/AutoWire.cs`,
 - scene authoring in `Assets/scenes/main.scene`,
 - editor tooling under `Libraries/`, `Editor/`, `mcp/`, or `scripts/agents`.
+
+## Editor Tooling And Inspector Workflows
+
+Editor extensions belong in an editor project or editor-only library. The official editor docs call out that editor projects can access tools and game code and are not sandboxed, so treat generated or third-party editor code as privileged code.
+
+Use current editor extension surfaces instead of ad hoc runtime UI:
+
+- `[EditorApp]` for standalone editor windows.
+- `EditorTool` or `EditorTool<TComponent>` for scene-view tools and selected-component tools.
+- `Widget`, `Dock`, and `IAssetEditor` for editor UI, not in-game panels.
+- `[CustomEditor]`, `[Inspector]`, and `[CanEdit]` for custom inspector/control widgets.
+- `AssetPreview` for custom asset thumbnails/previews.
+- `TextureGenerator` for editor-generated textures.
+- `[Shortcut]` for static or widget-scoped editor shortcuts.
+
+For scene-mutating editor tools, wrap edits in `Scene.Editor?.UndoScope(...)` or `SceneEditorSession.Active.UndoScope(...)`, capture the smallest practical set of GameObject or Component changes, and dispose long-running drag scopes when the interaction ends. Use `AddOverlay(...)` or equivalent cleanup for scene overlay UI so editor widgets do not persist after the tool is disabled.
+
+Prefer `EditorEvent` interfaces for durable editor-event integration. Named string events still exist, but interfaces are easier to discover and refactor. If a non-widget listener is used, explicitly register it with `EditorEvent.Register(...)`.
+
+Use property attributes to make inspector-facing components self-validating and easier to wire: `[RequireComponent]`, `[Range]`, `[Step]`, `[ShowIf]`, `[HideIf]`, `[Validate]`, `[Advanced]`, and asset/input path attributes should be preferred over hidden setup assumptions when the property is meant for repeated authoring.
 
 ## Sandbox Entity Resources
 

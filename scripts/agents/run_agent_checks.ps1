@@ -1,6 +1,6 @@
 param(
     [string]$Root = "",
-    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "scene", "collision", "collision-chain", "asset", "asset-production", "modeldoc", "blender-live", "sound", "networking", "gameplay-regression", "docs", "api", "learn", "editor-node-tool", "balance", "playtest", "logs", "readiness", "train", "self-test")]
+    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "scene", "terrain", "collision", "collision-chain", "asset", "asset-production", "modeldoc", "blender-live", "sound", "networking", "gameplay-regression", "docs", "api", "learn", "editor-node-tool", "editor-first", "balance", "playtest", "logs", "readiness", "train", "self-test")]
     [string]$Suite = "quick",
     [switch]$ShowInfo,
     [switch]$FailOnWarning
@@ -55,8 +55,10 @@ switch ($Suite) {
             @{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs },
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
+            @{ Name = "terrain_floor_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
             @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs },
+            @{ Name = "aaa_asset_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
             @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
             @{ Name = "sound_asset_audit.ps1"; Args = $commonArgs },
@@ -71,6 +73,7 @@ switch ($Suite) {
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
+            @{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs },
             @{ Name = "current_log_audit.ps1"; Args = $quickLogArgs },
             @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root) }
         )
@@ -83,8 +86,10 @@ switch ($Suite) {
             @{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs },
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
+            @{ Name = "terrain_floor_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
             @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs },
+            @{ Name = "aaa_asset_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
             @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
             @{ Name = "fbx_material_slot_audit.ps1"; Args = $commonArgs },
@@ -100,6 +105,7 @@ switch ($Suite) {
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
+            @{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs },
             @{ Name = "current_log_audit.ps1"; Args = $commonArgs },
             @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root, "-ShowFiles") },
             @{ Name = "balance_tuning_report.ps1"; Args = @("-Root", $Root) },
@@ -120,13 +126,22 @@ switch ($Suite) {
     "scene" {
         $scripts = @(
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
+            @{ Name = "terrain_floor_audit.ps1"; Args = $commonArgs },
+            @{ Name = "floating_center_ladder_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sandbag_cover_audit.ps1"; Args = $commonArgs },
+            @{ Name = "road_cover_barrier_audit.ps1"; Args = $commonArgs },
+            @{ Name = "road_lane_marking_audit.ps1"; Args = $commonArgs },
+            @{ Name = "road_edge_wear_audit.ps1"; Args = $commonArgs },
+            @{ Name = "burnt_vehicle_block_audit.ps1"; Args = $commonArgs },
             @{ Name = "level_layout_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs }
         )
     }
+    "terrain" { $scripts = @(@{ Name = "terrain_floor_audit.ps1"; Args = $commonArgs }) }
     "collision" {
         $scripts = @(
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
+            @{ Name = "floating_center_ladder_audit.ps1"; Args = $commonArgs },
             @{ Name = "level_layout_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs }
         )
@@ -140,6 +155,7 @@ switch ($Suite) {
     "asset" {
         $scripts = @(
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
+            @{ Name = "drone_variant_visual_audit.ps1"; Args = $commonArgs },
             @{ Name = "fbx_material_slot_audit.ps1"; Args = $commonArgs }
         )
     }
@@ -151,9 +167,11 @@ switch ($Suite) {
     }
     "asset-production" {
         $scripts = @(
+            @{ Name = "aaa_asset_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "blender_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "material_texture_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
+            @{ Name = "drone_variant_visual_audit.ps1"; Args = $commonArgs },
             @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
             @{ Name = "fbx_material_slot_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs },
@@ -176,7 +194,9 @@ switch ($Suite) {
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
-            @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs }
+            @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
+            @{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs },
+            @{ Name = "drone_variant_visual_audit.ps1"; Args = $commonArgs }
         )
     }
     "api" {
@@ -194,6 +214,7 @@ switch ($Suite) {
         )
     }
     "editor-node-tool" { $scripts = @(@{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs }) }
+    "editor-first" { $scripts = @(@{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs }) }
     "balance" { $scripts = @(@{ Name = "balance_tuning_report.ps1"; Args = @("-Root", $Root) }) }
     "playtest" { $scripts = @(@{ Name = "playtest_checklist.ps1"; Args = @("-Root", $Root, "-ChangeArea", "All") }) }
     "logs" { $scripts = @(@{ Name = "current_log_audit.ps1"; Args = $commonArgs }) }
@@ -201,10 +222,12 @@ switch ($Suite) {
     "train" {
         $scripts = @(
             @{ Name = "post_task_training_agent.ps1"; Args = @("-Root", $Root, "-ShowFiles", "-WriteReport") },
+            @{ Name = "aaa_asset_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
-            @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs }
+            @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
+            @{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs }
         )
     }
     "self-test" { $scripts = @(@{ Name = "test_full_automation_layer.ps1"; Args = @("-Root", $Root) }) }

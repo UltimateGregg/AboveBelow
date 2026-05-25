@@ -31,6 +31,7 @@ The report is written to `.tmpbuild/post-task-training-report.md` when `-WriteRe
 
 - Focus on reusable workflow improvements, not task-specific product edits.
 - Prefer adding or tightening a focused audit over broad instructions.
+- For Blender/modeling goals, favor durable quality gates such as asset briefs, reference requirements, material/texture checks, preview/contact-sheet proof, ModelDoc/FBX validation, and S&Box editor proof routing.
 - Put recurring checks in three places when they are meant to stick:
   - `scripts/agents/run_agent_checks.ps1`
   - `scripts/agents/test_full_automation_layer.ps1`

@@ -9,6 +9,8 @@
   "visual_tint": "1,1,1,1",
   "clear_visual_children": false,
   "verify_fbx": true,
+  "verify_vmdl_sources_against_fbx": true,
+  "vmdl_material_source_suffix": "",
   "required_object": [
     "DroneBody"
   ],
@@ -20,8 +22,16 @@
   "combined_object_name": "DroneBody",
   "material_remap": {
     "Frame_Carbon": "materials/drone_fpv_frame.vmat",
-    "Motor_Aluminum": "materials/drone_fpv_motor.vmat"
+    "Motor_Aluminum": "materials/drone_fpv_motor.vmat",
+    "Battery_Wrap": "materials/drone_fpv_battery.vmat",
+    "Camera_Body": "materials/drone_fpv_camera_body.vmat",
+    "Camera_Lens": "materials/drone_fpv_lens.vmat",
+    "Strap_Rubber": "materials/drone_fpv_strap.vmat",
+    "Antenna_Rubber": "materials/drone_fpv_antenna.vmat",
+    "Electronics_PCB": "materials/drone_fpv_electronics.vmat"
   },
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
   "global_scale": 0.0254,
   "axis_forward": "-Y",
   "axis_up": "Z"

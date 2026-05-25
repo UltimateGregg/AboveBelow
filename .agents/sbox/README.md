@@ -8,12 +8,14 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 
 | Need | Use | Evidence command |
 |---|---|---|
+| Editor-capable command execution | `editor-first-workflow-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite editor-first -ShowInfo` |
 | Final sanity pass after code changes | `pre-handoff-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite quick` |
 | Build and editor/runtime log pass | `build-log-sentinel.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/build_log_sentinel.ps1` |
 | Gameplay implementation review | `gameplay-systems-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/gameplay_regression_guard.ps1` plus build sentinel |
 | Prefab, scene, or AutoWire review | `prefab-wiring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_wiring_audit.ps1` |
 | Deep prefab/reference graph review | `prefab-wiring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_graph_audit.ps1` |
 | Main scene/spawn/collider review | `prefab-wiring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/scene_integrity_audit.ps1` |
+| Editor-native cover/blockout prop | `editor-native-cover-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sandbag_cover_audit.ps1 -ShowInfo`; `powershell -ExecutionPolicy Bypass -File scripts/agents/burnt_vehicle_block_audit.ps1 -ShowInfo` |
 | Prop/building collision and visual/collider alignment review | `collision-authoring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite collision -ShowInfo` |
 | Multi-agent collision exploration, implementation, verification, and critique | `collision-chain-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite collision-chain -ShowInfo` |
 | Read-only collision discovery before edits | `collision-explorer-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite collision-chain -ShowInfo` |
@@ -23,11 +25,13 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 | Blender or generated asset review | `asset-pipeline-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1` |
 | Designing the ModelDoc automation agent | `modeldoc-agent-builder.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite modeldoc` |
 | ModelDoc/VMDL validation | `modeldoc-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/modeldoc_audit.ps1 -ShowInfo` |
+| AAA-quality Blender asset production | `aaa-asset-quality-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/aaa_asset_quality_audit.ps1 -ShowInfo` |
 | New asset request or source brief | `asset-brief-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/new_asset_brief.ps1 -Name my_asset -Category weapon` |
 | Blender source-scene production quality | `blender-quality-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/blender_quality_audit.ps1` |
 | Material and texture production quality | `material-texture-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/material_texture_audit.ps1` |
 | Blender procedural look needs to match in S&Box | `procedural-texture-transfer-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production` |
 | Visual preview review for a Blender asset | `visual-review-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/asset_visual_review.ps1 -Blend weapons_model.blend/assault_rifle_m4.blend` |
+| Drone variant model identity | `asset-pipeline-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/drone_variant_visual_audit.ps1 -ShowInfo` |
 | Full asset production readiness | `asset-pipeline-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production` |
 | Cosmetic jigglebone setup | `jigglebone-cosmetic-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite modeldoc` plus editor bone-merge playtest |
 | Sound assets and native editor audio wiring | `sound-control-plane-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite sound -ShowInfo` |
@@ -49,14 +53,17 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 ## Operating Rules
 
 - Prefer inspection and reports before edits.
+- For editor-capable tasks, start with `editor-first-workflow-agent.md`: check `control_plane_status` or `tools/list`, inspect the active editor scene/components, mutate through native MCP when possible, save with `editor_save_scene`, and state any fallback honestly.
 - Do not rename public S&Box classes, components, prefabs, or assets unless asked.
 - Treat networked gameplay as host-authoritative.
 - Use `[Sync]` for replicated state and RPCs for notifications or validated requests.
 - Extend `Code/code/Wiring/AutoWire.cs` when new prefab references need repeatable wiring.
 - After meaningful C# or scene/prefab edits, run the build/log sentinel and the most relevant specialist audit.
+- For editor-native cover or blockout props, inspect the live editor scene before file edits, preserve user-deleted primitive children, and use focused audits such as `sandbag_cover_audit.ps1` or `burnt_vehicle_block_audit.ps1` to lock spacing, material, local-offset, and placement contracts.
 - After map prop or building collision edits, run the collision authoring agent and then verify in the live editor; saved scene JSON and active editor state can diverge after Save As or MCP edits.
 - For collision-heavy tasks, use `collision-chain-agent.md` to split work across explorer, implementer, verifier, and critic roles before final handoff.
 - When the user types exactly `train`, respond with `On it!`, run the post-task training workflow, and apply durable hook, agent, pipeline, or documentation updates that will help future tasks.
+- When the user asks for AAA-quality Blender/S&Box assets, route through `aaa-asset-quality-agent.md`: start from a brief with reference requirements and Production Quality Targets, then prove Blender quality, material/texture readiness, visual previews, export/import, ModelDoc/FBX slots, and S&Box prefab/editor appearance.
 - For Blender-to-S&Box texture transfer, inspect whether the Blender material is procedural or image-backed before editing `.vmat` files. Procedural looks need baked project textures and strict VMDL material-slot validation.
 - For cosmetic jigglebones, route through `jigglebone-cosmetic-agent.md`: prove skeleton binding, bone merge, ModelDoc physics shapes, joint anchors, and editor motion before treating the asset as ready.
 - For sound work, treat `.sound` wrappers as gameplay assets and raw audio as source data. Run the sound suite before wiring or previewing audio in the editor.

@@ -185,9 +185,9 @@
             "__type": "Sandbox.ModelRenderer",
             "__guid": "22222222-c000-1100-0000-000000000001",
             "BodyGroups": 18446744073709551615,
-            "Model": "models/drone_fpv.vmdl",
+            "Model": "models/drone_fpv_fiber.vmdl",
             "RenderType": "On",
-            "Tint": "1,0.95,0.7,1"
+            "Tint": "1,1,1,1"
           }
         ]
       },
@@ -220,7 +220,7 @@
             "BodyGroups": 18446744073709551615,
             "Model": "models/drone_fpv_prop.vmdl",
             "RenderType": "On",
-            "Tint": "1,0.95,0.7,1"
+            "Tint": "1,1,1,1"
           }
         ]
       },
@@ -238,7 +238,7 @@
             "BodyGroups": 18446744073709551615,
             "Model": "models/drone_fpv_prop.vmdl",
             "RenderType": "On",
-            "Tint": "1,0.95,0.7,1"
+            "Tint": "1,1,1,1"
           }
         ]
       },
@@ -256,7 +256,7 @@
             "BodyGroups": 18446744073709551615,
             "Model": "models/drone_fpv_prop.vmdl",
             "RenderType": "On",
-            "Tint": "1,0.95,0.7,1"
+            "Tint": "1,1,1,1"
           }
         ]
       },
@@ -273,7 +273,7 @@
             "BodyGroups": 18446744073709551615,
             "Model": "models/drone_fpv_prop.vmdl",
             "RenderType": "On",
-            "Tint": "1,0.95,0.7,1"
+            "Tint": "1,1,1,1"
           }
         ]
       }

@@ -1,5 +1,6 @@
 param(
-    [string]$Root = ""
+    [string]$Root = "",
+    [switch]$ProjectSmoke
 )
 
 . "$PSScriptRoot\agent_common.ps1"
@@ -11,11 +12,44 @@ $Root = (Resolve-Path -LiteralPath $Root).Path
 
 $issues = New-Object System.Collections.Generic.List[object]
 
+function Invoke-AgentExpectedFailureFixture {
+    param(
+        [string]$ScriptPath,
+        [string[]]$ScriptArgs,
+        [string]$Label,
+        [string]$SourcePath
+    )
+
+    $output = & powershell -NoProfile -ExecutionPolicy Bypass -File $ScriptPath @ScriptArgs 2>&1
+    $exitCode = $LASTEXITCODE
+
+    if ($exitCode -eq 0) {
+        $output | ForEach-Object { Write-Host $_ }
+        return $exitCode
+    }
+
+    $blockingLines = @($output | Where-Object { $_ -match '^\[(Error|Warning)\]' })
+    if ($blockingLines.Count -eq 0) {
+        $output | ForEach-Object { Write-Host $_ }
+        Add-AgentIssue $script:issues "Error" "Full Automation Tests" $SourcePath "Expected-failure fixture '$Label' exited with $exitCode but did not emit an audit issue line." "Keep red fixtures explicit so script crashes do not masquerade as expected audit failures."
+        return $exitCode
+    }
+
+    Write-Host "[Info] Expected-failure fixture '$Label' produced $($blockingLines.Count) audit issue line(s)."
+    return $exitCode
+}
+
 $requiredScripts = @(
     "scripts/agents/ui_flow_audit.ps1",
     "scripts/agents/prefab_wiring_audit.ps1",
     "scripts/agents/prefab_graph_audit.ps1",
     "scripts/agents/scene_integrity_audit.ps1",
+    "scripts/agents/terrain_floor_audit.ps1",
+    "scripts/agents/sandbag_cover_audit.ps1",
+    "scripts/agents/road_cover_barrier_audit.ps1",
+    "scripts/agents/road_lane_marking_audit.ps1",
+    "scripts/agents/road_edge_wear_audit.ps1",
+    "scripts/agents/burnt_vehicle_block_audit.ps1",
     "scripts/agents/collision_authoring_agent.ps1",
     "scripts/agents/collision_agent_chain_audit.ps1",
     "scripts/agents/collision_chain_report.ps1",
@@ -24,8 +58,10 @@ $requiredScripts = @(
     "scripts/agents/post_task_training_agent.ps1",
     "scripts/agents/gameplay_regression_guard.ps1",
     "scripts/check_round_reprompt_flow.ps1",
+    "scripts/agents/aaa_asset_quality_audit.ps1",
     "scripts/agents/blender_quality_audit.ps1",
     "scripts/agents/material_texture_audit.ps1",
+    "scripts/agents/drone_variant_visual_audit.ps1",
     "scripts/agents/modeldoc_audit.ps1",
     "scripts/agents/fbx_material_slot_audit.ps1",
     "scripts/agents/sound_asset_audit.ps1",
@@ -38,6 +74,7 @@ $requiredScripts = @(
     "scripts/agents/sbox_api_reference_audit.ps1",
     "scripts/agents/sbox_learn_intake_audit.ps1",
     "scripts/agents/editor_node_tool_audit.ps1",
+    "scripts/agents/editor_first_workflow_audit.ps1",
     "scripts/agents/asset_visual_review.ps1",
     "scripts/agents/blender_live_toolkit_self_test.ps1"
 )
@@ -56,7 +93,7 @@ if (Test-Path -LiteralPath $runner) {
         Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner does not declare a ValidateSet for suites." "Restore suite validation on the Suite parameter."
     }
 
-    foreach ($suite in @("ui", "prefab-graph", "scene", "logs", "readiness", "train", "asset-production", "modeldoc", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain", "api", "learn", "editor-node-tool")) {
+    foreach ($suite in @("ui", "prefab-graph", "scene", "terrain", "logs", "readiness", "train", "asset-production", "modeldoc", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain", "api", "learn", "editor-node-tool", "editor-first")) {
         $quotedSuite = '"' + [regex]::Escape($suite) + '"'
         if ($validateSetMatch.Success -and $validateSetMatch.Groups["values"].Value -notmatch $quotedSuite) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner ValidateSet does not expose suite '$suite'." "Add the suite to the Suite parameter ValidateSet."
@@ -70,6 +107,92 @@ if (Test-Path -LiteralPath $runner) {
 }
 else {
     Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner script is missing." "Restore the runner."
+}
+
+$aaaAssetQualityAudit = Join-Path $Root "scripts/agents/aaa_asset_quality_audit.ps1"
+if (Test-Path -LiteralPath $aaaAssetQualityAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-aaa-asset-quality-audit-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot ".agents\sbox") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "docs") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "scripts\agents") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "dronevsplayers.sbproj") | Out-Null
+
+        @'
+{
+  "weapon": {
+    "required_material_roles": ["metal"],
+    "optional_texture_maps": ["TextureNormal"],
+    "required_name_hints": ["muzzle"],
+    "quality_targets": ["Readable silhouette"],
+    "visual_review_checks": ["Preview render"],
+    "acceptance_checks": ["Socket documented"]
+  }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\asset_quality_profiles.json") -Encoding UTF8
+        "Reference Requirements Production Quality Targets Visual Review Plan reference_requirements quality_targets visual_review_checks" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\new_asset_brief.ps1") -Encoding UTF8
+        "blender-quality-agent.md material-texture-agent.md visual-review-agent.md asset-pipeline-agent.md modeldoc-agent.md aaa_asset_quality_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\aaa-asset-quality-agent.md") -Encoding UTF8
+        "AAA Asset Quality Agent aaa_asset_quality_audit.ps1 Production Quality Targets" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
+        "aaa-asset-quality-agent.md aaa_asset_quality_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
+        '"asset-production" aaa_asset_quality_audit.ps1' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
+        "aaa_asset_quality_audit.ps1 reference_requirements Production Quality Targets" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
+
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $aaaAssetQualityAudit -ScriptArgs @("-Root", $tempRoot) -Label "incomplete AAA asset quality profile" -SourcePath "scripts/agents/aaa_asset_quality_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/aaa_asset_quality_audit.ps1" "AAA asset quality audit did not fail on an incomplete profile fixture." "Keep reference requirements, quality targets, visual review checks, and category coverage protected."
+        }
+
+        @'
+{
+  "weapon": {
+    "required_material_roles": ["metal"],
+    "optional_texture_maps": ["TextureNormal"],
+    "required_name_hints": ["muzzle"],
+    "reference_requirements": ["Reference sheet"],
+    "quality_targets": ["Readable silhouette"],
+    "visual_review_checks": ["Preview render"],
+    "acceptance_checks": ["Socket documented"]
+  },
+  "drone": {
+    "required_material_roles": ["frame"],
+    "optional_texture_maps": ["TextureNormal"],
+    "required_name_hints": ["prop"],
+    "reference_requirements": ["Drone reference"],
+    "quality_targets": ["Distance readability"],
+    "visual_review_checks": ["Chase-camera preview"],
+    "acceptance_checks": ["Variant identity documented"]
+  },
+  "character": {
+    "required_material_roles": ["body"],
+    "optional_texture_maps": ["TextureNormal"],
+    "required_name_hints": ["root"],
+    "reference_requirements": ["Character reference"],
+    "quality_targets": ["Gear breakup"],
+    "visual_review_checks": ["Prefab preview"],
+    "acceptance_checks": ["Rig assumptions documented"]
+  },
+  "environment": {
+    "required_material_roles": ["surface"],
+    "optional_texture_maps": ["TextureNormal"],
+    "required_name_hints": ["root"],
+    "reference_requirements": ["Environment reference"],
+    "quality_targets": ["Ground and drone readability"],
+    "visual_review_checks": ["S&Box lighting screenshot"],
+    "acceptance_checks": ["Collision expectations documented"]
+  }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\asset_quality_profiles.json") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $aaaAssetQualityAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/aaa_asset_quality_audit.ps1" "AAA asset quality audit failed on complete routing fixtures." "Avoid false positives for complete production asset quality wiring."
+        }
+    }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
+        }
+    }
 }
 
 $gameplayRegressionGuard = Join-Path $Root "scripts/agents/gameplay_regression_guard.ps1"
@@ -107,8 +230,8 @@ switch ($Suite) {
         "collision-chain-agent.md" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
         "Collision Agent Chain" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionChainAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $collisionChainAudit -ScriptArgs @("-Root", $tempRoot) -Label "incomplete collision chain role docs" -SourcePath "scripts/agents/collision_agent_chain_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_agent_chain_audit.ps1" "Collision chain audit did not fail on incomplete role docs." "Keep the chain audit strict enough to catch missing subagent prompts."
         }
 
@@ -276,20 +399,160 @@ foreach ($source in $requiredMcpSources) {
     }
 }
 
-foreach ($script in $requiredScripts) {
-    if ($script -eq "scripts/agents/asset_visual_review.ps1") {
-        continue
+$editorFirstAudit = Join-Path $Root "scripts/agents/editor_first_workflow_audit.ps1"
+if (Test-Path -LiteralPath $editorFirstAudit) {
+    $editorFirstAuditText = Get-Content -LiteralPath $editorFirstAudit -Raw
+    foreach ($marker in @("Editor-First Workflow Audit", "editor-first-workflow-agent.md", "control_plane_status", "tools/list", "editor_save_scene", "sbox-editor-first-workflow-check")) {
+        if ($editorFirstAuditText -notmatch [regex]::Escape($marker)) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/editor_first_workflow_audit.ps1" "Editor-first workflow audit is missing marker '$marker'." "Keep the audit strict enough to protect live-editor-first routing, capability checks, save proof, and hook wiring."
+        }
     }
+}
 
-    $full = Join-Path $Root $script
-    if (-not (Test-Path -LiteralPath $full)) {
-        continue
-    }
+$droneVariantVisualAudit = Join-Path $Root "scripts/agents/drone_variant_visual_audit.ps1"
+if (Test-Path -LiteralPath $droneVariantVisualAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-drone-variant-visual-audit-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Assets\prefabs") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Assets\models") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Assets\materials") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Code\Player") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "drone_model.blend") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "scripts") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "dronevsplayers.sbproj") | Out-Null
 
-    & powershell -NoProfile -ExecutionPolicy Bypass -File $full -Root $Root | Out-Host
-    if ($LASTEXITCODE -ne 0) {
-        Add-AgentIssue $issues "Error" "Full Automation Tests" $script "Script exited with $LASTEXITCODE on the current project." "Fix the script or the issue it detected."
+        @'
+{
+  "RootObject": {
+    "Name": "Drone (FPV)",
+    "Children": [
+      {
+        "Name": "Visual",
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "Model": "models/drone_high.vmdl"
+          }
+        ]
+      }
+    ]
+  }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Assets\prefabs\drone_fpv.prefab") -Encoding UTF8
+        'public string FpvHeldDroneModelPath { get; set; } = "models/drone_high.vmdl";' | Set-Content -LiteralPath (Join-Path $tempRoot "Code\Player\DroneDeployer.cs") -Encoding UTF8
+
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $droneVariantVisualAudit -ScriptArgs @("-Root", $tempRoot) -Label "FPV reuses shared GPS visual model" -SourcePath "scripts/agents/drone_variant_visual_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/drone_variant_visual_audit.ps1" "Drone variant visual audit did not fail when the FPV prefab reused the shared GPS body." "Keep the fixture red/green test aligned with the separate-variant model contract."
+        }
+
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "drone_model.blend\drone_fpv.blend") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "Assets\models\drone_fpv.fbx") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "Assets\models\drone_fpv.vmdl") | Out-Null
+        '"Layer0" { "TextureColor" "materials/drone_fpv_motor_color.png" }' | Set-Content -LiteralPath (Join-Path $tempRoot "Assets\materials\drone_fpv_motor.vmat") -Encoding UTF8
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "Assets\materials\drone_fpv_motor_color.png") | Out-Null
+
+        @'
+{
+  "RootObject": {
+    "Name": "Drone (FPV)",
+    "Children": [
+      {
+        "Name": "Visual",
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "Model": "models/drone_fpv.vmdl"
+          }
+        ]
+      }
+    ]
+  }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Assets\prefabs\drone_fpv.prefab") -Encoding UTF8
+        @'
+public string FpvHeldDroneModelPath { get; set; } = "models/drone_fpv.vmdl";
+public string FiberHeldDroneModelPath { get; set; } = "models/drone_fpv_fiber.vmdl";
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\Player\DroneDeployer.cs") -Encoding UTF8
+        @'
+{
+  "source_blend": "drone_model.blend/drone_fpv.blend",
+  "target_fbx": "Assets/models/drone_fpv.fbx",
+  "target_vmdl": "Assets/models/drone_fpv.vmdl",
+  "model_resource_path": "models/drone_fpv.vmdl",
+  "material_remap": {
+    "Motor_Aluminum": "materials/drone_fpv_motor.vmat"
+  }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\drone_fpv_asset_pipeline.json") -Encoding UTF8
+
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "drone_model.blend\drone_fpv_fiber.blend") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "Assets\models\drone_fpv_fiber.fbx") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "Assets\models\drone_fpv_fiber.vmdl") | Out-Null
+        '"Layer0" { "TextureColor" "materials/drone_fpv_fiber_motor_color.png" }' | Set-Content -LiteralPath (Join-Path $tempRoot "Assets\materials\drone_fpv_fiber_motor.vmat") -Encoding UTF8
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "Assets\materials\drone_fpv_fiber_motor_color.png") | Out-Null
+
+        @'
+{
+  "RootObject": {
+    "Name": "Drone (Fiber-Optic FPV)",
+    "Children": [
+      {
+        "Name": "Visual",
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "Model": "models/drone_fpv_fiber.vmdl"
+          }
+        ]
+      }
+    ]
+  }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Assets\prefabs\drone_fpv_fiber.prefab") -Encoding UTF8
+        @'
+{
+  "source_blend": "drone_model.blend/drone_fpv_fiber.blend",
+  "target_fbx": "Assets/models/drone_fpv_fiber.fbx",
+  "target_vmdl": "Assets/models/drone_fpv_fiber.vmdl",
+  "model_resource_path": "models/drone_fpv_fiber.vmdl",
+  "material_remap": {
+    "Motor_Aluminum": "materials/drone_fpv_fiber_motor.vmat"
+  }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\drone_fpv_fiber_asset_pipeline.json") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $droneVariantVisualAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/drone_variant_visual_audit.ps1" "Drone variant visual audit failed on a valid FPV visual-contract fixture." "Avoid false positives for a distinct source blend, VMDL, prefab body model, motor material, and held preview path."
+        }
     }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
+        }
+    }
+}
+
+if ($ProjectSmoke) {
+    foreach ($script in $requiredScripts) {
+        if ($script -eq "scripts/agents/asset_visual_review.ps1") {
+            continue
+        }
+
+        $full = Join-Path $Root $script
+        if (-not (Test-Path -LiteralPath $full)) {
+            continue
+        }
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $full -Root $Root | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" $script "Script exited with $LASTEXITCODE on the current project." "Fix the script or the issue it detected."
+        }
+    }
+}
+else {
+    Write-Host "[Info] Project smoke pass skipped; run test_full_automation_layer.ps1 -ProjectSmoke or run_agent_checks.ps1 -Suite full for current-project audit execution."
 }
 
 $soundAudit = Join-Path $Root "scripts/agents/sound_asset_audit.ps1"
@@ -314,8 +577,8 @@ if (Test-Path -LiteralPath $soundAudit) {
 }
 '@ | Set-Content -LiteralPath $soundPath -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $soundAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $soundAudit -ScriptArgs @("-Root", $tempRoot) -Label "missing SoundEvent source" -SourcePath "scripts/agents/sound_asset_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sound_asset_audit.ps1" "Sound asset audit did not fail on a .sound file with a missing WAV source." "Keep the fixture red/green test aligned with the raw-audio wrapper regression."
         }
 
@@ -339,8 +602,8 @@ if (Test-Path -LiteralPath $soundAudit) {
 "@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\dronevsplayers.csproj") -Encoding UTF8
         'class UsesMountedSound { const string Shot = "gameplay/equipment/weapons/m4a1/sounds/m4_shot.sound"; }' | Set-Content -LiteralPath (Join-Path $tempRoot "Code\UsesMountedSound.cs") -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $soundAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $soundAudit -ScriptArgs @("-Root", $tempRoot) -Label "direct mounted SoundEvent reference" -SourcePath "scripts/agents/sound_asset_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sound_asset_audit.ps1" "Sound asset audit did not fail on a direct mounted SoundEvent fixture." "Keep gameplay code, prefabs, and scenes pointed at local Assets/sounds wrappers; import stock audio into local wrappers instead of committing mounted package paths."
         }
     }
@@ -361,8 +624,8 @@ if (Test-Path -LiteralPath $uiAudit) {
         $fixturePath = Join-Path $tempRoot "Code\UI\Fixture.razor"
         '<root><div class="choice pilot">Dead Choice</div></root>' | Set-Content -LiteralPath $fixturePath -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $uiAudit -Root $tempRoot -FailOnWarning | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $uiAudit -ScriptArgs @("-Root", $tempRoot, "-FailOnWarning") -Label "dead interactive-looking Razor choice" -SourcePath "scripts/agents/ui_flow_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/ui_flow_audit.ps1" "UI flow audit did not fail on a dead interactive-looking fixture." "Keep the fixture red/green test aligned with the audit rules."
         }
 
@@ -382,8 +645,8 @@ if (Test-Path -LiteralPath $uiAudit) {
 }
 '@ | Set-Content -LiteralPath $fixturePath -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $uiAudit -Root $tempRoot -FailOnWarning | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $uiAudit -ScriptArgs @("-Root", $tempRoot, "-FailOnWarning") -Label "dynamic Razor output without BuildHash" -SourcePath "scripts/agents/ui_flow_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/ui_flow_audit.ps1" "UI flow audit did not fail on dynamic Razor output without BuildHash." "Keep dynamic HUD and menu values tied to BuildHash so Razor refreshes intentionally."
         }
 
@@ -421,8 +684,8 @@ if (Test-Path -LiteralPath $uiAudit) {
 }
 '@ | Set-Content -LiteralPath $fixturePath -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $uiAudit -Root $tempRoot -FailOnWarning | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $uiAudit -ScriptArgs @("-Root", $tempRoot, "-FailOnWarning") -Label "StateHasChanged from Tick" -SourcePath "scripts/agents/ui_flow_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/ui_flow_audit.ps1" "UI flow audit did not fail on StateHasChanged() in Tick()." "Keep per-frame Razor rebuilds out of routine HUD and menu work."
         }
     }
@@ -490,8 +753,8 @@ public sealed class RoundManager
         "Player-facing role names rebranded to ABOVE / BELOW." | Set-Content -LiteralPath (Join-Path $tempRoot "docs\architecture.md") -Encoding UTF8
         "Above/Below team choices appear only after Play." | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\playtest_checklist.ps1") -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $teamLabelAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $teamLabelAudit -ScriptArgs @("-Root", $tempRoot) -Label "stale Above/Below role copy" -SourcePath "scripts/agents/team_label_copy_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/team_label_copy_audit.ps1" "Team label audit did not fail on stale Above/Below role-copy fixtures." "Keep the fixture red/green test aligned with the player-facing label policy."
         }
 
@@ -504,6 +767,8 @@ public sealed class RoundManager
     <div>Take down drone pilots.</div>
     <span>Fly drones as drone pilots</span>
     <span>Fight as soldiers</span>
+    <div>Drone Pilot Loadout</div>
+    <div>Soldier Class</div>
 </root>
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\UI\HudPanel.razor") -Encoding UTF8
 
@@ -578,8 +843,8 @@ if (Test-Path -LiteralPath $prefabWiringAudit) {
 }
 '@ | Set-Content -LiteralPath $prefabPath -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $prefabWiringAudit -Root $tempRoot -OnlyLineRendererSerialization | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $prefabWiringAudit -ScriptArgs @("-Root", $tempRoot, "-OnlyLineRendererSerialization") -Label "legacy LineRenderer.Color serialization" -SourcePath "scripts/agents/prefab_wiring_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/prefab_wiring_audit.ps1" "Prefab wiring audit did not fail on a legacy LineRenderer.Color fixture." "Keep the fixture red/green test aligned with current S&Box LineRenderer serialization."
         }
 
@@ -654,8 +919,8 @@ if (Test-Path -LiteralPath $sceneAudit) {
 }
 '@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $sceneAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sceneAudit -ScriptArgs @("-Root", $tempRoot) -Label "water tower without LadderVolume" -SourcePath "scripts/agents/scene_integrity_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit did not fail on a water tower fixture without a LadderVolume." "Keep the fixture red/green test aligned with the water tower traversal regression."
         }
 
@@ -702,8 +967,8 @@ if (Test-Path -LiteralPath $sceneAudit) {
 }
 '@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $sceneAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sceneAudit -ScriptArgs @("-Root", $tempRoot) -Label "water tower without solid collision children" -SourcePath "scripts/agents/scene_integrity_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit did not fail on a water tower fixture without solid collision children." "Keep the fixture red/green test aligned with the water tower collision regression."
         }
 
@@ -745,8 +1010,8 @@ if (Test-Path -LiteralPath $sceneAudit) {
 }
 '@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $sceneAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sceneAudit -ScriptArgs @("-Root", $tempRoot) -Label "broad lower-frame water tower collider" -SourcePath "scripts/agents/scene_integrity_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit did not fail on a broad lower-frame water tower collider." "Keep the fixture red/green test aligned with the water tower invisible-collision regression."
         }
 
@@ -843,8 +1108,8 @@ if (Test-Path -LiteralPath $sceneAudit) {
 }
 '@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $sceneAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sceneAudit -ScriptArgs @("-Root", $tempRoot) -Label "locally rotated water tower visual" -SourcePath "scripts/agents/scene_integrity_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit did not fail on a water tower fixture with locally rotated visuals and unrotated collision." "Keep the fixture red/green test aligned with the water tower visual/collision alignment regression."
         }
 
@@ -945,6 +1210,99 @@ if (Test-Path -LiteralPath $sceneAudit) {
         if ($LASTEXITCODE -ne 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit failed on a water tower fixture with a trigger LadderVolume." "Avoid false positives for valid water tower ladder authoring."
         }
+
+        @'
+{
+  "GameObjects": [
+    {
+      "Name": "GameManager",
+      "Components": [
+        { "__type": "DroneVsPlayers.GameRules" },
+        { "__type": "DroneVsPlayers.GameStats" },
+        { "__type": "DroneVsPlayers.GameSetup" },
+        { "__type": "DroneVsPlayers.RoundManager" },
+        { "__type": "DroneVsPlayers.AutoWireHelper" }
+      ],
+      "Children": []
+    },
+    {
+      "Name": "HUD",
+      "Components": [
+        { "__type": "DroneVsPlayers.HudPanel" }
+      ],
+      "Children": []
+    },
+    {
+      "Name": "Spawns",
+      "Components": [],
+      "Children": [
+        { "Name": "PilotSpawn", "Components": [ { "__type": "DroneVsPlayers.PlayerSpawn", "Role": "Pilot" } ], "Children": [] },
+        { "Name": "SoldierSpawn", "Components": [ { "__type": "DroneVsPlayers.PlayerSpawn", "Role": "Soldier" } ], "Children": [] }
+      ]
+    },
+    {
+      "Name": "BlockoutMap",
+      "Components": [],
+      "Children": [
+        {
+          "Name": "NorthBoundary",
+          "Components": [
+            { "__type": "Sandbox.ModelRenderer", "Model": "models/dev/box.vmdl", "RenderType": "On" },
+            { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "50,50,50" }
+          ],
+          "Children": []
+        },
+        {
+          "Name": "SouthBoundary",
+          "Components": [
+            { "__type": "Sandbox.ModelRenderer", "Model": "models/dev/box.vmdl", "RenderType": "Off" },
+            { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "50,50,50" },
+            { "__type": "DroneVsPlayers.SelectedHierarchyColliderViewer", "AlwaysDraw": true, "IncludeTriggers": true }
+          ],
+          "Children": []
+        },
+        {
+          "Name": "EastBoundary",
+          "Components": [
+            { "__type": "Sandbox.ModelRenderer", "Model": "models/dev/box.vmdl", "RenderType": "Off" },
+            { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "50,50,50" },
+            { "__type": "DroneVsPlayers.SelectedHierarchyColliderViewer", "AlwaysDraw": true, "IncludeTriggers": true }
+          ],
+          "Children": []
+        },
+        {
+          "Name": "WestBoundary",
+          "Components": [
+            { "__type": "Sandbox.ModelRenderer", "Model": "models/dev/box.vmdl", "RenderType": "Off" },
+            { "__type": "Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "50,50,50" },
+            { "__type": "DroneVsPlayers.SelectedHierarchyColliderViewer", "AlwaysDraw": true, "IncludeTriggers": true }
+          ],
+          "Children": []
+        }
+      ]
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sceneAudit -ScriptArgs @("-Root", $tempRoot) -Label "solid-rendered invisible boundary wall" -SourcePath "scripts/agents/scene_integrity_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit did not fail on a boundary wall with RenderType On." "Keep boundary walls collider-backed and editor-wireframed, not solid-rendered in play."
+        }
+
+        $validBoundaryFixture = (Get-Content -LiteralPath $scenePath -Raw).Replace('"RenderType": "On"', '"RenderType": "Off"')
+        $validBoundaryFixture = [regex]::Replace(
+            $validBoundaryFixture,
+            '"Sandbox\.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "50,50,50" \}',
+            '"Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "50,50,50" }, { "__type": "DroneVsPlayers.SelectedHierarchyColliderViewer", "AlwaysDraw": true, "IncludeTriggers": true }',
+            1
+        )
+        $validBoundaryFixture | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sceneAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit failed on a valid invisible boundary wireframe fixture." "Avoid false positives when boundary walls are hidden as renderers but visible through editor wireframe gizmos."
+        }
     }
     finally {
         if ([System.IO.Directory]::Exists($tempRoot)) {
@@ -979,8 +1337,8 @@ if (Test-Path -LiteralPath $collisionAudit) {
 }
 '@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $collisionAudit -ScriptArgs @("-Root", $tempRoot) -Label "Collision_* object without collider" -SourcePath "scripts/agents/collision_authoring_agent.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_authoring_agent.ps1" "Collision authoring agent did not fail on a Collision_* object without a BoxCollider." "Keep collision helper naming tied to actual collider authoring."
         }
 
@@ -1011,8 +1369,8 @@ if (Test-Path -LiteralPath $collisionAudit) {
 }
 '@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionAudit -Root $tempRoot -FailOnWarning | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $collisionAudit -ScriptArgs @("-Root", $tempRoot, "-FailOnWarning") -Label "locally rotated Visual beside collision helpers" -SourcePath "scripts/agents/collision_authoring_agent.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_authoring_agent.ps1" "Collision authoring agent did not flag a locally rotated Visual beside Collision_* children." "Keep the regression guard aligned with visual/collision transform drift."
         }
 
@@ -1038,8 +1396,8 @@ if (Test-Path -LiteralPath $collisionAudit) {
 }
 '@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $collisionAudit -ScriptArgs @("-Root", $tempRoot) -Label "broad lower-frame water tower collision" -SourcePath "scripts/agents/collision_authoring_agent.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_authoring_agent.ps1" "Collision authoring agent did not fail on a broad lower-frame water tower collider." "Keep the collision agent aligned with the water tower open-base regression."
         }
 
@@ -1104,8 +1462,8 @@ if (Test-Path -LiteralPath $collisionAudit) {
 }
 '@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $collisionAudit -ScriptArgs @("-Root", $tempRoot) -Label "building renderer without authored collision" -SourcePath "scripts/agents/collision_authoring_agent.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_authoring_agent.ps1" "Collision authoring agent did not fail on a rendered building without authored collision coverage." "Keep building collision checks rooted at the building object, not the selected visual child."
         }
 
@@ -1172,8 +1530,8 @@ if (Test-Path -LiteralPath $collisionAudit) {
 }
 '@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $collisionAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $collisionAudit -ScriptArgs @("-Root", $tempRoot) -Label "Blender environment model without collision" -SourcePath "scripts/agents/collision_authoring_agent.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/collision_authoring_agent.ps1" "Collision authoring agent did not fail on an environment Blender model without authored collision." "Keep direct scene Blender models covered by a BoxCollider or Collision_* helper."
         }
 
@@ -1269,8 +1627,8 @@ if (Test-Path -LiteralPath $prefabGraphAudit) {
 }
 '@ | Set-Content -LiteralPath $prefabPath -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $prefabGraphAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $prefabGraphAudit -ScriptArgs @("-Root", $tempRoot) -Label "protected multi-material prefab MaterialOverride" -SourcePath "scripts/agents/prefab_graph_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/prefab_graph_audit.ps1" "Prefab graph audit did not fail on a protected multi-material prefab MaterialOverride." "Keep the fixture red/green test aligned with the Blender-to-S&Box texture transfer regression."
         }
 
@@ -1320,8 +1678,8 @@ if (Test-Path -LiteralPath $modelDocAudit) {
 }
 '@ | Set-Content -LiteralPath $vmdlPath -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $modelDocAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $modelDocAudit -ScriptArgs @("-Root", $tempRoot) -Label "missing VMDL source mesh" -SourcePath "scripts/agents/modeldoc_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/modeldoc_audit.ps1" "ModelDoc audit did not fail on a missing source mesh fixture." "Keep the fixture red/green test aligned with the audit rules."
         }
 
@@ -1464,8 +1822,8 @@ if (Test-Path -LiteralPath $fbxMaterialSlotAudit) {
 }
 '@ | Set-Content -LiteralPath $vmdlPath -Encoding UTF8
 
-            & powershell -NoProfile -ExecutionPolicy Bypass -File $fbxMaterialSlotAudit -Root $tempRoot -Config $configPath | Out-Host
-            if ($LASTEXITCODE -eq 0) {
+            $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $fbxMaterialSlotAudit -ScriptArgs @("-Root", $tempRoot, "-Config", $configPath) -Label "VMDL remap source with .vmat suffix" -SourcePath "scripts/agents/fbx_material_slot_audit.ps1"
+            if ($fixtureExitCode -eq 0) {
                 Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/fbx_material_slot_audit.ps1" "FBX material slot audit did not fail on a .vmat-suffixed VMDL source against raw FBX slots." "Keep the fixture red/green test aligned with the terrain texture regression."
             }
 
@@ -1535,8 +1893,8 @@ scripts/agents/sbox_engine_reference_audit.ps1
         "sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\post_task_training_agent.ps1") -Encoding UTF8
 
         "Use [Net] for replicated S&Box gameplay state." | Set-Content -LiteralPath (Join-Path $tempRoot "docs\bad_engine_guidance.md") -Encoding UTF8
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxEngineReferenceAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sboxEngineReferenceAudit -ScriptArgs @("-Root", $tempRoot) -Label "stale [Net] engine guidance" -SourcePath "scripts/agents/sbox_engine_reference_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_engine_reference_audit.ps1" "Engine reference audit did not fail on active stale [Net] guidance." "Keep the fixture red/green test aligned with current S&Box [Sync] guidance."
         }
 
@@ -1547,8 +1905,8 @@ scripts/agents/sbox_engine_reference_audit.ps1
         }
 
         "Create a .qc file for this S&Box model." | Set-Content -LiteralPath (Join-Path $tempRoot "docs\bad_engine_guidance.md") -Encoding UTF8
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxEngineReferenceAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sboxEngineReferenceAudit -ScriptArgs @("-Root", $tempRoot) -Label "active .qc model guidance" -SourcePath "scripts/agents/sbox_engine_reference_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_engine_reference_audit.ps1" "Engine reference audit did not fail on active .qc model guidance." "Keep Source 1 model workflow references marked as historical or avoided."
         }
     }
@@ -1581,8 +1939,8 @@ if (Test-Path -LiteralPath $sboxLearnIntakeAudit) {
         "sbox_learn_intake_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\post_task_training_agent.ps1") -Encoding UTF8
         '{"hooks":[]}' | Set-Content -LiteralPath (Join-Path $tempRoot ".claude\settings.json") -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxLearnIntakeAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sboxLearnIntakeAudit -ScriptArgs @("-Root", $tempRoot) -Label "incomplete Learn intake routing" -SourcePath "scripts/agents/sbox_learn_intake_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_learn_intake_audit.ps1" "Learn intake audit did not fail on incomplete routing fixtures." "Keep the fixture strict enough to catch missing Learn agents, subagent, hook, and UI audit wiring."
         }
 
@@ -1595,6 +1953,14 @@ Secondary community tutorial context reviewed on 2026-05-23:
 - https://sbox.game/learn/tesa/ui-buildhash
 - https://sbox.game/learn/gibbard/networked-variable-ui
 
+Official editor docs reviewed on 2026-05-25:
+
+- https://sbox.game/dev/doc/editor/
+
+## Editor Tooling And Inspector Workflows
+
+Use UndoScope, EditorEvent, AssetPreview, and TextureGenerator guidance for editor workflow training.
+
 Use BuildHash() for dynamic Razor UI and do not call StateHasChanged() from Tick().
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot "docs\sbox_engine_llm_reference.md") -Encoding UTF8
 
@@ -1603,10 +1969,11 @@ Use BuildHash() for dynamic Razor UI and do not call StateHasChanged() from Tick
 
 ## Purpose
 
-Route S&Box Learn tutorial context.
+Route S&Box Learn tutorial context and official editor-doc sweeps.
 
 Sources:
 - https://sbox.game/learn
+- https://sbox.game/dev/doc/editor/
 
 Evidence:
 scripts/agents/sbox_learn_intake_audit.ps1
@@ -1645,7 +2012,7 @@ scripts/agents/editor_node_tool_audit.ps1
         "S&Box Learn Intake Agent UI Razor Reactivity Agent Editor Node Tool Agent sbox_learn_intake_audit.ps1 ui-razor-reactivity-agent.md editor-node-tool-agent.md" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
         "sbox-learn-intake-agent.md ui-razor-reactivity-agent.md editor-node-tool-agent.md sbox_learn_intake_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
         '"learn" sbox_learn_intake_audit.ps1 editor_node_tool_audit.ps1' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
-        "sbox_learn_intake_audit.ps1 S&Box Learn Intake Agent UI Razor Reactivity Agent editor_node_tool_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
+        "sbox_learn_intake_audit.ps1 S&Box Learn Intake Agent https://sbox.game/dev/doc/editor/ UI Razor Reactivity Agent editor_node_tool_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
         "LearnResearch EditorNodeTools sbox_learn_intake_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\post_task_training_agent.ps1") -Encoding UTF8
         '{"hooks":[{"id":"sbox-learn-intake-check","action":{"args":["-Suite","learn",".\\scripts\\agents\\sbox_learn_intake_audit.ps1"]}}]}' | Set-Content -LiteralPath (Join-Path $tempRoot ".claude\settings.json") -Encoding UTF8
 
@@ -1688,8 +2055,8 @@ if (Test-Path -LiteralPath $sboxApiReferenceAudit) {
         )
         @{ Types = $badTypes } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $tempRoot "API.json") -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxApiReferenceAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sboxApiReferenceAudit -ScriptArgs @("-Root", $tempRoot) -Label "incomplete local API dump" -SourcePath "scripts/agents/sbox_api_reference_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_api_reference_audit.ps1" "API reference audit did not fail on an incomplete local API dump." "Keep API dump validation strict enough to catch missing core S&Box symbols."
         }
 
@@ -1756,8 +2123,8 @@ public class BadNodeToolView : GraphView
 }
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot "Editor\BadNodeToolView.cs") -Encoding UTF8
 
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $editorNodeToolAudit -Root $tempRoot | Out-Host
-        if ($LASTEXITCODE -eq 0) {
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $editorNodeToolAudit -ScriptArgs @("-Root", $tempRoot) -Label "node-editor NotImplementedException placeholder" -SourcePath "scripts/agents/editor_node_tool_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/editor_node_tool_audit.ps1" "Editor node-tool audit did not fail on copied NotImplementedException scaffolding." "Keep the fixture red/green test aligned with the node-editor tutorial placeholder rule."
         }
 

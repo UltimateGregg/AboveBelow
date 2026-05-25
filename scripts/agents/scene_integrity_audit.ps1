@@ -69,6 +69,128 @@ function Get-JsonBoolOption {
     return [bool]$value
 }
 
+function Get-JsonPropertyValue {
+    param(
+        [object]$Object,
+        [string]$Name
+    )
+
+    if ($null -eq $Object -or $null -eq $Object.PSObject) {
+        return $null
+    }
+
+    $property = $Object.PSObject.Properties[$Name]
+    if ($null -eq $property) {
+        return $null
+    }
+
+    return $property.Value
+}
+
+function Test-JsonBoolValue {
+    param(
+        [object]$Value,
+        [bool]$Expected
+    )
+
+    if ($null -eq $Value) {
+        return $false
+    }
+
+    if ($Value -is [bool]) {
+        return $Value -eq $Expected
+    }
+
+    $text = $Value.ToString().Trim()
+    if ($Expected) {
+        return $text.Equals("true", [System.StringComparison]::OrdinalIgnoreCase)
+    }
+
+    return $text.Equals("false", [System.StringComparison]::OrdinalIgnoreCase)
+}
+
+function Get-ObjectChildren {
+    param([object]$Object)
+
+    $children = Get-JsonPropertyValue -Object $Object -Name "Children"
+    if ($null -eq $children) {
+        return @()
+    }
+
+    return @($children)
+}
+
+function Get-ObjectComponents {
+    param([object]$Object)
+
+    $components = Get-JsonPropertyValue -Object $Object -Name "Components"
+    if ($null -eq $components) {
+        return @()
+    }
+
+    return @($components)
+}
+
+function Get-AllSceneObjects {
+    param([object]$Object)
+
+    if ($null -eq $Object) {
+        return @()
+    }
+
+    $objects = @($Object)
+    foreach ($child in @(Get-ObjectChildren -Object $Object)) {
+        $objects += @(Get-AllSceneObjects -Object $child)
+    }
+
+    return $objects
+}
+
+function Find-SceneObjectsByName {
+    param(
+        [object[]]$Objects,
+        [string]$Name
+    )
+
+    return @($Objects | Where-Object { [string](Get-JsonPropertyValue -Object $_ -Name "Name") -eq $Name })
+}
+
+function Get-SceneComponentByContract {
+    param(
+        [object]$Object,
+        [ValidateSet("ModelRenderer", "BoxCollider", "SelectedHierarchyColliderViewer")]
+        [string]$Contract
+    )
+
+    foreach ($component in @(Get-ObjectComponents -Object $Object)) {
+        $componentType = [string](Get-JsonPropertyValue -Object $component -Name "__type")
+        if (-not [string]::IsNullOrWhiteSpace($componentType) -and $componentType.EndsWith($Contract, [System.StringComparison]::OrdinalIgnoreCase)) {
+            return $component
+        }
+
+        if ($Contract -eq "ModelRenderer" -and
+            $null -ne (Get-JsonPropertyValue -Object $component -Name "Model") -and
+            $null -ne (Get-JsonPropertyValue -Object $component -Name "RenderType")) {
+            return $component
+        }
+
+        if ($Contract -eq "BoxCollider" -and
+            $null -ne (Get-JsonPropertyValue -Object $component -Name "Center") -and
+            $null -ne (Get-JsonPropertyValue -Object $component -Name "IsTrigger") -and
+            $null -ne (Get-JsonPropertyValue -Object $component -Name "Scale")) {
+            return $component
+        }
+
+        if ($Contract -eq "SelectedHierarchyColliderViewer" -and
+            $null -ne (Get-JsonPropertyValue -Object $component -Name "AlwaysDraw") -and
+            $null -ne (Get-JsonPropertyValue -Object $component -Name "IncludeTriggers")) {
+            return $component
+        }
+    }
+
+    return $null
+}
+
 function Get-ModelResourcePathFromConfig {
     param([object]$Json)
 
@@ -296,6 +418,80 @@ function Test-WaterTowerVisualAlignmentText {
     }
 }
 
+function Test-BoundaryWireframeContract {
+    param(
+        [object]$SceneJson,
+        [string]$Path
+    )
+
+    if ($null -eq $SceneJson) {
+        Add-AgentIssue $issues "Warning" "Boundary Walls" $Path "Could not parse scene JSON for boundary wireframe checks." "Fix scene JSON before relying on invisible boundary wall validation."
+        return
+    }
+
+    $allObjects = @()
+    foreach ($rootObject in @($SceneJson.GameObjects)) {
+        $allObjects += @(Get-AllSceneObjects -Object $rootObject)
+    }
+
+    if (@(Find-SceneObjectsByName -Objects $allObjects -Name "BlockoutMap").Count -lt 1) {
+        return
+    }
+
+    foreach ($boundaryName in @("NorthBoundary", "SouthBoundary", "EastBoundary", "WestBoundary")) {
+        $matches = @(Find-SceneObjectsByName -Objects $allObjects -Name $boundaryName)
+        if ($matches.Count -ne 1) {
+            Add-AgentIssue $issues "Error" "Boundary Walls" $Path "Expected exactly one $boundaryName object; found $($matches.Count)." "Keep the four named boundary walls authored under BlockoutMap so the invisible edge contract remains auditable."
+            continue
+        }
+
+        $boundary = $matches[0]
+        $renderer = Get-SceneComponentByContract -Object $boundary -Contract "ModelRenderer"
+        $collider = Get-SceneComponentByContract -Object $boundary -Contract "BoxCollider"
+        $viewer = Get-SceneComponentByContract -Object $boundary -Contract "SelectedHierarchyColliderViewer"
+
+        if ($null -eq $renderer) {
+            Add-AgentIssue $issues "Error" "Boundary Walls" $Path "$boundaryName has no ModelRenderer component." "Keep a hidden dev-box renderer on the boundary so the editor object remains inspectable."
+        }
+        else {
+            $model = [string](Get-JsonPropertyValue -Object $renderer -Name "Model")
+            if ($model -ne "models/dev/box.vmdl") {
+                Add-AgentIssue $issues "Error" "Boundary Walls" $Path "$boundaryName uses renderer model '$model' instead of models/dev/box.vmdl." "Use the existing dev-box boundary authoring pattern unless the boundary system is intentionally redesigned."
+            }
+
+            $renderType = [string](Get-JsonPropertyValue -Object $renderer -Name "RenderType")
+            if ($renderType -ne "Off") {
+                Add-AgentIssue $issues "Error" "Boundary Walls" $Path "$boundaryName RenderType is '$renderType'; expected Off." "Boundary walls should not render as solid geometry in play; use editor wireframes for visibility."
+            }
+        }
+
+        if ($null -eq $collider) {
+            Add-AgentIssue $issues "Error" "Boundary Walls" $Path "$boundaryName has no BoxCollider component." "Keep boundary collision active while hiding the renderer."
+        }
+        else {
+            if (-not (Test-JsonBoolValue -Value (Get-JsonPropertyValue -Object $collider -Name "IsTrigger") -Expected $false)) {
+                Add-AgentIssue $issues "Error" "Boundary Walls" $Path "$boundaryName collider is configured as a trigger." "Boundary wall colliders must remain solid blockers."
+            }
+
+            if (-not (Test-JsonBoolValue -Value (Get-JsonPropertyValue -Object $collider -Name "Static") -Expected $true)) {
+                Add-AgentIssue $issues "Error" "Boundary Walls" $Path "$boundaryName collider is not static." "Boundary wall colliders should remain static scene blockers."
+            }
+
+            $colliderScale = [string](Get-JsonPropertyValue -Object $collider -Name "Scale")
+            if ($colliderScale.Replace(" ", "") -ne "50,50,50") {
+                Add-AgentIssue $issues "Error" "Boundary Walls" $Path "$boundaryName collider scale is '$colliderScale'; expected local 50,50,50." "Keep dev-box collider scale local so the GameObject transform defines the world-size boundary."
+            }
+        }
+
+        if ($null -eq $viewer) {
+            Add-AgentIssue $issues "Error" "Boundary Walls" $Path "$boundaryName has no SelectedHierarchyColliderViewer component." "Add SelectedHierarchyColliderViewer so hidden boundary walls remain visible as editor wireframes."
+        }
+        elseif (-not (Test-JsonBoolValue -Value (Get-JsonPropertyValue -Object $viewer -Name "AlwaysDraw") -Expected $true)) {
+            Add-AgentIssue $issues "Error" "Boundary Walls" $Path "$boundaryName SelectedHierarchyColliderViewer does not AlwaysDraw." "Enable AlwaysDraw so the boundary wireframe is visible in the editor without selecting each wall."
+        }
+    }
+}
+
 $requiredComponents = @(
     "DroneVsPlayers.GameRules",
     "DroneVsPlayers.GameStats",
@@ -352,6 +548,7 @@ if ($solidLadderVolumes -gt 0) {
     Add-AgentIssue $issues "Error" "Ladder Volumes" $relative "$solidLadderVolumes LadderVolume block(s) appear to use non-trigger colliders." "Ladder volumes should be trigger colliders so character movement can attach."
 }
 
+Test-BoundaryWireframeContract -SceneJson $sceneJson -Path $relative
 Test-WaterTowerLadderAuthoringText -Text $raw -Path $relative -Context "Scene"
 Test-WaterTowerSolidCollisionAuthoringText -Text $raw -Path $relative -Context "Scene"
 Test-WaterTowerOpenBaseCollisionText -Text $raw -Path $relative -Context "Scene"

@@ -28,6 +28,7 @@ screenshots/
 
 # .NET build output
 .codex-dotnet/
+.tmpdotnet/
 bin/
 obj/
 **/.bin/

@@ -87,6 +87,7 @@
             "Flags": 0,
             "Name": "Weapon",
             "Position": "20,15,55",
+            "Scale": "0.5,0.5,0.5",
             "Enabled": true,
             "Components": [
               {
@@ -253,6 +254,8 @@
                 "LeftHandTpLocalAngles": "0,0,0",
                 "RightHandTpLocalPos": "22,14,49",
                 "RightHandTpLocalAngles": "0,0,0",
+                "FiberHeldDroneModelPath": "models/drone_fpv_fiber.vmdl",
+                "FiberHeldDroneTint": "1,1,1,1",
                 "SwayLerpRate": 18,
                 "LaunchReadyAt": 0,
                 "DroneInFlight": false
@@ -291,7 +294,79 @@
                     "BodyGroups": 18446744073709551615,
                     "Model": "models/drone_fpv.vmdl",
                     "RenderType": "On",
-                    "Tint": "0.6,0.65,0.7,1"
+                    "Tint": "1,1,1,1"
+                  }
+                ],
+                "Children": [
+                  {
+                    "__guid": "33333333-d000-4311-0000-000000000001",
+                    "Flags": 0,
+                    "Name": "HeldPropeller_FL",
+                    "Position": "6.71,6.71,1.8",
+                    "Enabled": true,
+                    "Components": [
+                      {
+                        "__type": "Sandbox.ModelRenderer",
+                        "__guid": "33333333-d000-4312-0000-000000000001",
+                        "BodyGroups": 18446744073709551615,
+                        "Model": "models/drone_fpv_prop.vmdl",
+                        "RenderType": "On",
+                        "Tint": "1,1,1,1"
+                      }
+                    ]
+                  },
+                  {
+                    "__guid": "33333333-d000-4321-0000-000000000001",
+                    "Flags": 0,
+                    "Name": "HeldPropeller_FR",
+                    "Position": "6.71,-6.71,1.8",
+                    "Rotation": "0,180,0",
+                    "Enabled": true,
+                    "Components": [
+                      {
+                        "__type": "Sandbox.ModelRenderer",
+                        "__guid": "33333333-d000-4322-0000-000000000001",
+                        "BodyGroups": 18446744073709551615,
+                        "Model": "models/drone_fpv_prop.vmdl",
+                        "RenderType": "On",
+                        "Tint": "1,1,1,1"
+                      }
+                    ]
+                  },
+                  {
+                    "__guid": "33333333-d000-4331-0000-000000000001",
+                    "Flags": 0,
+                    "Name": "HeldPropeller_BL",
+                    "Position": "-6.71,6.71,1.8",
+                    "Rotation": "0,180,0",
+                    "Enabled": true,
+                    "Components": [
+                      {
+                        "__type": "Sandbox.ModelRenderer",
+                        "__guid": "33333333-d000-4332-0000-000000000001",
+                        "BodyGroups": 18446744073709551615,
+                        "Model": "models/drone_fpv_prop.vmdl",
+                        "RenderType": "On",
+                        "Tint": "1,1,1,1"
+                      }
+                    ]
+                  },
+                  {
+                    "__guid": "33333333-d000-4341-0000-000000000001",
+                    "Flags": 0,
+                    "Name": "HeldPropeller_BR",
+                    "Position": "-6.71,-6.71,1.8",
+                    "Enabled": true,
+                    "Components": [
+                      {
+                        "__type": "Sandbox.ModelRenderer",
+                        "__guid": "33333333-d000-4342-0000-000000000001",
+                        "BodyGroups": 18446744073709551615,
+                        "Model": "models/drone_fpv_prop.vmdl",
+                        "RenderType": "On",
+                        "Tint": "1,1,1,1"
+                      }
+                    ]
                   }
                 ]
               },

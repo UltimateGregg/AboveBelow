@@ -132,11 +132,12 @@ $areaRules = @(
         Name = "Assets"
         Patterns = @("*.blend", "*.blend.blend", "*_model.blend/*", "Assets/models/*", "Assets/materials/*", "scripts/*_asset_pipeline.json", "scripts/asset_pipeline.*", "scripts/smart_asset_export.ps1")
         Checks = @(
+            "scripts/agents/aaa_asset_quality_audit.ps1 -ShowInfo",
             "scripts/agents/asset_pipeline_audit.ps1",
             "scripts/agents/modeldoc_audit.ps1 -ShowInfo",
             "scripts/agents/fbx_material_slot_audit.ps1 -ShowInfo"
         )
-        Training = "If an asset roundtrip failed, make the config, ModelDoc, material-slot, and visual-review path reproducible before accepting the asset."
+        Training = "If an asset roundtrip or quality target failed, make the brief, reference requirements, config, ModelDoc, material-slot, and visual-review path reproducible before accepting the asset."
     },
     [pscustomobject]@{
         Name = "Tooling"
@@ -184,6 +185,15 @@ $areaRules = @(
             "scripts/agents/sbox_engine_reference_audit.ps1 -ShowInfo"
         )
         Training = "Custom Node Editor tools should stay editor-only, use verified editor API shapes, clear tutorial placeholders, and keep manual editor-open verification in the handoff."
+    },
+    [pscustomobject]@{
+        Name = "EditorFirstWorkflow"
+        Patterns = @(".mcp.json", ".claude/*", ".agents/sbox/editor-first-workflow-agent.md", "docs/editor_control_plane.md", "docs/agent_toolkit.md", "AGENTS.md", "scripts/agents/editor_first_workflow_audit.ps1", "scripts/agents/run_agent_checks.ps1", "scripts/agents/test_full_automation_layer.ps1")
+        Checks = @(
+            "scripts/agents/run_agent_checks.ps1 -Suite editor-first -ShowInfo",
+            "scripts/agents/test_full_automation_layer.ps1"
+        )
+        Training = "When a task can be done through the S&Box editor, start with live MCP status/capability checks, mutate through native editor tools where available, and report static fallbacks as environment limits."
     }
 )
 

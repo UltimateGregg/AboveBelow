@@ -32,6 +32,7 @@ function Require-Match {
 
 $weapon = Read-ProjectFile "Code/Drone/DroneWeapon.cs"
 $pilotLink = Read-ProjectFile "Code/Drone/PilotLink.cs"
+$killFeed = Read-ProjectFile "Code/UI/KillFeedTracker.cs"
 
 Require-Match "DroneWeapon should guard against duplicate detonation requests." `
     $weapon "_detonationRequested"
@@ -59,6 +60,9 @@ Require-Match "PilotLink should explicitly request a host-side despawn after cra
 
 Require-Match "PilotLink should destroy the exploded drone object on the host." `
     $pilotLink "RequestKillAndDespawnDrone[\s\S]{0,700}GameObject\.Destroy\(\)"
+
+Require-Match "Kill feed should ignore unattributed internal cleanup deaths." `
+    $killFeed "void\s+OnHealthKilled\(\s*Health\s+victim,\s*DamageInfo\s+info\s*\)[\s\S]{0,180}if\s*\(\s*info\.AttackerId\s*==\s*default\s*\)\s*return;"
 
 if ($failures.Count -gt 0) {
     $failures | ForEach-Object { Write-Host "ERROR: $_" }

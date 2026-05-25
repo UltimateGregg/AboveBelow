@@ -1,18 +1,43 @@
 <!-- kv3 encoding:text:version{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d} format:modeldoc29:version{3cec427c-1b0e-4d48-a90a-0436f33a6041} -->
 {
-	rootNode = 
+	rootNode =
 	{
 		_class = "RootNode"
-		children = 
+		children =
 		[
 			{
 				_class = "MaterialGroupList"
-				children = 
+				children =
 				[
 					{
 						_class = "DefaultMaterialGroup"
-						remaps = 
+						remaps =
 						[
+
+							{
+								from = "Antenna_Rubber"
+								to = "materials/drone_fpv_antenna.vmat"
+							},
+
+							{
+								from = "Battery_Wrap"
+								to = "materials/drone_fpv_battery.vmat"
+							},
+
+							{
+								from = "Camera_Body"
+								to = "materials/drone_fpv_camera_body.vmat"
+							},
+
+							{
+								from = "Camera_Lens"
+								to = "materials/drone_fpv_lens.vmat"
+							},
+
+							{
+								from = "Electronics_PCB"
+								to = "materials/drone_fpv_electronics.vmat"
+							},
 
 							{
 								from = "Frame_Carbon"
@@ -23,15 +48,20 @@
 								from = "Motor_Aluminum"
 								to = "materials/drone_fpv_motor.vmat"
 							},
+
+							{
+								from = "Strap_Rubber"
+								to = "materials/drone_fpv_strap.vmat"
+							},
 						]
-						use_global_default = true
+						use_global_default = false
 						global_default_material = "materials/default.vmat"
 					},
 				]
 			},
 			{
 				_class = "RenderMeshList"
-				children = 
+				children =
 				[
 					{
 						_class = "RenderMeshFile"
@@ -44,7 +74,7 @@
 						align_origin_y_type = "None"
 						align_origin_z_type = "None"
 						parent_bone = ""
-						import_filter = 
+						import_filter =
 						{
 							exclude_by_default = false
 							exception_list = [  ]
@@ -52,6 +82,7 @@
 					},
 				]
 			},
+
 		]
 		model_archetype = ""
 		primary_associated_entity = ""

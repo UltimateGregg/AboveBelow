@@ -17,6 +17,31 @@ If a newly built tool is missing from `tools/list`, restart or fully reload the
 S&Box editor MCP server. New tool classes can compile successfully while the
 running editor process still serves its previously loaded assembly.
 
+## Editor-First Command Workflow
+
+For any command that touches scene objects, prefabs, components, assets, sounds,
+screenshots, play mode, terrain, or editor tooling, start in the live editor
+before editing saved JSON directly.
+
+1. Check `control_plane_status`.
+2. If client-side MCP tools are not exposed, send JSON-RPC `tools/list` to
+   `http://localhost:29015/mcp` and use the returned tool names.
+3. Use `control_plane_capabilities` to choose the narrowest editor tool domain.
+4. Inspect active state with `editor_scene_info`, `scene_get_hierarchy`,
+   `scene_find_objects`, `scene_list_objects`, `component_list`, and
+   `component_get` before mutation.
+5. Prefer native mutations such as `scene_create_object`, `component_set`,
+   `asset_*`, and `sound_*` over hand-editing scene or prefab JSON.
+6. Save live scene work with `editor_save_scene`, then verify both live editor
+   state and saved files.
+7. Use `editor_take_screenshot`, `editor_play`, `editor_stop`,
+   `editor_is_playing`, and `editor_console_output` when runtime or visual proof
+   matters.
+
+Use CoworkBridge only as a fallback after the native MCP tools are checked. If
+the editor, MCP dock, or required tool domain is unavailable, report that as an
+environment blocker and state which parts were completed statically.
+
 ## Core Tool Domains
 
 - `control_plane_*`: server, scene, tool-domain, and workflow status.

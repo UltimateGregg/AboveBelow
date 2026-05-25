@@ -10,6 +10,7 @@
 - When editing scenes through MCP, summarize objects changed.
 - After changes, check compile errors and editor logs.
 - Do not invent S&Box APIs. Check docs, `API.json`, or existing project patterns first; use `scripts/agents/sbox_api_lookup.ps1` for exact local API symbols before adding unfamiliar calls or attributes.
+- For commands that can reasonably be done in the S&Box editor, start with `.agents/sbox/editor-first-workflow-agent.md`: check `control_plane_status` or JSON-RPC `tools/list`, inspect live editor state before file edits, prefer native MCP mutations, save with `editor_save_scene` only when the editor was not already dirty and the edits are agent-owned, and report any fallback when the editor/MCP surface is unavailable.
 - AI Workflow Discipline:
 - Break large tasks into small, verifiable phases.
 - Complete one gameplay/system change at a time before starting another.
@@ -146,6 +147,8 @@ For assets that need custom settings (material remaps, scale overrides), create 
 
 **Asset naming rule:** the filename, config name, and editor-visible model name should match by default. For example, `environment_model.blend/terrain_assets.blend` uses `scripts/terrain_assets_asset_pipeline.json` and writes `Assets/models/terrain_assets.vmdl`. Do not point a newly named Blender file at an old model name such as `terrain_pine.vmdl` unless the user explicitly asks for a legacy alias.
 
+**AAA asset quality rule:** high-polish Blender asset work starts with `.agents/sbox/aaa-asset-quality-agent.md` and a generated asset brief from `scripts/agents/new_asset_brief.ps1`. The brief must make reference requirements, Production Quality Targets, material roles, sockets, scale/orientation, and visual review checks explicit before detailed modeling. Before handoff, run `scripts/agents/aaa_asset_quality_audit.ps1 -ShowInfo` plus the relevant asset-production checks and include Blender preview/contact-sheet/editor proof when the asset needs visual approval.
+
 **Terrain assets material rule:** `terrain_assets` is a strict multi-material foliage asset. Its config must keep raw FBX material source names with `"vmdl_material_source_suffix": ""`, `"vmdl_use_global_default": false`, and `"strict_vmdl_material_sources": true`. Do not fix this model with scene `MaterialOverride` or `Materials.indexed`; that can collapse bark and foliage cards to one material. After export, run `.\scripts\agents\fbx_material_slot_audit.ps1 -Config .\scripts\terrain_assets_asset_pipeline.json` or the `modeldoc` suite.
 
 **No manual script execution needed.** The asset pipeline runs automatically on every `.blend` save, for any asset.
@@ -175,3 +178,12 @@ For detailed hook logs and diagnostics, see `docs/automation.md`.
 **Action:** Runs `.\scripts\agents\run_agent_checks.ps1 -Suite learn -ShowInfo`.
 
 Use this hook to keep community tutorial lessons grounded in project agents, subagents, docs, self-tests, and focused audits instead of leaving them only in chat history.
+
+## Editor-First Workflow Hook
+
+**Hook ID:** `sbox-editor-first-workflow-check`
+**Configuration File:** `./.claude/settings.json`
+**Trigger:** Changes to editor-control-plane docs, editor-first agent routing, MCP manifest, suite wiring, training wiring, or the editor-first workflow audit.
+**Action:** Runs `.\scripts\agents\run_agent_checks.ps1 -Suite editor-first -ShowInfo`.
+
+Use this hook to keep future Codex/agent tasks biased toward live S&Box editor inspection, mutation, save, screenshot, playtest, and log proof before falling back to static scene or prefab JSON edits.

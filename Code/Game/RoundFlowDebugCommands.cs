@@ -24,6 +24,119 @@ public static class RoundFlowDebugCommands
 		LogProbe( label );
 	}
 
+	[ConCmd( "dvp_fpv_visual_probe" )]
+	public static void FpvVisualProbe( string droneType = "Fpv", string view = "FirstPerson" )
+	{
+		if ( !Enum.TryParse<DroneType>( droneType, true, out var selectedType ) )
+		{
+			Log.Warning( $"[RoundProbe] Unknown DroneType '{droneType}'." );
+			LogProbe( $"fpv-visual-unknown-{droneType}" );
+			return;
+		}
+
+		if ( !Networking.IsHost )
+		{
+			Log.Warning( "[RoundProbe] dvp_fpv_visual_probe must run on the host." );
+			LogProbe( "fpv-visual-not-host" );
+			return;
+		}
+
+		var scene = Game.ActiveScene;
+		var setup = Find<GameSetup>();
+		var local = Connection.Local ?? Connection.All.FirstOrDefault();
+		if ( scene is null || local is null )
+		{
+			Log.Warning( "[RoundProbe] Cannot run FPV visual probe without an active scene and local connection." );
+			LogProbe( "fpv-visual-no-local" );
+			return;
+		}
+
+		if ( setup is not null && setup.IsValid() )
+		{
+			setup.SelectLocalDrone( selectedType );
+			setup.SpawnPawnFor( local, PlayerRole.Pilot );
+		}
+
+		var pilot = scene.GetAllComponents<PilotSoldier>()
+			.FirstOrDefault( p => !p.IsProxy && p.GameObject.Network.Owner?.Id == local.Id )
+			?? scene.GetAllComponents<PilotSoldier>().FirstOrDefault( p => !p.IsProxy );
+
+		if ( !pilot.IsValid() )
+		{
+			Log.Warning( "[RoundProbe] FPV visual probe could not find a local pilot pawn." );
+			LogProbe( "fpv-visual-no-pilot" );
+			return;
+		}
+
+		pilot.ChosenDrone = selectedType;
+
+		var existing = pilot.ResolveDrone();
+		var droneObject = existing.IsValid() ? existing.GameObject : null;
+		if ( existing.IsValid() && existing.Type != selectedType )
+		{
+			droneObject.Destroy();
+			pilot.LinkedDroneId = default;
+			droneObject = null;
+		}
+
+		if ( !droneObject.IsValid() )
+		{
+			var prefabPath = selectedType switch
+			{
+				DroneType.Gps => "prefabs/drone_gps.prefab",
+				DroneType.FiberOpticFpv => "prefabs/drone_fpv_fiber.prefab",
+				_ => "prefabs/drone_fpv.prefab"
+			};
+			var prefab = GameObject.GetPrefab( prefabPath );
+			if ( !prefab.IsValid() )
+			{
+				Log.Warning( $"[RoundProbe] {selectedType} drone prefab could not be loaded from {prefabPath}." );
+				LogProbe( "fpv-visual-no-prefab" );
+				return;
+			}
+
+			var spawnRotation = Rotation.FromYaw( pilot.GameObject.WorldRotation.Yaw() );
+			var spawnPosition = pilot.GameObject.WorldPosition + spawnRotation.Forward * 120f + Vector3.Up * 72f;
+			droneObject = prefab.Clone( new Transform( spawnPosition, spawnRotation ), name: $"{selectedType} Visual Probe - {local.DisplayName}" );
+
+			var link = droneObject.Components.Get<PilotLink>( FindMode.EverythingInSelfAndDescendants );
+			if ( link.IsValid() )
+				link.PilotId = local.Id;
+
+			var droneController = droneObject.Components.Get<DroneController>( FindMode.EverythingInSelfAndDescendants );
+			if ( droneController.IsValid() )
+			{
+				var eyeAngles = droneController.EyeAngles;
+				eyeAngles.yaw = spawnRotation.Yaw();
+				droneController.EyeAngles = eyeAngles;
+			}
+
+			if ( Networking.IsActive )
+				droneObject.NetworkSpawn( local );
+
+			pilot.LinkedDroneId = droneObject.Id;
+		}
+
+		var remote = pilot.Components.Get<RemoteController>( FindMode.EverythingInSelfAndDescendants );
+		if ( remote.IsValid() )
+		{
+			remote.DroneViewActive = true;
+			remote.SetDroneViewActive( true );
+		}
+
+		var camera = droneObject.Components.Get<DroneCamera>( FindMode.EverythingInSelfAndDescendants );
+		if ( camera.IsValid() )
+		{
+			var chaseProof = view.Equals( "Chase", StringComparison.OrdinalIgnoreCase )
+				|| view.Equals( "ThirdPerson", StringComparison.OrdinalIgnoreCase );
+			camera.SetFirstPersonActive( !chaseProof );
+			camera.ShowVisualInFirstPerson = true;
+		}
+
+		Log.Info( $"[RoundProbe] FPV visual probe active: local pilot is flying {selectedType} with {view} visual proof enabled." );
+		LogProbe( $"fpv-visual-active-{selectedType}-{view}" );
+	}
+
 	[ConCmd( "dvp_select_soldier" )]
 	public static void SelectSoldier( string soldierClass = "Assault" )
 	{

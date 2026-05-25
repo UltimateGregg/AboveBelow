@@ -17,13 +17,15 @@ Validate Blender to S&Box asset pipeline inputs and outputs.
 
 ## Review Rules
 
-- Use the production lane before export: asset brief, Blender quality audit, material/texture audit, then the export path.
+- Use the production lane before export: asset brief, AAA asset quality audit, Blender quality audit, material/texture audit, then the export path.
+- For high-polish assets, confirm the brief's Production Quality Targets and Visual Review Plan exist before exporting. Pipeline success without reference, material, preview, and S&Box proof is not enough.
 - Prefer the existing smart export path for `.blend` saves.
 - Use asset-specific configs when scale, material remaps, or target paths differ from the generic convention.
 - Keep generated outputs under normal S&Box asset folders.
 - Material remaps must point to existing `.vmat` files.
 - Material remap source names must be verified at the `.vmdl` layer, not just in Blender. If S&Box renders a remapped model with the wrong/default material, compare the exported FBX source material names, the config `material_remap` keys, and the generated `.vmdl` `from` values before changing geometry.
 - For strict multi-material assets, verify the actual exported FBX material slots with `fbx_material_slot_audit.ps1`; config-to-VMDL drift checks are not enough to prove S&Box will bind the right slots.
+- For drone variants that intentionally differ visually from the base drone, keep the source blend, target FBX, target VMDL, prefab `Visual` model, held preview path, and variant material remaps distinct. Run `drone_variant_visual_audit.ps1` so the variant cannot silently keep rendering a shared/base body.
 - Use `vmdl_material_source_suffix` per asset when the model compiler expects raw FBX names instead of suffixed names. Set `strict_vmdl_material_sources: true` on assets where a mismatch should block handoff.
 - For multi-material foliage and authored environment props such as `terrain_assets` or `watertower`, keep `vmdl_use_global_default: false` so a missed remap does not collapse the whole model to `materials/default.vmat`.
 - Do not use scene or prefab `MaterialOverride` to fix a bad multi-material bind. Clear `MaterialOverride` and `Materials.indexed`, then fix the source asset config, FBX slots, and generated `.vmdl`.
@@ -34,7 +36,9 @@ Validate Blender to S&Box asset pipeline inputs and outputs.
 ## Evidence Command
 
 ```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/aaa_asset_quality_audit.ps1 -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1
+powershell -ExecutionPolicy Bypass -File scripts/agents/drone_variant_visual_audit.ps1 -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_graph_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/fbx_material_slot_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production

@@ -7,11 +7,15 @@
   "combine_meshes": true,
   "combined_object_name": "HouseLargeMesh",
   "material_remap": {
-    "Material_Brick": "materials/arena/concrete_wall.vmat",
-    "Material_Concrete": "materials/arena/concrete_wall.vmat",
-    "Material_Glass": "materials/arena/asphalt_cover.vmat",
-    "Material_Metal": "materials/arena/metal_pad.vmat",
-    "Material_Wood": "materials/arena/asphalt_cover.vmat"
+    "M_HouseLarge_Siding": "materials/environment/house_large_siding.vmat",
+    "M_HouseLarge_Roof": "materials/environment/house_large_roof.vmat",
+    "M_HouseLarge_Foundation": "materials/environment/house_large_foundation.vmat",
+    "M_HouseLarge_Trim": "materials/environment/house_large_trim.vmat",
+    "M_HouseLarge_InteriorWood": "materials/environment/house_large_interior_wood.vmat",
+    "M_HouseLarge_Glass": "materials/environment/house_large_glass.vmat",
+    "M_HouseLarge_Metal": "materials/environment/house_large_metal.vmat",
+    "M_HouseLarge_TacticalPatch": "materials/environment/house_large_tactical_patch.vmat",
+    "M_HouseLarge_DirtMask": "materials/environment/house_large_dirt_mask.vmat"
   },
   "vmdl_use_global_default": false,
   "strict_vmdl_material_sources": true,
