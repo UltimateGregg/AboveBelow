@@ -26,6 +26,32 @@ Official editor docs reviewed on 2026-05-25:
 - https://sbox.game/dev/doc/editor/mapping/
 - https://sbox.game/dev/doc/editor/mapping/shortcuts
 
+Valve Developer Community Source 2 docs reviewed on 2026-05-27:
+
+- https://developer.valvesoftware.com/wiki/Category:Source_2
+- https://developer.valvesoftware.com/wiki/List_of_Source_2_asset_types
+- https://developer.valvesoftware.com/wiki/Resourcecompiler
+- https://developer.valvesoftware.com/wiki/ModelDoc_Editor
+- https://developer.valvesoftware.com/wiki/Source_2_Model_Editor
+- https://developer.valvesoftware.com/wiki/Source_2_Model_Editor/Docs/Model_Menu
+- https://developer.valvesoftware.com/wiki/VMDL/MaterialGroups
+- https://developer.valvesoftware.com/wiki/Material_Editor_%28Source_2%29
+- https://developer.valvesoftware.com/wiki/Source_2/Docs/Level_Design/Lighting
+- https://developer.valvesoftware.com/wiki/Counter-Strike_2_Workshop_Tools/Level_Design/Lighting
+- https://developer.valvesoftware.com/wiki/Counter-Strike_2_Workshop_Tools/Postprocessing
+- https://developer.valvesoftware.com/wiki/Env_light_probe_volume
+- https://developer.valvesoftware.com/wiki/Nav_Mesh_Editing
+- https://developer.valvesoftware.com/wiki/Nav_mesh
+
+Adjacent Source 2 references reviewed during the same pass:
+
+- https://developer.valvesoftware.com/wiki/Asset_System
+- https://developer.valvesoftware.com/wiki/VMAT
+- https://developer.valvesoftware.com/wiki/Postprocessing_Editor
+- https://developer.valvesoftware.com/wiki/Env_combined_light_probe_volume
+- https://developer.valvesoftware.com/wiki/Half-Life%3A_Alyx_Workshop_Tools/Modeling/Simple_Static_Prop
+- https://developer.valvesoftware.com/wiki/Half-Life%3A_Alyx_Workshop_Tools/Modeling/Physics_Prop
+
 Official Facepunch Learn tutorial reviewed on 2026-05-23:
 
 - https://sbox.game/learn/facepunch/creating-an-entity-for-sandbox
@@ -135,6 +161,20 @@ Avoid stale `[Net]` guidance. If older examples use `[Net]`, verify against curr
 
 S&Box model authoring uses ModelDoc / Model Editor for `.vmdl` files. Official docs call it the modern equivalent of Source 1 `.QC`, but it is node-based rather than text-command based. In this repo, durable model fixes should go through the asset pipeline, generated source files, and audits instead of blind manual VMDL edits.
 
+Valve's Source 2 asset-system docs are useful mental-model support: source/content files such as `.vmdl`, `.vmat`, `.vmap`, `.vpcf`, and `.vtex` reference raw inputs and compile into game-side `_c` outputs such as `.vmdl_c` and `.vmat_c`. For this repo, treat the editable source asset and its raw inputs as the durable state. Do not fix missing resources by editing compiled `_c` files or committing cache output; repair the source asset, regenerate or recompile, and inspect compiler/editor logs.
+
+`resourcecompiler` is the underlying Source 2 compiler for many source resources and map builds. It can force or shallow-force compiles and it participates in map lighting/VIS/VPK output in Valve workshop tools. In S&Box, prefer the editor/asset-pipeline path first, but use resource-compiler facts to interpret errors: a stale compiled cache, a missing raw input, or a bad source reference should lead back to `.vmdl`, `.vmat`, `.tmat`, FBX, texture, or sound source validation.
+
+ModelDoc pages reinforce a few project rules:
+
+- A ModelDoc document is an outliner of nodes and needs an explicit compile before the compiled preview/game resource reflects the source.
+- The legacy Model Editor `Model` menu maps the main asset concerns: mesh, LOD groups, physics meshes, attachments, hitboxes, material groups, and material remaps. Use that as a review checklist for VMDL changes even when S&Box exposes the work through newer ModelDoc UI.
+- `RenderMeshFile` references the external FBX/DMX/OBJ source; deleting, renaming, or moving that source breaks the model.
+- Static props may use physics mesh nodes, but dynamic props should use hulls or simple physics shapes; complex render mesh collision is a performance and stability risk.
+- External attachment and hitbox-list support exists in Source 2 Model Editor docs, but this repo should prefer local prefab/component wiring unless a shared skeleton/model asset intentionally owns that data.
+- Material groups are model skins. The first group must match the model's default material list, and every additional group must keep the same material count. Use this only for deliberate skin/variant behavior, not as a workaround for wrong FBX material slots.
+- The Source 2 Material Editor and VMAT docs explain material authoring and source-to-compiled `.vmat_c` output. Material Editor can force-compile to disk, shader features gate variable availability, the preview is unavailable until compilation succeeds, and the log commonly points at bad or missing texture paths. Exact S&Box material fields still need S&Box docs, local assets, or editor proof.
+
 Use the existing checks:
 
 - `scripts/agents/modeldoc_audit.ps1`
@@ -145,6 +185,18 @@ Use the existing checks:
 For Blender work, verify local config, exported FBX material slots, generated VMDL remaps, prefab renderer state, and a visual editor result before accepting a texture or model fix.
 
 For cosmetic jigglebone work, treat the S&Box Learn jigglebone tutorial as secondary practical context: start from a skinned cosmetic bound to the citizen or human skeleton plus extra jiggle bones, bone-merge it to a body in a simple test scene, author primitive ModelDoc `PhysicsShape` nodes and joints, place joint anchors at the intended pivots, and prove the result in editor play with body motion. This is local bone simulation proof, not world collision proof.
+
+## Lighting, Postprocessing, And Navigation Research
+
+Valve Source 2 lighting docs describe a Hammer-centered pipeline built from lightmap textures, light probe volumes, cubemaps, light sources, and sometimes volumetric fog. The most useful project lesson is proof discipline: preview lighting is not final lighting, dynamic objects need appropriate probe/reflection coverage, and accessible gameplay spaces should be checked for missing probe coverage or sudden ambient-light jumps. CS2-specific entity names, RTX requirements, and tonemapping presets are game/tool context, not S&Box implementation defaults.
+
+Light probe volume docs are still a good QA checklist when a S&Box scene looks wrong: check whether dynamic objects have believable ambient light, whether reflective materials are using the intended local environment, whether overlapping volumes have an explicit priority, and whether bounds cover the playable volume. Verify the current S&Box editor component/entity surface before adding any probe, cubemap, or light entity by name.
+
+Source 2 postprocessing docs describe `.vpost` stacks where tonemapping+bloom and color correction are applied as separate runtime phases. If S&Box postprocessing work appears, verify the current S&Box asset/API shape first, then treat layer order and duplicated tonemapping/bloom layers as things to inspect in the editor rather than copying CS2 workshop settings blindly.
+
+CS2 postprocessing docs add a useful level-design checklist: postprocessing can cover tone mapping/camera exposure, color correction, bloom, screen blur, and LUTs; Hammer uses post-processing volumes including a master volume, nested volumes for transitions, shared `.vpost` resources for consistency, and exposure ranges/speeds that can cause brightness fluctuation. For S&Box, translate this into editor proof: check exposure stability across indoor/outdoor transitions and verify the current S&Box postprocess volume/resource surface before wiring anything by name.
+
+Valve `Nav Mesh` and `Nav_Mesh_Editing` pages are mostly legacy Source/Counter-Strike `.nav` workflows: console commands such as `nav_generate`, `nav_edit`, `nav_save`, manual area splitting, and place-name painting. For this repo, they are not active S&Box navigation implementation guidance. S&Box uses Recast navigation exposed through the scene NavMesh, generated from the PhysicsWorld, with `Scene.NavMesh`, agents, areas, costs/filters, obstacles, and links in the S&Box docs. Use Valve nav pages only as conceptual QA background for walkability, orphaned regions, one-way links, and manual review discipline.
 
 ## UI And Sound
 

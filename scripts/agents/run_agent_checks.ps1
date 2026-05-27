@@ -131,7 +131,8 @@ switch ($Suite) {
     "prefab" {
         $scripts = @(
             @{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs },
-            @{ Name = "destroyed_pickup_prefab_audit.ps1"; Args = $commonArgs }
+            @{ Name = "destroyed_pickup_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "prefab_visual_quality_audit.ps1"; Args = $commonArgs }
         )
     }
     "prefab-graph" { $scripts = @(@{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs }) }
@@ -239,7 +240,8 @@ switch ($Suite) {
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
-            @{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs }
+            @{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs },
+            @{ Name = "prefab_visual_quality_audit.ps1"; Args = $commonArgs }
         )
     }
     "self-test" { $scripts = @(@{ Name = "test_full_automation_layer.ps1"; Args = @("-Root", $Root) }) }

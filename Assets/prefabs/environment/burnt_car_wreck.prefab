@@ -11,9 +11,9 @@
         "__guid": "10000000-0000-4000-8000-000000000001",
         "Flags": 0,
         "Name": "Pickup_Frame_CrushedBase",
-        "Position": "0,0,29",
-        "Rotation": "0,0,0,1",
-        "Scale": "5.45,1.88,0.42",
+        "Position": "0,0,25",
+        "Rotation": "0,0,0.0174524,0.999848",
+        "Scale": "5.25,1.28,0.24",
         "Enabled": true,
         "Components": [
           {
@@ -25,9 +25,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_metal.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -35,7 +41,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.18,0.23,0.25,1"
+            "Tint": "0.72,0.76,0.74,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -44,7 +50,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -57,9 +76,9 @@
         "__guid": "10000000-0000-4000-8000-000000000002",
         "Flags": 0,
         "Name": "Pickup_Cab_CrushedCore",
-        "Position": "26,0,64",
-        "Rotation": "0,0,0,1",
-        "Scale": "1.45,1.48,0.72",
+        "Position": "24,0,54",
+        "Rotation": "0.0174524,-0.0348995,0.0261769,0.99901",
+        "Scale": "1.12,1.06,0.48",
         "Enabled": true,
         "Components": [
           {
@@ -74,6 +93,12 @@
             "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -81,7 +106,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.16,0.22,0.26,1"
+            "Tint": "0.74,0.86,0.90,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -90,7 +115,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -103,9 +141,9 @@
         "__guid": "10000000-0000-4000-8000-000000000003",
         "Flags": 0,
         "Name": "Pickup_Cab_Roof_Collapsed",
-        "Position": "18,-4,94",
-        "Rotation": "0.0174524,-0.0436194,0.0261769,0.998552",
-        "Scale": "1.78,1.28,0.16",
+        "Position": "15,-5,79",
+        "Rotation": "0.052336,-0.104528,0.0348995,0.992546",
+        "Scale": "1.36,1.02,0.10",
         "Enabled": true,
         "Components": [
           {
@@ -117,9 +155,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_metal.vmat",
+            "MaterialOverride": "materials/arena/concrete_wall.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -127,7 +171,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.13,0.18,0.20,1"
+            "Tint": "0.56,0.66,0.68,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -136,7 +180,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -149,9 +206,9 @@
         "__guid": "10000000-0000-4000-8000-000000000004",
         "Flags": 0,
         "Name": "Pickup_Hood_BentOpen",
-        "Position": "108,-2,58",
-        "Rotation": "0,-0.130526,0,0.991445",
-        "Scale": "1.68,1.62,0.15",
+        "Position": "108,-5,48",
+        "Rotation": "0.0174524,-0.224951,0.0261769,0.973353",
+        "Scale": "1.55,1.16,0.09",
         "Enabled": true,
         "Components": [
           {
@@ -166,6 +223,12 @@
             "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -173,7 +236,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.20,0.27,0.31,1"
+            "Tint": "0.80,0.92,0.96,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -182,7 +245,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -195,9 +271,9 @@
         "__guid": "10000000-0000-4000-8000-000000000005",
         "Flags": 0,
         "Name": "Pickup_Bed_TwistedFloor",
-        "Position": "-88,2,49",
-        "Rotation": "0.00872654,0,0.0348995,0.999352",
-        "Scale": "2.25,1.58,0.22",
+        "Position": "-86,3,41",
+        "Rotation": "0.0174524,0,0.052336,0.998477",
+        "Scale": "2.12,1.20,0.13",
         "Enabled": true,
         "Components": [
           {
@@ -209,9 +285,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_metal.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -219,7 +301,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.23,0.27,0.27,1"
+            "Tint": "0.66,0.70,0.68,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -228,7 +310,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -241,9 +336,9 @@
         "__guid": "10000000-0000-4000-8000-000000000006",
         "Flags": 0,
         "Name": "Pickup_Bed_LeftWall_Bent",
-        "Position": "-92,-58,68",
-        "Rotation": "0,0,0.0871557,0.996195",
-        "Scale": "2.25,0.16,0.62",
+        "Position": "-88,-47,57",
+        "Rotation": "0.0174524,0.0348995,0.139173,0.989441",
+        "Scale": "2.04,0.10,0.42",
         "Enabled": true,
         "Components": [
           {
@@ -258,6 +353,12 @@
             "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -265,7 +366,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.18,0.23,0.25,1"
+            "Tint": "0.68,0.80,0.84,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -274,7 +375,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -287,9 +401,9 @@
         "__guid": "10000000-0000-4000-8000-000000000007",
         "Flags": 0,
         "Name": "Pickup_Bed_RightWall_Collapsed",
-        "Position": "-97,58,58",
-        "Rotation": "0,0,-0.104528,0.994522",
-        "Scale": "2.08,0.16,0.42",
+        "Position": "-98,48,49",
+        "Rotation": "-0.0174524,0,-0.156434,0.987688",
+        "Scale": "1.88,0.10,0.30",
         "Enabled": true,
         "Components": [
           {
@@ -304,6 +418,12 @@
             "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -311,7 +431,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.16,0.21,0.23,1"
+            "Tint": "0.58,0.68,0.72,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -320,7 +440,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -333,9 +466,9 @@
         "__guid": "10000000-0000-4000-8000-000000000008",
         "Flags": 0,
         "Name": "Pickup_Tailgate_Twisted",
-        "Position": "-174,6,55",
-        "Rotation": "0,0.0348995,-0.052336,0.998021",
-        "Scale": "0.20,1.58,0.48",
+        "Position": "-171,6,45",
+        "Rotation": "0,0.0697565,-0.104528,0.992099",
+        "Scale": "0.12,1.22,0.32",
         "Enabled": true,
         "Components": [
           {
@@ -347,9 +480,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_metal.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -357,7 +496,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.32,0.33,0.30,1"
+            "Tint": "0.72,0.70,0.62,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -366,7 +505,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -379,9 +531,9 @@
         "__guid": "10000000-0000-4000-8000-000000000009",
         "Flags": 0,
         "Name": "Pickup_Door_Left_Displaced",
-        "Position": "32,-66,61",
-        "Rotation": "0,0,0.173648,0.984808",
-        "Scale": "0.96,0.12,0.54",
+        "Position": "30,-55,51",
+        "Rotation": "0,0,0.241922,0.970296",
+        "Scale": "0.78,0.08,0.36",
         "Enabled": true,
         "Components": [
           {
@@ -396,6 +548,12 @@
             "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -403,7 +561,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.19,0.25,0.29,1"
+            "Tint": "0.78,0.90,0.94,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -412,7 +570,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -425,9 +596,9 @@
         "__guid": "10000000-0000-4000-8000-000000000010",
         "Flags": 0,
         "Name": "Pickup_Door_Right_Caved",
-        "Position": "20,66,57",
-        "Rotation": "0,0,-0.139173,0.990268",
-        "Scale": "1.00,0.12,0.46",
+        "Position": "16,55,48",
+        "Rotation": "0,0,-0.207912,0.978148",
+        "Scale": "0.84,0.08,0.32",
         "Enabled": true,
         "Components": [
           {
@@ -439,9 +610,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "MaterialOverride": "materials/arena/concrete_wall.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -449,7 +626,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.11,0.14,0.15,1"
+            "Tint": "0.56,0.64,0.66,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -458,7 +635,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -471,9 +661,9 @@
         "__guid": "10000000-0000-4000-8000-000000000011",
         "Flags": 0,
         "Name": "Pickup_FrameRail_Left",
-        "Position": "-8,-43,25",
+        "Position": "-9,-39,24",
         "Rotation": "0,0,0,1",
-        "Scale": "5.35,0.12,0.18",
+        "Scale": "5.10,0.09,0.14",
         "Enabled": true,
         "Components": [
           {
@@ -485,9 +675,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_metal.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -495,7 +691,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.40,0.38,0.34,1"
+            "Tint": "0.70,0.68,0.62,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -504,7 +700,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -517,9 +726,9 @@
         "__guid": "10000000-0000-4000-8000-000000000012",
         "Flags": 0,
         "Name": "Pickup_FrameRail_Right",
-        "Position": "-10,43,25",
+        "Position": "-12,39,24",
         "Rotation": "0,0,0,1",
-        "Scale": "5.25,0.12,0.18",
+        "Scale": "5.02,0.09,0.14",
         "Enabled": true,
         "Components": [
           {
@@ -531,9 +740,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_metal.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -541,7 +756,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.37,0.35,0.31,1"
+            "Tint": "0.60,0.60,0.55,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -550,7 +765,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -563,9 +791,9 @@
         "__guid": "10000000-0000-4000-8000-000000000013",
         "Flags": 0,
         "Name": "Pickup_Bumper_Front_Hanging",
-        "Position": "154,-4,26",
-        "Rotation": "0.0174524,-0.052336,0.0436194,0.997564",
-        "Scale": "0.20,1.88,0.20",
+        "Position": "153,-5,23",
+        "Rotation": "0.0174524,-0.0871557,0.0871557,0.992546",
+        "Scale": "0.14,1.46,0.16",
         "Enabled": true,
         "Components": [
           {
@@ -577,9 +805,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_metal.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -587,7 +821,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.50,0.47,0.40,1"
+            "Tint": "0.82,0.80,0.70,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -596,7 +830,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -609,9 +856,9 @@
         "__guid": "10000000-0000-4000-8000-000000000014",
         "Flags": 0,
         "Name": "Pickup_Bumper_Rear_Crushed",
-        "Position": "-184,7,24",
-        "Rotation": "-0.0174524,0.0348995,-0.0436194,0.998477",
-        "Scale": "0.22,1.74,0.22",
+        "Position": "-181,7,22",
+        "Rotation": "-0.0348995,0.052336,-0.0871557,0.994522",
+        "Scale": "0.16,1.28,0.17",
         "Enabled": true,
         "Components": [
           {
@@ -623,9 +870,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_metal.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -633,7 +886,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.44,0.39,0.33,1"
+            "Tint": "0.66,0.64,0.56,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -642,7 +895,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -655,9 +921,9 @@
         "__guid": "10000000-0000-4000-8000-000000000015",
         "Flags": 0,
         "Name": "Pickup_Axle_Front_Bent",
-        "Position": "88,0,25",
-        "Rotation": "0,0,0.052336,0.99863",
-        "Scale": "0.16,2.04,0.14",
+        "Position": "86,-2,23",
+        "Rotation": "0,0,0.0871557,0.996195",
+        "Scale": "0.12,1.72,0.11",
         "Enabled": true,
         "Components": [
           {
@@ -669,9 +935,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_metal.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -679,7 +951,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.43,0.41,0.36,1"
+            "Tint": "0.58,0.58,0.54,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -688,7 +960,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -701,9 +986,9 @@
         "__guid": "10000000-0000-4000-8000-000000000016",
         "Flags": 0,
         "Name": "Pickup_Axle_Rear_Exposed",
-        "Position": "-118,0,25",
-        "Rotation": "0,0,-0.0348995,0.999391",
-        "Scale": "0.16,1.92,0.14",
+        "Position": "-116,1,23",
+        "Rotation": "0,0,-0.0697565,0.997564",
+        "Scale": "0.12,1.62,0.11",
         "Enabled": true,
         "Components": [
           {
@@ -715,9 +1000,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_metal.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -725,7 +1016,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.40,0.37,0.32,1"
+            "Tint": "0.54,0.52,0.48,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -734,7 +1025,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -747,9 +1051,9 @@
         "__guid": "10000000-0000-4000-8000-000000000017",
         "Flags": 0,
         "Name": "Pickup_Wheel_FL_Destroyed",
-        "Position": "88,-65,25",
-        "Rotation": "0,0,0,1",
-        "Scale": "0.84,0.34,0.84",
+        "Position": "86,-56,21",
+        "Rotation": "0,0.104528,0,0.994522",
+        "Scale": "0.62,0.20,0.50",
         "Enabled": true,
         "Components": [
           {
@@ -764,6 +1068,12 @@
             "MaterialOverride": "materials/shotgun_rubber.vmat",
             "Materials": null,
             "Model": "models/dev/sphere.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -771,7 +1081,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.03,0.03,0.03,1"
+            "Tint": "0.055,0.052,0.047,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -780,7 +1090,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -793,9 +1116,9 @@
         "__guid": "10000000-0000-4000-8000-000000000018",
         "Flags": 0,
         "Name": "Pickup_Wheel_FR_Destroyed",
-        "Position": "86,65,23",
-        "Rotation": "0,0.0871557,0,0.996195",
-        "Scale": "0.78,0.28,0.72",
+        "Position": "84,56,20",
+        "Rotation": "0,0.173648,0,0.984808",
+        "Scale": "0.56,0.18,0.44",
         "Enabled": true,
         "Components": [
           {
@@ -810,6 +1133,12 @@
             "MaterialOverride": "materials/shotgun_rubber.vmat",
             "Materials": null,
             "Model": "models/dev/sphere.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -817,7 +1146,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.02,0.02,0.02,1"
+            "Tint": "0.045,0.043,0.040,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -826,7 +1155,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -839,9 +1181,9 @@
         "__guid": "10000000-0000-4000-8000-000000000019",
         "Flags": 0,
         "Name": "Pickup_Wheel_RL_RimOnly",
-        "Position": "-118,-65,24",
+        "Position": "-116,-56,21",
         "Rotation": "0,0,0,1",
-        "Scale": "0.66,0.24,0.66",
+        "Scale": "0.50,0.16,0.42",
         "Enabled": true,
         "Components": [
           {
@@ -853,9 +1195,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_metal.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/sphere.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -863,7 +1211,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.48,0.46,0.40,1"
+            "Tint": "0.78,0.76,0.68,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -872,7 +1220,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -885,9 +1246,9 @@
         "__guid": "10000000-0000-4000-8000-000000000020",
         "Flags": 0,
         "Name": "Pickup_Wheel_RR_RimOnly",
-        "Position": "-120,65,24",
-        "Rotation": "0,-0.052336,0,0.99863",
-        "Scale": "0.70,0.26,0.70",
+        "Position": "-118,56,20",
+        "Rotation": "0,-0.0871557,0,0.996195",
+        "Scale": "0.52,0.16,0.40",
         "Enabled": true,
         "Components": [
           {
@@ -899,9 +1260,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_metal.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/sphere.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -909,7 +1276,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.44,0.41,0.36,1"
+            "Tint": "0.68,0.66,0.60,1"
           },
           {
             "__type": "Sandbox.BoxCollider",
@@ -918,7 +1285,20 @@
             "Flags": 0,
             "Center": "0,0,0",
             "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
             "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Scale": "50,50,50",
             "Static": true,
             "Surface": null,
@@ -930,10 +1310,10 @@
       {
         "__guid": "10000000-0000-4000-8000-000000000021",
         "Flags": 0,
-        "Name": "Pickup_Glass_WindshieldShard",
-        "Position": "64,-42,78",
-        "Rotation": "0.0348995,-0.156434,0.0348995,0.986499",
-        "Scale": "0.68,0.035,0.24",
+        "Name": "Pickup_Engine_Block_Exposed",
+        "Position": "83,-3,38",
+        "Rotation": "0,0,0.052336,0.99863",
+        "Scale": "0.46,0.54,0.30",
         "Enabled": true,
         "Components": [
           {
@@ -945,9 +1325,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_glass.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -955,7 +1341,33 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.45,0.64,0.68,0.58"
+            "Tint": "0.54,0.54,0.50,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "30000000-0000-4000-8000-000000000021",
+            "__enabled": true,
+            "Flags": 0,
+            "Center": "0,0,0",
+            "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
+            "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
+            "Scale": "50,50,50",
+            "Static": true,
+            "Surface": null,
+            "SurfaceVelocity": "0,0,0"
           }
         ],
         "Children": []
@@ -963,10 +1375,10 @@
       {
         "__guid": "10000000-0000-4000-8000-000000000022",
         "Flags": 0,
-        "Name": "Pickup_Glass_SideShard_Left",
-        "Position": "16,-70,70",
-        "Rotation": "0,0,0.173648,0.984808",
-        "Scale": "0.52,0.032,0.19",
+        "Name": "Pickup_Radiator_Crushed",
+        "Position": "127,-2,36",
+        "Rotation": "0.0174524,-0.0697565,0,0.997391",
+        "Scale": "0.10,0.80,0.25",
         "Enabled": true,
         "Components": [
           {
@@ -978,9 +1390,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_glass.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -988,7 +1406,33 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.36,0.52,0.56,0.52"
+            "Tint": "0.48,0.52,0.52,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "30000000-0000-4000-8000-000000000022",
+            "__enabled": true,
+            "Flags": 0,
+            "Center": "0,0,0",
+            "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
+            "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
+            "Scale": "50,50,50",
+            "Static": true,
+            "Surface": null,
+            "SurfaceVelocity": "0,0,0"
           }
         ],
         "Children": []
@@ -996,10 +1440,10 @@
       {
         "__guid": "10000000-0000-4000-8000-000000000023",
         "Flags": 0,
-        "Name": "Pickup_Glass_SideShard_Right",
-        "Position": "3,70,66",
-        "Rotation": "0,0,-0.139173,0.990268",
-        "Scale": "0.48,0.032,0.17",
+        "Name": "Pickup_Fender_Left_Crumpled",
+        "Position": "76,-49,42",
+        "Rotation": "0,0,0.191986,0.981627",
+        "Scale": "0.70,0.09,0.26",
         "Enabled": true,
         "Components": [
           {
@@ -1011,9 +1455,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_glass.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -1021,7 +1471,33 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.33,0.48,0.52,0.50"
+            "Tint": "0.72,0.86,0.90,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "30000000-0000-4000-8000-000000000023",
+            "__enabled": true,
+            "Flags": 0,
+            "Center": "0,0,0",
+            "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
+            "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
+            "Scale": "50,50,50",
+            "Static": true,
+            "Surface": null,
+            "SurfaceVelocity": "0,0,0"
           }
         ],
         "Children": []
@@ -1029,10 +1505,10 @@
       {
         "__guid": "10000000-0000-4000-8000-000000000024",
         "Flags": 0,
-        "Name": "Pickup_ScrapeMark_Left",
-        "Position": "7,-69,48",
-        "Rotation": "0,0,0.0871557,0.996195",
-        "Scale": "1.48,0.032,0.10",
+        "Name": "Pickup_Fender_Right_MissingLip",
+        "Position": "77,49,40",
+        "Rotation": "0,0,-0.173648,0.984808",
+        "Scale": "0.58,0.08,0.20",
         "Enabled": true,
         "Components": [
           {
@@ -1044,9 +1520,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_metal.vmat",
+            "MaterialOverride": "materials/arena/concrete_wall.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -1054,7 +1536,33 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.70,0.66,0.52,1"
+            "Tint": "0.58,0.68,0.70,1"
+          },
+          {
+            "__type": "Sandbox.BoxCollider",
+            "__guid": "30000000-0000-4000-8000-000000000024",
+            "__enabled": true,
+            "Flags": 0,
+            "Center": "0,0,0",
+            "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
+            "IsTrigger": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
+            "Scale": "50,50,50",
+            "Static": true,
+            "Surface": null,
+            "SurfaceVelocity": "0,0,0"
           }
         ],
         "Children": []
@@ -1062,10 +1570,10 @@
       {
         "__guid": "10000000-0000-4000-8000-000000000025",
         "Flags": 0,
-        "Name": "Pickup_ScrapeMark_Right",
-        "Position": "-30,69,46",
-        "Rotation": "0,0,-0.0697565,0.997564",
-        "Scale": "1.25,0.032,0.10",
+        "Name": "Pickup_Cab_A_Pillar_Left",
+        "Position": "57,-45,68",
+        "Rotation": "0.0871557,-0.0871557,0.0697565,0.991445",
+        "Scale": "0.08,0.07,0.52",
         "Enabled": true,
         "Components": [
           {
@@ -1077,9 +1585,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_metal.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -1087,7 +1601,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.62,0.58,0.47,1"
+            "Tint": "0.60,0.64,0.64,1"
           }
         ],
         "Children": []
@@ -1095,10 +1609,10 @@
       {
         "__guid": "10000000-0000-4000-8000-000000000026",
         "Flags": 0,
-        "Name": "Pickup_Debris_HoodShard",
-        "Position": "128,-36,18",
-        "Rotation": "0.0174524,0.0697565,-0.121869,0.990268",
-        "Scale": "0.72,0.34,0.08",
+        "Name": "Pickup_Cab_A_Pillar_Right",
+        "Position": "56,45,66",
+        "Rotation": "0.0697565,-0.0697565,-0.052336,0.993572",
+        "Scale": "0.08,0.07,0.46",
         "Enabled": true,
         "Components": [
           {
@@ -1113,6 +1627,12 @@
             "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -1120,7 +1640,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.21,0.28,0.31,1"
+            "Tint": "0.56,0.60,0.60,1"
           }
         ],
         "Children": []
@@ -1128,10 +1648,10 @@
       {
         "__guid": "10000000-0000-4000-8000-000000000027",
         "Flags": 0,
-        "Name": "Pickup_Debris_BedShard",
-        "Position": "-143,42,17",
-        "Rotation": "-0.0174524,0.052336,0.104528,0.992546",
-        "Scale": "0.78,0.30,0.08",
+        "Name": "Pickup_Cab_B_Pillar_Left",
+        "Position": "-15,-45,63",
+        "Rotation": "0.0348995,0.0348995,0.104528,0.993916",
+        "Scale": "0.08,0.07,0.44",
         "Enabled": true,
         "Components": [
           {
@@ -1143,9 +1663,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_metal.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -1153,7 +1679,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.43,0.40,0.34,1"
+            "Tint": "0.64,0.66,0.64,1"
           }
         ],
         "Children": []
@@ -1161,10 +1687,10 @@
       {
         "__guid": "10000000-0000-4000-8000-000000000028",
         "Flags": 0,
-        "Name": "Pickup_Debris_GlassScatter",
-        "Position": "34,-84,8",
-        "Rotation": "0,0,0.0871557,0.996195",
-        "Scale": "0.92,0.22,0.035",
+        "Name": "Pickup_Cab_B_Pillar_Right",
+        "Position": "-16,45,60",
+        "Rotation": "-0.0348995,0.0174524,-0.0871557,0.995588",
+        "Scale": "0.08,0.07,0.38",
         "Enabled": true,
         "Components": [
           {
@@ -1176,9 +1702,15 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
-            "MaterialOverride": "materials/environment/house_large_glass.vmat",
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -1186,7 +1718,7 @@
               "AfterUILayer": false
             },
             "RenderType": "On",
-            "Tint": "0.42,0.58,0.60,0.38"
+            "Tint": "0.54,0.56,0.54,1"
           }
         ],
         "Children": []
@@ -1194,10 +1726,10 @@
       {
         "__guid": "10000000-0000-4000-8000-000000000029",
         "Flags": 0,
-        "Name": "Pickup_Debris_MudDrag",
-        "Position": "-42,86,4",
-        "Rotation": "0,0,-0.0871557,0.996195",
-        "Scale": "2.15,0.36,0.035",
+        "Name": "Pickup_Windshield_Frame_Top",
+        "Position": "40,-2,76",
+        "Rotation": "0.0348995,-0.156434,0.0174524,0.986499",
+        "Scale": "0.72,0.07,0.06",
         "Enabled": true,
         "Components": [
           {
@@ -1209,9 +1741,1068 @@
             "CreateAttachments": false,
             "LodOverride": null,
             "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.44,0.48,0.48,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000030",
+        "Flags": 0,
+        "Name": "Pickup_Windshield_Frame_Bottom",
+        "Position": "52,-2,58",
+        "Rotation": "0.0174524,-0.104528,0.0174524,0.994522",
+        "Scale": "0.62,0.07,0.05",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000030",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.58,0.60,0.58,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000031",
+        "Flags": 0,
+        "Name": "Pickup_Glass_WindshieldShard",
+        "Position": "47,-33,66",
+        "Rotation": "0.0348995,-0.156434,0.0348995,0.986499",
+        "Scale": "0.44,0.026,0.16",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000031",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/environment/house_large_glass.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.48,0.66,0.70,0.54"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000032",
+        "Flags": 0,
+        "Name": "Pickup_Glass_SideShard_Left",
+        "Position": "14,-58,59",
+        "Rotation": "0,0,0.207912,0.978148",
+        "Scale": "0.34,0.024,0.13",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000032",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/environment/house_large_glass.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.36,0.52,0.56,0.46"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000033",
+        "Flags": 0,
+        "Name": "Pickup_Glass_SideShard_Right",
+        "Position": "3,58,56",
+        "Rotation": "0,0,-0.173648,0.984808",
+        "Scale": "0.30,0.024,0.11",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000033",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/environment/house_large_glass.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.33,0.48,0.52,0.44"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000034",
+        "Flags": 0,
+        "Name": "Pickup_Hood_Crease_Left",
+        "Position": "104,-31,51",
+        "Rotation": "0.0174524,-0.207912,0.0697565,0.975223",
+        "Scale": "1.08,0.030,0.055",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000034",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/road_edge_wear.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.68,0.66,0.56,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000035",
+        "Flags": 0,
+        "Name": "Pickup_Hood_Crease_Right",
+        "Position": "103,26,50",
+        "Rotation": "0.0174524,-0.190809,-0.052336,0.980067",
+        "Scale": "0.96,0.030,0.052",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000035",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/road_edge_wear.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.58,0.57,0.49,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000036",
+        "Flags": 0,
+        "Name": "Pickup_ScrapeMark_Left",
+        "Position": "1,-57,43",
+        "Rotation": "0,0,0.139173,0.990268",
+        "Scale": "1.24,0.026,0.075",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000036",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/road_edge_wear.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.70,0.66,0.54,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000037",
+        "Flags": 0,
+        "Name": "Pickup_ScrapeMark_Right",
+        "Position": "-31,57,41",
+        "Rotation": "0,0,-0.104528,0.994522",
+        "Scale": "1.05,0.026,0.070",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000037",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/road_edge_wear.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.62,0.58,0.48,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000038",
+        "Flags": 0,
+        "Name": "Pickup_Bed_Rail_Left_Torn",
+        "Position": "-96,-53,71",
+        "Rotation": "0.0348995,0.0348995,0.173648,0.983255",
+        "Scale": "1.46,0.055,0.06",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000038",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.74,0.72,0.64,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000039",
+        "Flags": 0,
+        "Name": "Pickup_Bed_Rail_Right_Torn",
+        "Position": "-104,53,62",
+        "Rotation": "-0.0174524,0,-0.156434,0.987688",
+        "Scale": "1.24,0.055,0.055",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000039",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.62,0.60,0.54,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000040",
+        "Flags": 0,
+        "Name": "Pickup_Grille_Slat_01",
+        "Position": "137,-27,43",
+        "Rotation": "0,-0.0871557,0,0.996195",
+        "Scale": "0.045,0.38,0.035",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000040",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.54,0.56,0.54,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000041",
+        "Flags": 0,
+        "Name": "Pickup_Grille_Slat_02",
+        "Position": "139,-2,40",
+        "Rotation": "0,-0.0697565,0.0348995,0.996957",
+        "Scale": "0.045,0.34,0.035",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000041",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.42,0.44,0.44,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000042",
+        "Flags": 0,
+        "Name": "Pickup_Grille_Slat_03",
+        "Position": "136,24,42",
+        "Rotation": "0,-0.104528,-0.0348995,0.993916",
+        "Scale": "0.045,0.30,0.035",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000042",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.60,0.60,0.56,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000043",
+        "Flags": 0,
+        "Name": "Pickup_Headlight_Left_Broken",
+        "Position": "142,-39,38",
+        "Rotation": "0,-0.0871557,0,0.996195",
+        "Scale": "0.045,0.14,0.08",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000043",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/environment/house_large_glass.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.76,0.72,0.56,0.42"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000044",
+        "Flags": 0,
+        "Name": "Pickup_Headlight_Right_Broken",
+        "Position": "142,37,36",
+        "Rotation": "0,-0.0871557,0,0.996195",
+        "Scale": "0.045,0.12,0.07",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000044",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/environment/house_large_glass.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.55,0.58,0.50,0.32"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000045",
+        "Flags": 0,
+        "Name": "Pickup_Rim_FL_Dented",
+        "Position": "86,-59,21",
+        "Rotation": "0,0.104528,0,0.994522",
+        "Scale": "0.30,0.055,0.28",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000045",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "Materials": null,
+            "Model": "models/dev/sphere.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.78,0.76,0.70,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000046",
+        "Flags": 0,
+        "Name": "Pickup_Rim_FR_Dented",
+        "Position": "84,59,20",
+        "Rotation": "0,0.173648,0,0.984808",
+        "Scale": "0.26,0.050,0.24",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000046",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "Materials": null,
+            "Model": "models/dev/sphere.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.68,0.68,0.62,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000047",
+        "Flags": 0,
+        "Name": "Pickup_Rim_RL_Bare",
+        "Position": "-116,-59,21",
+        "Rotation": "0,0,0,1",
+        "Scale": "0.28,0.050,0.26",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000047",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "Materials": null,
+            "Model": "models/dev/sphere.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.84,0.82,0.74,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000048",
+        "Flags": 0,
+        "Name": "Pickup_Rim_RR_Bare",
+        "Position": "-118,59,20",
+        "Rotation": "0,-0.0871557,0,0.996195",
+        "Scale": "0.27,0.050,0.25",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000048",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "Materials": null,
+            "Model": "models/dev/sphere.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.74,0.72,0.66,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000049",
+        "Flags": 0,
+        "Name": "Pickup_Tire_FL_FlatPatch",
+        "Position": "86,-58,8",
+        "Rotation": "0,0,0.052336,0.99863",
+        "Scale": "0.46,0.18,0.045",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000049",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/shotgun_rubber.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.035,0.034,0.032,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000050",
+        "Flags": 0,
+        "Name": "Pickup_Tire_FR_FlatPatch",
+        "Position": "84,58,8",
+        "Rotation": "0,0,-0.0348995,0.999391",
+        "Scale": "0.40,0.16,0.045",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000050",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/shotgun_rubber.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.032,0.031,0.030,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000051",
+        "Flags": 0,
+        "Name": "Pickup_PaintScar_Cab",
+        "Position": "28,-56,57",
+        "Rotation": "0,0,0.207912,0.978148",
+        "Scale": "0.52,0.024,0.075",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000051",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/environment/house_large_dirt_mask.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.50,0.48,0.40,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000052",
+        "Flags": 0,
+        "Name": "Pickup_PaintScar_Bed",
+        "Position": "-98,-54,52",
+        "Rotation": "0,0,0.156434,0.987688",
+        "Scale": "0.76,0.024,0.070",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000052",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/environment/house_large_dirt_mask.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.44,0.42,0.36,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000053",
+        "Flags": 0,
+        "Name": "Pickup_Debris_HoodShard",
+        "Position": "128,-32,14",
+        "Rotation": "0.0174524,0.0697565,-0.139173,0.987688",
+        "Scale": "0.46,0.22,0.045",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000053",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.76,0.88,0.92,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000054",
+        "Flags": 0,
+        "Name": "Pickup_Debris_BedShard",
+        "Position": "-144,37,13",
+        "Rotation": "-0.0174524,0.052336,0.121869,0.991445",
+        "Scale": "0.50,0.20,0.045",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000054",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.64,0.62,0.54,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000055",
+        "Flags": 0,
+        "Name": "Pickup_Debris_GlassScatter",
+        "Position": "34,-75,6",
+        "Rotation": "0,0,0.0871557,0.996195",
+        "Scale": "0.68,0.16,0.025",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000055",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/environment/house_large_glass.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.42,0.58,0.60,0.34"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000056",
+        "Flags": 0,
+        "Name": "Pickup_Debris_MudDrag",
+        "Position": "-42,75,3",
+        "Rotation": "0,0,-0.0871557,0.996195",
+        "Scale": "1.70,0.25,0.025",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000056",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
             "MaterialOverride": "materials/arena/asphalt_cover.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -1225,17 +2816,17 @@
         "Children": []
       },
       {
-        "__guid": "10000000-0000-4000-8000-000000000030",
+        "__guid": "10000000-0000-4000-8000-000000000057",
         "Flags": 0,
         "Name": "Pickup_Debris_RoadScuff",
-        "Position": "82,-88,4",
+        "Position": "82,-78,3",
         "Rotation": "0,0,0.052336,0.99863",
-        "Scale": "1.60,0.30,0.035",
+        "Scale": "1.25,0.22,0.025",
         "Enabled": true,
         "Components": [
           {
             "__type": "Sandbox.ModelRenderer",
-            "__guid": "20000000-0000-4000-8000-000000000030",
+            "__guid": "20000000-0000-4000-8000-000000000057",
             "__enabled": true,
             "Flags": 0,
             "BodyGroups": 18446744073709551615,
@@ -1245,6 +2836,12 @@
             "MaterialOverride": "materials/arena/road_edge_wear.vmat",
             "Materials": null,
             "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
             "RenderOptions": {
               "GameLayer": true,
               "OverlayLayer": false,
@@ -1253,6 +2850,123 @@
             },
             "RenderType": "On",
             "Tint": "0.34,0.31,0.25,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000058",
+        "Flags": 0,
+        "Name": "Pickup_Debris_BoltScatter_01",
+        "Position": "118,-64,7",
+        "Rotation": "0,0,0.330366,0.943858",
+        "Scale": "0.12,0.08,0.035",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000058",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.72,0.68,0.60,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000059",
+        "Flags": 0,
+        "Name": "Pickup_Debris_BoltScatter_02",
+        "Position": "-132,-43,7",
+        "Rotation": "0,0,-0.292372,0.956305",
+        "Scale": "0.10,0.07,0.035",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000059",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.58,0.56,0.50,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "10000000-0000-4000-8000-000000000060",
+        "Flags": 0,
+        "Name": "Pickup_Debris_BoltScatter_03",
+        "Position": "-10,77,6",
+        "Rotation": "0,0,0.241922,0.970296",
+        "Scale": "0.11,0.08,0.035",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "20000000-0000-4000-8000-000000000060",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "CreateAttachments": false,
+            "LodOverride": null,
+            "MaterialGroup": null,
+            "MaterialOverride": "materials/arena/metal_pad.vmat",
+            "Materials": null,
+            "Model": "models/dev/box.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "RenderOptions": {
+              "GameLayer": true,
+              "OverlayLayer": false,
+              "BloomLayer": false,
+              "AfterUILayer": false
+            },
+            "RenderType": "On",
+            "Tint": "0.66,0.64,0.56,1"
           }
         ],
         "Children": []

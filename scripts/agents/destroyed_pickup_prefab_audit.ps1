@@ -103,6 +103,30 @@ function Test-JsonBool {
     return $Value.ToString().Equals($Expected.ToString(), [System.StringComparison]::OrdinalIgnoreCase)
 }
 
+function Convert-AgentVectorText {
+    param([object]$Value)
+
+    if ($null -eq $Value) {
+        return $null
+    }
+
+    $parts = @($Value.ToString() -split "," | ForEach-Object {
+        $parsed = 0.0
+        if ([double]::TryParse($_.Trim(), [Globalization.NumberStyles]::Float, [Globalization.CultureInfo]::InvariantCulture, [ref]$parsed)) {
+            $parsed
+        }
+        else {
+            $null
+        }
+    })
+
+    if ($parts.Count -lt 3 -or $parts -contains $null) {
+        return $null
+    }
+
+    return $parts
+}
+
 $fullPrefabPath = if ([System.IO.Path]::IsPathRooted($PrefabPath)) { $PrefabPath } else { Join-Path $Root $PrefabPath }
 $relative = ConvertTo-AgentRelativePath -Path $fullPrefabPath -Root $Root
 
@@ -175,21 +199,53 @@ $solidNames = @(
     "Pickup_Wheel_FL_Destroyed",
     "Pickup_Wheel_FR_Destroyed",
     "Pickup_Wheel_RL_RimOnly",
-    "Pickup_Wheel_RR_RimOnly"
+    "Pickup_Wheel_RR_RimOnly",
+    "Pickup_Engine_Block_Exposed",
+    "Pickup_Radiator_Crushed",
+    "Pickup_Fender_Left_Crumpled",
+    "Pickup_Fender_Right_MissingLip"
 )
 
 $detailNames = @(
+    "Pickup_Cab_A_Pillar_Left",
+    "Pickup_Cab_A_Pillar_Right",
+    "Pickup_Cab_B_Pillar_Left",
+    "Pickup_Cab_B_Pillar_Right",
+    "Pickup_Windshield_Frame_Top",
+    "Pickup_Windshield_Frame_Bottom",
     "Pickup_Glass_WindshieldShard",
     "Pickup_Glass_SideShard_Left",
     "Pickup_Glass_SideShard_Right",
+    "Pickup_Hood_Crease_Left",
+    "Pickup_Hood_Crease_Right",
     "Pickup_ScrapeMark_Left",
     "Pickup_ScrapeMark_Right",
+    "Pickup_Bed_Rail_Left_Torn",
+    "Pickup_Bed_Rail_Right_Torn",
+    "Pickup_Grille_Slat_01",
+    "Pickup_Grille_Slat_02",
+    "Pickup_Grille_Slat_03",
+    "Pickup_Headlight_Left_Broken",
+    "Pickup_Headlight_Right_Broken",
+    "Pickup_Rim_FL_Dented",
+    "Pickup_Rim_FR_Dented",
+    "Pickup_Rim_RL_Bare",
+    "Pickup_Rim_RR_Bare",
+    "Pickup_Tire_FL_FlatPatch",
+    "Pickup_Tire_FR_FlatPatch",
+    "Pickup_PaintScar_Cab",
+    "Pickup_PaintScar_Bed",
     "Pickup_Debris_HoodShard",
     "Pickup_Debris_BedShard",
     "Pickup_Debris_GlassScatter",
     "Pickup_Debris_MudDrag",
-    "Pickup_Debris_RoadScuff"
+    "Pickup_Debris_RoadScuff",
+    "Pickup_Debris_BoltScatter_01",
+    "Pickup_Debris_BoltScatter_02",
+    "Pickup_Debris_BoltScatter_03"
 )
+
+$knownNames = @($solidNames + $detailNames)
 
 foreach ($required in @($solidNames + $detailNames)) {
     $matches = @($children | Where-Object { [string](Get-JsonPropertyValue -Object $_ -Name "Name") -eq $required })
@@ -202,10 +258,16 @@ $solidCount = 0
 $detailCount = 0
 $boxRendererCount = 0
 $sphereRendererCount = 0
+$materialOverrides = New-Object System.Collections.Generic.HashSet[string]
+$tints = New-Object System.Collections.Generic.HashSet[string]
+$nearBlackTintCount = 0
 foreach ($child in $children) {
     $name = [string](Get-JsonPropertyValue -Object $child -Name "Name")
     if ($name -match "^BurntVehicle_") {
         Add-AgentIssue $issues "Error" "Destroyed Pickup Prefab" $relative "Child '$name' still uses old burnt-vehicle naming." "Rename authored children to the Pickup_* crashed-pickup contract."
+    }
+    if ($knownNames -notcontains $name) {
+        Add-AgentIssue $issues "Error" "Destroyed Pickup Prefab" $relative "Unexpected pickup child '$name' is outside the visual-quality contract." "Update the destroyed pickup audit when adding intentional primitive details."
     }
 
     $renderer = Get-ComponentByTypeName -Object $child -TypeName "ModelRenderer"
@@ -214,6 +276,23 @@ foreach ($child in $children) {
     if ($null -eq $renderer) {
         Add-AgentIssue $issues "Error" "Destroyed Pickup Prefab" $relative "$name is missing ModelRenderer." "Every pickup child should be visible as an S&Box primitive."
         continue
+    }
+
+    $material = [string](Get-JsonPropertyValue -Object $renderer -Name "MaterialOverride")
+    if (-not [string]::IsNullOrWhiteSpace($material)) {
+        [void]$materialOverrides.Add($material)
+    }
+
+    $tint = [string](Get-JsonPropertyValue -Object $renderer -Name "Tint")
+    if (-not [string]::IsNullOrWhiteSpace($tint)) {
+        [void]$tints.Add($tint)
+        $tintVector = Convert-AgentVectorText -Value $tint
+        if ($null -ne $tintVector -and $tintVector.Count -ge 3) {
+            $average = ($tintVector[0] + $tintVector[1] + $tintVector[2]) / 3.0
+            if ($average -lt 0.04) {
+                $nearBlackTintCount++
+            }
+        }
     }
 
     $model = [string](Get-JsonPropertyValue -Object $renderer -Name "Model")
@@ -251,18 +330,46 @@ foreach ($child in $children) {
             Add-AgentIssue $issues "Error" "Destroyed Pickup Prefab" $relative "$name has collision but should be visual detail only." "Keep glass shards, scrape marks, and small debris non-blocking."
         }
     }
+    elseif ($null -ne $collider) {
+        Add-AgentIssue $issues "Error" "Destroyed Pickup Prefab" $relative "$name has collision but is not listed as solid cover." "Keep collision-bearing pickup pieces explicit in the audit contract."
+    }
 }
 
-if ($solidCount -lt 20) {
+if ($solidCount -lt 24) {
     Add-AgentIssue $issues "Error" "Destroyed Pickup Prefab" $relative "Only $solidCount required solid pickup pieces were found." "Keep enough static body/frame pieces for cover and silhouette readability."
 }
 
-if ($detailCount -lt 10) {
+if ($detailCount -lt 36) {
     Add-AgentIssue $issues "Error" "Destroyed Pickup Prefab" $relative "Only $detailCount required detail pickup pieces were found." "Keep glass, scrape, and debris pieces for crashed-not-burned readability."
 }
 
-if ($boxRendererCount -lt 20 -or $sphereRendererCount -lt 4) {
-    Add-AgentIssue $issues "Error" "Destroyed Pickup Prefab" $relative "Expected at least 20 box primitives and 4 sphere primitives, found $boxRendererCount box and $sphereRendererCount sphere renderer(s)." "Use boxes for crushed panels/frame and spheres for ruined tires/rims."
+if ($children.Count -lt 55) {
+    Add-AgentIssue $issues "Error" "Destroyed Pickup Prefab" $relative "Only $($children.Count) primitive child pieces were found." "Keep the polished pickup denser than the original blockout-style silhouette."
+}
+
+if ($boxRendererCount -lt 50 -or $sphereRendererCount -lt 8) {
+    Add-AgentIssue $issues "Error" "Destroyed Pickup Prefab" $relative "Expected at least 50 box primitives and 8 sphere primitives, found $boxRendererCount box and $sphereRendererCount sphere renderer(s)." "Use boxes for crushed panels/frame and spheres for ruined tires/rims."
+}
+
+if ($materialOverrides.Count -lt 6) {
+    Add-AgentIssue $issues "Error" "Destroyed Pickup Prefab" $relative "Only $($materialOverrides.Count) material override(s) were found." "Use varied local metal, rubber, glass, grime, asphalt, and scuff materials so the prop does not read as one flat block."
+}
+
+if ($tints.Count -lt 30) {
+    Add-AgentIssue $issues "Error" "Destroyed Pickup Prefab" $relative "Only $($tints.Count) tint variation(s) were found." "Use per-piece tint variation to break up primitive slab repetition."
+}
+
+if ($nearBlackTintCount -gt 6) {
+    Add-AgentIssue $issues "Error" "Destroyed Pickup Prefab" $relative "$nearBlackTintCount primitive(s) use near-black tints." "Avoid large black masses; reserve very dark tints for rubber and small shadow pieces."
+}
+
+$roof = @($children | Where-Object { [string](Get-JsonPropertyValue -Object $_ -Name "Name") -eq "Pickup_Cab_Roof_Collapsed" }) | Select-Object -First 1
+if ($null -ne $roof) {
+    $roofPosition = Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $roof -Name "Position")
+    $roofScale = Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $roof -Name "Scale")
+    if ($null -eq $roofPosition -or $roofPosition[2] -gt 85 -or $null -eq $roofScale -or $roofScale[2] -gt 0.12) {
+        Add-AgentIssue $issues "Error" "Destroyed Pickup Prefab" $relative "Cab roof is too high or thick for the polished wreck profile." "Embed the collapsed roof into the cab instead of leaving a floating slab."
+    }
 }
 
 if ($ShowInfo) {

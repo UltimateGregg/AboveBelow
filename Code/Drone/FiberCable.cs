@@ -54,6 +54,7 @@ public sealed class FiberCable : Component
 	Vector3 _lastPilotTrailPoint;
 	bool _hasLastDroneTrailPoint;
 	bool _hasLastPilotTrailPoint;
+	bool _detachedFromLiveEndpoints;
 
 	protected override void OnStart()
 	{
@@ -63,6 +64,7 @@ public sealed class FiberCable : Component
 		_pilotTrail.Clear();
 		_hasLastDroneTrailPoint = false;
 		_hasLastPilotTrailPoint = false;
+		_detachedFromLiveEndpoints = false;
 	}
 
 	protected override void OnUpdate()
@@ -70,6 +72,8 @@ public sealed class FiberCable : Component
 		ResolveRefs();
 		if ( !Line.IsValid() ) return;
 		ApplyLineStyle();
+		if ( _detachedFromLiveEndpoints )
+			return;
 
 		var pilotPawn = ResolvePilotPawn();
 		if ( !pilotPawn.IsValid() )
@@ -107,6 +111,43 @@ public sealed class FiberCable : Component
 		Line.VectorPoints = _renderPoints;
 	}
 
+	/// <summary>
+	/// Leaves the currently unspooled cable on the ground as a standalone local
+	/// visual so destroying the drone no longer removes or updates the wire.
+	/// </summary>
+	public void DetachFromLiveEndpoints()
+	{
+		ResolveRefs();
+		if ( _detachedFromLiveEndpoints || !Line.IsValid() )
+			return;
+
+		var frozenPoints = BuildGroundedRenderPoints();
+		_detachedFromLiveEndpoints = true;
+
+		if ( frozenPoints.Count < 2 )
+		{
+			Line.Enabled = false;
+			return;
+		}
+
+		Line.Enabled = true;
+		Line.UseVectorPoints = true;
+		Line.VectorPoints = frozenPoints;
+		ApplyLineStyle();
+
+		var detachedObject = new GameObject( true, "Detached Fiber Cable" )
+		{
+			NetworkMode = NetworkMode.Never
+		};
+		var detachedLine = detachedObject.Components.Create<LineRenderer>();
+		ApplyLineStyle( detachedLine, CableColor );
+		detachedLine.Enabled = true;
+		detachedLine.UseVectorPoints = true;
+		detachedLine.VectorPoints = new List<Vector3>( frozenPoints );
+
+		Line.Enabled = false;
+	}
+
 	PilotSoldier ResolvePilotPawn()
 	{
 		if ( !Link.IsValid() || Link.PilotId == default ) return null;
@@ -129,10 +170,37 @@ public sealed class FiberCable : Component
 
 	void AddRenderPoint( Vector3 point )
 	{
-		if ( _renderPoints.Count > 0 && _renderPoints[_renderPoints.Count - 1].Distance( point ) < 0.1f )
+		AddRenderPoint( _renderPoints, point );
+	}
+
+	static void AddRenderPoint( List<Vector3> points, Vector3 point )
+	{
+		if ( points.Count > 0 && points[points.Count - 1].Distance( point ) < 0.1f )
 			return;
 
-		_renderPoints.Add( point );
+		points.Add( point );
+	}
+
+	List<Vector3> BuildGroundedRenderPoints()
+	{
+		var points = new List<Vector3>();
+		var pilotPawn = ResolvePilotPawn();
+		if ( pilotPawn.IsValid() )
+		{
+			AddRenderPoint( points, SampleGroundBelow( pilotPawn.WorldPosition, pilotPawn.GameObject ) );
+		}
+		else if ( _hasLastPilotTrailPoint )
+		{
+			AddRenderPoint( points, _lastPilotTrailPoint );
+		}
+
+		for ( int i = _pilotTrail.Count - 1; i >= 0; i-- )
+			AddRenderPoint( points, _pilotTrail[i] );
+		for ( int i = 0; i < _droneTrail.Count; i++ )
+			AddRenderPoint( points, _droneTrail[i] );
+
+		AddRenderPoint( points, SampleGroundBelow( WorldPosition, GameObject ) );
+		return points;
 	}
 
 	Vector3 SampleGroundBelow( Vector3 from, GameObject ignore )
@@ -165,12 +233,17 @@ public sealed class FiberCable : Component
 
 	void ApplyLineStyle()
 	{
-		if ( !Line.IsValid() ) return;
+		ApplyLineStyle( Line, CableColor );
+	}
 
-		Line.Color = Gradient.FromColors( new[] { CableColor, CableColor } );
-		Line.Lighting = false;
-		Line.Additive = false;
-		Line.Wireframe = false;
-		Line.CastShadows = false;
+	static void ApplyLineStyle( LineRenderer line, Color color )
+	{
+		if ( !line.IsValid() ) return;
+
+		line.Color = Gradient.FromColors( new[] { color, color } );
+		line.Lighting = false;
+		line.Additive = false;
+		line.Wireframe = false;
+		line.CastShadows = false;
 	}
 }

@@ -58,6 +58,11 @@ if (Test-Path -LiteralPath $referencePath) {
         "https://sbox.game/dev/doc",
         "https://github.com/Facepunch/sbox-public",
         "https://sbox.game/learn/facepunch/creating-an-entity-for-sandbox",
+        "Valve Developer Community Source 2 docs reviewed on \d{4}-\d{2}-\d{2}",
+        "Resourcecompiler",
+        "MaterialGroups",
+        "Postprocessing_Editor",
+        "Nav_Mesh_Editing",
         "\.sent",
         "ClientEditable",
         "TimeSince",
@@ -78,6 +83,8 @@ if (Test-Path -LiteralPath $agentPath) {
         "Purpose",
         "https://sbox.game/dev/doc",
         "https://github.com/Facepunch/sbox-public",
+        "Valve Developer Community Source 2",
+        "Nav_Mesh_Editing",
         "sbox_engine_reference_audit\.ps1"
     )) {
         if ($agentText -notmatch $pattern) {
@@ -88,6 +95,7 @@ if (Test-Path -LiteralPath $agentPath) {
 
 $integrationChecks = @(
     [pscustomobject]@{ Path = "docs/agent_toolkit.md"; Patterns = @("S&Box Engine Reference Agent", "sbox_engine_reference_audit\.ps1") },
+    [pscustomobject]@{ Path = "docs/known_sbox_patterns.md"; Patterns = @("Valve Source 2 Asset Pipeline Intake", "Valve Nav Mesh Docs Are Legacy For S&Box") },
     [pscustomobject]@{ Path = ".agents/sbox/README.md"; Patterns = @("sbox-engine-reference-agent\.md", "sbox_engine_reference_audit\.ps1") },
     [pscustomobject]@{ Path = "scripts/agents/run_agent_checks.ps1"; Patterns = @("sbox_engine_reference_audit\.ps1") },
     [pscustomobject]@{ Path = "scripts/agents/test_full_automation_layer.ps1"; Patterns = @("sbox_engine_reference_audit\.ps1") },
@@ -127,6 +135,7 @@ $scanFiles = @(Get-AgentFiles -Root $Root -Include @("*.md") | Where-Object {
 $netExempt = "(?i)obsolete|legacy|stale|avoid|do not|don't|deprecated|instead|rather than|old|replaced|translate"
 $qcExempt = "(?i)Source 1|legacy|avoid|do not|don't|obsolete|equivalent|migration|not use|not implementation"
 $vmdlExempt = "(?i)avoid|do not|don't|not|instead|blind|manual VMDL edits|manual \.vmdl|not hand"
+$legacyNavExempt = "(?i)legacy|Source/Counter-Strike|Counter-Strike|Source 1|not active|not implementation|not the implementation path|not S&Box|avoid|do not|don't|conceptual|QA concept|Recast|Scene\.NavMesh|S&Box navigation|https?://"
 $volatileClaim = "(?i)\b(latest|current)\b.*\b(S&Box engine|S&Box API|sbox engine|sbox API|Source 2|\.NET|SDK|ModelDoc|RPC|Sync|Blender Source Tools|Blender exporter)\b|\b(S&Box engine|S&Box API|sbox engine|sbox API|Source 2|\.NET|SDK|ModelDoc|RPC|Sync|Blender Source Tools|Blender exporter)\b.*\b(latest|current)\b"
 $volatileExempt = "(?i)as of \d{4}-\d{2}-\d{2}|verified against|source:|https?://|current_log|current runtime|current editor|current project|this repo|this checkout|current file|current map|current scene|current target|currently keep|current open|current change|current authoring|current local"
 
@@ -151,6 +160,10 @@ foreach ($file in $scanFiles) {
 
         if ($line -match "(?i)vmdl" -and $line -match "(?i)hand[- ]?(write|edit|author)|text[- ]?edit|edit .*text" -and -not (Test-ExemptLine -Line $line -Pattern $vmdlExempt)) {
             Add-LineIssue "Error" "Manual VMDL Guidance" $relative $lineNumber "Line appears to recommend hand-editing VMDL text as active guidance." "Use ModelDoc, asset-pipeline generation, or source-controlled VMDL audits as the durable path."
+        }
+
+        if ($line -match "(?i)\b(nav_generate|nav_edit|nav_save|nav_analyze|Nav_Mesh_Editing|\.nav file|\.nav files)\b" -and -not (Test-ExemptLine -Line $line -Pattern $legacyNavExempt)) {
+            Add-LineIssue "Warning" "Legacy Nav Mesh Guidance" $relative $lineNumber "Line appears to recommend legacy Source/Counter-Strike nav-mesh commands as active guidance." "For S&Box, use Recast navigation through Scene.NavMesh or mark Valve nav docs as legacy/conceptual context."
         }
 
         if (-not $hasFileSourceMarker -and $line -match $volatileClaim -and -not (Test-ExemptLine -Line $line -Pattern $volatileExempt)) {

@@ -1862,6 +1862,12 @@ Verified against official sources on 2026-05-20:
 - https://github.com/Facepunch/sbox-public
 - https://sbox.game/learn/facepunch/creating-an-entity-for-sandbox
 
+Valve Developer Community Source 2 docs reviewed on 2026-05-27:
+- Resourcecompiler
+- MaterialGroups
+- Postprocessing_Editor
+- Nav_Mesh_Editing legacy Source/Counter-Strike context
+
 Use `[Sync]` for replicated state.
 Use ModelDoc for VMDL work.
 Sandbox Entity `.sent` resources point at prefabs. Use ClientEditable and TimeSince when appropriate.
@@ -1881,12 +1887,15 @@ Verify S&Box engine research.
 Sources:
 - https://sbox.game/dev/doc
 - https://github.com/Facepunch/sbox-public
+- Valve Developer Community Source 2
+- Nav_Mesh_Editing legacy Source/Counter-Strike context
 
 Evidence:
 scripts/agents/sbox_engine_reference_audit.ps1
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\sbox-engine-reference-agent.md") -Encoding UTF8
 
         "S&Box Engine Reference Agent sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
+        "Valve Source 2 Asset Pipeline Intake; Valve Nav Mesh Docs Are Legacy For S&Box" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\known_sbox_patterns.md") -Encoding UTF8
         "sbox-engine-reference-agent.md sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
         "sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
         "sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
@@ -1902,6 +1911,18 @@ scripts/agents/sbox_engine_reference_audit.ps1
         & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxEngineReferenceAudit -Root $tempRoot | Out-Host
         if ($LASTEXITCODE -ne 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_engine_reference_audit.ps1" "Engine reference audit failed on valid [Sync] guidance and complete routing docs." "Avoid false positives for current, sourced S&Box reference guidance."
+        }
+
+        "Run nav_generate and nav_edit to build S&Box bot navigation." | Set-Content -LiteralPath (Join-Path $tempRoot "docs\bad_engine_guidance.md") -Encoding UTF8
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sboxEngineReferenceAudit -ScriptArgs @("-Root", $tempRoot, "-FailOnWarning") -Label "active legacy nav mesh guidance" -SourcePath "scripts/agents/sbox_engine_reference_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_engine_reference_audit.ps1" "Engine reference audit did not fail on active nav_generate/nav_edit S&Box guidance." "Keep Valve nav mesh docs marked as legacy Source/Counter-Strike context for this project."
+        }
+
+        "Use S&Box navigation through Recast and Scene.NavMesh." | Set-Content -LiteralPath (Join-Path $tempRoot "docs\bad_engine_guidance.md") -Encoding UTF8
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxEngineReferenceAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_engine_reference_audit.ps1" "Engine reference audit failed on valid Scene.NavMesh guidance after the nav fixture." "Avoid false positives for current S&Box Recast navigation guidance."
         }
 
         "Create a .qc file for this S&Box model." | Set-Content -LiteralPath (Join-Path $tempRoot "docs\bad_engine_guidance.md") -Encoding UTF8

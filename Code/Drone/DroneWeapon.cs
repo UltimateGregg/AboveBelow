@@ -160,6 +160,8 @@ public sealed class DroneWeapon : Component
 	[Rpc.Broadcast]
 	void RequestKillAndDespawnDrone( Vector3 center )
 	{
+		DetachFiberCableBeforeDespawn();
+
 		if ( !CanMutateState() ) return;
 
 		var droneHealth = Components.Get<Health>() ?? Components.GetInAncestors<Health>();
@@ -167,6 +169,13 @@ public sealed class DroneWeapon : Component
 			droneHealth.TakeDamage( new DamageInfo { Amount = 9999f, AttackerId = default, Position = center } );
 
 		GameObject.Destroy();
+	}
+
+	void DetachFiberCableBeforeDespawn()
+	{
+		var fiber = Components.Get<FiberCable>();
+		if ( fiber.IsValid() )
+			fiber.DetachFromLiveEndpoints();
 	}
 
 	static Health FindHealth( GameObject go )

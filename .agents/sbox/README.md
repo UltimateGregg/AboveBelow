@@ -14,6 +14,7 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 | Gameplay implementation review | `gameplay-systems-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/gameplay_regression_guard.ps1` plus build sentinel |
 | Prefab, scene, or AutoWire review | `prefab-wiring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_wiring_audit.ps1` |
 | Deep prefab/reference graph review | `prefab-wiring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_graph_audit.ps1` |
+| Primitive prefab visual polish | `prefab-visual-quality-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_visual_quality_audit.ps1 -ShowInfo` |
 | Main scene/spawn/collider review | `prefab-wiring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/scene_integrity_audit.ps1` |
 | Editor-native cover/blockout prop | `editor-native-cover-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sandbag_cover_audit.ps1 -ShowInfo`; `powershell -ExecutionPolicy Bypass -File scripts/agents/burnt_vehicle_block_audit.ps1 -ShowInfo` |
 | Prop/building collision and visual/collider alignment review | `collision-authoring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite collision -ShowInfo` |
@@ -54,6 +55,7 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 
 - Prefer inspection and reports before edits.
 - For editor-capable tasks, start with `editor-first-workflow-agent.md`: check `control_plane_status` or `tools/list`, inspect the active editor scene/components, mutate through native MCP when possible, save with `editor_save_scene`, and state any fallback honestly.
+- For S&Box-native primitive prefabs, use `prefab-visual-quality-agent.md` before handoff so a valid prefab does not ship as a blockout; require silhouette/detail review and editor screenshot proof.
 - Do not rename public S&Box classes, components, prefabs, or assets unless asked.
 - Treat networked gameplay as host-authoritative.
 - Use `[Sync]` for replicated state and RPCs for notifications or validated requests.

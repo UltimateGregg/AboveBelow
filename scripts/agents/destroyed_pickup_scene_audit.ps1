@@ -181,21 +181,53 @@ $solidNames = @(
     "Pickup_Wheel_FL_Destroyed",
     "Pickup_Wheel_FR_Destroyed",
     "Pickup_Wheel_RL_RimOnly",
-    "Pickup_Wheel_RR_RimOnly"
+    "Pickup_Wheel_RR_RimOnly",
+    "Pickup_Engine_Block_Exposed",
+    "Pickup_Radiator_Crushed",
+    "Pickup_Fender_Left_Crumpled",
+    "Pickup_Fender_Right_MissingLip"
 )
 
 $detailNames = @(
+    "Pickup_Cab_A_Pillar_Left",
+    "Pickup_Cab_A_Pillar_Right",
+    "Pickup_Cab_B_Pillar_Left",
+    "Pickup_Cab_B_Pillar_Right",
+    "Pickup_Windshield_Frame_Top",
+    "Pickup_Windshield_Frame_Bottom",
     "Pickup_Glass_WindshieldShard",
     "Pickup_Glass_SideShard_Left",
     "Pickup_Glass_SideShard_Right",
+    "Pickup_Hood_Crease_Left",
+    "Pickup_Hood_Crease_Right",
     "Pickup_ScrapeMark_Left",
     "Pickup_ScrapeMark_Right",
+    "Pickup_Bed_Rail_Left_Torn",
+    "Pickup_Bed_Rail_Right_Torn",
+    "Pickup_Grille_Slat_01",
+    "Pickup_Grille_Slat_02",
+    "Pickup_Grille_Slat_03",
+    "Pickup_Headlight_Left_Broken",
+    "Pickup_Headlight_Right_Broken",
+    "Pickup_Rim_FL_Dented",
+    "Pickup_Rim_FR_Dented",
+    "Pickup_Rim_RL_Bare",
+    "Pickup_Rim_RR_Bare",
+    "Pickup_Tire_FL_FlatPatch",
+    "Pickup_Tire_FR_FlatPatch",
+    "Pickup_PaintScar_Cab",
+    "Pickup_PaintScar_Bed",
     "Pickup_Debris_HoodShard",
     "Pickup_Debris_BedShard",
     "Pickup_Debris_GlassScatter",
     "Pickup_Debris_MudDrag",
-    "Pickup_Debris_RoadScuff"
+    "Pickup_Debris_RoadScuff",
+    "Pickup_Debris_BoltScatter_01",
+    "Pickup_Debris_BoltScatter_02",
+    "Pickup_Debris_BoltScatter_03"
 )
+
+$knownNames = @($solidNames + $detailNames)
 
 function Test-DestroyedPickupGroup {
     param(
@@ -235,6 +267,9 @@ function Test-DestroyedPickupGroup {
         $childName = [string](Get-JsonPropertyValue -Object $child -Name "Name")
         if ($childName -match "^BurntVehicle_") {
             Add-AgentIssue $issues "Error" "Destroyed Pickup Scene" $Relative "$Name still contains old child '$childName'." "Replace old BurntVehicle_* scene children with the Pickup_* crashed-pickup layout."
+        }
+        if ($knownNames -notcontains $childName) {
+            Add-AgentIssue $issues "Error" "Destroyed Pickup Scene" $Relative "$Name contains unexpected child '$childName'." "Keep scene pickup instances in sync with the polished prefab contract."
         }
 
         $position = Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $child -Name "Position")
@@ -281,6 +316,13 @@ function Test-DestroyedPickupGroup {
                 Add-AgentIssue $issues "Error" "Destroyed Pickup Scene" $Relative "$Name/$childName has collision but should be visual detail only." "Keep glass, scrape marks, and small debris non-blocking."
             }
         }
+        elseif ($null -ne $collider) {
+            Add-AgentIssue $issues "Error" "Destroyed Pickup Scene" $Relative "$Name/$childName has collision but is not listed as solid cover." "Keep collision-bearing pickup pieces explicit in the audit contract."
+        }
+    }
+
+    if ($solidCount -lt 24 -or $detailCount -lt 36 -or $children.Count -lt 55) {
+        Add-AgentIssue $issues "Error" "Destroyed Pickup Scene" $Relative "$Name is under-detailed: $solidCount solid, $detailCount detail, $($children.Count) total." "Keep scene pickup instances denser than the original blockout-style vehicle."
     }
 
     if ($ShowInfo) {

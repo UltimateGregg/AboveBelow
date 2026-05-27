@@ -28,6 +28,7 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 | Two-Client Lobby Guard | Keep editor play sessions join-first and preserve round probe commands | `scripts/check_two_client_lobby_flow.ps1` |
 | Prefab and Wiring Agent | Validate prefab shape and AutoWire references | `scripts/agents/prefab_wiring_audit.ps1` |
 | Destroyed Pickup Prefab Audit | Keep the S&Box-native crashed pickup prefab placeable, primitive-backed, and free of retired VMDL collision | `scripts/agents/destroyed_pickup_prefab_audit.ps1` |
+| Prefab Visual Quality Agent | Catch valid-but-underbaked primitive prefabs before handoff, including silhouette, material massing, collision/detail split, and screenshot proof expectations | `scripts/agents/prefab_visual_quality_audit.ps1` |
 | Prefab Graph Audit | Validate GUID refs, component refs, prefab refs, and resource paths | `scripts/agents/prefab_graph_audit.ps1` |
 | Scene Integrity Audit | Validate main scene managers, spawns, and collider patterns | `scripts/agents/scene_integrity_audit.ps1` |
 | Terrain Floor Audit | Keep `ArenaFloor` backed by native `Sandbox.Terrain` and a source-controlled `.terrain` asset | `scripts/agents/run_agent_checks.ps1 -Suite terrain -ShowInfo` |

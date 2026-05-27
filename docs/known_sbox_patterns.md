@@ -80,6 +80,27 @@ pawn.NetworkSpawn(connection);  // Sets Network.Owner = connection
 - Keep source URLs and review dates in `docs/sbox_engine_llm_reference.md`.
 - Run `scripts\agents\run_agent_checks.ps1 -Suite learn -ShowInfo` after changing Learn-derived guidance.
 
+### Valve Source 2 Asset Pipeline Intake
+
+**Pattern:** Valve Developer Community Source 2 docs are useful for asset-system mental models, but they must be translated into this project's S&Box asset pipeline before becoming standing guidance.
+
+**Workflow:**
+- Treat source/content files such as `.vmdl`, `.vmat`, `.vmap`, `.vpcf`, and `.vtex` as editable source resources, and compiled `_c` files such as `.vmdl_c` or `.vmat_c` as generated output.
+- Fix missing models, grey materials, and bad texture output by repairing the raw source file, asset config, VMDL/VMAT/TMAT source, or material remap. Do not edit or commit compiled cache files as the durable fix.
+- For ModelDoc material groups, keep the first group aligned with the default material list and require every alternate group to have the same material count. Use material groups for deliberate skin/variant behavior, not to hide mismatched FBX slots.
+- For collision on model assets, prefer authored simple physics meshes, hulls, or primitive shapes. Static render-mesh collision is acceptable only when the shape and performance cost are intentionally verified; dynamic props need hulls or simple shapes.
+- After Source 2 asset-pipeline research changes, update `docs/sbox_engine_llm_reference.md` with source/date context and run `scripts\agents\run_agent_checks.ps1 -Suite docs -ShowInfo`.
+
+### Valve Nav Mesh Docs Are Legacy For S&Box
+
+**Pattern:** Valve `Nav Mesh` and `Nav_Mesh_Editing` pages describe Source/Counter-Strike `.nav` files and console commands. They are not the implementation path for S&Box Recast navigation.
+
+**Workflow:**
+- Do not add `nav_generate`, `nav_edit`, `.nav` file authoring, or place-name painting as active S&Box guidance unless the task explicitly targets legacy Source/CS tooling.
+- For this project, use S&Box navigation docs and local API lookup: `Scene.NavMesh`, NavMesh Agent, areas, costs/filters, obstacles, links, and `Scene.NavMesh.SetDirty()` when appropriate.
+- Treat Valve nav-editing lessons as QA concepts only: check walkable coverage, orphaned regions, one-way/blocked links, stairs/ramps, and ladder/path edge cases with the current S&Box editor and playtest.
+- Remember that S&Box NavMesh is generated from the PhysicsWorld, so collision authoring and terrain setup are navigation prerequisites.
+
 ### Editor Node Tool Scaffolding
 
 **Pattern:** S&Box Node Editor work is an editor-tooling surface, not runtime gameplay UI. Custom graph tools should live under `Editor/` or a library `Editor/` folder and be verified separately from gameplay components.

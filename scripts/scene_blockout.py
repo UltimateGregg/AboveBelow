@@ -249,6 +249,26 @@ def visual_box(
     )
 
 
+def visual_primitive(
+    name: str,
+    position: str,
+    scale: str,
+    material: str,
+    tint: str,
+    model: str = "models/dev/box.vmdl",
+    rotation: str = "0,0,0,1",
+) -> dict[str, Any]:
+    return game_object(
+        name,
+        position,
+        scale=scale,
+        rotation=rotation,
+        material=material,
+        tint=tint,
+        model=model,
+    )
+
+
 def solid_primitive(
     name: str,
     position: str,
@@ -600,46 +620,78 @@ def build_north_lane() -> dict[str, Any]:
 
 
 def center_lane_destroyed_pickup(name: str, position: str) -> dict[str, Any]:
-    blue_metal = "materials/arena/metal_pad.vmat"
-    worn_metal = "materials/environment/house_large_metal.vmat"
+    body_metal = "materials/arena/metal_pad.vmat"
+    alt_metal = "materials/arena/concrete_wall.vmat"
+    bare_metal = "materials/arena/metal_pad.vmat"
     glass = "materials/environment/house_large_glass.vmat"
     rubber = "materials/shotgun_rubber.vmat"
     asphalt = "materials/arena/asphalt_cover.vmat"
     scuff = "materials/arena/road_edge_wear.vmat"
+    grime = "materials/environment/house_large_dirt_mask.vmat"
     box = "models/dev/box.vmdl"
     sphere = "models/dev/sphere.vmdl"
 
     children = [
-        solid_primitive("Pickup_Frame_CrushedBase", "0,0,29", "5.45,1.88,0.42", worn_metal, "0.18,0.23,0.25,1", box),
-        solid_primitive("Pickup_Cab_CrushedCore", "26,0,64", "1.45,1.48,0.72", blue_metal, "0.16,0.22,0.26,1", box),
-        solid_primitive("Pickup_Cab_Roof_Collapsed", "18,-4,94", "1.78,1.28,0.16", worn_metal, "0.13,0.18,0.20,1", box, "0.0174524,-0.0436194,0.0261769,0.998552"),
-        solid_primitive("Pickup_Hood_BentOpen", "108,-2,58", "1.68,1.62,0.15", blue_metal, "0.20,0.27,0.31,1", box, "0,-0.130526,0,0.991445"),
-        solid_primitive("Pickup_Bed_TwistedFloor", "-88,2,49", "2.25,1.58,0.22", worn_metal, "0.23,0.27,0.27,1", box, "0.00872654,0,0.0348995,0.999352"),
-        solid_primitive("Pickup_Bed_LeftWall_Bent", "-92,-58,68", "2.25,0.16,0.62", blue_metal, "0.18,0.23,0.25,1", box, "0,0,0.0871557,0.996195"),
-        solid_primitive("Pickup_Bed_RightWall_Collapsed", "-97,58,58", "2.08,0.16,0.42", blue_metal, "0.16,0.21,0.23,1", box, "0,0,-0.104528,0.994522"),
-        solid_primitive("Pickup_Tailgate_Twisted", "-174,6,55", "0.20,1.58,0.48", worn_metal, "0.32,0.33,0.30,1", box, "0,0.0348995,-0.052336,0.998021"),
-        solid_primitive("Pickup_Door_Left_Displaced", "32,-66,61", "0.96,0.12,0.54", blue_metal, "0.19,0.25,0.29,1", box, "0,0,0.173648,0.984808"),
-        solid_primitive("Pickup_Door_Right_Caved", "20,66,57", "1.00,0.12,0.46", blue_metal, "0.11,0.14,0.15,1", box, "0,0,-0.139173,0.990268"),
-        solid_primitive("Pickup_FrameRail_Left", "-8,-43,25", "5.35,0.12,0.18", worn_metal, "0.40,0.38,0.34,1", box),
-        solid_primitive("Pickup_FrameRail_Right", "-10,43,25", "5.25,0.12,0.18", worn_metal, "0.37,0.35,0.31,1", box),
-        solid_primitive("Pickup_Bumper_Front_Hanging", "154,-4,26", "0.20,1.88,0.20", worn_metal, "0.50,0.47,0.40,1", box, "0.0174524,-0.052336,0.0436194,0.997564"),
-        solid_primitive("Pickup_Bumper_Rear_Crushed", "-184,7,24", "0.22,1.74,0.22", worn_metal, "0.44,0.39,0.33,1", box, "-0.0174524,0.0348995,-0.0436194,0.998477"),
-        solid_primitive("Pickup_Axle_Front_Bent", "88,0,25", "0.16,2.04,0.14", worn_metal, "0.43,0.41,0.36,1", box, "0,0,0.052336,0.99863"),
-        solid_primitive("Pickup_Axle_Rear_Exposed", "-118,0,25", "0.16,1.92,0.14", worn_metal, "0.40,0.37,0.32,1", box, "0,0,-0.0348995,0.999391"),
-        solid_primitive("Pickup_Wheel_FL_Destroyed", "88,-65,25", "0.84,0.34,0.84", rubber, "0.03,0.03,0.03,1", sphere),
-        solid_primitive("Pickup_Wheel_FR_Destroyed", "86,65,23", "0.78,0.28,0.72", rubber, "0.02,0.02,0.02,1", sphere, "0,0.0871557,0,0.996195"),
-        solid_primitive("Pickup_Wheel_RL_RimOnly", "-118,-65,24", "0.66,0.24,0.66", worn_metal, "0.48,0.46,0.40,1", sphere),
-        solid_primitive("Pickup_Wheel_RR_RimOnly", "-120,65,24", "0.70,0.26,0.70", worn_metal, "0.44,0.41,0.36,1", sphere, "0,-0.052336,0,0.99863"),
-        visual_box("Pickup_Glass_WindshieldShard", "64,-42,78", "0.68,0.035,0.24", glass, "0.45,0.64,0.68,0.58", "0.0348995,-0.156434,0.0348995,0.986499"),
-        visual_box("Pickup_Glass_SideShard_Left", "16,-70,70", "0.52,0.032,0.19", glass, "0.36,0.52,0.56,0.52", "0,0,0.173648,0.984808"),
-        visual_box("Pickup_Glass_SideShard_Right", "3,70,66", "0.48,0.032,0.17", glass, "0.33,0.48,0.52,0.50", "0,0,-0.139173,0.990268"),
-        visual_box("Pickup_ScrapeMark_Left", "7,-69,48", "1.48,0.032,0.10", worn_metal, "0.70,0.66,0.52,1", "0,0,0.0871557,0.996195"),
-        visual_box("Pickup_ScrapeMark_Right", "-30,69,46", "1.25,0.032,0.10", worn_metal, "0.62,0.58,0.47,1", "0,0,-0.0697565,0.997564"),
-        visual_box("Pickup_Debris_HoodShard", "128,-36,18", "0.72,0.34,0.08", blue_metal, "0.21,0.28,0.31,1", "0.0174524,0.0697565,-0.121869,0.990268"),
-        visual_box("Pickup_Debris_BedShard", "-143,42,17", "0.78,0.30,0.08", worn_metal, "0.43,0.40,0.34,1", "-0.0174524,0.052336,0.104528,0.992546"),
-        visual_box("Pickup_Debris_GlassScatter", "34,-84,8", "0.92,0.22,0.035", glass, "0.42,0.58,0.60,0.38", "0,0,0.0871557,0.996195"),
-        visual_box("Pickup_Debris_MudDrag", "-42,86,4", "2.15,0.36,0.035", asphalt, "0.11,0.10,0.085,1", "0,0,-0.0871557,0.996195"),
-        visual_box("Pickup_Debris_RoadScuff", "82,-88,4", "1.60,0.30,0.035", scuff, "0.34,0.31,0.25,1", "0,0,0.052336,0.99863"),
+        solid_primitive("Pickup_Frame_CrushedBase", "0,0,25", "5.25,1.28,0.24", bare_metal, "0.72,0.76,0.74,1", box, "0,0,0.0174524,0.999848"),
+        solid_primitive("Pickup_Cab_CrushedCore", "24,0,54", "1.12,1.06,0.48", body_metal, "0.74,0.86,0.90,1", box, "0.0174524,-0.0348995,0.0261769,0.99901"),
+        solid_primitive("Pickup_Cab_Roof_Collapsed", "15,-5,79", "1.36,1.02,0.10", alt_metal, "0.56,0.66,0.68,1", box, "0.052336,-0.104528,0.0348995,0.992546"),
+        solid_primitive("Pickup_Hood_BentOpen", "108,-5,48", "1.55,1.16,0.09", body_metal, "0.80,0.92,0.96,1", box, "0.0174524,-0.224951,0.0261769,0.973353"),
+        solid_primitive("Pickup_Bed_TwistedFloor", "-86,3,41", "2.12,1.20,0.13", bare_metal, "0.66,0.70,0.68,1", box, "0.0174524,0,0.052336,0.998477"),
+        solid_primitive("Pickup_Bed_LeftWall_Bent", "-88,-47,57", "2.04,0.10,0.42", body_metal, "0.68,0.80,0.84,1", box, "0.0174524,0.0348995,0.139173,0.989441"),
+        solid_primitive("Pickup_Bed_RightWall_Collapsed", "-98,48,49", "1.88,0.10,0.30", body_metal, "0.58,0.68,0.72,1", box, "-0.0174524,0,-0.156434,0.987688"),
+        solid_primitive("Pickup_Tailgate_Twisted", "-171,6,45", "0.12,1.22,0.32", bare_metal, "0.72,0.70,0.62,1", box, "0,0.0697565,-0.104528,0.992099"),
+        solid_primitive("Pickup_Door_Left_Displaced", "30,-55,51", "0.78,0.08,0.36", body_metal, "0.78,0.90,0.94,1", box, "0,0,0.241922,0.970296"),
+        solid_primitive("Pickup_Door_Right_Caved", "16,55,48", "0.84,0.08,0.32", alt_metal, "0.56,0.64,0.66,1", box, "0,0,-0.207912,0.978148"),
+        solid_primitive("Pickup_FrameRail_Left", "-9,-39,24", "5.10,0.09,0.14", bare_metal, "0.70,0.68,0.62,1", box),
+        solid_primitive("Pickup_FrameRail_Right", "-12,39,24", "5.02,0.09,0.14", bare_metal, "0.60,0.60,0.55,1", box),
+        solid_primitive("Pickup_Bumper_Front_Hanging", "153,-5,23", "0.14,1.46,0.16", bare_metal, "0.82,0.80,0.70,1", box, "0.0174524,-0.0871557,0.0871557,0.992546"),
+        solid_primitive("Pickup_Bumper_Rear_Crushed", "-181,7,22", "0.16,1.28,0.17", bare_metal, "0.66,0.64,0.56,1", box, "-0.0348995,0.052336,-0.0871557,0.994522"),
+        solid_primitive("Pickup_Axle_Front_Bent", "86,-2,23", "0.12,1.72,0.11", bare_metal, "0.58,0.58,0.54,1", box, "0,0,0.0871557,0.996195"),
+        solid_primitive("Pickup_Axle_Rear_Exposed", "-116,1,23", "0.12,1.62,0.11", bare_metal, "0.54,0.52,0.48,1", box, "0,0,-0.0697565,0.997564"),
+        solid_primitive("Pickup_Wheel_FL_Destroyed", "86,-56,21", "0.62,0.20,0.50", rubber, "0.055,0.052,0.047,1", sphere, "0,0.104528,0,0.994522"),
+        solid_primitive("Pickup_Wheel_FR_Destroyed", "84,56,20", "0.56,0.18,0.44", rubber, "0.045,0.043,0.040,1", sphere, "0,0.173648,0,0.984808"),
+        solid_primitive("Pickup_Wheel_RL_RimOnly", "-116,-56,21", "0.50,0.16,0.42", bare_metal, "0.78,0.76,0.68,1", sphere),
+        solid_primitive("Pickup_Wheel_RR_RimOnly", "-118,56,20", "0.52,0.16,0.40", bare_metal, "0.68,0.66,0.60,1", sphere, "0,-0.0871557,0,0.996195"),
+        solid_primitive("Pickup_Engine_Block_Exposed", "83,-3,38", "0.46,0.54,0.30", bare_metal, "0.54,0.54,0.50,1", box, "0,0,0.052336,0.99863"),
+        solid_primitive("Pickup_Radiator_Crushed", "127,-2,36", "0.10,0.80,0.25", bare_metal, "0.48,0.52,0.52,1", box, "0.0174524,-0.0697565,0,0.997391"),
+        solid_primitive("Pickup_Fender_Left_Crumpled", "76,-49,42", "0.70,0.09,0.26", body_metal, "0.72,0.86,0.90,1", box, "0,0,0.191986,0.981627"),
+        solid_primitive("Pickup_Fender_Right_MissingLip", "77,49,40", "0.58,0.08,0.20", alt_metal, "0.58,0.68,0.70,1", box, "0,0,-0.173648,0.984808"),
+        visual_box("Pickup_Cab_A_Pillar_Left", "57,-45,68", "0.08,0.07,0.52", bare_metal, "0.60,0.64,0.64,1", "0.0871557,-0.0871557,0.0697565,0.991445"),
+        visual_box("Pickup_Cab_A_Pillar_Right", "56,45,66", "0.08,0.07,0.46", bare_metal, "0.56,0.60,0.60,1", "0.0697565,-0.0697565,-0.052336,0.993572"),
+        visual_box("Pickup_Cab_B_Pillar_Left", "-15,-45,63", "0.08,0.07,0.44", bare_metal, "0.64,0.66,0.64,1", "0.0348995,0.0348995,0.104528,0.993916"),
+        visual_box("Pickup_Cab_B_Pillar_Right", "-16,45,60", "0.08,0.07,0.38", bare_metal, "0.54,0.56,0.54,1", "-0.0348995,0.0174524,-0.0871557,0.995588"),
+        visual_box("Pickup_Windshield_Frame_Top", "40,-2,76", "0.72,0.07,0.06", bare_metal, "0.44,0.48,0.48,1", "0.0348995,-0.156434,0.0174524,0.986499"),
+        visual_box("Pickup_Windshield_Frame_Bottom", "52,-2,58", "0.62,0.07,0.05", bare_metal, "0.58,0.60,0.58,1", "0.0174524,-0.104528,0.0174524,0.994522"),
+        visual_box("Pickup_Glass_WindshieldShard", "47,-33,66", "0.44,0.026,0.16", glass, "0.48,0.66,0.70,0.54", "0.0348995,-0.156434,0.0348995,0.986499"),
+        visual_box("Pickup_Glass_SideShard_Left", "14,-58,59", "0.34,0.024,0.13", glass, "0.36,0.52,0.56,0.46", "0,0,0.207912,0.978148"),
+        visual_box("Pickup_Glass_SideShard_Right", "3,58,56", "0.30,0.024,0.11", glass, "0.33,0.48,0.52,0.44", "0,0,-0.173648,0.984808"),
+        visual_box("Pickup_Hood_Crease_Left", "104,-31,51", "1.08,0.030,0.055", scuff, "0.68,0.66,0.56,1", "0.0174524,-0.207912,0.0697565,0.975223"),
+        visual_box("Pickup_Hood_Crease_Right", "103,26,50", "0.96,0.030,0.052", scuff, "0.58,0.57,0.49,1", "0.0174524,-0.190809,-0.052336,0.980067"),
+        visual_box("Pickup_ScrapeMark_Left", "1,-57,43", "1.24,0.026,0.075", scuff, "0.70,0.66,0.54,1", "0,0,0.139173,0.990268"),
+        visual_box("Pickup_ScrapeMark_Right", "-31,57,41", "1.05,0.026,0.070", scuff, "0.62,0.58,0.48,1", "0,0,-0.104528,0.994522"),
+        visual_box("Pickup_Bed_Rail_Left_Torn", "-96,-53,71", "1.46,0.055,0.06", bare_metal, "0.74,0.72,0.64,1", "0.0348995,0.0348995,0.173648,0.983255"),
+        visual_box("Pickup_Bed_Rail_Right_Torn", "-104,53,62", "1.24,0.055,0.055", bare_metal, "0.62,0.60,0.54,1", "-0.0174524,0,-0.156434,0.987688"),
+        visual_box("Pickup_Grille_Slat_01", "137,-27,43", "0.045,0.38,0.035", bare_metal, "0.54,0.56,0.54,1", "0,-0.0871557,0,0.996195"),
+        visual_box("Pickup_Grille_Slat_02", "139,-2,40", "0.045,0.34,0.035", bare_metal, "0.42,0.44,0.44,1", "0,-0.0697565,0.0348995,0.996957"),
+        visual_box("Pickup_Grille_Slat_03", "136,24,42", "0.045,0.30,0.035", bare_metal, "0.60,0.60,0.56,1", "0,-0.104528,-0.0348995,0.993916"),
+        visual_box("Pickup_Headlight_Left_Broken", "142,-39,38", "0.045,0.14,0.08", glass, "0.76,0.72,0.56,0.42", "0,-0.0871557,0,0.996195"),
+        visual_box("Pickup_Headlight_Right_Broken", "142,37,36", "0.045,0.12,0.07", glass, "0.55,0.58,0.50,0.32", "0,-0.0871557,0,0.996195"),
+        visual_primitive("Pickup_Rim_FL_Dented", "86,-59,21", "0.30,0.055,0.28", bare_metal, "0.78,0.76,0.70,1", sphere, "0,0.104528,0,0.994522"),
+        visual_primitive("Pickup_Rim_FR_Dented", "84,59,20", "0.26,0.050,0.24", bare_metal, "0.68,0.68,0.62,1", sphere, "0,0.173648,0,0.984808"),
+        visual_primitive("Pickup_Rim_RL_Bare", "-116,-59,21", "0.28,0.050,0.26", bare_metal, "0.84,0.82,0.74,1", sphere),
+        visual_primitive("Pickup_Rim_RR_Bare", "-118,59,20", "0.27,0.050,0.25", bare_metal, "0.74,0.72,0.66,1", sphere, "0,-0.0871557,0,0.996195"),
+        visual_box("Pickup_Tire_FL_FlatPatch", "86,-58,8", "0.46,0.18,0.045", rubber, "0.035,0.034,0.032,1", "0,0,0.052336,0.99863"),
+        visual_box("Pickup_Tire_FR_FlatPatch", "84,58,8", "0.40,0.16,0.045", rubber, "0.032,0.031,0.030,1", "0,0,-0.0348995,0.999391"),
+        visual_box("Pickup_PaintScar_Cab", "28,-56,57", "0.52,0.024,0.075", grime, "0.50,0.48,0.40,1", "0,0,0.207912,0.978148"),
+        visual_box("Pickup_PaintScar_Bed", "-98,-54,52", "0.76,0.024,0.070", grime, "0.44,0.42,0.36,1", "0,0,0.156434,0.987688"),
+        visual_box("Pickup_Debris_HoodShard", "128,-32,14", "0.46,0.22,0.045", body_metal, "0.76,0.88,0.92,1", "0.0174524,0.0697565,-0.139173,0.987688"),
+        visual_box("Pickup_Debris_BedShard", "-144,37,13", "0.50,0.20,0.045", bare_metal, "0.64,0.62,0.54,1", "-0.0174524,0.052336,0.121869,0.991445"),
+        visual_box("Pickup_Debris_GlassScatter", "34,-75,6", "0.68,0.16,0.025", glass, "0.42,0.58,0.60,0.34", "0,0,0.0871557,0.996195"),
+        visual_box("Pickup_Debris_MudDrag", "-42,75,3", "1.70,0.25,0.025", asphalt, "0.11,0.10,0.085,1", "0,0,-0.0871557,0.996195"),
+        visual_box("Pickup_Debris_RoadScuff", "82,-78,3", "1.25,0.22,0.025", scuff, "0.34,0.31,0.25,1", "0,0,0.052336,0.99863"),
+        visual_box("Pickup_Debris_BoltScatter_01", "118,-64,7", "0.12,0.08,0.035", bare_metal, "0.72,0.68,0.60,1", "0,0,0.330366,0.943858"),
+        visual_box("Pickup_Debris_BoltScatter_02", "-132,-43,7", "0.10,0.07,0.035", bare_metal, "0.58,0.56,0.50,1", "0,0,-0.292372,0.956305"),
+        visual_box("Pickup_Debris_BoltScatter_03", "-10,77,6", "0.11,0.08,0.035", bare_metal, "0.66,0.64,0.56,1", "0,0,0.241922,0.970296"),
     ]
 
     return namespace_scene_guids(game_object(name, position, children=children), name)
