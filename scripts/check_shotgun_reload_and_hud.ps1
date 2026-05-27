@@ -31,6 +31,7 @@ function Require-Match {
 
 $shotgun = Read-ProjectFile "Code/Player/ShotgunWeapon.cs"
 $hud = Read-ProjectFile "Code/UI/HudPanel.razor"
+$viewmodel = Read-ProjectFile "Code/Player/FirstPersonViewmodel.cs"
 
 Require-Match "ShotgunWeapon should declare a 6-shell magazine." `
     $shotgun "\[Property\]\s+public\s+int\s+MagazineSize\s*\{\s*get;\s*set;\s*\}\s*=\s*6\s*;"
@@ -69,6 +70,12 @@ Require-Match "HudPanel should show ammo HUD for shotgun weapons." `
 
 Require-Match "HudPanel should render shotgun reload text." `
     $hud "CurrentShotgunAmmoWeapon\.AmmoDisplay"
+
+Require-Match "FirstPersonViewmodel should start stock reload animation from reload input or reload state transition." `
+    $viewmodel "item\.ReloadPressed\s*\|\|\s*\(\s*item\.IsReloading\s*&&\s*!\s*_wasReloading\s*\)[\s\S]{0,120}Parameters\.Set\s*\(\s*""b_reload""\s*,\s*true\s*\)"
+
+Require-Match "FirstPersonViewmodel should clear stock reload animation once reload state ends." `
+    $viewmodel "else\s+if\s*\(\s*!\s*item\.IsReloading\s*\)[\s\S]{0,120}Parameters\.Set\s*\(\s*""b_reload""\s*,\s*false\s*\)"
 
 if ($failures.Count -gt 0) {
     $failures | ForEach-Object { Write-Error $_ }

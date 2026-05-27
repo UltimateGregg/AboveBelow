@@ -323,6 +323,13 @@ def hitmarker(kill: bool = False) -> list[float]:
     return render(0.18 if kill else 0.10, build, peak=0.42 if not kill else 0.48)
 
 
+def ui_menu_click() -> list[float]:
+    def build(b):
+        add_click(b, 0.006, 0.24, 3701, tone=2400)
+        add_tone(b, 0.010, 0.050, 960, 1280, 0.055, attack=0.001, release=0.030, curve=2.7, harmonics=(0.08,))
+    return render(0.085, build, peak=0.30)
+
+
 def round_swell() -> list[float]:
     def build(b):
         add_tone(b, 0.000, 1.200, 145, 210, 0.18, attack=0.18, release=0.25, curve=0.6, harmonics=(0.15,))
@@ -620,6 +627,7 @@ SOUNDS = {
     "shotgun_fire.wav": shotgun_fire,
     "ui_hitmarker.wav": lambda: hitmarker(False),
     "ui_hitmarker_kill.wav": lambda: hitmarker(True),
+    "ui_menu_click.wav": ui_menu_click,
 }
 
 STOCK_WAVS = {

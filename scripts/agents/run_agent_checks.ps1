@@ -51,6 +51,7 @@ switch ($Suite) {
     "quick" {
         $scripts = @(
             @{ Name = "build_log_sentinel.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_whitelist_audit.ps1"; Args = $commonArgs },
             @{ Name = "gameplay_regression_guard.ps1"; Args = $commonArgs },
             @{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs },
@@ -82,6 +83,7 @@ switch ($Suite) {
         $scripts = @(
             @{ Name = "test_full_automation_layer.ps1"; Args = @("-Root", $Root) },
             @{ Name = "build_log_sentinel.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_whitelist_audit.ps1"; Args = $commonArgs },
             @{ Name = "gameplay_regression_guard.ps1"; Args = $commonArgs },
             @{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs },
@@ -112,7 +114,12 @@ switch ($Suite) {
             @{ Name = "playtest_checklist.ps1"; Args = @("-Root", $Root, "-ChangeArea", "All") }
         )
     }
-    "build" { $scripts = @(@{ Name = "build_log_sentinel.ps1"; Args = $commonArgs }) }
+    "build" {
+        $scripts = @(
+            @{ Name = "build_log_sentinel.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_whitelist_audit.ps1"; Args = $commonArgs }
+        )
+    }
     "ui" {
         $scripts = @(
             @{ Name = "team_label_copy_audit.ps1"; Args = $commonArgs },
@@ -121,7 +128,12 @@ switch ($Suite) {
             @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root, "-ShowFiles") }
         )
     }
-    "prefab" { $scripts = @(@{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs }) }
+    "prefab" {
+        $scripts = @(
+            @{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs },
+            @{ Name = "destroyed_pickup_prefab_audit.ps1"; Args = $commonArgs }
+        )
+    }
     "prefab-graph" { $scripts = @(@{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs }) }
     "scene" {
         $scripts = @(
@@ -132,7 +144,7 @@ switch ($Suite) {
             @{ Name = "road_cover_barrier_audit.ps1"; Args = $commonArgs },
             @{ Name = "road_lane_marking_audit.ps1"; Args = $commonArgs },
             @{ Name = "road_edge_wear_audit.ps1"; Args = $commonArgs },
-            @{ Name = "burnt_vehicle_block_audit.ps1"; Args = $commonArgs },
+            @{ Name = "destroyed_pickup_scene_audit.ps1"; Args = $commonArgs },
             @{ Name = "level_layout_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs }
         )

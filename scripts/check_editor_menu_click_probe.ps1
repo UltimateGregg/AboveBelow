@@ -37,7 +37,7 @@ foreach ($required in @(
     'CreateEvent',
     'FindMenuPanelByText',
     'PLAY',
-    'SOLDIERS',
+    'HUNTERS',
     'ASSAULT',
     'StartFromMainMenu',
     'SelectLoadoutTeam\( PlayerRole\.Soldier \)',

@@ -42,6 +42,7 @@ public sealed class DroneDeployer : Component
 	[Property] public Angles LeftHandIkFpRotation { get; set; } = new( 0f, 180f, 0f );
 	[Property] public Vector3 RightHandFpOffset { get; set; } = new( 26f, 6f, -10f );
 	[Property] public Angles RightHandFpRotation { get; set; } = new( 0f, 0f, 0f );
+	[Property] public Angles GpsHeldDroneFpRotationOffset { get; set; } = new( 0f, -90f, 0f );
 	[Property] public Vector3 RightHandIkFpOffset { get; set; } = new( 32f, 10f, -10f );
 	[Property] public Angles RightHandIkFpRotation { get; set; } = new( 0f, 0f, 0f );
 	[Property] public Vector3 RightHandControllerIkFpOffset { get; set; } = new( 29f, -2f, -12f );
@@ -61,6 +62,7 @@ public sealed class DroneDeployer : Component
 	[Property] public string GpsHeldDroneModelPath { get; set; } = "models/drone_high.vmdl";
 	[Property] public string FpvHeldDroneModelPath { get; set; } = "models/drone_fpv.vmdl";
 	[Property] public string FiberHeldDroneModelPath { get; set; } = "models/drone_fpv_fiber.vmdl";
+	[Property] public string GpsHeldPropellerModelPath { get; set; } = "models/drone_gps_prop.vmdl";
 	[Property] public string FpvHeldPropellerModelPath { get; set; } = "models/drone_fpv_prop.vmdl";
 	[Property] public Vector3 GpsHeldDroneScale { get; set; } = new( 0.075f, 0.075f, 0.075f );
 	[Property] public Vector3 FpvHeldDroneScale { get; set; } = new( 0.3f, 0.3f, 0.3f );
@@ -75,7 +77,7 @@ public sealed class DroneDeployer : Component
 	[Sync] public bool DroneInFlight { get; set; }
 
 	public bool IsSelected => WeaponPose.IsSlotSelected( this, Slot );
-	public bool CanLaunch => IsSelected && !DroneInFlight && Time.Now >= LaunchReadyAt;
+	public bool CanLaunch => IsSelected && !HasActiveDrone() && Time.Now >= LaunchReadyAt;
 	public float CooldownRemaining => MathF.Max( 0f, LaunchReadyAt - Time.Now );
 
 	string _activeHeldDroneModelPath = "";
@@ -83,7 +85,15 @@ public sealed class DroneDeployer : Component
 	string _warnedHeldPropellerModelPath = "";
 	Model _activeHeldPropellerModel;
 
-	static readonly HeldPropellerVisualSpec[] HeldPropellers =
+	static readonly HeldPropellerVisualSpec[] GpsHeldPropellers =
+	{
+		new( "HeldPropeller_FL", new Vector3( 58.36f, 86.4f, 6.6f ), new Angles( 0f, 0f, 0f ), new Vector3( 4f, 4f, 4f ) ),
+		new( "HeldPropeller_FR", new Vector3( 58.36f, -86.4f, 6.6f ), new Angles( 0f, 180f, 0f ), new Vector3( 4f, 4f, 4f ) ),
+		new( "HeldPropeller_BL", new Vector3( -58.36f, 86.4f, 6.6f ), new Angles( 0f, 180f, 0f ), new Vector3( 4f, 4f, 4f ) ),
+		new( "HeldPropeller_BR", new Vector3( -58.36f, -86.4f, 6.6f ), new Angles( 0f, 0f, 0f ), new Vector3( 4f, 4f, 4f ) ),
+	};
+
+	static readonly HeldPropellerVisualSpec[] FpvHeldPropellers =
 	{
 		new( "HeldPropeller_FL", new Vector3( 6.71f, 6.71f, 1.8f ), new Angles( 0f, 0f, 0f ) ),
 		new( "HeldPropeller_FR", new Vector3( 6.71f, -6.71f, 1.8f ), new Angles( 0f, 180f, 0f ) ),
@@ -96,12 +106,19 @@ public sealed class DroneDeployer : Component
 		public readonly string Name;
 		public readonly Vector3 LocalPosition;
 		public readonly Angles LocalRotation;
+		public readonly Vector3 LocalScale;
 
 		public HeldPropellerVisualSpec( string name, Vector3 localPosition, Angles localRotation )
+			: this( name, localPosition, localRotation, Vector3.One )
+		{
+		}
+
+		public HeldPropellerVisualSpec( string name, Vector3 localPosition, Angles localRotation, Vector3 localScale )
 		{
 			Name = name;
 			LocalPosition = localPosition;
 			LocalRotation = localRotation;
+			LocalScale = localScale;
 		}
 	}
 
@@ -120,6 +137,7 @@ public sealed class DroneDeployer : Component
 		var pc = Components.GetInAncestors<GroundPlayerController>();
 		var remote = Components.GetInAncestors<RemoteController>();
 		var droneViewActive = remote.IsValid() && !remote.IsProxy && remote.DroneViewActive;
+		var chosenDrone = GetChosenDrone();
 
 		var selected = ApplySelectionVisualState( droneViewActive );
 
@@ -145,7 +163,7 @@ public sealed class DroneDeployer : Component
 				pc,
 				droneViewActive,
 				RightHandFpOffset,
-				RightHandFpRotation,
+				GetHeldDroneFpRotation( chosenDrone ),
 				DroneInFlight ? RightHandControllerIkFpOffset : RightHandIkFpOffset,
 				DroneInFlight ? RightHandControllerIkFpRotation : RightHandIkFpRotation,
 				RightHandTpLocalPos,
@@ -163,9 +181,10 @@ public sealed class DroneDeployer : Component
 			if ( remote.IsValid() && remote.DroneViewActive )
 				return;
 
+			var hasActiveDrone = HasActiveDrone();
 			if ( CanLaunch )
 				RequestLaunch();
-			else if ( DroneInFlight )
+			else if ( DroneInFlight || hasActiveDrone )
 				EnterDroneView( remote );
 		}
 	}
@@ -216,8 +235,7 @@ public sealed class DroneDeployer : Component
 		if ( !renderer.IsValid() )
 			return;
 
-		var pilot = Components.GetInAncestors<PilotSoldier>();
-		var chosenDrone = pilot.IsValid() ? pilot.ChosenDrone : DroneType.Fpv;
+		var chosenDrone = GetChosenDrone();
 
 		var modelPath = chosenDrone switch
 		{
@@ -260,12 +278,29 @@ public sealed class DroneDeployer : Component
 		UpdateHeldPropellerVisuals( chosenDrone );
 	}
 
-	void EnsureHeldPropellerVisuals()
+	DroneType GetChosenDrone()
+	{
+		var pilot = Components.GetInAncestors<PilotSoldier>();
+		return pilot.IsValid() ? pilot.ChosenDrone : DroneType.Fpv;
+	}
+
+	Angles GetHeldDroneFpRotation( DroneType chosenDrone )
+	{
+		if ( chosenDrone == DroneType.Gps )
+			return new Angles(
+				RightHandFpRotation.pitch + GpsHeldDroneFpRotationOffset.pitch,
+				RightHandFpRotation.yaw + GpsHeldDroneFpRotationOffset.yaw,
+				RightHandFpRotation.roll + GpsHeldDroneFpRotationOffset.roll );
+
+		return RightHandFpRotation;
+	}
+
+	void EnsureHeldPropellerVisuals( HeldPropellerVisualSpec[] specs )
 	{
 		if ( !RightHandVisual.IsValid() )
 			return;
 
-		foreach ( var spec in HeldPropellers )
+		foreach ( var spec in specs )
 		{
 			var propeller = RightHandVisual.Children.FirstOrDefault( child => child.Name == spec.Name );
 			if ( !propeller.IsValid() )
@@ -278,7 +313,7 @@ public sealed class DroneDeployer : Component
 
 			propeller.LocalPosition = spec.LocalPosition;
 			propeller.LocalRotation = spec.LocalRotation.ToRotation();
-			propeller.LocalScale = Vector3.One;
+			propeller.LocalScale = spec.LocalScale;
 
 			if ( !propeller.Components.Get<ModelRenderer>().IsValid() )
 				propeller.Components.Create<ModelRenderer>();
@@ -287,12 +322,13 @@ public sealed class DroneDeployer : Component
 
 	void UpdateHeldPropellerVisuals( DroneType chosenDrone )
 	{
-		EnsureHeldPropellerVisuals();
+		var specs = chosenDrone == DroneType.Gps ? GpsHeldPropellers : FpvHeldPropellers;
+		EnsureHeldPropellerVisuals( specs );
 
-		var showPropellers = chosenDrone is DroneType.Fpv or DroneType.FiberOpticFpv;
-		var propellerModel = showPropellers ? LoadHeldPropellerModel() : null;
+		var showPropellers = chosenDrone is DroneType.Gps or DroneType.Fpv or DroneType.FiberOpticFpv;
+		var propellerModel = showPropellers ? LoadHeldPropellerModel( chosenDrone ) : null;
 
-		foreach ( var spec in HeldPropellers )
+		foreach ( var spec in specs )
 		{
 			var propeller = RightHandVisual.IsValid()
 				? RightHandVisual.Children.FirstOrDefault( child => child.Name == spec.Name )
@@ -317,30 +353,38 @@ public sealed class DroneDeployer : Component
 		}
 	}
 
-	Model LoadHeldPropellerModel()
+	Model LoadHeldPropellerModel( DroneType chosenDrone )
 	{
-		if ( string.IsNullOrWhiteSpace( FpvHeldPropellerModelPath ) )
+		var modelPath = chosenDrone switch
+		{
+			DroneType.Gps => GpsHeldPropellerModelPath,
+			DroneType.Fpv => FpvHeldPropellerModelPath,
+			DroneType.FiberOpticFpv => FpvHeldPropellerModelPath,
+			_ => FpvHeldPropellerModelPath
+		};
+
+		if ( string.IsNullOrWhiteSpace( modelPath ) )
 			return null;
 
-		if ( _activeHeldPropellerModelPath == FpvHeldPropellerModelPath
+		if ( _activeHeldPropellerModelPath == modelPath
 			&& _activeHeldPropellerModel is not null
 			&& _activeHeldPropellerModel.IsValid )
 		{
 			return _activeHeldPropellerModel;
 		}
 
-		var model = Model.Load( FpvHeldPropellerModelPath );
+		var model = Model.Load( modelPath );
 		if ( model is not null && model.IsValid )
 		{
 			_activeHeldPropellerModel = model;
-			_activeHeldPropellerModelPath = FpvHeldPropellerModelPath;
+			_activeHeldPropellerModelPath = modelPath;
 			return model;
 		}
 
-		if ( _warnedHeldPropellerModelPath != FpvHeldPropellerModelPath )
+		if ( _warnedHeldPropellerModelPath != modelPath )
 		{
-			Log.Warning( $"[DroneDeployer] Could not load held drone propeller model '{FpvHeldPropellerModelPath}'" );
-			_warnedHeldPropellerModelPath = FpvHeldPropellerModelPath;
+			Log.Warning( $"[DroneDeployer] Could not load held drone propeller model '{modelPath}'" );
+			_warnedHeldPropellerModelPath = modelPath;
 		}
 
 		return null;
@@ -447,21 +491,70 @@ public sealed class DroneDeployer : Component
 
 	void UpdateDroneAliveState()
 	{
-		if ( !DroneInFlight ) return;
-
 		var pilot = Components.GetInAncestors<PilotSoldier>();
 		if ( !pilot.IsValid() ) return;
 
-		// Drone was never recorded, or has been removed from the scene.
-		if ( pilot.ResolveDrone().IsValid() ) return;
+		if ( !DroneInFlight && pilot.ResolveDrone().IsValid() )
+			DroneInFlight = true;
+
+		var activeDrone = ResolveActiveDrone( pilot );
+		if ( activeDrone.IsValid() )
+		{
+			DroneInFlight = true;
+			pilot.LinkedDroneId = activeDrone.GameObject.Id;
+			return;
+		}
+
+		if ( !DroneInFlight ) return;
 
 		DroneInFlight = false;
 		LaunchReadyAt = Time.Now + LaunchCooldown;
 		pilot.LinkedDroneId = default;
 	}
 
+	bool HasActiveDrone()
+	{
+		var pilot = Components.GetInAncestors<PilotSoldier>();
+		return ResolveActiveDrone( pilot ).IsValid();
+	}
+
+	DroneBase ResolveActiveDrone( PilotSoldier pilot )
+	{
+		if ( !pilot.IsValid() )
+			return null;
+
+		var linkedDrone = pilot.ResolveDrone();
+		if ( linkedDrone.IsValid() )
+			return linkedDrone;
+
+		var ownerId = pilot.GameObject.Network.Owner?.Id ?? GameObject.Network.Owner?.Id ?? default;
+		if ( ownerId == default )
+			return null;
+
+		return Scene.GetAllComponents<PilotLink>()
+			.Where( link => link.IsValid() && link.PilotId == ownerId )
+			.Select( link => link.DroneBase.IsValid()
+				? link.DroneBase
+				: link.Components.Get<DroneBase>( FindMode.EverythingInSelfAndDescendants ) )
+			.FirstOrDefault( IsActiveDrone );
+	}
+
+	static bool IsActiveDrone( DroneBase drone )
+	{
+		if ( !drone.IsValid() ) return false;
+
+		var health = drone.Components.Get<Health>() ?? drone.Components.GetInAncestors<Health>();
+		return health.IsValid() && !health.IsDead;
+	}
+
 	void RequestLaunch()
 	{
+		if ( HasActiveDrone() )
+		{
+			DroneInFlight = true;
+			return;
+		}
+
 		var pc = Components.GetInAncestors<GroundPlayerController>();
 		if ( !pc.IsValid() || !pc.Eye.IsValid() ) return;
 
@@ -477,6 +570,13 @@ public sealed class DroneDeployer : Component
 		ServerLaunchDrone( ownerId, spawnPos, spawnRot, velocity );
 	}
 
+#if DEBUG
+	internal void DebugLaunchDroneForProbe( Guid pilotConnectionId, Vector3 position, Rotation rotation, Vector3 velocity )
+	{
+		ServerLaunchDrone( pilotConnectionId, position, rotation, velocity );
+	}
+#endif
+
 	void EnterDroneView( RemoteController remote )
 	{
 		if ( !remote.IsValid() ) return;
@@ -485,14 +585,30 @@ public sealed class DroneDeployer : Component
 		remote.SetDroneViewActive( true );
 	}
 
-	[Rpc.Broadcast]
+	[Rpc.Host]
 	void ServerLaunchDrone( Guid pilotConnectionId, Vector3 position, Rotation rotation, Vector3 velocity )
 	{
 		if ( !CanMutateState() ) return;
-		if ( DroneInFlight ) return;
 
 		var pilot = Components.GetInAncestors<PilotSoldier>();
 		if ( !pilot.IsValid() ) return;
+
+		if ( DroneInFlight || pilot.ResolveDrone().IsValid() )
+		{
+			var linkedDrone = ResolveActiveDrone( pilot );
+			if ( linkedDrone.IsValid() )
+				pilot.LinkedDroneId = linkedDrone.GameObject.Id;
+			DroneInFlight = true;
+			return;
+		}
+
+		var activeDrone = ResolveActiveDrone( pilot );
+		if ( activeDrone.IsValid() )
+		{
+			pilot.LinkedDroneId = activeDrone.GameObject.Id;
+			DroneInFlight = true;
+			return;
+		}
 
 		var prefab = pilot.ChosenDrone switch
 		{

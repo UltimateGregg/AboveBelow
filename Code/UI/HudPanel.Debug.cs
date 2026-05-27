@@ -33,15 +33,17 @@ public partial class HudPanel
 		var panelLabel = normalized switch
 		{
 			"play" => "PLAY",
-			"soldiers" => "SOLDIERS",
-			"soldier" => "SOLDIERS",
+			"hunters" => "HUNTERS",
+			"hunter" => "HUNTERS",
+			"soldiers" => "HUNTERS",
+			"soldier" => "HUNTERS",
 			"assault" => "ASSAULT",
 			_ => ""
 		};
 
 		if ( string.IsNullOrWhiteSpace( panelLabel ) )
 		{
-			note = "Expected one of PLAY, SOLDIERS, or ASSAULT.";
+			note = "Expected one of PLAY, HUNTERS, or ASSAULT.";
 			return false;
 		}
 
@@ -88,8 +90,10 @@ public partial class HudPanel
 				return true;
 			case "soldier":
 			case "soldiers":
+			case "hunter":
+			case "hunters":
 				SelectLoadoutTeam( PlayerRole.Soldier );
-				note = "Clicked SOLDIERS fallback through HudPanel.SelectLoadoutTeam.";
+				note = "Clicked HUNTERS fallback through HudPanel.SelectLoadoutTeam.";
 				return true;
 			case "assault":
 				Setup?.SelectLocalSoldier( SoldierClass.Assault );
@@ -106,7 +110,7 @@ public partial class HudPanel
 		return normalized switch
 		{
 			"play" => !ShowMainMenu,
-			"soldier" or "soldiers" => SelectedLoadoutTeam == PlayerRole.Soldier,
+			"soldier" or "soldiers" or "hunter" or "hunters" => SelectedLoadoutTeam == PlayerRole.Soldier,
 			"assault" => !(Setup?.NeedsLocalRoleChoice() ?? true),
 			_ => false
 		};

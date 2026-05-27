@@ -498,6 +498,9 @@ public sealed class FirstPersonViewmodel : Component
 			visual.CopyObject.WorldPosition = visual.Source.GameObject.WorldPosition;
 			visual.CopyObject.WorldRotation = visual.Source.GameObject.WorldRotation;
 			visual.CopyObject.WorldScale = visual.Source.GameObject.WorldScale;
+			visual.CopyRenderer.Model = visual.Source.Model;
+			visual.CopyRenderer.MaterialOverride = visual.Source.MaterialOverride;
+			visual.CopyRenderer.Tint = visual.Source.Tint;
 			visual.CopyRenderer.RenderType = ModelRenderer.ShadowRenderType.On;
 		}
 
@@ -791,6 +794,8 @@ public sealed class FirstPersonViewmodel : Component
 
 		if ( item.ReloadPressed || (item.IsReloading && !_wasReloading) )
 			_weaponRenderer.Parameters.Set( "b_reload", true );
+		else if ( !item.IsReloading )
+			_weaponRenderer.Parameters.Set( "b_reload", false );
 
 		_wasReloading = item.IsReloading;
 	}

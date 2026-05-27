@@ -18,8 +18,8 @@ public enum RoundState
 /// this just gates state transitions and decides win conditions.
 ///
 /// Win conditions (default):
-///   - Pilot wins if all Soldiers are dead
-///   - Soldiers win if Pilot drone is destroyed
+///   - Pilot wins if all Hunters are dead
+///   - Hunters win if Pilot drone is destroyed
 ///   - Either side wins by timeout if the other side has 0 score (TODO)
 /// </summary>
 [Title( "Round Manager" )]
@@ -325,8 +325,8 @@ public sealed class RoundManager : Component
 	void BroadcastRoundEnd( int winnerInt )
 	{
 		var winner = (WinningSide)winnerInt;
-		var label = winner == WinningSide.Pilot ? "Drone Pilots" : "Soldiers";
-		Log.Info( $"[Round] {label} win. Drone Pilots {PilotWins} · Soldiers {SoldierWins}" );
+		var label = winner == WinningSide.Pilot ? "Drone Pilots" : "Hunters";
+		Log.Info( $"[Round] {label} win. Drone Pilots {PilotWins} · Hunters {SoldierWins}" );
 	}
 
 	void UpdateStateTimer()

@@ -106,6 +106,14 @@ function Test-CallsStateHasChangedFromTick {
     return $Text -match '(?s)\boverride\s+void\s+Tick\s*\(\s*\).*?\bStateHasChanged\s*\('
 }
 
+function Test-HasMenuClickSoundContract {
+    param([string]$Text)
+
+    return $Text -match 'const\s+string\s+MenuClickSoundPath\s*=\s*"sounds/ui_menu_click\.sound";' `
+        -and $Text -match '(?s)\bvoid\s+ClickMenuOption\s*\(\s*Action\s+\w+\s*\).*?\bPlayMenuClickSound\s*\(\s*\).*?\w+\?\.\s*Invoke\s*\(\s*\)' `
+        -and $Text -match '(?s)\bvoid\s+PlayMenuClickSound\s*\(\s*\).*?\bSound\.Play\s*\(\s*MenuClickSoundPath\s*\)'
+}
+
 function Test-HudRolePickerStagedTeamAndLoadouts {
     param(
         [string]$Text,
@@ -125,22 +133,22 @@ function Test-HudRolePickerStagedTeamAndLoadouts {
         Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Team picker loadout options are nested vertically under individual team cards." "Keep team choice and loadout choice as separate picker stages."
     }
 
-    $titlePattern = '(?s)<div\s+class="title">@RolePickerTitle</div>.*?string\s+RolePickerTitle\s*=>\s*SelectedLoadoutTeam\s+switch.*?PlayerRole\.Pilot\s*=>\s*"Drone Pilot Loadout".*?PlayerRole\.Soldier\s*=>\s*"Soldiers Loadout".*?_\s*=>\s*"Select team"'
+    $titlePattern = '(?s)<div\s+class="title">@RolePickerTitle</div>.*?string\s+RolePickerTitle\s*=>\s*SelectedLoadoutTeam\s+switch.*?PlayerRole\.Pilot\s*=>\s*"Drone Pilot Loadout".*?PlayerRole\.Soldier\s*=>\s*"Hunters Loadout".*?_\s*=>\s*"Select team"'
     if ($Text -notmatch $titlePattern) {
-        Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Role picker title must match the active picker stage." "Render Select team for the team stage, Drone Pilot Loadout for the pilot loadout stage, and Soldiers Loadout for the soldier loadout stage."
+        Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Role picker title must match the active picker stage." "Render Select team for the team stage, Drone Pilot Loadout for the pilot loadout stage, and Hunters Loadout for the hunter loadout stage."
     }
 
-    $teamPattern = '(?s)@if\s*\(\s*SelectedLoadoutTeam\s*==\s*PlayerRole\.Spectator\s*\).*?<div\s+class="team-choices">.*?SelectLoadoutTeam\s*\(\s*PlayerRole\.Pilot\s*\).*?DRONE PILOTS.*?SelectLoadoutTeam\s*\(\s*PlayerRole\.Soldier\s*\).*?SOLDIERS.*?onclick=@BackToMainMenu.*?GO BACK'
+    $teamPattern = '(?s)@if\s*\(\s*SelectedLoadoutTeam\s*==\s*PlayerRole\.Spectator\s*\).*?<div\s+class="team-choices">.*?(?:SelectLoadoutTeam\s*\(\s*PlayerRole\.Pilot\s*\)|ClickMenuOption\s*\(\s*SelectPilotTeam\s*\)).*?DRONE PILOTS.*?(?:SelectLoadoutTeam\s*\(\s*PlayerRole\.Soldier\s*\)|ClickMenuOption\s*\(\s*SelectSoldierTeam\s*\)).*?HUNTERS.*?ClickMenuOption\s*\(\s*BackToMainMenu\s*\).*?GO BACK'
     if ($Text -notmatch $teamPattern) {
-        Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Role picker must show a standalone team selection stage with its own Back button." "Render Drone Pilots/Soldiers choices only while SelectedLoadoutTeam is Spectator, followed by a Back action to the main menu."
+        Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Role picker must show a standalone team selection stage with its own Back button." "Render Drone Pilots/Hunters choices only while SelectedLoadoutTeam is Spectator, followed by a Back action to the main menu."
     }
 
-    $pilotPattern = '(?s)@if\s*\(\s*SelectedLoadoutTeam\s*==\s*PlayerRole\.Pilot\s*\).*?<div\s+class="loadout-section">.*?<div\s+class="choices">.*?GPS DRONE.*?FPV DRONE.*?FIBER FPV.*?onclick=@ClearLoadoutTeam.*?GO BACK'
+    $pilotPattern = '(?s)@if\s*\(\s*SelectedLoadoutTeam\s*==\s*PlayerRole\.Pilot\s*\).*?<div\s+class="loadout-section">.*?<div\s+class="choices">.*?GPS DRONE.*?FPV DRONE.*?FIBER FPV.*?ClickMenuOption\s*\(\s*ClearLoadoutTeam\s*\).*?GO BACK'
     if ($Text -notmatch $pilotPattern) {
         Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Drone Pilot loadout options must render as the second-stage Pilot picker." "Render GPS, FPV, and Fiber FPV only after the Pilot team is selected, followed by a Back action to team selection."
     }
 
-    $soldierPattern = '(?s)@if\s*\(\s*SelectedLoadoutTeam\s*==\s*PlayerRole\.Soldier\s*\).*?<div\s+class="loadout-section">.*?<div\s+class="choices">.*?ASSAULT.*?COUNTER-UAV.*?HEAVY.*?onclick=@ClearLoadoutTeam.*?GO BACK'
+    $soldierPattern = '(?s)@if\s*\(\s*SelectedLoadoutTeam\s*==\s*PlayerRole\.Soldier\s*\).*?<div\s+class="loadout-section">.*?<div\s+class="choices">.*?ASSAULT.*?COUNTER-UAV.*?HEAVY.*?ClickMenuOption\s*\(\s*ClearLoadoutTeam\s*\).*?GO BACK'
     if ($Text -notmatch $soldierPattern) {
         Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Soldier class options must render as the second-stage Soldier picker." "Render Assault, Counter-UAV, and Heavy only after the Soldier team is selected, followed by a Back action to team selection."
     }
@@ -174,7 +182,7 @@ function Test-HudMainMenuTransitionContract {
             Recommendation = "Track local transition state and include it in BuildHash() instead of forcing StateHasChanged() from Tick()."
         },
         @{
-            Pattern = 'onclick=@StartMainMenuPlayTransition'
+            Pattern = '(?:onclick=@StartMainMenuPlayTransition|ClickMenuOption\s*\(\s*StartMainMenuPlayTransition\s*\))'
             Message = "Play should start the animated main-menu transition."
             Recommendation = "Route the Play button through StartMainMenuPlayTransition instead of immediately hiding the main menu."
         },
@@ -243,6 +251,46 @@ function Test-HudMainMenuStylesheetContract {
 
     $styleChecks = @(
         @{
+            Pattern = '(?s)\.team-choice\s*\{[^}]*flex:\s*1\s+1\s+0;[^}]*min-width:\s*0;'
+            Message = "Team choice buttons must share equal width regardless of label length."
+            Recommendation = "Use flex: 1 1 0 and min-width: 0 on .team-choice so Drone Pilots and Hunters cards divide the row evenly."
+        },
+        @{
+            Pattern = '(?s)\.role-panel\s*\{[^}]*align-items:\s*center;[^}]*text-align:\s*center;'
+            Message = "Role picker panel text must be centered."
+            Recommendation = "Center text at the role-panel level so role picker headings and menu text align consistently."
+        },
+        @{
+            Pattern = '(?s)\.team-choice\s*\{[^}]*align-items:\s*center;[^}]*text-align:\s*center;'
+            Message = "Team choice button text must be centered."
+            Recommendation = "Center the contents of each team-choice card so both team labels and descriptions align the same way."
+        },
+        @{
+            Pattern = '(?s)\.section-title\s*\{[^}]*text-align:\s*center;'
+            Message = "Menu section titles must be centered."
+            Recommendation = "Center menu section-title text to match the rest of the picker."
+        },
+        @{
+            Pattern = '(?s)\.options-panel\s*\{[^}]*align-items:\s*center;[^}]*text-align:\s*center;'
+            Message = "Options menu panel text must be centered."
+            Recommendation = "Center the options panel content and text instead of leaving settings copy left-aligned."
+        },
+        @{
+            Pattern = '(?s)\.option-row\s*\{[^}]*flex-direction:\s*column;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;[^}]*text-align:\s*center;'
+            Message = "Options menu rows must center their text."
+            Recommendation = "Stack each option row vertically and center its copy/control groups so all options menu text is centered."
+        },
+        @{
+            Pattern = '(?s)\.option-copy\s*\{[^}]*align-items:\s*center;[^}]*text-align:\s*center;'
+            Message = "Options menu copy must be centered."
+            Recommendation = "Center option-copy text so option names and values align with the menu."
+        },
+        @{
+            Pattern = '(?s)\.options-actions\s*\{[^}]*justify-content:\s*center;'
+            Message = "Options menu action buttons must be centered."
+            Recommendation = "Center the options action row so the bottom menu controls align with the rest of the panel."
+        },
+        @{
             Pattern = '\.main-menu-title\s*\{[^}]*top:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*left:\s*0;[^}]*justify-content:\s*center;[^}]*align-items:\s*center;'
             Message = "Main menu title must be flex-centered across the full viewport."
             Recommendation = "Use a full-screen absolute title overlay with centered flex alignment instead of percentage translate centering."
@@ -291,6 +339,85 @@ function Test-HudMainMenuStylesheetContract {
     }
 }
 
+function Test-MainMenuPanelStylesheetContract {
+    param(
+        [string]$Root,
+        [System.Collections.Generic.List[object]]$Issues
+    )
+
+    $razorPath = Join-Path $Root "Code/UI/MainMenuPanel.razor"
+    $relativePaths = @(
+        "Code/UI/MainMenuPanel.razor.scss",
+        "Code/UI/MainMenuPanel.cs.scss",
+        "Assets/ui/mainmenupanel.cs.scss"
+    )
+
+    if (-not (Test-Path -LiteralPath $razorPath) -and -not ($relativePaths | ForEach-Object { Test-Path -LiteralPath (Join-Path $Root $_) } | Where-Object { $_ })) {
+        return
+    }
+
+    $texts = @{}
+    foreach ($relative in $relativePaths) {
+        $path = Join-Path $Root $relative
+        if (-not (Test-Path -LiteralPath $path)) {
+            Add-AgentIssue $Issues "Error" "UI Flow" $relative "Main menu stylesheet alias is missing." "Keep the Razor stylesheet and S&Box alias stylesheets in sync."
+            continue
+        }
+
+        $texts[$relative] = Get-Content -LiteralPath $path -Raw
+    }
+
+    if (-not $texts.ContainsKey("Code/UI/MainMenuPanel.razor.scss")) {
+        return
+    }
+
+    $canonical = $texts["Code/UI/MainMenuPanel.razor.scss"]
+    foreach ($relative in @("Code/UI/MainMenuPanel.cs.scss", "Assets/ui/mainmenupanel.cs.scss")) {
+        if ($texts.ContainsKey($relative) -and $texts[$relative] -ne $canonical) {
+            Add-AgentIssue $Issues "Error" "UI Flow" $relative "Main menu stylesheet alias is out of sync with MainMenuPanel.razor.scss." "Copy accepted main-menu style changes to all S&Box stylesheet aliases."
+        }
+    }
+
+    $styleChecks = @(
+        @{
+            Pattern = '(?s)\.copy-column\s*\{[^}]*align-items:\s*center;[^}]*text-align:\s*center;'
+            Message = "Main menu copy column text must be centered."
+            Recommendation = "Center the copy column so title, description, status, and action text align consistently."
+        },
+        @{
+            Pattern = '(?s)\.brand,\s*\.description,\s*\.actions\s*\{[^}]*align-items:\s*center;[^}]*text-align:\s*center;'
+            Message = "Main menu text groups must be centered."
+            Recommendation = "Center brand, description, and action groups instead of leaving menu copy left-aligned."
+        },
+        @{
+            Pattern = '(?s)\.feature\s*\{[^}]*align-items:\s*center;[^}]*text-align:\s*center;'
+            Message = "Main menu feature card text must be centered."
+            Recommendation = "Center feature card contents so team feature text matches the rest of the menu."
+        },
+        @{
+            Pattern = '(?s)\.menu-button\s*\{[^}]*text-align:\s*center;'
+            Message = "Main menu button text must be centered."
+            Recommendation = "Set text-align: center on menu-button so all standalone menu actions align the same way."
+        },
+        @{
+            Pattern = '(?s)\.status\s*\{[^}]*text-align:\s*center;'
+            Message = "Main menu status text must be centered."
+            Recommendation = "Center the status line to match the rest of the menu."
+        },
+        @{
+            Pattern = '(?s)\.sky-label,\s*\.ground-label\s*\{[^}]*left:\s*0;[^}]*right:\s*0;[^}]*text-align:\s*center;'
+            Message = "Main menu visual labels must be centered."
+            Recommendation = "Center the sky and ground labels inside the visual panel so no menu text remains left-aligned."
+        }
+    )
+
+    foreach ($check in $styleChecks) {
+        if ($canonical -notmatch $check.Pattern) {
+            Add-AgentIssue $Issues "Error" "UI Flow" "Code/UI/MainMenuPanel.razor.scss" $check.Message $check.Recommendation
+        }
+    }
+}
+
 $razorFiles = @(Get-ChildItem -LiteralPath $uiRoot -Recurse -File -Filter "*.razor" -ErrorAction SilentlyContinue)
 foreach ($file in $razorFiles) {
     $relative = ConvertTo-AgentRelativePath -Path $file.FullName -Root $Root
@@ -299,6 +426,11 @@ foreach ($file in $razorFiles) {
 
     Test-HudRolePickerStagedTeamAndLoadouts -Text $text -Relative $relative -Issues $issues
     Test-HudMainMenuTransitionContract -Text $text -Relative $relative -Issues $issues
+
+    $requiresMenuClickSound = $relative -in @("Code/UI/HudPanel.razor", "Code/UI/MainMenuPanel.razor")
+    if ($requiresMenuClickSound -and -not (Test-HasMenuClickSoundContract -Text $text)) {
+        Add-AgentIssue $issues "Error" "UI Flow" $relative "Menu panel does not route clicks through the shared UI click sound wrapper." "Add MenuClickSoundPath, ClickMenuOption(Action), and PlayMenuClickSound() using sounds/ui_menu_click.sound."
+    }
 
     if ((Test-HasDynamicRazorOutput -Text $text) -and -not (Test-HasBuildHash -Text $text)) {
         Add-AgentIssue $issues "Warning" "UI Flow" $relative "Dynamic Razor output has no BuildHash override." "Override BuildHash() and include every value that can change rendered markup, especially [Sync] values shown in the HUD."
@@ -329,12 +461,13 @@ foreach ($file in $razorFiles) {
             $tagText += " " + $line.Trim()
         }
 
-        if ($tagText -notmatch ">") {
+        $tagEnd = [regex]::Match($tagText, '(?<!=)>')
+        if (-not $tagEnd.Success) {
             continue
         }
 
         $capturing = $false
-        $openTag = ($tagText -split ">", 2)[0] + ">"
+        $openTag = $tagText.Substring(0, $tagEnd.Index + 1)
         $classText = Get-ClassText -TagText $openTag
         if ([string]::IsNullOrWhiteSpace($classText)) {
             $tagText = ""
@@ -346,12 +479,16 @@ foreach ($file in $razorFiles) {
         if ($looksInteractive -and -not $isExplicitlyPassive -and -not (Test-HasOnClick -TagText $openTag)) {
             Add-AgentIssue $issues "Warning" "UI Flow" "${relative}:$startLine" "Interactive-looking div has class '$classText' but no onclick handler." "Add onclick behavior, rename the class, or mark the element with a passive/info/static class."
         }
+        elseif ($requiresMenuClickSound -and $looksInteractive -and -not $isExplicitlyPassive -and (Test-HasOnClick -TagText $openTag) -and $openTag -notmatch 'ClickMenuOption') {
+            Add-AgentIssue $issues "Error" "UI Flow" "${relative}:$startLine" "Interactive menu div with class '$classText' does not play the shared click sound." "Wrap menu onclick handlers with ClickMenuOption(...) so every menu click triggers sounds/ui_menu_click.sound."
+        }
 
         $tagText = ""
     }
 }
 
 Test-HudMainMenuStylesheetContract -Root $Root -Issues $issues
+Test-MainMenuPanelStylesheetContract -Root $Root -Issues $issues
 
 if ($razorFiles.Count -eq 0) {
     Add-AgentIssue $issues "Info" "UI Flow" "Code/UI" "No Razor files found."

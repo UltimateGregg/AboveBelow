@@ -71,6 +71,34 @@ function Find-ChildNodeByName {
     return $null
 }
 
+function Find-DescendantNodeByName {
+    param(
+        [object]$Node,
+        [string]$Name
+    )
+
+    if ($null -eq $Node) {
+        return $null
+    }
+
+    if (($Node.PSObject.Properties.Name -contains "Name") -and [string]$Node.Name -eq $Name) {
+        return $Node
+    }
+
+    if (-not ($Node.PSObject.Properties.Name -contains "Children") -or $null -eq $Node.Children) {
+        return $null
+    }
+
+    foreach ($child in @($Node.Children)) {
+        $match = Find-DescendantNodeByName -Node $child -Name $Name
+        if ($null -ne $match) {
+            return $match
+        }
+    }
+
+    return $null
+}
+
 $gpsPrefab = "Assets/prefabs/drone_gps.prefab"
 $gpsPrefabPath = Join-Path $Root $gpsPrefab
 if (-not (Test-Path -LiteralPath $gpsPrefabPath)) {
@@ -98,27 +126,46 @@ else {
             }
 
             $expectedGpsSockets = @{
-                "Propeller_FL" = "8.5,5.75,0.75"
-                "Propeller_FR" = "8.5,-5.75,0.75"
-                "Propeller_BL" = "-8.5,5.75,0.75"
-                "Propeller_BR" = "-8.5,-5.75,0.75"
+                "FL" = "21.59,14.6,1.65"
+                "FR" = "21.59,-14.6,1.65"
+                "BL" = "-21.59,14.6,1.65"
+                "BR" = "-21.59,-14.6,1.65"
+            }
+            $expectedGpsPropOffsets = @{
+                "FL" = "-7,7,0"
+                "FR" = "-7,-7,0"
+                "BL" = "7,7,0"
+                "BR" = "7,-7,0"
             }
 
-            foreach ($motorName in $expectedMotors) {
-                $propeller = Find-ChildNodeByName -Node $visual -Name $motorName
-                if ($null -eq $propeller) {
-                    Add-AgentIssue $issues "Error" "Drone Propellers" $gpsPrefab "GPS propeller '$motorName' is not parented under Visual." "Parent GPS propeller pivots under Visual so cosmetic body tilt keeps them attached to the motor sockets."
+            foreach ($corner in $expectedGpsSockets.Keys) {
+                $socketName = "MotorSocket_$corner"
+                $propellerName = "Propeller_$corner"
+                $socket = Find-ChildNodeByName -Node $visual -Name $socketName
+                if ($null -eq $socket) {
+                    Add-AgentIssue $issues "Error" "Drone Propellers" $gpsPrefab "GPS motor socket '$socketName' is not parented under Visual." "Parent GPS motor sockets under Visual at the exported MotorCap positions."
                     continue
                 }
 
-                $expectedPosition = $expectedGpsSockets[$motorName]
-                if ([string]$propeller.Position -ne $expectedPosition) {
-                    Add-AgentIssue $issues "Error" "Drone Propellers" $gpsPrefab "GPS propeller '$motorName' expected Visual-local position '$expectedPosition'." "Use the in-game motor cap coordinates under the unscaled Visual frame."
+                $expectedPosition = $expectedGpsSockets[$corner]
+                if ([string]$socket.Position -ne $expectedPosition) {
+                    Add-AgentIssue $issues "Error" "Drone Propellers" $gpsPrefab "GPS motor socket '$socketName' expected Visual-local position '$expectedPosition'." "Use the exported GPS MotorCap center/top coordinates under the unscaled Visual frame."
+                }
+
+                $propeller = Find-ChildNodeByName -Node $socket -Name $propellerName
+                if ($null -eq $propeller) {
+                    Add-AgentIssue $issues "Error" "Drone Propellers" $gpsPrefab "GPS propeller '$propellerName' is not attached under '$socketName'." "Parent each propeller under its motor socket so the hierarchy guarantees prop-to-motor alignment."
+                    continue
+                }
+
+                $expectedPropOffset = $expectedGpsPropOffsets[$corner]
+                if ([string]$propeller.Position -ne $expectedPropOffset) {
+                    Add-AgentIssue $issues "Error" "Drone Propellers" $gpsPrefab "GPS propeller '$propellerName' expected local mesh-origin compensation '$expectedPropOffset'." "Keep the GPS prop mesh visually centered over the motor cap; its model origin is not the blade center."
                 }
 
                 $hasScale = $propeller.PSObject.Properties.Name -contains "Scale"
                 if ($hasScale -and [string]$propeller.Scale -ne "1,1,1") {
-                    Add-AgentIssue $issues "Error" "Drone Propellers" $gpsPrefab "GPS propeller '$motorName' has scale '$($propeller.Scale)'." "Do not compensate for a scaled Visual frame; propeller pivots should use normal scale under an unscaled Visual frame."
+                    Add-AgentIssue $issues "Error" "Drone Propellers" $gpsPrefab "GPS propeller '$propellerName' has scale '$($propeller.Scale)'." "Do not compensate for a scaled Visual frame; propeller pivots should use normal scale under an unscaled Visual frame."
                 }
             }
         }

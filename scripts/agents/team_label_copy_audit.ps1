@@ -23,6 +23,10 @@ $forbiddenChecks = @(
             '<div class="subtitle">Drone Pilots or Soldiers.</div>',
             '<div class="section-title">Drone Pilot Loadout</div>',
             '<div class="section-title">Soldier Class</div>',
+            "SOLDIERS WIN",
+            "Hunt soldiers.",
+            "Fight as soldiers",
+            "Soldiers Loadout",
             "ABOVE WINS",
             "BELOW WINS",
             "Take down above.",
@@ -38,7 +42,8 @@ $forbiddenChecks = @(
         Path = "Code/UI/HudPanel.cs"
         Patterns = @(
             '=> "ABOVE"',
-            '=> "BELOW"'
+            '=> "BELOW"',
+            '=> "SOLDIERS"'
         )
     },
     @{
@@ -46,6 +51,10 @@ $forbiddenChecks = @(
         Patterns = @(
             ">ABOVE</",
             ">BELOW</",
+            "Drone Pilots and Soldiers",
+            "pressure Soldiers across the battlefield",
+            "Soldiers move through cover",
+            ">SOLDIERS</",
             "pressure the battlefield from above",
             "ground hunters"
         )
@@ -55,7 +64,9 @@ $forbiddenChecks = @(
         Patterns = @(
             '"ABOVE" : "BELOW"',
             "Above {PilotWins}",
-            "Below {SoldierWins}"
+            "Below {SoldierWins}",
+            '"Soldiers"',
+            "Soldiers {SoldierWins}"
         )
     },
     @{
@@ -84,15 +95,15 @@ $requiredCopy = @(
         Path = "Code/UI/HudPanel.razor"
         Values = @(
             "DRONE PILOTS WIN",
-            "SOLDIERS WIN",
-            "Hunt soldiers.",
+            "HUNTERS WIN",
+            "Find the hunters.",
             "Take down drone pilots.",
             "Fly drones as drone pilots",
-            "Fight as soldiers",
+            "Fight as hunters",
             "RolePickerTitle",
             "Select team",
             "Drone Pilot Loadout",
-            "Soldiers Loadout",
+            "Hunters Loadout",
             "main-menu-title-text"">ABOVE / BELOW"
         )
     },
@@ -100,23 +111,23 @@ $requiredCopy = @(
         Path = "Code/UI/HudPanel.cs"
         Values = @(
             "DRONE PILOTS",
-            "SOLDIERS"
+            "HUNTERS"
         )
     },
     @{
         Path = "Code/UI/MainMenuPanel.razor"
         Values = @(
             "DRONE PILOTS",
-            "SOLDIERS",
-            "Drone Pilots and Soldiers",
-            "pressure Soldiers across the battlefield"
+            "HUNTERS",
+            "Drone Pilots and Hunters",
+            "pressure Hunters across the battlefield"
         )
     },
     @{
         Path = "Code/Game/RoundManager.cs"
         Values = @(
             "Drone Pilots",
-            "Soldiers"
+            "Hunters"
         )
     }
 )
@@ -141,7 +152,7 @@ foreach ($check in $forbiddenChecks) {
 
     foreach ($pattern in $check.Patterns) {
         if ($text.IndexOf($pattern, [System.StringComparison]::Ordinal) -ge 0) {
-            Add-AgentIssue $issues "Error" "Team Labels" $check.Path "Found stale player-facing team label '$pattern'." "Use 'Drone Pilots' for the pilot side and 'Soldiers' for the soldier side. Keep the project title unchanged."
+            Add-AgentIssue $issues "Error" "Team Labels" $check.Path "Found stale player-facing team label '$pattern'." "Use 'Drone Pilots' for the pilot side and 'Hunters' for the ground side. Keep the project title unchanged."
         }
     }
 }

@@ -31,7 +31,9 @@ HudPanel {
                 background-color: rgba(18, 22, 24, 0.94);
                 border: 1px solid rgba(255, 255, 255, 0.16);
                 flex-direction: column;
+                align-items: center;
                 gap: 12px;
+                text-align: center;
                 box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
             }
 
@@ -146,15 +148,18 @@ HudPanel {
 
             .team-choice {
                 pointer-events: all;
-                flex-grow: 1;
+                flex: 1 1 0;
+                min-width: 0;
                 min-height: 76px;
                 border-radius: 6px;
                 border: 1px solid rgba(255, 255, 255, 0.16);
                 padding: 14px 16px;
                 flex-direction: column;
+                align-items: center;
                 justify-content: center;
                 gap: 4px;
                 cursor: pointer;
+                text-align: center;
                 transition: all 0.08s ease-out;
 
                 .label {
@@ -210,6 +215,7 @@ HudPanel {
                 font-weight: 800;
                 color: rgba(255, 255, 255, 0.72);
                 text-transform: uppercase;
+                text-align: center;
             }
 
             .choices {
@@ -1088,12 +1094,16 @@ HudPanel {
                 border: 1px solid rgba(white, 0.18);
                 box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
                 flex-direction: column;
+                align-items: center;
                 gap: 16px;
+                text-align: center;
             }
 
             .options-header {
                 flex-direction: column;
+                align-items: center;
                 gap: 4px;
+                text-align: center;
             }
 
             .options-title {
@@ -1110,6 +1120,7 @@ HudPanel {
             }
 
             .options-list {
+                width: 100%;
                 flex-direction: column;
                 gap: 10px;
             }
@@ -1120,17 +1131,21 @@ HudPanel {
                 border-radius: 6px;
                 background-color: rgba(white, 0.055);
                 border: 1px solid rgba(white, 0.1);
-                flex-direction: row;
+                flex-direction: column;
                 align-items: center;
-                justify-content: space-between;
-                gap: 16px;
+                justify-content: center;
+                gap: 10px;
+                text-align: center;
             }
 
             .option-copy {
+                width: 100%;
                 min-width: 0;
                 flex-grow: 1;
                 flex-direction: column;
+                align-items: center;
                 gap: 3px;
+                text-align: center;
             }
 
             .option-name {
@@ -1150,6 +1165,7 @@ HudPanel {
             .options-actions {
                 flex-direction: row;
                 align-items: center;
+                justify-content: center;
                 gap: 8px;
             }
 
@@ -1172,7 +1188,7 @@ HudPanel {
             }
 
             .options-actions {
-                justify-content: flex-end;
+                justify-content: center;
                 flex-wrap: wrap;
             }
 

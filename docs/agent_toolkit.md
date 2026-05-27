@@ -27,6 +27,7 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 | Round Re-Prompt Guard | Keep next-round reset from auto-respawning stale team/loadout choices | `scripts/check_round_reprompt_flow.ps1` |
 | Two-Client Lobby Guard | Keep editor play sessions join-first and preserve round probe commands | `scripts/check_two_client_lobby_flow.ps1` |
 | Prefab and Wiring Agent | Validate prefab shape and AutoWire references | `scripts/agents/prefab_wiring_audit.ps1` |
+| Destroyed Pickup Prefab Audit | Keep the S&Box-native crashed pickup prefab placeable, primitive-backed, and free of retired VMDL collision | `scripts/agents/destroyed_pickup_prefab_audit.ps1` |
 | Prefab Graph Audit | Validate GUID refs, component refs, prefab refs, and resource paths | `scripts/agents/prefab_graph_audit.ps1` |
 | Scene Integrity Audit | Validate main scene managers, spawns, and collider patterns | `scripts/agents/scene_integrity_audit.ps1` |
 | Terrain Floor Audit | Keep `ArenaFloor` backed by native `Sandbox.Terrain` and a source-controlled `.terrain` asset | `scripts/agents/run_agent_checks.ps1 -Suite terrain -ShowInfo` |
@@ -42,7 +43,7 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 | Jigglebone Cosmetic Agent | Review skinned cosmetic bone merge, ModelDoc physics shapes, joint anchors, and editor motion proof | `scripts/agents/run_agent_checks.ps1 -Suite modeldoc` plus editor playtest |
 | AAA Asset Quality Agent | Coordinate reference, Production Quality Targets, material roles, visual proof, and S&Box import validation for high-polish Blender assets | `scripts/agents/aaa_asset_quality_audit.ps1` |
 | Sound Control Plane Agent | Validate SoundEvent wrappers, attached playback, and editor-native sound workflows | `scripts/agents/run_agent_checks.ps1 -Suite sound` |
-| Team Label Copy Audit | Keep player-facing role labels on Drone Pilots and Soldiers while preserving the project title | `scripts/agents/team_label_copy_audit.ps1` |
+| Team Label Copy Audit | Keep player-facing role labels on Drone Pilots and Hunters while preserving the project title | `scripts/agents/team_label_copy_audit.ps1` |
 | UI Flow Agent | Catch interactive-looking Razor UI without click behavior, missing `BuildHash()`, and per-frame `StateHasChanged()` refreshes | `scripts/agents/ui_flow_audit.ps1` |
 | Networking Review Agent | Surface authority and replication risks | `scripts/agents/networking_review_audit.ps1` |
 | Playtest QA Agent | Generate editor and multiplayer checklists | `scripts/agents/playtest_checklist.ps1` |

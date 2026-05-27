@@ -1,0 +1,31 @@
+{
+  "source_blend": "drone_model.blend/drone_gps_prop.blend",
+  "root_object": "GpsPropellerRoot",
+  "target_fbx": "Assets/models/drone_gps_prop.fbx",
+  "target_vmdl": "Assets/models/drone_gps_prop.vmdl",
+  "model_resource_path": "models/drone_gps_prop.vmdl",
+  "visual_object": "Visual",
+  "visual_scale": "1,1,1",
+  "visual_tint": "1,1,1,1",
+  "clear_visual_children": false,
+  "verify_fbx": true,
+  "verify_vmdl_sources_against_fbx": true,
+  "vmdl_material_source_suffix": "",
+  "required_object": [
+    "GpsPropeller"
+  ],
+  "object_type": [
+    "MESH"
+  ],
+  "combine_meshes": true,
+  "combined_object_name": "GpsPropeller",
+  "material_remap": {
+    "PropellerGrey": "materials/drone_propeller.vmat",
+    "MatteBlack": "materials/drone_matte_black.vmat"
+  },
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z"
+}

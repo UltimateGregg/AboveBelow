@@ -30,6 +30,8 @@
     "LensGloss": "materials/drone_lens_gloss.vmat",
     "MatteBlack": "materials/drone_matte_black.vmat"
   },
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
   "global_scale": 0.0254,
   "axis_forward": "-Y",
   "axis_up": "Z"

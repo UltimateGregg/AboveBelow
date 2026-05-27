@@ -69,15 +69,20 @@ public static class RoundFlowDebugCommands
 		}
 
 		pilot.ChosenDrone = selectedType;
+		var propProof = view.Equals( "PropProof", StringComparison.OrdinalIgnoreCase )
+			|| view.Equals( "Proof", StringComparison.OrdinalIgnoreCase );
 
-		var existing = pilot.ResolveDrone();
-		var droneObject = existing.IsValid() ? existing.GameObject : null;
-		if ( existing.IsValid() && existing.Type != selectedType )
+		var linkedDrones = scene.GetAllComponents<DroneBase>()
+			.Where( drone => IsProbeDroneLinkedTo( drone, pilot, local.Id ) )
+			.ToList();
+		var existing = linkedDrones.FirstOrDefault( drone => drone.Type == selectedType && IsProbeDroneAlive( drone ) );
+		foreach ( var linkedDrone in linkedDrones )
 		{
-			droneObject.Destroy();
-			pilot.LinkedDroneId = default;
-			droneObject = null;
+			if ( existing.IsValid() && linkedDrone.GameObject.Id == existing.GameObject.Id ) continue;
+			linkedDrone.GameObject.Destroy();
 		}
+
+		var droneObject = existing.IsValid() ? existing.GameObject : null;
 
 		if ( !droneObject.IsValid() )
 		{
@@ -116,6 +121,14 @@ public static class RoundFlowDebugCommands
 
 			pilot.LinkedDroneId = droneObject.Id;
 		}
+		else
+		{
+			pilot.LinkedDroneId = droneObject.Id;
+		}
+
+		var deployer = pilot.Components.Get<DroneDeployer>( FindMode.EverythingInSelfAndDescendants );
+		if ( deployer.IsValid() )
+			deployer.DroneInFlight = true;
 
 		var remote = pilot.Components.Get<RemoteController>( FindMode.EverythingInSelfAndDescendants );
 		if ( remote.IsValid() )
@@ -124,17 +137,173 @@ public static class RoundFlowDebugCommands
 			remote.SetDroneViewActive( true );
 		}
 
+		if ( propProof )
+		{
+			var proofRotation = Rotation.FromYaw( pilot.GameObject.WorldRotation.Yaw() );
+			droneObject.WorldPosition = pilot.GameObject.WorldPosition + proofRotation.Forward * 220f + Vector3.Up * 120f;
+			droneObject.WorldRotation = proofRotation;
+
+			var body = droneObject.Components.Get<Rigidbody>( FindMode.EverythingInSelfAndDescendants );
+			if ( body.IsValid() )
+				body.Velocity = Vector3.Zero;
+
+			var droneController = droneObject.Components.Get<DroneController>( FindMode.EverythingInSelfAndDescendants );
+			if ( droneController.IsValid() )
+			{
+				droneController.EyeAngles = new Angles( 25f, proofRotation.Yaw(), 0f );
+				droneController.BoostActive = false;
+			}
+		}
+
 		var camera = droneObject.Components.Get<DroneCamera>( FindMode.EverythingInSelfAndDescendants );
 		if ( camera.IsValid() )
 		{
-			var chaseProof = view.Equals( "Chase", StringComparison.OrdinalIgnoreCase )
+			var chaseProof = propProof
+				|| view.Equals( "Chase", StringComparison.OrdinalIgnoreCase )
 				|| view.Equals( "ThirdPerson", StringComparison.OrdinalIgnoreCase );
 			camera.SetFirstPersonActive( !chaseProof );
 			camera.ShowVisualInFirstPerson = true;
+			if ( propProof )
+			{
+				camera.ChaseDistance = 115f;
+				camera.ChaseHeight = 42f;
+			}
 		}
 
 		Log.Info( $"[RoundProbe] FPV visual probe active: local pilot is flying {selectedType} with {view} visual proof enabled." );
 		LogProbe( $"fpv-visual-active-{selectedType}-{view}" );
+	}
+
+	[ConCmd( "dvp_drone_launch_guard_probe" )]
+	public static void DroneLaunchGuardProbe( string droneType = "Gps" )
+	{
+		if ( !Enum.TryParse<DroneType>( droneType, true, out var selectedType ) )
+		{
+			Log.Warning( $"[RoundProbe] Unknown DroneType '{droneType}'." );
+			LogProbe( $"drone-launch-guard-unknown-{droneType}" );
+			return;
+		}
+
+		if ( !Networking.IsHost )
+		{
+			Log.Warning( "[RoundProbe] dvp_drone_launch_guard_probe must run on the host." );
+			LogProbe( "drone-launch-guard-not-host" );
+			return;
+		}
+
+		var scene = Game.ActiveScene;
+		var setup = Find<GameSetup>();
+		var local = Connection.Local ?? Connection.All.FirstOrDefault();
+		if ( scene is null || local is null )
+		{
+			Log.Warning( "[RoundProbe] Cannot run drone launch guard without an active scene and local connection." );
+			LogProbe( "drone-launch-guard-no-local" );
+			return;
+		}
+
+		if ( setup is not null && setup.IsValid() )
+		{
+			setup.SelectLocalDrone( selectedType );
+			setup.SpawnPawnFor( local, PlayerRole.Pilot );
+		}
+
+		var pilot = scene.GetAllComponents<PilotSoldier>()
+			.FirstOrDefault( p => !p.IsProxy && p.GameObject.Network.Owner?.Id == local.Id )
+			?? scene.GetAllComponents<PilotSoldier>().FirstOrDefault( p => !p.IsProxy );
+
+		if ( !pilot.IsValid() )
+		{
+			Log.Warning( "[RoundProbe] Drone launch guard could not find a local pilot pawn." );
+			LogProbe( "drone-launch-guard-no-pilot" );
+			return;
+		}
+
+		pilot.ChosenDrone = selectedType;
+		var linkedDrones = scene.GetAllComponents<DroneBase>()
+			.Where( drone => IsProbeDroneLinkedTo( drone, pilot, local.Id ) )
+			.ToList();
+		var existing = linkedDrones.FirstOrDefault( drone => drone.Type == selectedType && IsProbeDroneAlive( drone ) );
+		foreach ( var linkedDrone in linkedDrones )
+		{
+			if ( existing.IsValid() && linkedDrone.GameObject.Id == existing.GameObject.Id ) continue;
+			linkedDrone.GameObject.Destroy();
+		}
+
+		var droneObject = existing.IsValid() ? existing.GameObject : null;
+		if ( !droneObject.IsValid() )
+		{
+			var prefabPath = selectedType switch
+			{
+				DroneType.Gps => "prefabs/drone_gps.prefab",
+				DroneType.FiberOpticFpv => "prefabs/drone_fpv_fiber.prefab",
+				_ => "prefabs/drone_fpv.prefab"
+			};
+			var prefab = GameObject.GetPrefab( prefabPath );
+			if ( !prefab.IsValid() )
+			{
+				Log.Warning( $"[RoundProbe] {selectedType} drone prefab could not be loaded from {prefabPath}." );
+				LogProbe( "drone-launch-guard-no-prefab" );
+				return;
+			}
+
+			var spawnRotation = Rotation.FromYaw( pilot.GameObject.WorldRotation.Yaw() );
+			var spawnPosition = pilot.GameObject.WorldPosition + spawnRotation.Forward * 180f + Vector3.Up * 90f;
+			droneObject = prefab.Clone( new Transform( spawnPosition, spawnRotation ), name: $"{selectedType} Launch Guard Probe - {local.DisplayName}" );
+
+			var link = droneObject.Components.Get<PilotLink>( FindMode.EverythingInSelfAndDescendants );
+			if ( link.IsValid() )
+				link.PilotId = local.Id;
+
+			if ( Networking.IsActive )
+				droneObject.NetworkSpawn( local );
+		}
+
+		pilot.LinkedDroneId = droneObject.Id;
+
+		var deployer = pilot.Components.Get<DroneDeployer>( FindMode.EverythingInSelfAndDescendants );
+		if ( !deployer.IsValid() )
+		{
+			Log.Warning( "[RoundProbe] Drone launch guard could not find a DroneDeployer." );
+			LogProbe( "drone-launch-guard-no-deployer" );
+			return;
+		}
+
+		deployer.DroneInFlight = false;
+		deployer.LaunchReadyAt = 0f;
+		var beforeCount = CountLinkedLiveDrones( scene, pilot, local.Id, selectedType );
+
+		var requestedRotation = Rotation.FromYaw( pilot.GameObject.WorldRotation.Yaw() );
+		var requestedPosition = pilot.GameObject.WorldPosition + requestedRotation.Forward * 240f + Vector3.Up * 90f;
+		deployer.DebugLaunchDroneForProbe( local.Id, requestedPosition, requestedRotation, Vector3.Zero );
+
+		var afterCount = CountLinkedLiveDrones( scene, pilot, local.Id, selectedType );
+		var pass = beforeCount == 1 && afterCount == 1 && deployer.DroneInFlight;
+		Log.Info( $"[RoundProbe] Drone launch guard {selectedType}: before={beforeCount} after={afterCount} droneInFlight={deployer.DroneInFlight} pass={pass}" );
+		LogProbe( $"drone-launch-guard-{selectedType}-{(pass ? "pass" : "fail")}" );
+	}
+
+	static int CountLinkedLiveDrones( Scene scene, PilotSoldier pilot, Guid ownerId, DroneType selectedType )
+	{
+		return scene.GetAllComponents<DroneBase>()
+			.Count( drone => drone.Type == selectedType && IsProbeDroneLinkedTo( drone, pilot, ownerId ) && IsProbeDroneAlive( drone ) );
+	}
+	static bool IsProbeDroneLinkedTo( DroneBase drone, PilotSoldier pilot, Guid ownerId )
+	{
+		if ( !drone.IsValid() ) return false;
+
+		if ( pilot.IsValid() && pilot.LinkedDroneId != default && drone.GameObject.Id == pilot.LinkedDroneId )
+			return true;
+
+		var link = drone.Components.Get<PilotLink>( FindMode.EverythingInSelfAndDescendants );
+		return link.IsValid() && link.PilotId == ownerId;
+	}
+
+	static bool IsProbeDroneAlive( DroneBase drone )
+	{
+		if ( !drone.IsValid() ) return false;
+
+		var health = drone.Components.Get<Health>() ?? drone.Components.GetInAncestors<Health>();
+		return !health.IsValid() || !health.IsDead;
 	}
 
 	[ConCmd( "dvp_select_soldier" )]

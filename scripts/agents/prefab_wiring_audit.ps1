@@ -152,12 +152,23 @@ function Test-HumanBodyRenderer {
         return
     }
 
-    if ([string]$renderer.Model -ne $humanBodyModel) {
-        Add-AgentIssue $issues "Error" "Prefab" $Path "Human body renderer model expected '$humanBodyModel'." "Use the human Citizen body model instead of the stylized default citizen body."
+    $expectedModel = $humanBodyModel
+    $expectedBodyGroups = $humanBodyDefaultBodyGroups
+    $modelRecommendation = "Use the human Citizen body model instead of the stylized default citizen body."
+    $bodyGroupRecommendation = "Use the Citizen bodygroup mask that keeps the alternate head while rendering torso, legs, hands, and feet."
+    if ($Path -eq "Assets/prefabs/training_dummy.prefab") {
+        $expectedModel = $trainingDummyBodyModel
+        $expectedBodyGroups = $trainingDummyBodyGroups
+        $modelRecommendation = "Use the stock S&Box human model for solo NPC targets."
+        $bodyGroupRecommendation = "Use the human bodygroup mask plus the TrainingDummy runtime guard so spawned NPCs render the full body."
     }
 
-    if ([string]$renderer.BodyGroups -ne [string]$humanBodyDefaultBodyGroups) {
-        Add-AgentIssue $issues "Error" "Prefab" $Path "Human body renderer BodyGroups expected '$humanBodyDefaultBodyGroups'." "Use the sane Citizen default bodygroup mask so alternate heads/body parts do not overlap."
+    if ([string]$renderer.Model -ne $expectedModel) {
+        Add-AgentIssue $issues "Error" "Prefab" $Path "Human body renderer model expected '$expectedModel'." $modelRecommendation
+    }
+
+    if ([string]$renderer.BodyGroups -ne [string]$expectedBodyGroups) {
+        Add-AgentIssue $issues "Error" "Prefab" $Path "Human body renderer BodyGroups expected '$expectedBodyGroups'." $bodyGroupRecommendation
     }
 }
 
@@ -284,6 +295,23 @@ function Test-LineRendererColorSerialization {
     }
 }
 
+function Test-TrainingDummyHumanBodyGroupRuntimeGuard {
+    $path = "Code/Game/TrainingDummy.cs"
+    $fullPath = Join-Path $Root $path
+    if (-not (Test-Path -LiteralPath $fullPath)) {
+        Add-AgentIssue $issues "Error" "Prefab" $path "TrainingDummy.cs is missing while checking human bodygroup runtime guard." "Keep solo NPC bodygroup setup in TrainingDummy so spawned targets cannot regress to head-only renderers."
+        return
+    }
+
+    $raw = Get-Content -LiteralPath $fullPath -Raw
+    foreach ($group in @("Head", "Chest", "Legs", "Hands", "Feet")) {
+        $pattern = "SetBodyGroup\s*\(\s*`"$group`""
+        if ($raw -notmatch $pattern) {
+            Add-AgentIssue $issues "Error" "Prefab" $path "TrainingDummy does not explicitly set the '$group' human bodygroup at runtime." "Call SkinnedModelRenderer.SetBodyGroup for all human body groups on spawn so solo NPCs render as a full human body."
+        }
+    }
+}
+
 function Test-AllLineRendererColorSerialization {
     $prefabRoot = Join-Path $Root "Assets\prefabs"
     if (-not (Test-Path -LiteralPath $prefabRoot)) {
@@ -313,7 +341,9 @@ $soldierBase = @(
 )
 
 $humanBodyModel = "models/citizen_human/citizen_human_male.vmdl"
-$humanBodyDefaultBodyGroups = 341
+$humanBodyDefaultBodyGroups = 1
+$trainingDummyBodyModel = $humanBodyModel
+$trainingDummyBodyGroups = 0
 $invalidHeldItemIkPositions = @(
     "0,0,0",
     "0,-4,0",
@@ -331,6 +361,12 @@ $pilotGroundCheck = @{
     )
     "DroneVsPlayers.DroneDeployer" = @(
         @{ Property = "LeftHandFpRotation"; Expected = "0,180,0"; Recommendation = "Keep the pilot's first-person RC transmitter screen facing back toward the player." }
+    )
+}
+
+$trainingDummyBodyCheck = @{
+    "Sandbox.SkinnedModelRenderer" = @(
+        @{ Property = "Model"; Expected = $trainingDummyBodyModel; Recommendation = "Use the stock S&Box human model for solo NPC targets." }
     )
 }
 
@@ -378,8 +414,9 @@ Test-HeldItemTargets -Path "Assets/prefabs/pilot_ground.prefab" -HeldItemNames @
 Test-Prefab -Path "Assets/prefabs/training_dummy.prefab" `
     -RequiredComponents @("Sandbox.CharacterController", "DroneVsPlayers.Health", "DroneVsPlayers.TrainingDummy", "Sandbox.Citizen.CitizenAnimationHelper") `
     -RequiredNodes @("Body") `
-    -PropertyChecks $humanBodyCheck
+    -PropertyChecks $trainingDummyBodyCheck
 Test-HumanBodyRenderer -Path "Assets/prefabs/training_dummy.prefab"
+Test-TrainingDummyHumanBodyGroupRuntimeGuard
 
 $droneBase = @(
     "Sandbox.Rigidbody",

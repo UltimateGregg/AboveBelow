@@ -762,13 +762,13 @@ public sealed class RoundManager
 <root>
     <div class="main-menu-title">ABOVE / BELOW</div>
     <div>DRONE PILOTS WIN</div>
-    <div>SOLDIERS WIN</div>
-    <div>Hunt soldiers.</div>
+    <div>HUNTERS WIN</div>
+    <div>Find the hunters.</div>
     <div>Take down drone pilots.</div>
     <span>Fly drones as drone pilots</span>
-    <span>Fight as soldiers</span>
+    <span>Fight as hunters</span>
     <div>Drone Pilot Loadout</div>
-    <div>Soldier Class</div>
+    <div>Hunters Loadout</div>
 </root>
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\UI\HudPanel.razor") -Encoding UTF8
 
@@ -776,16 +776,16 @@ public sealed class RoundManager
 public partial class HudPanel
 {
     string PilotRoleLabel => "DRONE PILOTS";
-    string SoldierRoleLabel => "SOLDIERS";
+    string SoldierRoleLabel => "HUNTERS";
 }
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\UI\HudPanel.cs") -Encoding UTF8
 
         @'
 <root>
-    <div>A vertical asymmetric shooter about Drone Pilots and Soldiers.</div>
-    <div>Drone Pilots launch drones, swap into the camera, and pressure Soldiers across the battlefield.</div>
+    <div>A vertical asymmetric shooter about Drone Pilots and Hunters.</div>
+    <div>Drone Pilots launch drones, swap into the camera, and pressure Hunters across the battlefield.</div>
     <div class="feature-title pilot">DRONE PILOTS</div>
-    <div class="feature-title soldier">SOLDIERS</div>
+    <div class="feature-title soldier">HUNTERS</div>
 </root>
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\UI\MainMenuPanel.razor") -Encoding UTF8
 
@@ -794,19 +794,19 @@ public sealed class RoundManager
 {
     void BroadcastRoundEnd()
     {
-        var label = winner == WinningSide.Pilot ? "Drone Pilots" : "Soldiers";
-        Log.Info($"[Round] {label} win. Drone Pilots {PilotWins} / Soldiers {SoldierWins}");
+        var label = winner == WinningSide.Pilot ? "Drone Pilots" : "Hunters";
+        Log.Info($"[Round] {label} win. Drone Pilots {PilotWins} / Hunters {SoldierWins}");
     }
 }
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\Game\RoundManager.cs") -Encoding UTF8
 
-        "Player-facing team labels read **Drone Pilots** and **Soldiers**; keep **ABOVE / BELOW** as the project title." | Set-Content -LiteralPath (Join-Path $tempRoot "README.md") -Encoding UTF8
-        "Player-facing team labels use Drone Pilots and Soldiers." | Set-Content -LiteralPath (Join-Path $tempRoot "docs\architecture.md") -Encoding UTF8
-        "Drone Pilots/Soldiers team choices appear only after Play." | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\playtest_checklist.ps1") -Encoding UTF8
+        "Player-facing team labels read **Drone Pilots** and **Hunters**; keep **ABOVE / BELOW** as the project title." | Set-Content -LiteralPath (Join-Path $tempRoot "README.md") -Encoding UTF8
+        "Player-facing team labels use Drone Pilots and Hunters." | Set-Content -LiteralPath (Join-Path $tempRoot "docs\architecture.md") -Encoding UTF8
+        "Drone Pilots/Hunters team choices appear only after Play." | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\playtest_checklist.ps1") -Encoding UTF8
 
         & powershell -NoProfile -ExecutionPolicy Bypass -File $teamLabelAudit -Root $tempRoot | Out-Host
         if ($LASTEXITCODE -ne 0) {
-            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/team_label_copy_audit.ps1" "Team label audit failed on valid Drone Pilots/Soldiers fixtures." "Avoid false positives for the current player-facing label policy."
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/team_label_copy_audit.ps1" "Team label audit failed on valid Drone Pilots/Hunters fixtures." "Avoid false positives for the current player-facing label policy."
         }
     }
     finally {

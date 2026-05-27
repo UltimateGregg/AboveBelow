@@ -33,16 +33,16 @@
                     <div class="loadout-section main-menu-actions">
                         <div class="section-title">Main Menu</div>
                         <div class="choices main-menu-choices">
-                            <div class="choice pilot main-menu-play" onclick=@StartMainMenuPlayTransition>
+                            <div class="choice pilot main-menu-play" onclick=@(() => ClickMenuOption(StartMainMenuPlayTransition))>
                                 <span class="label">PLAY</span>
                                 <span class="desc">Choose team and loadout</span>
                             </div>
                             <div class="main-menu-secondary">
-                                <div class="choice soldier" onclick=@OpenMainMenuOptions>
+                                <div class="choice soldier" onclick=@(() => ClickMenuOption(OpenMainMenuOptions))>
                                     <span class="label">OPTIONS</span>
                                     <span class="desc">Local settings</span>
                                 </div>
-                                <div class="choice" onclick=@QuitGame>
+                                <div class="choice" onclick=@(() => ClickMenuOption(QuitGame))>
                                     <span class="label">QUIT</span>
                                     <span class="desc">Close the game</span>
                                 </div>
@@ -66,17 +66,17 @@
                     @if ( SelectedLoadoutTeam == PlayerRole.Spectator )
                     {
                         <div class="team-choices">
-                            <div class="@TeamChoiceClass(PlayerRole.Pilot)" onclick=@(() => SelectLoadoutTeam(PlayerRole.Pilot))>
+                            <div class="@TeamChoiceClass(PlayerRole.Pilot)" onclick=@(() => ClickMenuOption(SelectPilotTeam))>
                                 <span class="label">DRONE PILOTS</span>
                                 <span class="desc">Fly drones as drone pilots</span>
                             </div>
-                            <div class="@TeamChoiceClass(PlayerRole.Soldier)" onclick=@(() => SelectLoadoutTeam(PlayerRole.Soldier))>
-                                <span class="label">SOLDIERS</span>
-                                <span class="desc">Fight as soldiers</span>
+                            <div class="@TeamChoiceClass(PlayerRole.Soldier)" onclick=@(() => ClickMenuOption(SelectSoldierTeam))>
+                                <span class="label">HUNTERS</span>
+                                <span class="desc">Fight as hunters</span>
                             </div>
                         </div>
 
-                        <div class="choice back" onclick=@BackToMainMenu>
+                        <div class="choice back" onclick=@(() => ClickMenuOption(BackToMainMenu))>
                             <span class="label">GO BACK</span>
                             <span class="desc">Return to main menu</span>
                         </div>
@@ -86,21 +86,21 @@
                     {
                         <div class="loadout-section">
                             <div class="choices">
-                                <div class="choice pilot" onclick=@(() => Setup?.SelectLocalDrone(DroneType.Gps))>
+                                <div class="choice pilot" onclick=@(() => ClickMenuOption(SelectGpsDrone))>
                                     <span class="label">GPS DRONE</span>
                                     <span class="desc">Long range vs heavy</span>
                                 </div>
-                                <div class="choice pilot" onclick=@(() => Setup?.SelectLocalDrone(DroneType.Fpv))>
+                                <div class="choice pilot" onclick=@(() => ClickMenuOption(SelectFpvDrone))>
                                     <span class="label">FPV DRONE</span>
                                     <span class="desc">Fast dive vs assault</span>
                                 </div>
-                                <div class="choice pilot" onclick=@(() => Setup?.SelectLocalDrone(DroneType.FiberOpticFpv))>
+                                <div class="choice pilot" onclick=@(() => ClickMenuOption(SelectFiberFpvDrone))>
                                     <span class="label">FIBER FPV</span>
                                     <span class="desc">RF immune vs jammer</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="choice back" onclick=@ClearLoadoutTeam>
+                        <div class="choice back" onclick=@(() => ClickMenuOption(ClearLoadoutTeam))>
                             <span class="label">GO BACK</span>
                             <span class="desc">Choose a different team</span>
                         </div>
@@ -110,21 +110,21 @@
                     {
                         <div class="loadout-section">
                             <div class="choices">
-                                <div class="choice soldier" onclick=@(() => Setup?.SelectLocalSoldier(SoldierClass.Assault))>
+                                <div class="choice soldier" onclick=@(() => ClickMenuOption(SelectAssaultSoldier))>
                                     <span class="label">ASSAULT</span>
                                     <span class="desc">Rifle answer to fiber</span>
                                 </div>
-                                <div class="choice soldier" onclick=@(() => Setup?.SelectLocalSoldier(SoldierClass.CounterUav))>
+                                <div class="choice soldier" onclick=@(() => ClickMenuOption(SelectCounterUavSoldier))>
                                     <span class="label">COUNTER-UAV</span>
                                     <span class="desc">Jammer answer to GPS</span>
                                 </div>
-                                <div class="choice soldier" onclick=@(() => Setup?.SelectLocalSoldier(SoldierClass.Heavy))>
+                                <div class="choice soldier" onclick=@(() => ClickMenuOption(SelectHeavySoldier))>
                                     <span class="label">HEAVY</span>
                                     <span class="desc">EMP answer to FPV</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="choice back" onclick=@ClearLoadoutTeam>
+                        <div class="choice back" onclick=@(() => ClickMenuOption(ClearLoadoutTeam))>
                             <span class="label">GO BACK</span>
                             <span class="desc">Choose a different team</span>
                         </div>
@@ -222,7 +222,7 @@
             <div class="top-center">
                 @if ( Round is not null && (Round.State == RoundState.Countdown || Round.State == RoundState.Active) && LocalRole != PlayerRole.Spectator )
                 {
-                    <div class="round-header">Round @(PilotWins + SoldierWins + 1) / You are <span class="role-tag @LocalRole.ToString().ToLower()">@(LocalRole == PlayerRole.Pilot ? "DRONE PILOTS" : "SOLDIERS")</span></div>
+                    <div class="round-header">Round @(PilotWins + SoldierWins + 1) / You are <span class="role-tag @LocalRole.ToString().ToLower()">@(LocalRole == PlayerRole.Pilot ? "DRONE PILOTS" : "HUNTERS")</span></div>
                 }
                 <div class="state">@RoundLine</div>
                 @if ( ShowTimer )
@@ -257,7 +257,7 @@
         @if ( !GameplayUiBlocked && LocalHealth is not null )
         {
             <div class="bottom-left">
-                <div class="role @LocalRole.ToString().ToLower()">@(LocalRole == PlayerRole.Pilot ? "DRONE PILOTS" : LocalRole == PlayerRole.Soldier ? "SOLDIERS" : "SPECTATOR")</div>
+                <div class="role @LocalRole.ToString().ToLower()">@(LocalRole == PlayerRole.Pilot ? "DRONE PILOTS" : LocalRole == PlayerRole.Soldier ? "HUNTERS" : "SPECTATOR")</div>
                 <div class="hp-bar">
                     <div class="hp-fill" style="width: @HpFraction%"></div>
                 </div>
@@ -367,11 +367,11 @@
                                 <div class="option-value">@UiScaleDisplay</div>
                             </div>
                             <div class="scale-control">
-                                <div class="option-button small" onclick=@DecreaseUiScale>-</div>
+                                <div class="option-button small" onclick=@(() => ClickMenuOption(DecreaseUiScale))>-</div>
                                 <div class="scale-track">
                                     <div class="scale-fill" style="width: @UiScaleFillWidth"></div>
                                 </div>
-                                <div class="option-button small" onclick=@IncreaseUiScale>+</div>
+                                <div class="option-button small" onclick=@(() => ClickMenuOption(IncreaseUiScale))>+</div>
                             </div>
                         </div>
 
@@ -381,17 +381,17 @@
                                 <div class="option-value">@LookSensitivityDisplay</div>
                             </div>
                             <div class="stepper-control">
-                                <div class="option-button small" onclick=@DecreaseLookSensitivity>-</div>
-                                <div class="option-button small" onclick=@IncreaseLookSensitivity>+</div>
+                                <div class="option-button small" onclick=@(() => ClickMenuOption(DecreaseLookSensitivity))>-</div>
+                                <div class="option-button small" onclick=@(() => ClickMenuOption(IncreaseLookSensitivity))>+</div>
                             </div>
                         </div>
                     </div>
 
                     <div class="options-actions">
-                        <div class="option-button primary" onclick=@ResumeOptions>Resume</div>
-                        <div class="option-button" onclick=@ResetUiScale>Reset UI</div>
-                        <div class="option-button danger" onclick=@LeaveMatch>Leave Match</div>
-                        <div class="option-button quiet" onclick=@QuitGame>Quit</div>
+                        <div class="option-button primary" onclick=@(() => ClickMenuOption(ResumeOptions))>Resume</div>
+                        <div class="option-button" onclick=@(() => ClickMenuOption(ResetUiScale))>Reset UI</div>
+                        <div class="option-button danger" onclick=@(() => ClickMenuOption(LeaveMatch))>Leave Match</div>
+                        <div class="option-button quiet" onclick=@(() => ClickMenuOption(QuitGame))>Quit</div>
                     </div>
                 </div>
             </div>
@@ -406,6 +406,7 @@
     GameStats Stats => Scene.GetAllComponents<GameStats>().FirstOrDefault();
     KillFeedTracker KillFeed => Scene.GetAllComponents<KillFeedTracker>().FirstOrDefault();
 
+    const string MenuClickSoundPath = "sounds/ui_menu_click.sound";
     const float MainMenuPlayTransitionSeconds = 0.5f;
     const float RolePickerEnterTransitionSeconds = 0.34f;
     const float MainMenuTransitionInactiveTime = -1000f;
@@ -575,7 +576,7 @@
     string RoundWinnerLabel => Round?.LastWinnerInt switch
     {
         0 => "DRONE PILOTS WIN",
-        1 => "SOLDIERS WIN",
+        1 => "HUNTERS WIN",
         _ => "ROUND OVER",
     };
 
@@ -706,6 +707,17 @@
             LocalOptionsState.ToggleOpen();
     }
 
+    void ClickMenuOption( Action action )
+    {
+        PlayMenuClickSound();
+        action?.Invoke();
+    }
+
+    void PlayMenuClickSound()
+    {
+        Sound.Play( MenuClickSoundPath );
+    }
+
     void StartFromMainMenu()
     {
         MainMenuOpen = false;
@@ -734,6 +746,46 @@
     void OpenMainMenuOptions()
     {
         LocalOptionsState.SetOpen( true );
+    }
+
+    void SelectPilotTeam()
+    {
+        SelectLoadoutTeam( PlayerRole.Pilot );
+    }
+
+    void SelectSoldierTeam()
+    {
+        SelectLoadoutTeam( PlayerRole.Soldier );
+    }
+
+    void SelectGpsDrone()
+    {
+        Setup?.SelectLocalDrone( DroneType.Gps );
+    }
+
+    void SelectFpvDrone()
+    {
+        Setup?.SelectLocalDrone( DroneType.Fpv );
+    }
+
+    void SelectFiberFpvDrone()
+    {
+        Setup?.SelectLocalDrone( DroneType.FiberOpticFpv );
+    }
+
+    void SelectAssaultSoldier()
+    {
+        Setup?.SelectLocalSoldier( SoldierClass.Assault );
+    }
+
+    void SelectCounterUavSoldier()
+    {
+        Setup?.SelectLocalSoldier( SoldierClass.CounterUav );
+    }
+
+    void SelectHeavySoldier()
+    {
+        Setup?.SelectLocalSoldier( SoldierClass.Heavy );
     }
 
     void ResumeOptions()
@@ -917,7 +969,7 @@
     string RolePickerTitle => SelectedLoadoutTeam switch
     {
         PlayerRole.Pilot => "Drone Pilot Loadout",
-        PlayerRole.Soldier => "Soldiers Loadout",
+        PlayerRole.Soldier => "Hunters Loadout",
         _ => "Select team",
     };
 
@@ -1114,7 +1166,7 @@
         get
         {
             var soldier = LocalSoldierComponent<SoldierBase>();
-            return soldier.IsValid() ? SoldierClassName( soldier.Class ) : "Soldier";
+            return soldier.IsValid() ? SoldierClassName( soldier.Class ) : "Hunter";
         }
     }
 
@@ -1135,7 +1187,7 @@
         SoldierClass.Assault => "Assault",
         SoldierClass.CounterUav => "Counter-UAV",
         SoldierClass.Heavy => "Heavy",
-        _ => "Soldier",
+        _ => "Hunter",
     };
 
     static string DroneVariantName( DroneType type ) => type switch
@@ -1330,7 +1382,7 @@
     {
         RoundState.WaitingForPlayers => "Waiting for players",
         RoundState.Countdown => "Get ready",
-        RoundState.Active => LocalRole == PlayerRole.Pilot ? "Hunt soldiers." : "Take down drone pilots.",
+        RoundState.Active => LocalRole == PlayerRole.Pilot ? "Find the hunters." : "Take down drone pilots.",
         RoundState.Ended => "Round over",
         _ => "",
     };

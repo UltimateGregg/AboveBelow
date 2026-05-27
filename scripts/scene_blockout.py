@@ -195,6 +195,21 @@ def game_object(
     }
 
 
+def namespace_scene_guids(node: dict[str, Any], namespace: str, path: str = "") -> dict[str, Any]:
+    node_name = str(node.get("Name") or "GameObject")
+    node_path = f"{path}/{node_name}" if path else node_name
+    node["__guid"] = stable_guid(f"{namespace}:{node_path}")
+
+    for index, component in enumerate(node.get("Components", []) or []):
+        component_type = str(component.get("__type") or "Component")
+        component["__guid"] = stable_guid(f"{namespace}:{node_path}", f"component:{index}:{component_type}")
+
+    for child in node.get("Children", []) or []:
+        namespace_scene_guids(child, namespace, node_path)
+
+    return node
+
+
 def solid_box(
     name: str,
     position: str,
@@ -241,11 +256,13 @@ def solid_primitive(
     material: str,
     tint: str,
     model: str = "models/dev/box.vmdl",
+    rotation: str = "0,0,0,1",
 ) -> dict[str, Any]:
     return game_object(
         name,
         position,
         scale=scale,
+        rotation=rotation,
         material=material,
         tint=tint,
         model=model,
@@ -582,41 +599,58 @@ def build_north_lane() -> dict[str, Any]:
     return game_object("Lane_North_Infiltration", "0,0,0", children=children)
 
 
-def center_lane_burnt_vehicle_block_north() -> dict[str, Any]:
-    metal = "materials/arena/metal_pad.vmat"
+def center_lane_destroyed_pickup(name: str, position: str) -> dict[str, Any]:
+    blue_metal = "materials/arena/metal_pad.vmat"
+    worn_metal = "materials/environment/house_large_metal.vmat"
+    glass = "materials/environment/house_large_glass.vmat"
+    rubber = "materials/shotgun_rubber.vmat"
     asphalt = "materials/arena/asphalt_cover.vmat"
-    glow = "materials/emp_glow.vmat"
+    scuff = "materials/arena/road_edge_wear.vmat"
     box = "models/dev/box.vmdl"
     sphere = "models/dev/sphere.vmdl"
 
     children = [
-        solid_primitive("BurntVehicle_CrushedLowerShell", "0,0,33", "4.85,2.04,0.56", metal, "0.10,0.11,0.11,1", box),
-        solid_primitive("BurntVehicle_LeftRocker_RustedSplit", "0,-57,29", "4.55,0.18,0.34", metal, "0.42,0.18,0.08,1", box),
-        solid_primitive("BurntVehicle_RightRocker_RustedSplit", "0,57,29", "4.55,0.18,0.34", metal, "0.38,0.16,0.07,1", box),
-        solid_primitive("BurntVehicle_Hood_WarpedBlackPlate", "75,0,58", "1.82,1.78,0.16", metal, "0.07,0.075,0.07,1", box),
-        solid_primitive("BurntVehicle_Trunk_CavedRustPlate", "-86,0,54", "1.55,1.74,0.18", metal, "0.34,0.17,0.08,1", box),
-        solid_primitive("BurntVehicle_Cabin_SootVoid", "-5,0,66", "1.72,1.48,0.72", metal, "0.025,0.025,0.025,1", box),
-        solid_primitive("BurntVehicle_Roof_CollapsedSootPlate", "-10,0,96", "1.96,1.42,0.18", metal, "0.055,0.052,0.048,1", box),
-        solid_primitive("BurntVehicle_Engine_ExposedBlock", "110,0,41", "0.62,0.90,0.46", metal, "0.03,0.03,0.028,1", box),
-        solid_primitive("BurntVehicle_FrontBumper_HangingSteel", "137,0,25", "0.18,2.14,0.22", metal, "0.26,0.20,0.17,1", box),
-        solid_primitive("BurntVehicle_RearBumper_SaggedRust", "-137,0,25", "0.18,2.04,0.22", metal, "0.39,0.17,0.08,1", box),
-        solid_primitive("BurntVehicle_Wheel_FL_CharredTire", "82,-62,24", "0.74,0.28,0.74", metal, "0.018,0.018,0.016,1", sphere),
-        solid_primitive("BurntVehicle_Wheel_FR_CharredTire", "82,62,24", "0.74,0.28,0.74", metal, "0.018,0.018,0.016,1", sphere),
-        solid_primitive("BurntVehicle_Wheel_RL_ExposedRim", "-82,-62,24", "0.68,0.24,0.68", metal, "0.20,0.18,0.15,1", sphere),
-        solid_primitive("BurntVehicle_Wheel_RR_BurnedHub", "-82,62,24", "0.68,0.24,0.68", metal, "0.24,0.12,0.06,1", sphere),
-        visual_box("BurntVehicle_AshBed_GroundScorch", "0,0,2", "5.80,2.75,0.04", asphalt, "0.055,0.052,0.047,1"),
-        visual_box("BurntVehicle_AshDrift_Front", "128,-28,8", "0.75,0.38,0.12", asphalt, "0.16,0.15,0.13,1"),
-        visual_box("BurntVehicle_AshDrift_Rear", "-122,34,8", "0.82,0.42,0.12", asphalt, "0.13,0.12,0.105,1"),
-        visual_box("BurntVehicle_BrokenGlass_WindshieldShard", "42,-39,83", "0.60,0.035,0.24", metal, "0.06,0.10,0.12,0.58"),
-        visual_box("BurntVehicle_BrokenGlass_SideShard", "-43,39,75", "0.50,0.035,0.22", metal, "0.05,0.09,0.105,0.56"),
-        visual_box("BurntVehicle_RustStripe_LeftPanel", "16,-59,50", "1.45,0.035,0.13", metal, "0.52,0.20,0.07,1"),
-        visual_box("BurntVehicle_RustStripe_RightPanel", "-18,59,49", "1.30,0.035,0.13", metal, "0.49,0.18,0.06,1"),
-        visual_box("BurntVehicle_SootScale_Hood", "78,-46,65", "0.72,0.035,0.18", asphalt, "0.015,0.015,0.013,1"),
-        visual_box("BurntVehicle_SootScale_Roof", "-18,42,105", "0.65,0.035,0.14", asphalt, "0.012,0.012,0.011,1"),
-        visual_box("BurntVehicle_HotWarning_Reflector", "136,-55,37", "0.18,0.026,0.18", glow, "1,0.42,0.12,0.85"),
+        solid_primitive("Pickup_Frame_CrushedBase", "0,0,29", "5.45,1.88,0.42", worn_metal, "0.18,0.23,0.25,1", box),
+        solid_primitive("Pickup_Cab_CrushedCore", "26,0,64", "1.45,1.48,0.72", blue_metal, "0.16,0.22,0.26,1", box),
+        solid_primitive("Pickup_Cab_Roof_Collapsed", "18,-4,94", "1.78,1.28,0.16", worn_metal, "0.13,0.18,0.20,1", box, "0.0174524,-0.0436194,0.0261769,0.998552"),
+        solid_primitive("Pickup_Hood_BentOpen", "108,-2,58", "1.68,1.62,0.15", blue_metal, "0.20,0.27,0.31,1", box, "0,-0.130526,0,0.991445"),
+        solid_primitive("Pickup_Bed_TwistedFloor", "-88,2,49", "2.25,1.58,0.22", worn_metal, "0.23,0.27,0.27,1", box, "0.00872654,0,0.0348995,0.999352"),
+        solid_primitive("Pickup_Bed_LeftWall_Bent", "-92,-58,68", "2.25,0.16,0.62", blue_metal, "0.18,0.23,0.25,1", box, "0,0,0.0871557,0.996195"),
+        solid_primitive("Pickup_Bed_RightWall_Collapsed", "-97,58,58", "2.08,0.16,0.42", blue_metal, "0.16,0.21,0.23,1", box, "0,0,-0.104528,0.994522"),
+        solid_primitive("Pickup_Tailgate_Twisted", "-174,6,55", "0.20,1.58,0.48", worn_metal, "0.32,0.33,0.30,1", box, "0,0.0348995,-0.052336,0.998021"),
+        solid_primitive("Pickup_Door_Left_Displaced", "32,-66,61", "0.96,0.12,0.54", blue_metal, "0.19,0.25,0.29,1", box, "0,0,0.173648,0.984808"),
+        solid_primitive("Pickup_Door_Right_Caved", "20,66,57", "1.00,0.12,0.46", blue_metal, "0.11,0.14,0.15,1", box, "0,0,-0.139173,0.990268"),
+        solid_primitive("Pickup_FrameRail_Left", "-8,-43,25", "5.35,0.12,0.18", worn_metal, "0.40,0.38,0.34,1", box),
+        solid_primitive("Pickup_FrameRail_Right", "-10,43,25", "5.25,0.12,0.18", worn_metal, "0.37,0.35,0.31,1", box),
+        solid_primitive("Pickup_Bumper_Front_Hanging", "154,-4,26", "0.20,1.88,0.20", worn_metal, "0.50,0.47,0.40,1", box, "0.0174524,-0.052336,0.0436194,0.997564"),
+        solid_primitive("Pickup_Bumper_Rear_Crushed", "-184,7,24", "0.22,1.74,0.22", worn_metal, "0.44,0.39,0.33,1", box, "-0.0174524,0.0348995,-0.0436194,0.998477"),
+        solid_primitive("Pickup_Axle_Front_Bent", "88,0,25", "0.16,2.04,0.14", worn_metal, "0.43,0.41,0.36,1", box, "0,0,0.052336,0.99863"),
+        solid_primitive("Pickup_Axle_Rear_Exposed", "-118,0,25", "0.16,1.92,0.14", worn_metal, "0.40,0.37,0.32,1", box, "0,0,-0.0348995,0.999391"),
+        solid_primitive("Pickup_Wheel_FL_Destroyed", "88,-65,25", "0.84,0.34,0.84", rubber, "0.03,0.03,0.03,1", sphere),
+        solid_primitive("Pickup_Wheel_FR_Destroyed", "86,65,23", "0.78,0.28,0.72", rubber, "0.02,0.02,0.02,1", sphere, "0,0.0871557,0,0.996195"),
+        solid_primitive("Pickup_Wheel_RL_RimOnly", "-118,-65,24", "0.66,0.24,0.66", worn_metal, "0.48,0.46,0.40,1", sphere),
+        solid_primitive("Pickup_Wheel_RR_RimOnly", "-120,65,24", "0.70,0.26,0.70", worn_metal, "0.44,0.41,0.36,1", sphere, "0,-0.052336,0,0.99863"),
+        visual_box("Pickup_Glass_WindshieldShard", "64,-42,78", "0.68,0.035,0.24", glass, "0.45,0.64,0.68,0.58", "0.0348995,-0.156434,0.0348995,0.986499"),
+        visual_box("Pickup_Glass_SideShard_Left", "16,-70,70", "0.52,0.032,0.19", glass, "0.36,0.52,0.56,0.52", "0,0,0.173648,0.984808"),
+        visual_box("Pickup_Glass_SideShard_Right", "3,70,66", "0.48,0.032,0.17", glass, "0.33,0.48,0.52,0.50", "0,0,-0.139173,0.990268"),
+        visual_box("Pickup_ScrapeMark_Left", "7,-69,48", "1.48,0.032,0.10", worn_metal, "0.70,0.66,0.52,1", "0,0,0.0871557,0.996195"),
+        visual_box("Pickup_ScrapeMark_Right", "-30,69,46", "1.25,0.032,0.10", worn_metal, "0.62,0.58,0.47,1", "0,0,-0.0697565,0.997564"),
+        visual_box("Pickup_Debris_HoodShard", "128,-36,18", "0.72,0.34,0.08", blue_metal, "0.21,0.28,0.31,1", "0.0174524,0.0697565,-0.121869,0.990268"),
+        visual_box("Pickup_Debris_BedShard", "-143,42,17", "0.78,0.30,0.08", worn_metal, "0.43,0.40,0.34,1", "-0.0174524,0.052336,0.104528,0.992546"),
+        visual_box("Pickup_Debris_GlassScatter", "34,-84,8", "0.92,0.22,0.035", glass, "0.42,0.58,0.60,0.38", "0,0,0.0871557,0.996195"),
+        visual_box("Pickup_Debris_MudDrag", "-42,86,4", "2.15,0.36,0.035", asphalt, "0.11,0.10,0.085,1", "0,0,-0.0871557,0.996195"),
+        visual_box("Pickup_Debris_RoadScuff", "82,-88,4", "1.60,0.30,0.035", scuff, "0.34,0.31,0.25,1", "0,0,0.052336,0.99863"),
     ]
 
-    return game_object("CenterLane_BurntVehicleBlock_North", "923.058044,690,0", children=children)
+    return namespace_scene_guids(game_object(name, position, children=children), name)
+
+
+def center_lane_destroyed_pickup_north() -> dict[str, Any]:
+    return center_lane_destroyed_pickup("CenterLane_DestroyedPickup_North", "923.058044,690,0")
+
+
+def center_lane_destroyed_pickup_south() -> dict[str, Any]:
+    return center_lane_destroyed_pickup("CenterLane_DestroyedPickup_South", "-415,-710,0")
 
 
 def build_center_lane() -> dict[str, Any]:
@@ -627,8 +661,8 @@ def build_center_lane() -> dict[str, Any]:
         solid_box("CenterLane_GPSBreak_EastTall", "520,-160,145", "0.78,4.8,5.8", concrete, "0.52,0.55,0.57,1"),
         solid_box("CenterLane_MedianLowCover_North", "-220,455,44", "5.4,0.58,1.75", concrete, "0.74,0.75,0.70,1"),
         solid_box("CenterLane_MedianLowCover_South", "235,-455,44", "5.4,0.58,1.75", concrete, "0.74,0.75,0.70,1"),
-        center_lane_burnt_vehicle_block_north(),
-        solid_box("CenterLane_BurntVehicleBlock_South", "-415,-710,62", "2.8,1.35,2.45", metal, "0.32,0.36,0.37,1"),
+        center_lane_destroyed_pickup_north(),
+        center_lane_destroyed_pickup_south(),
         solid_box("CenterLane_ServiceBarricade_West", "-1090,-205,54", "0.68,3.8,2.15", concrete, "0.62,0.64,0.62,1"),
         solid_box("CenterLane_ServiceBarricade_East", "1120,245,54", "0.68,3.8,2.15", concrete, "0.62,0.64,0.62,1"),
         lane_marker("CenterLane_DangerStripe_North", "-40,515,8", "4.8,0.08,0.04", "1,0.72,0.18,0.9"),
@@ -985,9 +1019,66 @@ def add_floating_center_ladder(scene_path: Path, dry_run: bool) -> None:
     print(f"Installed FloatingCenterLadder with {count} child objects")
 
 
+def replace_center_lane_destroyed_pickups(scene_path: Path, dry_run: bool) -> None:
+    root = project_root()
+    data = json.loads(scene_path.read_text(encoding="utf-8"))
+    center_lane = find_object(data, "Lane_Center_Killbox")
+    if center_lane is None:
+        raise RuntimeError("Lane_Center_Killbox was not found in the scene")
+
+    replacement_names = {
+        "CenterLane_BurntVehicleBlock_North",
+        "CenterLane_BurntVehicleBlock_South",
+        "CenterLane_DestroyedPickup_North",
+        "CenterLane_DestroyedPickup_South",
+    }
+    children = center_lane.setdefault("Children", [])
+
+    first_replaced_index = next(
+        (index for index, child in enumerate(children) if child.get("Name") in replacement_names),
+        None,
+    )
+    if first_replaced_index is None:
+        first_replaced_index = next(
+            (index for index, child in enumerate(children) if child.get("Name") == "CenterLane_ServiceBarricade_West"),
+            len(children),
+        )
+
+    insert_at = sum(
+        1
+        for index, child in enumerate(children)
+        if index < first_replaced_index and child.get("Name") not in replacement_names
+    )
+    before = len(children)
+    children[:] = [child for child in children if child.get("Name") not in replacement_names]
+    removed = before - len(children)
+
+    groups = [center_lane_destroyed_pickup_north(), center_lane_destroyed_pickup_south()]
+    for offset, group in enumerate(groups):
+        children.insert(min(insert_at + offset, len(children)), group)
+
+    if dry_run:
+        print(f"Dry run: would replace center-lane destroyed pickup groups; removed groups: {removed}")
+        return
+
+    backup_path = backup(scene_path, root)
+    scene_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    print(f"Backup: {backup_path}")
+    print(f"Replaced center-lane destroyed pickup groups; removed groups: {removed}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Repeatable S&Box scene blockout edits.")
-    parser.add_argument("command", choices=["add-road-corridor", "add-road-intersection", "apply-above-below-level-pass", "add-floating-center-ladder"])
+    parser.add_argument(
+        "command",
+        choices=[
+            "add-road-corridor",
+            "add-road-intersection",
+            "apply-above-below-level-pass",
+            "add-floating-center-ladder",
+            "replace-center-lane-destroyed-pickups",
+        ],
+    )
     parser.add_argument("--scene", default="Assets/scenes/main.scene")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
@@ -1006,6 +1097,8 @@ def main() -> int:
         apply_above_below_level_pass(scene_path, args.dry_run)
     elif args.command == "add-floating-center-ladder":
         add_floating_center_ladder(scene_path, args.dry_run)
+    elif args.command == "replace-center-lane-destroyed-pickups":
+        replace_center_lane_destroyed_pickups(scene_path, args.dry_run)
     return 0
 
 

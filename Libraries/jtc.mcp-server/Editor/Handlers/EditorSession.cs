@@ -54,7 +54,7 @@ public static class EditorSession
 		{
 			var session = ActiveObject;
 			if ( session is null ) return null;
-			return session.GetType().GetProperty( "Scene" )?.GetValue( session ) as Scene;
+			return GetSessionProperty( session, "Scene" )?.GetValue( session ) as Scene;
 		}
 	}
 
@@ -64,7 +64,7 @@ public static class EditorSession
 		{
 			var session = ActiveObject;
 			if ( session is null ) return false;
-			return session.GetType().GetProperty( "IsPlaying" )?.GetValue( session ) as bool? ?? false;
+			return GetSessionProperty( session, "IsPlaying" )?.GetValue( session ) as bool? ?? false;
 		}
 	}
 
@@ -74,13 +74,13 @@ public static class EditorSession
 		{
 			var session = ActiveObject;
 			if ( session is null ) return false;
-			return session.GetType().GetProperty( "HasUnsavedChanges" )?.GetValue( session ) as bool? ?? false;
+			return GetSessionProperty( session, "HasUnsavedChanges" )?.GetValue( session ) as bool? ?? false;
 		}
 		set
 		{
 			var session = ActiveObject;
 			if ( session is null ) return;
-			var prop = session.GetType().GetProperty( "HasUnsavedChanges" );
+			var prop = GetSessionProperty( session, "HasUnsavedChanges" );
 			if ( prop is not null && prop.CanWrite ) prop.SetValue( session, value );
 		}
 	}
@@ -91,7 +91,7 @@ public static class EditorSession
 		{
 			var session = ActiveObject;
 			if ( session is null ) return Enumerable.Empty<GameObject>();
-			var sel = session.GetType().GetProperty( "Selection" )?.GetValue( session );
+			var sel = GetSessionProperty( session, "Selection" )?.GetValue( session );
 			if ( sel is not IEnumerable e ) return Enumerable.Empty<GameObject>();
 			return e.OfType<GameObject>();
 		}
@@ -101,7 +101,7 @@ public static class EditorSession
 	{
 		var session = ActiveObject;
 		if ( session is null ) return;
-		var sel = session.GetType().GetProperty( "Selection" )?.GetValue( session );
+		var sel = GetSessionProperty( session, "Selection" )?.GetValue( session );
 		sel?.GetType().GetMethod( "Clear", Type.EmptyTypes )?.Invoke( sel, null );
 	}
 
@@ -109,7 +109,7 @@ public static class EditorSession
 	{
 		var session = ActiveObject;
 		if ( session is null ) return;
-		var sel = session.GetType().GetProperty( "Selection" )?.GetValue( session );
+		var sel = GetSessionProperty( session, "Selection" )?.GetValue( session );
 		if ( sel is null ) return;
 		var add = sel.GetType().GetMethods()
 			.FirstOrDefault( m => m.Name == "Add" && m.GetParameters().Length == 1 );
@@ -119,14 +119,14 @@ public static class EditorSession
 	public static void Undo()
 	{
 		var session = ActiveObject;
-		var undoSys = session?.GetType().GetProperty( "UndoSystem" )?.GetValue( session );
+		var undoSys = session is null ? null : GetSessionProperty( session, "UndoSystem" )?.GetValue( session );
 		undoSys?.GetType().GetMethod( "Undo", Type.EmptyTypes )?.Invoke( undoSys, null );
 	}
 
 	public static void Redo()
 	{
 		var session = ActiveObject;
-		var undoSys = session?.GetType().GetProperty( "UndoSystem" )?.GetValue( session );
+		var undoSys = session is null ? null : GetSessionProperty( session, "UndoSystem" )?.GetValue( session );
 		undoSys?.GetType().GetMethod( "Redo", Type.EmptyTypes )?.Invoke( undoSys, null );
 	}
 
@@ -196,5 +196,18 @@ public static class EditorSession
 		if ( m is null ) return false;
 		m.Invoke( null, new object[] { path } );
 		return true;
+	}
+
+	static PropertyInfo GetSessionProperty( object session, string name )
+	{
+		for ( var type = session.GetType(); type is not null; type = type.BaseType )
+		{
+			var prop = type.GetProperties( BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly )
+				.FirstOrDefault( p => p.Name.Equals( name, StringComparison.OrdinalIgnoreCase ) );
+			if ( prop is not null )
+				return prop;
+		}
+
+		return null;
 	}
 }

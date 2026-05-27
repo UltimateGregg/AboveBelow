@@ -483,8 +483,8 @@ public sealed class GameSetup : Component, Component.INetworkListener
 			Log.Warning( "[GameSetup] Training dummy prefab not found." );
 			return;
 		}
-
-		var spawns = PickTrainingDummySpawns( dummyRole, SoloTrainingDummyCount );
+		// Place solo targets near the selected player side; their team role still stays opposing.
+		var spawns = PickTrainingDummySpawns( selectedRole, SoloTrainingDummyCount );
 		for ( var i = 0; i < spawns.Count; i++ )
 		{
 			var spawn = spawns[i];

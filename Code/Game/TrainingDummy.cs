@@ -20,6 +20,10 @@ namespace DroneVsPlayers;
 [Icon( "accessibility_new" )]
 public sealed class TrainingDummy : Component
 {
+	const int HumanBodyGroupVisible = 0;
+	const string SoldierHumanSkin = "Skin02";
+	const string PilotHumanSkin = "Skin04";
+
 	[Property, Range( 1f, 30f )] public float RespawnSeconds { get; set; } = 4f;
 	[Property, Sync] public PlayerRole TeamRole { get; set; } = PlayerRole.Soldier;
 	[Property] public GameObject Body { get; set; }
@@ -184,10 +188,22 @@ public sealed class TrainingDummy : Component
 		foreach ( var renderer in Body.Components.GetAll<ModelRenderer>( FindMode.EverythingInSelfAndDescendants ) )
 		{
 			renderer.Tint = Color.White;
-			renderer.MaterialGroup = TeamRole == PlayerRole.Pilot ? "skin_dark" : "skin_light";
+			renderer.MaterialGroup = TeamRole == PlayerRole.Pilot ? PilotHumanSkin : SoldierHumanSkin;
+
+			if ( renderer is SkinnedModelRenderer skinned )
+				ApplyFullHumanBodyGroups( skinned );
 		}
 
 		_appliedTeamRole = TeamRole;
+	}
+
+	static void ApplyFullHumanBodyGroups( SkinnedModelRenderer renderer )
+	{
+		renderer.SetBodyGroup( "Head", HumanBodyGroupVisible );
+		renderer.SetBodyGroup( "Chest", HumanBodyGroupVisible );
+		renderer.SetBodyGroup( "Legs", HumanBodyGroupVisible );
+		renderer.SetBodyGroup( "Hands", HumanBodyGroupVisible );
+		renderer.SetBodyGroup( "Feet", HumanBodyGroupVisible );
 	}
 
 	void SetBodyVisible( bool visible )

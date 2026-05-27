@@ -10,14 +10,14 @@
             <div class="copy-column">
                 <div class="brand">
                     <div class="title">ABOVE <span class="slash">/</span> BELOW</div>
-                    <div class="subtitle">A vertical asymmetric shooter about Drone Pilots and Soldiers.</div>
+                    <div class="subtitle">A vertical asymmetric shooter about Drone Pilots and Hunters.</div>
                 </div>
 
                 <div class="description">
                     <div class="kicker">One team owns the sky. One team owns the ground.</div>
                     <div class="body-copy">
-                        Drone Pilots launch drones, swap into the camera, and pressure Soldiers across the battlefield.
-                        Soldiers move through cover, track Drone Pilots, and use class tools to shut drones down.
+                        Drone Pilots launch drones, swap into the camera, and pressure Hunters across the battlefield.
+                        Hunters move through cover, track Drone Pilots, and use class tools to shut drones down.
                         Roles rotate round to round, so every player gets a turn at the controls.
                     </div>
                     <div class="feature-row">
@@ -26,16 +26,16 @@
                             <div class="feature-copy">GPS, FPV, and fiber-optic drone variants.</div>
                         </div>
                         <div class="feature">
-                            <div class="feature-title soldier">SOLDIERS</div>
-                            <div class="feature-copy">Assault, Counter-UAV, and Heavy soldier classes.</div>
+                            <div class="feature-title soldier">HUNTERS</div>
+                            <div class="feature-copy">Assault, Counter-UAV, and Heavy hunter classes.</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="actions">
-                    <div class="menu-button primary" onclick=@Play>Play</div>
-                    <div class="menu-button" onclick=@Settings>Settings</div>
-                    <div class="menu-button quiet" onclick=@Quit>Quit</div>
+                    <div class="menu-button primary" onclick=@(() => ClickMenuOption(Play))>Play</div>
+                    <div class="menu-button" onclick=@(() => ClickMenuOption(Settings))>Settings</div>
+                    <div class="menu-button quiet" onclick=@(() => ClickMenuOption(Quit))>Quit</div>
                 </div>
 
                 @if ( !string.IsNullOrWhiteSpace( StatusLine ) )
@@ -66,7 +66,7 @@
                         <div class="soldier-body"></div>
                         <div class="soldier-rifle"></div>
                     </div>
-                    <div class="ground-label">SOLDIERS</div>
+                    <div class="ground-label">HUNTERS</div>
                 </div>
             </div>
         </div>
@@ -75,7 +75,20 @@
 
 @code
 {
+    const string MenuClickSoundPath = "sounds/ui_menu_click.sound";
+
     string StatusLine { get; set; } = "";
+
+    void ClickMenuOption( Action action )
+    {
+        PlayMenuClickSound();
+        action?.Invoke();
+    }
+
+    void PlayMenuClickSound()
+    {
+        Sound.Play( MenuClickSoundPath );
+    }
 
     void Play()
     {

@@ -1,0 +1,23 @@
+{
+  "UI": true,
+  "Volume": "0.6",
+  "Pitch": "1",
+  "Decibels": 55,
+  "SelectionMode": "Random",
+  "Sounds": [
+    "sounds/ui_menu_click.wav"
+  ],
+  "Occlusion": false,
+  "Reflections": false,
+  "AirAbsorption": false,
+  "Transmission": false,
+  "OcclusionRadius": 0,
+  "DistanceAttenuation": false,
+  "Distance": 100,
+  "DefaultMixer": {
+    "Name": "unknown",
+    "Id": "00000000-0000-0000-0000-000000000000"
+  },
+  "__references": [],
+  "__version": 1
+}

@@ -47,6 +47,7 @@ public sealed class DroneController : Component
 	[Property, Range(0f, 6000f)] public float PropellerSpinDegreesPerSecond { get; set; } = 2160f;
 	[Property, Range(0f, 1f)] public float PropellerIdleSpinFraction { get; set; } = 0.35f;
 	[Property, Range(1f, 2f)] public float PropellerBoostSpinMultiplier { get; set; } = 1.25f;
+	[Property] public Angles VisualRotationOffset { get; set; } = new( 0f, 0f, 0f );
 	[Property] public SoundEvent PropellerSound { get; set; }
 	[Property, Range(0f, 1f)] public float PropellerSoundVolume { get; set; } = 0.35f;
 	[Property, Range(0.25f, 2f)] public float PropellerIdlePitch { get; set; } = 0.85f;
@@ -188,8 +189,9 @@ public sealed class DroneController : Component
 		var pitch = -(localVel.x / Math.Max( MaxSpeed, 1f )) * VisualTiltDegrees;
 		var roll  = -(localVel.y / Math.Max( MaxSpeed, 1f )) * VisualTiltDegrees;
 		var tilt = Rotation.From( pitch, 0, roll );
+		var visualTilt = VisualRotationOffset.ToRotation() * tilt;
 
-		VisualModel.LocalRotation = Rotation.Slerp( VisualModel.LocalRotation, tilt, Time.Delta * VisualTiltSmoothing );
+		VisualModel.LocalRotation = Rotation.Slerp( VisualModel.LocalRotation, visualTilt, Time.Delta * VisualTiltSmoothing );
 	}
 
 	void ResolvePropellers()
