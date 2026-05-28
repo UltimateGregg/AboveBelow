@@ -26,6 +26,21 @@ Official editor docs reviewed on 2026-05-25:
 - https://sbox.game/dev/doc/editor/mapping/
 - https://sbox.game/dev/doc/editor/mapping/shortcuts
 
+Official docs source repo reviewed on 2026-05-27:
+
+- https://github.com/Facepunch/sbox-docs
+- commit `9ce559cf0b18b687db02ade27cc35b65a56b3049`
+- `docfx.json` builds `docs/**/*.md` and `docs/**/toc.yml` into the published docs site
+- top-level docs sections include actiongraph, animation, assets, code, editor, exporting, gameplay, networking, physics, rendering, scene, sound, and ui
+
+Official S&Box release notes reviewed on 2026-05-28:
+
+- https://sbox.game/release-notes
+- https://sbox.game/news/update-26-05-20
+- https://sbox.game/api/changes
+- latest reviewed release block: `26.05.27` (27 May 2026)
+- recent API-change highlights include `Mesh.AddMorph`, `MorphDelta`, `Editor.CreateModelFromMeshDialog`, `ResourceWriter.AddExternalReference`, and service organization/package-type helpers
+
 Valve Developer Community Source 2 docs reviewed on 2026-05-27:
 
 - https://developer.valvesoftware.com/wiki/Category:Source_2
@@ -67,7 +82,8 @@ Secondary community tutorial context reviewed on 2026-05-23:
 - https://sbox.game/learn/aqua/node-editor-01
 - https://github.com/internetfishy/Node-Editor-Calculator
 
-Use `.agents/sbox/sbox-learn-intake-agent.md` before turning Learn tutorials or broad official editor-doc sweeps into standing project guidance. Use `.agents/sbox/ui-razor-reactivity-agent.md` for tutorials or bugs about Razor refresh behavior.
+Use `.agents/sbox/sbox-docs-source-agent.md` before broad official docs source sweeps or when `Facepunch/sbox-docs` is provided as training input. Refresh `.tmpbuild/sbox-docs` with `scripts/agents/sbox_docs_source_audit.ps1 -Refresh -ShowInfo`, use `.tmpbuild/sbox-docs-source-index.md`, the source `toc.yml` files, and `rg` for inventory, and record the reviewed commit/date before promoting durable lessons. Use `.agents/sbox/sbox-learn-intake-agent.md` before turning Learn tutorials or broad official editor-doc sweeps into standing project guidance. Use `.agents/sbox/ui-razor-reactivity-agent.md` for tutorials or bugs about Razor refresh behavior.
+Use `.agents/sbox/sbox-release-notes-agent.md` before turning official S&Box patch notes, release notes, or API-change entries into standing project guidance. Prefer `https://sbox.game/release-notes` for dated release summaries and `https://sbox.game/api/changes` plus local `API.json` lookup for exact C# symbol shape.
 
 This is a working reference for agents editing this repo. It is intentionally short. If a task depends on exact API shape, check the current docs, API reference, public source, the local API dump, or local project patterns before changing code.
 
@@ -83,6 +99,24 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_api_lookup.ps1 -Roo
 ```
 
 The API dump is a local reflection/reference surface, not a replacement for runtime proof. Still compile, check logs, and use editor or multiplayer verification when behavior changes.
+
+## Release Notes Intake
+
+As of the 2026-05-28 review, recent official S&Box release notes affect these recurring project workflows:
+
+- Use `HasTag()` on trace results instead of relying on obsolete trace-result `.Tags` access when checking trace tags in hot paths.
+- Platform chat is now a default opt-in/out project feature for existing projects; gameplay-specific chat or command handling should start from the platform chat surface and `IChatEvent` instead of a fully custom chat stack.
+- Custom UI panel drawing is available through `IPanelDraw` and `Draw(CommandList)`, but Razor HUD/menu reactivity still uses `BuildHash()` coverage rather than per-frame refresh.
+- Voice transmission must route through the Voice Mixer or a child mixer so player voice-volume settings keep working.
+- Terrain code should use `TerrainStorage.SetResolution()`; `TerrainStorage.Resolution` is not a public setter workflow.
+- `Scene.Trace.Cone` is available for cone queries, and `Rigidbody.SleepThreshold` can tune stacked physics-object sleep behavior.
+- Runtime mesh morph work should start by verifying `Mesh.AddMorph` and `MorphDelta` against the current API/reference dump before implementation.
+- Mesh-to-model conversion now exposes `Editor.CreateModelFromMeshDialog` collision options; editor tooling should prefer that flow before custom mesh-conversion UI.
+- `ResourceWriter.AddExternalReference` can preserve external resource links in generated resources when the exact API shape is verified.
+- VMDL writer now also saves the PHYS block when exporting models, so ModelDoc/model export regressions should check generated physics blocks before assuming missing collision is only a prefab issue.
+- Recent performance notes reinforce allocation discipline in trace/physics hot paths and the preference for engine batching surfaces such as clutter LOD and instanced clutter collision when authoring dense environment content.
+
+Release notes are not implementation proof by themselves. For each adopted API, query `scripts/agents/sbox_api_lookup.ps1`, compile the relevant project, and verify through the editor when editor, asset, or runtime behavior changes.
 
 ## Mental Model
 

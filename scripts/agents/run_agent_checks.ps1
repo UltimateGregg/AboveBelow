@@ -1,6 +1,6 @@
 param(
     [string]$Root = "",
-    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "scene", "terrain", "collision", "collision-chain", "asset", "asset-production", "modeldoc", "blender-live", "sound", "networking", "gameplay-regression", "docs", "api", "learn", "editor-node-tool", "editor-first", "balance", "playtest", "logs", "readiness", "train", "self-test")]
+    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "scene", "terrain", "collision", "collision-chain", "asset", "asset-production", "modeldoc", "blender-live", "sound", "networking", "gameplay-regression", "docs", "api", "sbox-docs", "release-notes", "learn", "editor-node-tool", "editor-first", "balance", "playtest", "logs", "readiness", "train", "self-test")]
     [string]$Suite = "quick",
     [switch]$ShowInfo,
     [switch]$FailOnWarning
@@ -58,6 +58,7 @@ switch ($Suite) {
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
             @{ Name = "terrain_floor_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
+            @{ Name = "tree_collision_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs },
             @{ Name = "aaa_asset_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
@@ -70,7 +71,9 @@ switch ($Suite) {
             @{ Name = "mcp_screenshot_audit.ps1"; Args = $commonArgs },
             @{ Name = "networking_review_audit.ps1"; Args = $commonArgs },
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_docs_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_release_notes_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
@@ -90,6 +93,7 @@ switch ($Suite) {
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
             @{ Name = "terrain_floor_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
+            @{ Name = "tree_collision_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs },
             @{ Name = "aaa_asset_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
@@ -103,7 +107,9 @@ switch ($Suite) {
             @{ Name = "mcp_screenshot_audit.ps1"; Args = $commonArgs },
             @{ Name = "networking_review_audit.ps1"; Args = $commonArgs },
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_docs_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_release_notes_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
@@ -147,13 +153,15 @@ switch ($Suite) {
             @{ Name = "road_edge_wear_audit.ps1"; Args = $commonArgs },
             @{ Name = "destroyed_pickup_scene_audit.ps1"; Args = $commonArgs },
             @{ Name = "level_layout_audit.ps1"; Args = $commonArgs },
-            @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs }
+            @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
+            @{ Name = "tree_collision_audit.ps1"; Args = $commonArgs }
         )
     }
     "terrain" { $scripts = @(@{ Name = "terrain_floor_audit.ps1"; Args = $commonArgs }) }
     "collision" {
         $scripts = @(
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
+            @{ Name = "tree_collision_audit.ps1"; Args = $commonArgs },
             @{ Name = "floating_center_ladder_audit.ps1"; Args = $commonArgs },
             @{ Name = "level_layout_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs }
@@ -204,12 +212,22 @@ switch ($Suite) {
     "docs" {
         $scripts = @(
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_docs_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_release_notes_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs },
             @{ Name = "drone_variant_visual_audit.ps1"; Args = $commonArgs }
+        )
+    }
+    "sbox-docs" { $scripts = @(@{ Name = "sbox_docs_source_audit.ps1"; Args = $commonArgs }) }
+    "release-notes" {
+        $scripts = @(
+            @{ Name = "sbox_release_notes_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs }
         )
     }
     "api" {
@@ -236,7 +254,9 @@ switch ($Suite) {
         $scripts = @(
             @{ Name = "post_task_training_agent.ps1"; Args = @("-Root", $Root, "-ShowFiles", "-WriteReport") },
             @{ Name = "aaa_asset_quality_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_docs_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_release_notes_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },

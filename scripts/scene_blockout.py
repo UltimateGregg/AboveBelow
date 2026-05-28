@@ -701,10 +701,6 @@ def center_lane_destroyed_pickup_north() -> dict[str, Any]:
     return center_lane_destroyed_pickup("CenterLane_DestroyedPickup_North", "923.058044,690,0")
 
 
-def center_lane_destroyed_pickup_south() -> dict[str, Any]:
-    return center_lane_destroyed_pickup("CenterLane_DestroyedPickup_South", "-415,-710,0")
-
-
 def build_center_lane() -> dict[str, Any]:
     concrete = "materials/arena/concrete_wall.vmat"
     metal = "materials/arena/metal_pad.vmat"
@@ -714,7 +710,6 @@ def build_center_lane() -> dict[str, Any]:
         solid_box("CenterLane_MedianLowCover_North", "-220,455,44", "5.4,0.58,1.75", concrete, "0.74,0.75,0.70,1"),
         solid_box("CenterLane_MedianLowCover_South", "235,-455,44", "5.4,0.58,1.75", concrete, "0.74,0.75,0.70,1"),
         center_lane_destroyed_pickup_north(),
-        center_lane_destroyed_pickup_south(),
         solid_box("CenterLane_ServiceBarricade_West", "-1090,-205,54", "0.68,3.8,2.15", concrete, "0.62,0.64,0.62,1"),
         solid_box("CenterLane_ServiceBarricade_East", "1120,245,54", "0.68,3.8,2.15", concrete, "0.62,0.64,0.62,1"),
         lane_marker("CenterLane_DangerStripe_North", "-40,515,8", "4.8,0.08,0.04", "1,0.72,0.18,0.9"),
@@ -821,8 +816,6 @@ def build_asset_replacement_placeholders() -> dict[str, Any]:
         solid_box("AssetPlaceholder_SignalMast_Mid", "2240,690,205", "0.2,0.2,7.8", metal, "0.36,0.42,0.46,1"),
         solid_box("AssetPlaceholder_RooftopHVAC_North", "1250,1630,285", "1.9,1.1,0.72", metal, "0.38,0.43,0.45,1"),
         solid_box("AssetPlaceholder_RooftopHVAC_South", "1460,-1605,285", "1.9,1.1,0.72", metal, "0.38,0.43,0.45,1"),
-        model_prop("BurntCarWreck_NorthLane", "891.141296,2359.74512,0.2", "models/burnt_car_wreck.vmdl", rotation="0,0,0.0436193869,0.999048233"),
-        model_prop("BurntCarWreck_SouthLane", "1040,-1460,0.2", "models/burnt_car_wreck.vmdl", rotation="0,0,-0.0610485412,0.998134792"),
     ]
     return game_object("AssetProductionPlaceholders", "0,0,0", children=children)
 
@@ -1105,7 +1098,7 @@ def replace_center_lane_destroyed_pickups(scene_path: Path, dry_run: bool) -> No
     children[:] = [child for child in children if child.get("Name") not in replacement_names]
     removed = before - len(children)
 
-    groups = [center_lane_destroyed_pickup_north(), center_lane_destroyed_pickup_south()]
+    groups = [center_lane_destroyed_pickup_north()]
     for offset, group in enumerate(groups):
         children.insert(min(insert_at + offset, len(children)), group)
 

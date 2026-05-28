@@ -45,6 +45,8 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 | Changed-file readiness report | `pre-handoff-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/feature_readiness_report.ps1 -ShowFiles` |
 | Current editor/runtime log discovery | `build-log-sentinel.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/current_log_audit.ps1 -RequireFresh` |
 | S&Box engine/API research intake | `sbox-engine-reference-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_engine_reference_audit.ps1 -Root . -ShowInfo` |
+| Official S&Box docs source intake | `sbox-docs-source-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_docs_source_audit.ps1 -Root . -Refresh -ShowInfo` |
+| Official S&Box release notes intake | `sbox-release-notes-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite release-notes -ShowInfo` |
 | Editor Node Tool review | `editor-node-tool-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/editor_node_tool_audit.ps1 -Root . -ShowInfo` |
 | S&Box API Lookup for exact symbols | `sbox-engine-reference-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_api_lookup.ps1 -Root . -Type Sandbox.GameObject -Member NetworkSpawn` |
 | S&Box Learn tutorial intake | `sbox-learn-intake-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_learn_intake_audit.ps1 -Root . -ShowInfo` |
@@ -73,5 +75,6 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 - After UI or startup-flow edits, run the UI flow audit and an editor click-test checklist. Dynamic Razor values should be covered by `BuildHash()` rather than per-frame `StateHasChanged()` refreshes.
 - If runtime logs are stale or unavailable, say that directly and do not overclaim editor validation.
 - Static file audits do not replace an editor playtest or a 2-client multiplayer test when runtime behavior changed.
-- Treat pasted S&Box or Source 2 research as useful input, not authority. Route it through `sbox-engine-reference-agent.md`, prefer official docs/public source, query local `API.json` with `sbox_api_lookup.ps1` for exact symbols, and add source/date markers for volatile API or release claims.
+- Treat pasted S&Box or Source 2 research as useful input, not authority. Route it through `sbox-engine-reference-agent.md`, prefer official docs/public source, query local `API.json` with `sbox_api_lookup.ps1` for exact symbols, and add source/date markers for volatile API or release claims. When the user links `Facepunch/sbox-docs`, use `sbox-docs-source-agent.md` and refresh `.tmpbuild/sbox-docs` before broad docs intake.
+- Treat official S&Box release notes as high-value but volatile. Route patch-note and API-change sweeps through `sbox-release-notes-agent.md`, date the reviewed release/API sources, verify exact symbols against local `API.json`, and protect adopted lessons with `sbox_release_notes_audit.ps1`.
 - Treat S&Box Learn pages as useful community tutorials. Route them through `sbox-learn-intake-agent.md`; if they affect Razor refresh behavior, use `ui-razor-reactivity-agent.md`; if they affect Node Editor tooling, use `editor-node-tool-agent.md`; preserve the focused audits, hook, and `learn` suite.

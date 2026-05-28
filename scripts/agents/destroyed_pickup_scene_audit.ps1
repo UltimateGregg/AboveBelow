@@ -352,22 +352,39 @@ foreach ($rootObject in @($scene.GameObjects)) {
     $allObjects += Get-AllObjects -Object $rootObject
 }
 
-foreach ($oldName in @("CenterLane_BurntVehicleBlock_North", "CenterLane_BurntVehicleBlock_South")) {
+foreach ($object in $allObjects) {
+    $objectName = [string](Get-JsonPropertyValue -Object $object -Name "Name")
+    $usesRetiredModel = $false
+    foreach ($component in @(Get-ObjectComponents -Object $object)) {
+        $model = [string](Get-JsonPropertyValue -Object $component -Name "Model")
+        if (-not $usesRetiredModel -and $model -eq "models/burnt_car_wreck.vmdl") {
+            Add-AgentIssue $issues "Error" "Destroyed Pickup Scene" $relative "$objectName references retired oversized model '$model'." "Use the S&Box-native Pickup_* primitive vehicle and keep the broken Blender-backed VMDL out of the scene."
+            $usesRetiredModel = $true
+        }
+    }
+}
+
+foreach ($oldName in @(
+    "CenterLane_BurntVehicleBlock_North",
+    "CenterLane_BurntVehicleBlock_South",
+    "CenterLane_DestroyedPickup_South",
+    "BurntCarWreck_NorthLane",
+    "BurntCarWreck_SouthLane"
+)) {
     $oldMatches = @(Find-ObjectsByName -Objects $allObjects -Name $oldName)
     if ($oldMatches.Count -gt 0) {
-        Add-AgentIssue $issues "Error" "Destroyed Pickup Scene" $relative "Found old scene object '$oldName'." "Rename and replace old burnt-vehicle scene groups with CenterLane_DestroyedPickup_*."
+        Add-AgentIssue $issues "Error" "Destroyed Pickup Scene" $relative "Found retired vehicle scene object '$oldName'." "Keep exactly one destroyed pickup in the scene: CenterLane_DestroyedPickup_North."
     }
 }
 
 $expectedGroups = @(
-    @{ Name = "CenterLane_DestroyedPickup_North"; Position = @(923.058044, 690.0, 0.0) },
-    @{ Name = "CenterLane_DestroyedPickup_South"; Position = @(-415.0, -710.0, 0.0) }
+    @{ Name = "CenterLane_DestroyedPickup_North"; Position = @(923.058044, 690.0, 0.0) }
 )
 
 foreach ($expected in $expectedGroups) {
     $matches = @(Find-ObjectsByName -Objects $allObjects -Name $expected.Name)
     if ($matches.Count -ne 1) {
-        Add-AgentIssue $issues "Error" "Destroyed Pickup Scene" $relative "Expected exactly one $($expected.Name); found $($matches.Count)." "Keep one north and one south destroyed pickup in the center lane."
+        Add-AgentIssue $issues "Error" "Destroyed Pickup Scene" $relative "Expected exactly one $($expected.Name); found $($matches.Count)." "Keep exactly one destroyed pickup in the center lane."
         continue
     }
 

@@ -96,6 +96,7 @@ Code/
 - Link to S&Box docs: https://sbox.game/docs
 - Add known issues to `/docs/known_sbox_patterns.md`
 - When reviewing S&Box Learn tutorials, route useful lessons through `.agents/sbox/sbox-learn-intake-agent.md`, update the short engine reference, and run `scripts/agents/run_agent_checks.ps1 -Suite learn -ShowInfo`.
+- When reviewing S&Box release notes, patch notes, news update posts, or API changes, route useful lessons through `.agents/sbox/sbox-release-notes-agent.md`, update the short engine reference with source dates, verify exact symbols through local `API.json`, and run `scripts/agents/run_agent_checks.ps1 -Suite release-notes -ShowInfo`.
 - For Razor UI reactivity lessons, use `.agents/sbox/ui-razor-reactivity-agent.md` and keep dynamic rendered values covered by `BuildHash()` instead of per-frame `StateHasChanged()`.
 
 ### Common Pitfalls to Avoid
@@ -178,6 +179,15 @@ For detailed hook logs and diagnostics, see `docs/automation.md`.
 **Action:** Runs `.\scripts\agents\run_agent_checks.ps1 -Suite learn -ShowInfo`.
 
 Use this hook to keep community tutorial lessons grounded in project agents, subagents, docs, self-tests, and focused audits instead of leaving them only in chat history.
+
+## S&Box Release Notes Intake Hook
+
+**Hook ID:** `sbox-release-notes-check`
+**Configuration File:** `./.claude/settings.json`
+**Trigger:** Changes to release-note-derived docs, release-note agent routing, `sbox_release_notes_audit.ps1`, suite wiring, training wiring, or self-test fixtures.
+**Action:** Runs `.\scripts\agents\run_agent_checks.ps1 -Suite release-notes -ShowInfo`.
+
+Use this hook to keep official S&Box patch-note and API-change lessons dated, source-linked, verified against local API shape, and grounded in project agents, docs, hooks, and focused audits.
 
 ## Editor-First Workflow Hook
 

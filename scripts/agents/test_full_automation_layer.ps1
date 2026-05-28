@@ -51,6 +51,7 @@ $requiredScripts = @(
     "scripts/agents/road_edge_wear_audit.ps1",
     "scripts/agents/burnt_vehicle_block_audit.ps1",
     "scripts/agents/collision_authoring_agent.ps1",
+    "scripts/agents/tree_collision_audit.ps1",
     "scripts/agents/collision_agent_chain_audit.ps1",
     "scripts/agents/collision_chain_report.ps1",
     "scripts/agents/current_log_audit.ps1",
@@ -69,7 +70,9 @@ $requiredScripts = @(
     "scripts/agents/sound_playback_audit.ps1",
     "scripts/agents/team_label_copy_audit.ps1",
     "scripts/agents/mcp_screenshot_audit.ps1",
+    "scripts/agents/sbox_docs_source_audit.ps1",
     "scripts/agents/sbox_engine_reference_audit.ps1",
+    "scripts/agents/sbox_release_notes_audit.ps1",
     "scripts/agents/sbox_api_lookup.ps1",
     "scripts/agents/sbox_api_reference_audit.ps1",
     "scripts/agents/sbox_learn_intake_audit.ps1",
@@ -78,6 +81,9 @@ $requiredScripts = @(
     "scripts/agents/asset_visual_review.ps1",
     "scripts/agents/blender_live_toolkit_self_test.ps1"
 )
+
+# Release-notes audit coverage marker: S&Box Release Notes Intake Agent
+# https://sbox.game/release-notes is protected by the "release-notes" suite and sbox_release_notes_audit.ps1.
 
 foreach ($script in $requiredScripts) {
     if (-not (Test-Path -LiteralPath (Join-Path $Root $script))) {
@@ -93,7 +99,7 @@ if (Test-Path -LiteralPath $runner) {
         Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner does not declare a ValidateSet for suites." "Restore suite validation on the Suite parameter."
     }
 
-    foreach ($suite in @("ui", "prefab-graph", "scene", "terrain", "logs", "readiness", "train", "asset-production", "modeldoc", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain", "api", "learn", "editor-node-tool", "editor-first")) {
+    foreach ($suite in @("ui", "prefab-graph", "scene", "terrain", "logs", "readiness", "train", "asset-production", "modeldoc", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain", "api", "sbox-docs", "release-notes", "learn", "editor-node-tool", "editor-first")) {
         $quotedSuite = '"' + [regex]::Escape($suite) + '"'
         if ($validateSetMatch.Success -and $validateSetMatch.Groups["values"].Value -notmatch $quotedSuite) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner ValidateSet does not expose suite '$suite'." "Add the suite to the Suite parameter ValidateSet."
@@ -619,7 +625,28 @@ if (Test-Path -LiteralPath $uiAudit) {
     $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-ui-flow-audit-" + [System.Guid]::NewGuid().ToString("N"))
     try {
         New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Code\UI") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Assets\ui") | Out-Null
         New-Item -ItemType File -Force -Path (Join-Path $tempRoot "dronevsplayers.sbproj") | Out-Null
+
+        $hudStyles = @'
+.team-choice { flex: 1 1 0; min-width: 0; align-items: center; text-align: center; }
+.role-panel { align-items: center; text-align: center; }
+.section-title { text-align: center; }
+.options-panel { align-items: center; text-align: center; }
+.option-row { flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.option-copy { align-items: center; text-align: center; }
+.options-actions { justify-content: center; }
+.main-menu-title { top: 0; right: 0; bottom: 0; left: 0; justify-content: center; align-items: center; }
+.main-menu-panel { position: absolute; top: 68%; }
+.main-menu-scanline { animation: mainMenuScanUp 0.5s ease-in; }
+@keyframes mainMenuScanUp { 0% { bottom: 0%; opacity: 1; } 100% { bottom: 104%; opacity: 0; } }
+&.play-transition-exit { .main-menu-title { animation: mainMenuTitleExit 0.36s ease-out forwards; } .main-menu-panel { animation: mainMenuPanelExit 0.36s ease-out forwards; } }
+@keyframes mainMenuPanelExit { 0% { opacity: 1; } 100% { opacity: 0; } }
+.main-menu-title-text { font-size: 72px; font-weight: 900; }
+'@
+        $hudStyles | Set-Content -LiteralPath (Join-Path $tempRoot "Code\UI\HudPanel.razor.scss") -Encoding UTF8
+        $hudStyles | Set-Content -LiteralPath (Join-Path $tempRoot "Code\UI\HudPanel.cs.scss") -Encoding UTF8
+        $hudStyles | Set-Content -LiteralPath (Join-Path $tempRoot "Assets\ui\hudpanel.cs.scss") -Encoding UTF8
 
         $fixturePath = Join-Path $tempRoot "Code\UI\Fixture.razor"
         '<root><div class="choice pilot">Dead Choice</div></root>' | Set-Content -LiteralPath $fixturePath -Encoding UTF8
@@ -760,16 +787,21 @@ public sealed class RoundManager
 
         @'
 <root>
-    <div class="main-menu-title">ABOVE / BELOW</div>
+    <span class="main-menu-title-text">ABOVE / BELOW</span>
+    <div class="title">@RolePickerTitle</div>
     <div>DRONE PILOTS WIN</div>
     <div>HUNTERS WIN</div>
     <div>Find the hunters.</div>
     <div>Take down drone pilots.</div>
     <span>Fly drones as drone pilots</span>
     <span>Fight as hunters</span>
+    <div>Select team</div>
     <div>Drone Pilot Loadout</div>
     <div>Hunters Loadout</div>
 </root>
+@code {
+    string RolePickerTitle => "Select team";
+}
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot "Code\UI\HudPanel.razor") -Encoding UTF8
 
         @'
@@ -1859,8 +1891,13 @@ if (Test-Path -LiteralPath $sboxEngineReferenceAudit) {
 Verified against official sources on 2026-05-20:
 
 - https://sbox.game/dev/doc
+- https://github.com/Facepunch/sbox-docs
 - https://github.com/Facepunch/sbox-public
 - https://sbox.game/learn/facepunch/creating-an-entity-for-sandbox
+
+Official docs source repo reviewed on 2026-05-27:
+- https://github.com/Facepunch/sbox-docs
+- sbox_docs_source_audit.ps1
 
 Valve Developer Community Source 2 docs reviewed on 2026-05-27:
 - Resourcecompiler
@@ -1886,20 +1923,22 @@ Verify S&Box engine research.
 
 Sources:
 - https://sbox.game/dev/doc
+- https://github.com/Facepunch/sbox-docs
 - https://github.com/Facepunch/sbox-public
 - Valve Developer Community Source 2
 - Nav_Mesh_Editing legacy Source/Counter-Strike context
+- sbox-docs-source-agent.md
 
 Evidence:
 scripts/agents/sbox_engine_reference_audit.ps1
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\sbox-engine-reference-agent.md") -Encoding UTF8
 
-        "S&Box Engine Reference Agent sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
+        "S&Box Engine Reference Agent S&Box Docs Source Agent sbox_docs_source_audit.ps1 sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
         "Valve Source 2 Asset Pipeline Intake; Valve Nav Mesh Docs Are Legacy For S&Box" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\known_sbox_patterns.md") -Encoding UTF8
-        "sbox-engine-reference-agent.md sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
-        "sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
-        "sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
-        "sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\post_task_training_agent.ps1") -Encoding UTF8
+        "sbox-engine-reference-agent.md sbox-docs-source-agent.md sbox_docs_source_audit.ps1 sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
+        "sbox_docs_source_audit.ps1 sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
+        "sbox_docs_source_audit.ps1 sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
+        "sbox_docs_source_audit.ps1 sbox_engine_reference_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\post_task_training_agent.ps1") -Encoding UTF8
 
         "Use [Net] for replicated S&Box gameplay state." | Set-Content -LiteralPath (Join-Path $tempRoot "docs\bad_engine_guidance.md") -Encoding UTF8
         $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sboxEngineReferenceAudit -ScriptArgs @("-Root", $tempRoot) -Label "stale [Net] engine guidance" -SourcePath "scripts/agents/sbox_engine_reference_audit.ps1"
@@ -2040,6 +2079,88 @@ scripts/agents/editor_node_tool_audit.ps1
         & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxLearnIntakeAudit -Root $tempRoot | Out-Host
         if ($LASTEXITCODE -ne 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_learn_intake_audit.ps1" "Learn intake audit failed on complete routing fixtures." "Avoid false positives for valid Learn intake workflow wiring."
+        }
+    }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
+        }
+    }
+}
+
+$sboxReleaseNotesAudit = Join-Path $Root "scripts/agents/sbox_release_notes_audit.ps1"
+if (Test-Path -LiteralPath $sboxReleaseNotesAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-release-notes-audit-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot ".agents\sbox") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "docs") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "scripts\agents") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot ".claude") | Out-Null
+
+        "https://sbox.game/release-notes" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\sbox_engine_llm_reference.md") -Encoding UTF8
+        "S&Box Release Notes Intake Agent" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\sbox-release-notes-agent.md") -Encoding UTF8
+        "https://sbox.game/release-notes" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\sbox-engine-reference-agent.md") -Encoding UTF8
+        "Official S&Box Release Notes Intake" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\known_sbox_patterns.md") -Encoding UTF8
+        "S&Box Release Notes Intake Agent" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
+        "sbox-release-notes-agent.md" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
+        "S&Box release notes" | Set-Content -LiteralPath (Join-Path $tempRoot "AGENTS.md") -Encoding UTF8
+        '"release-notes"' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
+        "sbox_release_notes_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
+        "ReleaseNotesResearch" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\post_task_training_agent.ps1") -Encoding UTF8
+        '{"hooks":[]}' | Set-Content -LiteralPath (Join-Path $tempRoot ".claude\settings.json") -Encoding UTF8
+
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sboxReleaseNotesAudit -ScriptArgs @("-Root", $tempRoot) -Label "incomplete release-notes intake routing" -SourcePath "scripts/agents/sbox_release_notes_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_release_notes_audit.ps1" "Release-notes audit did not fail on incomplete routing fixtures." "Keep the fixture strict enough to catch missing release-note docs, agent, hook, suite, and self-test wiring."
+        }
+
+        @'
+# S&Box Engine LLM Reference
+
+Official S&Box release notes reviewed on 2026-05-28:
+
+- https://sbox.game/release-notes
+- https://sbox.game/api/changes
+- 26.05.27
+- Mesh.AddMorph
+- MorphDelta
+- CreateModelFromMeshDialog
+- ResourceWriter.AddExternalReference
+
+Use HasTag() on trace results. Route chat through IChatEvent. Custom panel drawing can use IPanelDraw. Voice Mixer owns voice transmission. TerrainStorage.SetResolution() is the terrain resolution workflow. Scene.Trace.Cone and Rigidbody.SleepThreshold are available after API verification. VMDL writer now also saves the PHYS block.
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "docs\sbox_engine_llm_reference.md") -Encoding UTF8
+
+        @'
+# S&Box Release Notes Intake Agent
+
+## Purpose
+
+Review official release notes.
+
+Sources:
+- https://sbox.game/release-notes
+- https://sbox.game/api/changes
+
+Evidence:
+- sbox_api_lookup.ps1
+- sbox_release_notes_audit.ps1
+- sbox-learn-intake-agent.md
+- sbox-engine-reference-agent.md
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\sbox-release-notes-agent.md") -Encoding UTF8
+
+        "https://sbox.game/release-notes https://sbox.game/api/changes sbox-release-notes-agent.md" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\sbox-engine-reference-agent.md") -Encoding UTF8
+        "Official S&Box Release Notes Intake sbox-release-notes-agent.md sbox_release_notes_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\known_sbox_patterns.md") -Encoding UTF8
+        "S&Box Release Notes Intake Agent sbox_release_notes_audit.ps1 Suite release-notes" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
+        "sbox-release-notes-agent.md sbox_release_notes_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
+        "S&Box release notes sbox-release-notes-agent.md run_agent_checks.ps1 -Suite release-notes" | Set-Content -LiteralPath (Join-Path $tempRoot "AGENTS.md") -Encoding UTF8
+        '"release-notes" sbox_release_notes_audit.ps1' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
+        'sbox_release_notes_audit.ps1 S&Box Release Notes Intake Agent https://sbox.game/release-notes "release-notes"' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
+        "ReleaseNotesResearch sbox_release_notes_audit.ps1 https://sbox.game/release-notes" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\post_task_training_agent.ps1") -Encoding UTF8
+        '{"hooks":[{"id":"sbox-release-notes-check","action":{"args":["-Suite","release-notes",".\\scripts\\agents\\sbox_release_notes_audit.ps1"]}}]}' | Set-Content -LiteralPath (Join-Path $tempRoot ".claude\settings.json") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxReleaseNotesAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_release_notes_audit.ps1" "Release-notes audit failed on complete routing fixtures." "Avoid false positives for valid official release-note workflow wiring."
         }
     }
     finally {

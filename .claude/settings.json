@@ -159,6 +159,7 @@
           "API.json",
           "api.json",
           "scripts/agents/sbox_engine_reference_audit.ps1",
+          "scripts/agents/sbox_docs_source_audit.ps1",
           "scripts/agents/sbox_api_lookup.ps1",
           "scripts/agents/sbox_api_reference_audit.ps1",
           "scripts/agents/sbox_learn_intake_audit.ps1",
@@ -196,6 +197,59 @@
         "on_failure": {
           "notify": true,
           "message": "S&Box engine/API reference check failed",
+          "level": "error"
+        }
+      }
+    },
+    {
+      "id": "sbox-docs-source-check",
+      "name": "S&Box Docs Source Check",
+      "description": "Runs official docs source routing checks when Facepunch/sbox-docs training surfaces change",
+      "enabled": true,
+      "trigger": {
+        "type": "file_pattern_change",
+        "patterns": [
+          "docs/sbox_engine_llm_reference.md",
+          "docs/known_sbox_patterns.md",
+          "docs/agent_toolkit.md",
+          ".agents/sbox/sbox-docs-source-agent.md",
+          ".agents/sbox/sbox-engine-reference-agent.md",
+          ".agents/sbox/README.md",
+          "scripts/agents/sbox_docs_source_audit.ps1",
+          "scripts/agents/sbox_engine_reference_audit.ps1",
+          "scripts/agents/run_agent_checks.ps1",
+          "scripts/agents/post_task_training_agent.ps1",
+          "scripts/agents/test_full_automation_layer.ps1"
+        ],
+        "events": ["modified", "saved"],
+        "debounce_ms": 1500
+      },
+      "action": {
+        "type": "script",
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          ".\\scripts\\agents\\run_agent_checks.ps1",
+          "-Root",
+          "${WORKSPACE_ROOT}",
+          "-Suite",
+          "sbox-docs",
+          "-ShowInfo"
+        ],
+        "cwd": "${WORKSPACE_ROOT}",
+        "timeout_seconds": 90,
+        "capture_output": true,
+        "on_success": {
+          "notify": false,
+          "message": "S&Box docs source checks passed",
+          "level": "info"
+        },
+        "on_failure": {
+          "notify": true,
+          "message": "S&Box docs source check failed",
           "level": "error"
         }
       }
@@ -251,6 +305,59 @@
         "on_failure": {
           "notify": true,
           "message": "S&Box Learn intake check failed",
+          "level": "error"
+        }
+      }
+    },
+    {
+      "id": "sbox-release-notes-check",
+      "name": "S&Box Release Notes Intake Check",
+      "description": "Runs official release-notes/API-change routing checks when patch-note training surfaces change",
+      "enabled": true,
+      "trigger": {
+        "type": "file_pattern_change",
+        "patterns": [
+          "AGENTS.md",
+          "docs/sbox_engine_llm_reference.md",
+          "docs/known_sbox_patterns.md",
+          "docs/agent_toolkit.md",
+          ".agents/sbox/sbox-release-notes-agent.md",
+          ".agents/sbox/sbox-engine-reference-agent.md",
+          ".agents/sbox/README.md",
+          "scripts/agents/sbox_release_notes_audit.ps1",
+          "scripts/agents/run_agent_checks.ps1",
+          "scripts/agents/post_task_training_agent.ps1",
+          "scripts/agents/test_full_automation_layer.ps1"
+        ],
+        "events": ["modified", "saved"],
+        "debounce_ms": 1500
+      },
+      "action": {
+        "type": "script",
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          ".\\scripts\\agents\\run_agent_checks.ps1",
+          "-Root",
+          "${WORKSPACE_ROOT}",
+          "-Suite",
+          "release-notes",
+          "-ShowInfo"
+        ],
+        "cwd": "${WORKSPACE_ROOT}",
+        "timeout_seconds": 90,
+        "capture_output": true,
+        "on_success": {
+          "notify": false,
+          "message": "S&Box release-notes intake checks passed",
+          "level": "info"
+        },
+        "on_failure": {
+          "notify": true,
+          "message": "S&Box release-notes intake check failed",
           "level": "error"
         }
       }

@@ -16,6 +16,9 @@ Use this agent when:
 Prefer official sources first:
 
 - `https://sbox.game/dev/doc`
+- `https://github.com/Facepunch/sbox-docs`
+- `https://sbox.game/release-notes`
+- `https://sbox.game/api/changes`
 - `https://sbox.game/api`
 - official Facepunch Learn pages, such as `https://sbox.game/learn/facepunch/creating-an-entity-for-sandbox`
 - `https://github.com/Facepunch/sbox-public`
@@ -25,6 +28,10 @@ Prefer official sources first:
 Use Valve Developer Community Source 2 pages as engine/tool background, not exact S&Box API authority. They are useful for ModelDoc, resource compilation, VMAT/VMDL, Hammer lighting, postprocessing, and legacy navigation mental models, but every implementation rule still needs S&Box docs, local `API.json`, editor proof, or local project evidence before it becomes active guidance.
 
 Use community posts, wikis, and third-party tools only as secondary context. Label anything volatile with an `as of YYYY-MM-DD` source marker. For Facepunch Learn tutorials, separate editor/resource concepts such as `.sent` files from exact C# API symbols, and query the local API dump before turning sample code into standing implementation guidance.
+
+When the source repository is available or the user links `Facepunch/sbox-docs`, start with `sbox-docs-source-agent.md`. Refresh `.tmpbuild/sbox-docs`, inspect the markdown and `toc.yml` inventory locally, then bring only durable project lessons back into this engine reference workflow.
+
+When the user asks to search S&Box patch notes, release notes, or new API changes, start with `sbox-release-notes-agent.md`. Use the dated release notes and API changes pages to identify candidate lessons, then verify exact symbols through local `API.json` before promoting them into standing guidance.
 
 ## Work
 
@@ -36,6 +43,7 @@ Use community posts, wikis, and third-party tools only as secondary context. Lab
 - Keep Valve `Nav Mesh` / `Nav_Mesh_Editing` guidance marked as legacy Source/Counter-Strike context unless a task explicitly targets that toolchain; S&Box navigation defaults to Recast and `Scene.NavMesh`.
 - Update `docs/sbox_engine_llm_reference.md` or `docs/known_sbox_patterns.md` when the lesson is broadly useful.
 - For `https://sbox.game/learn` tutorial reviews, hand off workflow-specific lessons to `sbox-learn-intake-agent.md` so community guidance becomes focused docs, audits, hooks, or routing.
+- For official release-note and API-change reviews, hand off volatile update tracking to `sbox-release-notes-agent.md` so new-feature lessons stay dated, sourced, and audit-backed.
 - Add or update a focused audit if the lesson prevents a repeatable failure.
 - Keep product-specific gameplay, scene, prefab, UI, and asset edits out of this workflow unless they are tiny fixtures for the audit.
 

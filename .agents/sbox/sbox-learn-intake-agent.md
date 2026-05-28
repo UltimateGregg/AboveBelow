@@ -21,6 +21,8 @@ Treat S&Box Learn as useful secondary context. Before turning a tutorial into st
 
 Treat official S&Box docs as primary context, but still verify exact C# symbols against local `API.json` or existing project patterns before implementation. If a tutorial or official docs sweep is volatile, broad, or recently updated, record the review date and source URL in `docs/sbox_engine_llm_reference.md`.
 
+For official patch notes, release notes, or API-change pages, use `sbox-release-notes-agent.md` first. Bring content back into this Learn route only when the patch note points at tutorial-style guidance or Learn pages.
+
 ## Work
 
 - Extract only the parts that are useful for this repo's recurring work.

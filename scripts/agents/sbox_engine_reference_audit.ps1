@@ -56,7 +56,10 @@ if (Test-Path -LiteralPath $referencePath) {
     foreach ($pattern in @(
         "Verified against official sources on \d{4}-\d{2}-\d{2}",
         "https://sbox.game/dev/doc",
+        "https://github.com/Facepunch/sbox-docs",
         "https://github.com/Facepunch/sbox-public",
+        "Official docs source repo reviewed on \d{4}-\d{2}-\d{2}",
+        "sbox_docs_source_audit\.ps1",
         "https://sbox.game/learn/facepunch/creating-an-entity-for-sandbox",
         "Valve Developer Community Source 2 docs reviewed on \d{4}-\d{2}-\d{2}",
         "Resourcecompiler",
@@ -82,6 +85,8 @@ if (Test-Path -LiteralPath $agentPath) {
     foreach ($pattern in @(
         "Purpose",
         "https://sbox.game/dev/doc",
+        "https://github.com/Facepunch/sbox-docs",
+        "sbox-docs-source-agent\.md",
         "https://github.com/Facepunch/sbox-public",
         "Valve Developer Community Source 2",
         "Nav_Mesh_Editing",
@@ -94,12 +99,12 @@ if (Test-Path -LiteralPath $agentPath) {
 }
 
 $integrationChecks = @(
-    [pscustomobject]@{ Path = "docs/agent_toolkit.md"; Patterns = @("S&Box Engine Reference Agent", "sbox_engine_reference_audit\.ps1") },
+    [pscustomobject]@{ Path = "docs/agent_toolkit.md"; Patterns = @("S&Box Engine Reference Agent", "S&Box Docs Source Agent", "sbox_docs_source_audit\.ps1", "sbox_engine_reference_audit\.ps1") },
     [pscustomobject]@{ Path = "docs/known_sbox_patterns.md"; Patterns = @("Valve Source 2 Asset Pipeline Intake", "Valve Nav Mesh Docs Are Legacy For S&Box") },
-    [pscustomobject]@{ Path = ".agents/sbox/README.md"; Patterns = @("sbox-engine-reference-agent\.md", "sbox_engine_reference_audit\.ps1") },
-    [pscustomobject]@{ Path = "scripts/agents/run_agent_checks.ps1"; Patterns = @("sbox_engine_reference_audit\.ps1") },
-    [pscustomobject]@{ Path = "scripts/agents/test_full_automation_layer.ps1"; Patterns = @("sbox_engine_reference_audit\.ps1") },
-    [pscustomobject]@{ Path = "scripts/agents/post_task_training_agent.ps1"; Patterns = @("sbox_engine_reference_audit\.ps1") }
+    [pscustomobject]@{ Path = ".agents/sbox/README.md"; Patterns = @("sbox-engine-reference-agent\.md", "sbox-docs-source-agent\.md", "sbox_docs_source_audit\.ps1", "sbox_engine_reference_audit\.ps1") },
+    [pscustomobject]@{ Path = "scripts/agents/run_agent_checks.ps1"; Patterns = @("sbox_docs_source_audit\.ps1", "sbox_engine_reference_audit\.ps1") },
+    [pscustomobject]@{ Path = "scripts/agents/test_full_automation_layer.ps1"; Patterns = @("sbox_docs_source_audit\.ps1", "sbox_engine_reference_audit\.ps1") },
+    [pscustomobject]@{ Path = "scripts/agents/post_task_training_agent.ps1"; Patterns = @("sbox_docs_source_audit\.ps1", "sbox_engine_reference_audit\.ps1") }
 )
 
 foreach ($check in $integrationChecks) {

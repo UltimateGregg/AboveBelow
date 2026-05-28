@@ -161,12 +161,31 @@ $areaRules = @(
     },
     [pscustomobject]@{
         Name = "EngineResearch"
-        Patterns = @("docs/sbox_engine_llm_reference.md", ".agents/sbox/sbox-engine-reference-agent.md", "scripts/agents/sbox_engine_reference_audit.ps1", "scripts/agents/sbox_api_lookup.ps1", "scripts/agents/sbox_api_reference_audit.ps1", "API.json", "api.json")
+        Patterns = @("docs/sbox_engine_llm_reference.md", ".agents/sbox/sbox-engine-reference-agent.md", ".agents/sbox/sbox-docs-source-agent.md", ".agents/sbox/sbox-release-notes-agent.md", "scripts/agents/sbox_docs_source_audit.ps1", "scripts/agents/sbox_engine_reference_audit.ps1", "scripts/agents/sbox_release_notes_audit.ps1", "scripts/agents/sbox_api_lookup.ps1", "scripts/agents/sbox_api_reference_audit.ps1", "API.json", "api.json")
         Checks = @(
+            "scripts/agents/run_agent_checks.ps1 -Suite sbox-docs -ShowInfo",
             "scripts/agents/sbox_engine_reference_audit.ps1 -ShowInfo",
             "scripts/agents/run_agent_checks.ps1 -Suite docs"
         )
         Training = "External S&Box or Source 2 research should be verified against official docs/public source and local API.json when exact symbols matter, captured in the engine reference, routed through the reference agent, and protected by stale-guidance/API audits."
+    },
+    [pscustomobject]@{
+        Name = "SboxDocsSource"
+        Patterns = @(".agents/sbox/sbox-docs-source-agent.md", "scripts/agents/sbox_docs_source_audit.ps1", "docs/sbox_engine_llm_reference.md")
+        Checks = @(
+            "scripts/agents/sbox_docs_source_audit.ps1 -Refresh -ShowInfo",
+            "scripts/agents/run_agent_checks.ps1 -Suite sbox-docs -ShowInfo"
+        )
+        Training = "Facepunch/sbox-docs training should refresh the official markdown source into .tmpbuild, record the reviewed commit/date, inspect toc.yml plus markdown locally, and promote only reusable lessons into docs, agents, hooks, or audits."
+    },
+    [pscustomobject]@{
+        Name = "ReleaseNotesResearch"
+        Patterns = @("docs/sbox_engine_llm_reference.md", ".agents/sbox/sbox-release-notes-agent.md", "scripts/agents/sbox_release_notes_audit.ps1", ".claude/settings.json")
+        Checks = @(
+            "scripts/agents/run_agent_checks.ps1 -Suite release-notes -ShowInfo",
+            "scripts/agents/sbox_api_lookup.ps1 -Root . -Query SyncAttribute -Limit 5"
+        )
+        Training = "Official S&Box release-note training should start at https://sbox.game/release-notes and https://sbox.game/api/changes, record source/review dates, verify exact symbols through local API.json, and promote only reusable workflow lessons into docs, agents, hooks, or audits."
     },
     [pscustomobject]@{
         Name = "LearnResearch"
@@ -281,6 +300,8 @@ if ($agentsText -notmatch 'just the word "train"' -or $agentsText -notmatch 'run
 $engineReferencePath = Join-Path $Root "docs/sbox_engine_llm_reference.md"
 $engineAgentPath = Join-Path $Root ".agents/sbox/sbox-engine-reference-agent.md"
 $engineAuditPath = Join-Path $Root "scripts/agents/sbox_engine_reference_audit.ps1"
+$docsSourceAgentPath = Join-Path $Root ".agents/sbox/sbox-docs-source-agent.md"
+$docsSourceAuditPath = Join-Path $Root "scripts/agents/sbox_docs_source_audit.ps1"
 $apiLookupPath = Join-Path $Root "scripts/agents/sbox_api_lookup.ps1"
 $apiAuditPath = Join-Path $Root "scripts/agents/sbox_api_reference_audit.ps1"
 
@@ -296,6 +317,14 @@ if (-not (Test-Path -LiteralPath $engineAuditPath)) {
     Add-AgentIssue $issues "Warning" "Post-Task Training" "scripts/agents/sbox_engine_reference_audit.ps1" "Engine research audit script is missing." "Add a stale-guidance guard for [Net], .qc, manual VMDL advice, and unsourced volatile engine claims."
 }
 
+if (-not (Test-Path -LiteralPath $docsSourceAgentPath)) {
+    Add-AgentIssue $issues "Warning" "Post-Task Training" ".agents/sbox/sbox-docs-source-agent.md" "Official docs source routing agent is missing." "Add an agent card for Facepunch/sbox-docs clone, inventory, and commit/date review workflow."
+}
+
+if (-not (Test-Path -LiteralPath $docsSourceAuditPath)) {
+    Add-AgentIssue $issues "Warning" "Post-Task Training" "scripts/agents/sbox_docs_source_audit.ps1" "Official docs source audit script is missing." "Add a refreshable audit for Facepunch/sbox-docs routing, suite, hook, and snapshot checks."
+}
+
 if (-not (Test-Path -LiteralPath $apiLookupPath)) {
     Add-AgentIssue $issues "Warning" "Post-Task Training" "scripts/agents/sbox_api_lookup.ps1" "S&Box API lookup helper is missing." "Add a local API.json query helper so future agents can verify exact symbols before editing C#."
 }
@@ -304,11 +333,11 @@ if (-not (Test-Path -LiteralPath $apiAuditPath)) {
     Add-AgentIssue $issues "Warning" "Post-Task Training" "scripts/agents/sbox_api_reference_audit.ps1" "S&Box API reference audit is missing." "Protect local API lookup docs, hook, and suite wiring with an audit."
 }
 
-if ($toolkitText -notmatch 'S&Box Engine Reference Agent' -or $toolkitText -notmatch 'sbox_engine_reference_audit\.ps1' -or $toolkitText -notmatch 'sbox_api_lookup\.ps1') {
+if ($toolkitText -notmatch 'S&Box Engine Reference Agent' -or $toolkitText -notmatch 'S&Box Docs Source Agent' -or $toolkitText -notmatch 'sbox_docs_source_audit\.ps1' -or $toolkitText -notmatch 'sbox_engine_reference_audit\.ps1' -or $toolkitText -notmatch 'sbox_api_lookup\.ps1') {
     Add-AgentIssue $issues "Warning" "Post-Task Training" "docs/agent_toolkit.md" "Agent toolkit docs do not route external S&Box engine research." "Document the engine reference agent and its evidence command."
 }
 
-if ($agentReadmeText -notmatch 'sbox-engine-reference-agent\.md' -or $agentReadmeText -notmatch 'sbox_engine_reference_audit\.ps1' -or $agentReadmeText -notmatch 'sbox_api_lookup\.ps1') {
+if ($agentReadmeText -notmatch 'sbox-engine-reference-agent\.md' -or $agentReadmeText -notmatch 'sbox-docs-source-agent\.md' -or $agentReadmeText -notmatch 'sbox_docs_source_audit\.ps1' -or $agentReadmeText -notmatch 'sbox_engine_reference_audit\.ps1' -or $agentReadmeText -notmatch 'sbox_api_lookup\.ps1') {
     Add-AgentIssue $issues "Warning" "Post-Task Training" ".agents/sbox/README.md" "Agent routing docs do not mention the S&Box engine reference agent." "Add a routing row for verified engine/API research intake."
 }
 

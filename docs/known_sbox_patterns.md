@@ -70,6 +70,28 @@ pawn.NetworkSpawn(connection);  // Sets Network.Owner = connection
 - Treat older Source 1 or legacy S&Box examples as migration context, not implementation authority. In particular, do not revive `[Net]`, `.qc` model scripts, entity/I/O gameplay, or manual `.vmdl` text editing as active defaults.
 - Capture useful research in `docs/sbox_engine_llm_reference.md`; use `scripts/agents/sbox_api_lookup.ps1` for exact local API symbols and run `scripts/agents/run_agent_checks.ps1 -Suite docs` after docs or agent-routing changes.
 
+### Official S&Box Docs Source Intake
+
+**Pattern:** `Facepunch/sbox-docs` is the official markdown source for `sbox.game/dev/doc`, and it is usually a better inventory surface than scraping rendered pages.
+
+**Workflow:**
+- Use `.agents/sbox/sbox-docs-source-agent.md` when a task asks to train on the official docs repo or when broad docs coverage matters.
+- Refresh the source snapshot under `.tmpbuild/sbox-docs` with `scripts\agents\sbox_docs_source_audit.ps1 -Refresh -ShowInfo`.
+- Use `.tmpbuild/sbox-docs-source-index.md`, `toc.yml` files, and `rg` over the snapshot to locate relevant pages; do not vendor the full docs tree into this repo.
+- Record the reviewed commit/date in `docs/sbox_engine_llm_reference.md` before turning a docs sweep into standing guidance.
+- Verify exact C# symbols through local `API.json` or existing code before implementation.
+
+### Official S&Box Release Notes Intake
+
+**Pattern:** Official release notes are the best way to spot new engine features, but they are dated change logs, not direct implementation proof.
+
+**Workflow:**
+- Use `.agents/sbox/sbox-release-notes-agent.md` when a task asks for S&Box patch notes, release notes, update posts, or API changes.
+- Review `https://sbox.game/release-notes`, relevant `https://sbox.game/news/...` update posts, and `https://sbox.game/api/changes`; record the review date and source update date before changing standing guidance.
+- Promote recurring lessons into `docs/sbox_engine_llm_reference.md`, agents, hooks, or focused audits. Do not copy every note into docs.
+- Verify exact C# symbols through `scripts\agents\sbox_api_lookup.ps1`, official API pages, or existing code before editing gameplay, UI, asset, or editor code.
+- Run `scripts\agents\sbox_release_notes_audit.ps1 -Root . -ShowInfo` or `scripts\agents\run_agent_checks.ps1 -Suite release-notes -ShowInfo` after changing release-note-derived guidance.
+
 ### S&Box Learn Tutorial Intake
 
 **Pattern:** S&Box Learn pages are useful day-to-day context, but most are community-written tutorials. Convert them into project behavior only through a small researched workflow.

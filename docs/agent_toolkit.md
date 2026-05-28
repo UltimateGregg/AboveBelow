@@ -52,6 +52,8 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 | Balance and Tuning Agent | Snapshot balance-related values | `scripts/agents/balance_tuning_report.ps1` |
 | Current Log Audit | Search project and local app log locations for fresh runtime/editor logs | `scripts/agents/current_log_audit.ps1` |
 | S&Box Engine Reference Agent | Verify external S&Box/Source 2 research and guard against obsolete guidance | `scripts/agents/sbox_engine_reference_audit.ps1` |
+| S&Box Docs Source Agent | Refresh and inspect the official `Facepunch/sbox-docs` markdown source before broad official-docs training | `scripts/agents/sbox_docs_source_audit.ps1 -Refresh -ShowInfo` |
+| S&Box Release Notes Intake Agent | Convert official S&Box release notes and API changes into dated project guidance, hooks, and audits | `scripts/agents/sbox_release_notes_audit.ps1` |
 | S&Box API Lookup | Query local `API.json` for exact S&Box types, members, attributes, and summaries | `scripts/agents/sbox_api_lookup.ps1` |
 | S&Box Learn Intake Agent | Convert useful S&Box Learn tutorials into project docs, audits, hooks, and routing | `scripts/agents/sbox_learn_intake_audit.ps1` |
 | Editor Node Tool Agent | Keep custom S&Box Node Editor tooling editor-only and free of copied tutorial placeholders | `scripts/agents/editor_node_tool_audit.ps1` |
@@ -72,6 +74,8 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 - The networking audit also enforces that `GameSetup.RequestSpawn` stays a `[Rpc.Host]` intent request so team/class/variant selection is applied only by the host.
 - The UI flow audit checks both interaction affordances and Razor refresh contracts. Dynamic rendered values should be listed in `BuildHash()`, not forced through `StateHasChanged()` in `Tick()`.
 - The Learn intake audit keeps S&Box Learn tutorial lessons wired through a specific agent, Razor subagent, docs, suite, self-test, and Claude hook instead of living only in chat.
+- The docs source audit keeps official `Facepunch/sbox-docs` intake routed through a source clone, dated reference note, agent routing, suite wiring, self-test, and hook instead of brittle page scraping.
+- The release notes audit keeps official S&Box patch-note/API-change lessons dated, source-linked, routed through a dedicated agent, and protected by Suite release-notes instead of living only in chat.
 - Full automation is still static unless paired with an editor playtest. Use `current_log_audit.ps1 -RequireFresh` after the playtest to verify current runtime logs.
 
 ## Recommended Usage By Change Type
@@ -258,6 +262,7 @@ Docs/tooling changes:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/docs_roadmap_audit.ps1
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite sbox-docs -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_engine_reference_audit.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_api_reference_audit.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/test_full_automation_layer.ps1
@@ -268,12 +273,23 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/test_full_automation_lay
 External S&Box or Source 2 research intake:
 
 ```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_docs_source_audit.ps1 -Root . -Refresh -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite sbox-docs -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_engine_reference_audit.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_api_lookup.ps1 -Root . -Query SyncAttribute -ShowMembers
 powershell -ExecutionPolicy Bypass -File scripts/agents/editor_node_tool_audit.ps1 -Root . -ShowInfo
 ```
 
-Use `.agents/sbox/sbox-engine-reference-agent.md` before turning pasted engine research into standing guidance. Prefer official S&Box docs, the public engine repo, local `API.json`, and local project patterns. Keep volatile claims dated and sourced, and turn recurring stale-guidance risks into audit rules rather than leaving them only in chat history.
+Use `.agents/sbox/sbox-docs-source-agent.md` when the user links `Facepunch/sbox-docs` or asks for broad official docs training. The source snapshot belongs under `.tmpbuild/sbox-docs`; use `.tmpbuild/sbox-docs-source-index.md`, `toc.yml`, and `rg` to inspect it, record the reviewed commit/date, and do not vendor the full docs tree. Use `.agents/sbox/sbox-engine-reference-agent.md` before turning pasted engine research into standing guidance. Prefer official S&Box docs, the public engine repo, local `API.json`, and local project patterns. Keep volatile claims dated and sourced, and turn recurring stale-guidance risks into audit rules rather than leaving them only in chat history.
+
+Official S&Box release notes intake:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite release-notes -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_release_notes_audit.ps1 -Root . -ShowInfo
+```
+
+Use `.agents/sbox/sbox-release-notes-agent.md` when reviewing `https://sbox.game/release-notes`, S&Box news update posts, or `https://sbox.game/api/changes`. Capture only reusable creator-facing lessons, date the reviewed release/API sources, and verify exact C# symbols with local `API.json` before implementation. Release-note lessons that become standing guidance should be protected by `sbox_release_notes_audit.ps1` and the `sbox-release-notes-check` hook.
 
 For S&Box Node Editor work, use `.agents/sbox/editor-node-tool-agent.md` as the implementation checklist. Keep `GraphView`, `NodeUI`, `INodeType`, and `IPlug` code under `Editor/` or a library `Editor/` folder, replace tutorial `NotImplementedException` placeholders before testing, and manually open the tool in the editor because static audits cannot prove node creation, selection, or connection behavior.
 
