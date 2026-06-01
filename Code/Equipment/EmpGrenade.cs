@@ -12,6 +12,8 @@ namespace DroneVsPlayers;
 [Icon( "bolt" )]
 public sealed class EmpGrenade : ThrowableGrenade
 {
+	const string DefaultEffectPrefabPath = "prefabs/effects/emp_burst.prefab";
+
 	[Property] public float Radius { get; set; } = 1100f;
 	[Property] public float JamDuration { get; set; } = 6f;
 	[Property, Range( 0f, 1f )] public float Strength { get; set; } = 1f;
@@ -46,11 +48,12 @@ public sealed class EmpGrenade : ThrowableGrenade
 	[Rpc.Broadcast]
 	void BroadcastEffect( Vector3 center )
 	{
-		if ( EffectPrefab.IsValid() )
-		{
-			EffectPrefab.Clone( center );
+		var effectPrefab = EffectPrefab.IsValid()
+			? EffectPrefab
+			: GameObject.GetPrefab( DefaultEffectPrefabPath );
+
+		if ( GrenadeEffectVisual.TrySpawnPrefab( effectPrefab, center, GrenadeEffectKind.Emp, Radius ) )
 			return;
-		}
 
 		GrenadeEffectVisual.Spawn( center, GrenadeEffectKind.Emp, Radius );
 	}

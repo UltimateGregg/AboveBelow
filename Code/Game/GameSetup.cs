@@ -50,6 +50,7 @@ public sealed class GameSetup : Component, Component.INetworkListener
 	[Property] public string FiberOpticFpvDronePrefabPath { get; set; } = "prefabs/drone_fpv_fiber.prefab";
 	[Property] public string PilotGroundPrefabPath { get; set; } = "prefabs/pilot_ground.prefab";
 	[Property] public string TrainingDummyPrefabPath { get; set; } = "prefabs/training_dummy.prefab";
+	[Property] public List<LoadoutDefinitionResource> LoadoutDefinitions { get; set; } = new();
 
 	[Property] public bool RequireRoleChoice { get; set; } = true;
 	[Property] public bool JoinExistingEditorLobbyOnStart { get; set; } = true;
@@ -193,6 +194,7 @@ public sealed class GameSetup : Component, Component.INetworkListener
 	{
 		if ( ShouldSkipRuntimeScene() ) return;
 		ResolveManagerRefs();
+		EnsureTeamComms();
 		CaptureTrainingDummySpawnPoints();
 	}
 
@@ -315,6 +317,71 @@ public sealed class GameSetup : Component, Component.INetworkListener
 		}
 	}
 
+	public PlayerRole GetConnectionRole( Guid connId )
+	{
+		if ( connId == default )
+			return PlayerRole.Spectator;
+
+		if ( PilotTeam.Contains( connId ) )
+			return PlayerRole.Pilot;
+
+		if ( SoldierTeam.Contains( connId ) )
+			return PlayerRole.Soldier;
+
+		return PlayerRole.Spectator;
+	}
+
+	public bool AreSameTeam( Guid a, Guid b )
+	{
+		if ( a == default || b == default )
+			return false;
+
+		var role = GetConnectionRole( a );
+		return role is PlayerRole.Pilot or PlayerRole.Soldier && role == GetConnectionRole( b );
+	}
+
+	public LoadoutDefinitionResource GetSoldierLoadoutDefinition( SoldierClass cls )
+	{
+		return LoadoutCatalog.FindSoldier( EnumerateLoadoutDefinitions(), cls );
+	}
+
+	public LoadoutDefinitionResource GetDroneLoadoutDefinition( DroneType type )
+	{
+		return LoadoutCatalog.FindDrone( EnumerateLoadoutDefinitions(), type );
+	}
+
+	public LoadoutDefinitionResource GetAuthoredSoldierLoadoutDefinition( SoldierClass cls )
+	{
+		return EnumerateLoadoutDefinitions()
+			.Where( d => d.IsSoldierDefinition && d.SoldierClass == cls )
+			.LastOrDefault();
+	}
+
+	public LoadoutDefinitionResource GetAuthoredDroneLoadoutDefinition( DroneType type )
+	{
+		return EnumerateLoadoutDefinitions()
+			.Where( d => d.IsDroneDefinition && d.DroneType == type )
+			.LastOrDefault();
+	}
+
+	IEnumerable<LoadoutDefinitionResource> EnumerateLoadoutDefinitions()
+	{
+		if ( LoadoutDefinitions is not null )
+		{
+			foreach ( var definition in LoadoutDefinitions )
+			{
+				if ( definition is not null )
+					yield return definition;
+			}
+		}
+
+		foreach ( var definition in ResourceLibrary.GetAll<LoadoutDefinitionResource>() )
+		{
+			if ( definition is not null )
+				yield return definition;
+		}
+	}
+
 	// ── Local-player class selection (called from the HUD) ────────────────
 
 	public void SelectLocalSoldier( SoldierClass cls )
@@ -410,6 +477,7 @@ public sealed class GameSetup : Component, Component.INetworkListener
 		var pilot = pawn.Components.Get<PilotSoldier>( FindMode.EverythingInSelfAndDescendants );
 		if ( pilot.IsValid() )
 			pilot.ChosenDrone = type;
+		EnsureTeamVoice( pawn );
 
 		if ( Networking.IsActive )
 			pawn.NetworkSpawn( channel );
@@ -437,6 +505,7 @@ public sealed class GameSetup : Component, Component.INetworkListener
 
 		var spawn = PickSpawn( PlayerRole.Soldier );
 		var pawn = prefab.Clone( spawn, name: $"{cls} - {channel.DisplayName}" );
+		EnsureTeamVoice( pawn );
 		if ( Networking.IsActive )
 			pawn.NetworkSpawn( channel );
 		_pawns[channel.Id] = pawn;
@@ -582,6 +651,28 @@ public sealed class GameSetup : Component, Component.INetworkListener
 		return true;
 	}
 
+	void EnsureTeamComms()
+	{
+		var comms = Components.Get<TeamComms>();
+		if ( !comms.IsValid() )
+			comms = Components.Create<TeamComms>();
+
+		comms.Setup = this;
+	}
+
+	void EnsureTeamVoice( GameObject pawn )
+	{
+		if ( !pawn.IsValid() )
+			return;
+
+		var voice = pawn.Components.Get<TeamVoice>( FindMode.EverythingInSelfAndDescendants );
+		if ( !voice.IsValid() )
+			voice = pawn.Components.Create<TeamVoice>();
+
+		voice.Setup = this;
+		voice.ApplyVoiceRoutingProfile();
+	}
+
 	GameObject ResolvePilotGroundPrefab()
 	{
 		if ( PilotGroundPrefab.IsValid() ) return PilotGroundPrefab;
@@ -607,6 +698,11 @@ public sealed class GameSetup : Component, Component.INetworkListener
 
 	GameObject ResolveSoldierPrefab( SoldierClass cls )
 	{
+		var definition = GetAuthoredSoldierLoadoutDefinition( cls );
+		var definitionPrefab = ResolvePrefabPath( definition?.PrefabPath );
+		if ( definitionPrefab.IsValid() )
+			return definitionPrefab;
+
 		var (inspector, path) = cls switch
 		{
 			SoldierClass.Assault => (AssaultPrefab, AssaultPrefabPath),
@@ -625,6 +721,11 @@ public sealed class GameSetup : Component, Component.INetworkListener
 
 	GameObject ResolveDronePrefab( DroneType type )
 	{
+		var definition = GetAuthoredDroneLoadoutDefinition( type );
+		var definitionPrefab = ResolvePrefabPath( definition?.PrefabPath );
+		if ( definitionPrefab.IsValid() )
+			return definitionPrefab;
+
 		var (inspector, path) = type switch
 		{
 			DroneType.Gps => (GpsDronePrefab, GpsDronePrefabPath),
@@ -639,6 +740,15 @@ public sealed class GameSetup : Component, Component.INetworkListener
 			if ( p.IsValid() ) return p;
 		}
 		return DronePrefab.IsValid() ? DronePrefab : GameObject.GetPrefab( DronePrefabPath );
+	}
+
+	static GameObject ResolvePrefabPath( string prefabPath )
+	{
+		if ( string.IsNullOrWhiteSpace( prefabPath ) )
+			return null;
+
+		var prefab = GameObject.GetPrefab( prefabPath );
+		return prefab.IsValid() ? prefab : null;
 	}
 
 	public bool NeedsLocalRoleChoice()

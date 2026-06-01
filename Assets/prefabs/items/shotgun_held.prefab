@@ -1,0 +1,95 @@
+{
+  "RootObject": {
+    "__guid": "896ec0cc-6c91-db6d-f90a-d3095147a162",
+    "Flags": 0,
+    "Name": "Weapon",
+    "Position": "20,15,55",
+    "Enabled": true,
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.ShotgunWeapon",
+        "__guid": "236da7c8-1623-4047-07f5-c4ba017ab6ba",
+        "DamagePerPellet": 9,
+        "PelletCount": 8,
+        "SpreadDegrees": 4.5,
+        "MaxRange": 2400,
+        "FireInterval": 0.7,
+        "RecoilDegrees": 1.4,
+        "Slot": 1,
+        "FirstPersonOffset": "32,9,-11",
+        "FirstPersonRotationOffset": "0,0,0",
+        "ThirdPersonLocalPosition": "20,15,55",
+        "ThirdPersonLocalAngles": "0,0,0",
+        "FireSound": "sounds/shotgun_fire.sound",
+        "TracerPrefab": {
+          "_type": "gameobject",
+          "prefab": "prefabs/tracer_default.prefab"
+        }
+      }
+    ],
+    "Children": [
+      {
+        "__guid": "87010045-af4d-4d29-46ad-7916b0f863f0",
+        "Flags": 0,
+        "Name": "WeaponVisual",
+        "Position": "0,0,0",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "4b3cd237-9a55-3e19-a5f8-581df4446245",
+            "BodyGroups": 18446744073709552000,
+            "Model": "models/shotgun.vmdl",
+            "MaterialOverride": null,
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ]
+      },
+      {
+        "__guid": "ca56dc66-3eca-d5bb-9453-ae3d7805a41d",
+        "Flags": 0,
+        "Name": "MuzzleSocket",
+        "Position": "30,0,3",
+        "Enabled": true,
+        "Components": []
+      },
+      {
+        "__guid": "bdd2b417-fe2b-99db-6e63-4d624fedb163",
+        "Flags": 0,
+        "Name": "LeftHandIk",
+        "Position": "24,-5,-1",
+        "Enabled": true,
+        "Components": []
+      },
+      {
+        "__guid": "75f62c5e-39c9-8064-95e9-6b660797c6db",
+        "Flags": 0,
+        "Name": "RightHandIk",
+        "Position": "5,5,-3",
+        "Enabled": true,
+        "Components": []
+      }
+    ],
+    "NetworkMode": 0,
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": true,
+  "MenuPath": "Drone vs Players/Held Items/Shotgun",
+  "MenuIcon": "police",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

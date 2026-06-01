@@ -16,6 +16,7 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 | Deep prefab/reference graph review | `prefab-wiring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_graph_audit.ps1` |
 | Primitive prefab visual polish | `prefab-visual-quality-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_visual_quality_audit.ps1 -ShowInfo` |
 | Main scene/spawn/collider review | `prefab-wiring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/scene_integrity_audit.ps1` |
+| Glowing blockout line cleanup or prevention | `editor-first-workflow-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite blue-lines -ShowInfo` |
 | Editor-native cover/blockout prop | `editor-native-cover-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sandbag_cover_audit.ps1 -ShowInfo`; `powershell -ExecutionPolicy Bypass -File scripts/agents/burnt_vehicle_block_audit.ps1 -ShowInfo` |
 | Prop/building collision and visual/collider alignment review | `collision-authoring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite collision -ShowInfo` |
 | Multi-agent collision exploration, implementation, verification, and critique | `collision-chain-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite collision-chain -ShowInfo` |
@@ -47,6 +48,7 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 | S&Box engine/API research intake | `sbox-engine-reference-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_engine_reference_audit.ps1 -Root . -ShowInfo` |
 | Official S&Box docs source intake | `sbox-docs-source-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_docs_source_audit.ps1 -Root . -Refresh -ShowInfo` |
 | Official S&Box release notes intake | `sbox-release-notes-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite release-notes -ShowInfo` |
+| S&Box Code Search public package examples | `sbox-code-search-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_code_search_audit.ps1 -Root . -ShowInfo` |
 | Editor Node Tool review | `editor-node-tool-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/editor_node_tool_audit.ps1 -Root . -ShowInfo` |
 | S&Box API Lookup for exact symbols | `sbox-engine-reference-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_api_lookup.ps1 -Root . -Type Sandbox.GameObject -Member NetworkSpawn` |
 | S&Box Learn tutorial intake | `sbox-learn-intake-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_learn_intake_audit.ps1 -Root . -ShowInfo` |
@@ -64,6 +66,7 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 - Extend `Code/code/Wiring/AutoWire.cs` when new prefab references need repeatable wiring.
 - After meaningful C# or scene/prefab edits, run the build/log sentinel and the most relevant specialist audit.
 - For editor-native cover or blockout props, inspect the live editor scene before file edits, preserve user-deleted primitive children, and use focused audits such as `sandbag_cover_audit.ps1` or `burnt_vehicle_block_audit.ps1` to lock spacing, material, local-offset, and placement contracts.
+- Do not add glowing blockout line strips to playable level geometry; after scene or level-generator work, run the `blue-lines` suite when route/readability markers were touched.
 - After map prop or building collision edits, run the collision authoring agent and then verify in the live editor; saved scene JSON and active editor state can diverge after Save As or MCP edits.
 - For collision-heavy tasks, use `collision-chain-agent.md` to split work across explorer, implementer, verifier, and critic roles before final handoff.
 - When the user types exactly `train`, respond with `On it!`, run the post-task training workflow, and apply durable hook, agent, pipeline, or documentation updates that will help future tasks.
@@ -77,4 +80,5 @@ Use these agents as helpers, not autonomous owners. Gameplay, UI, prefab, asset,
 - Static file audits do not replace an editor playtest or a 2-client multiplayer test when runtime behavior changed.
 - Treat pasted S&Box or Source 2 research as useful input, not authority. Route it through `sbox-engine-reference-agent.md`, prefer official docs/public source, query local `API.json` with `sbox_api_lookup.ps1` for exact symbols, and add source/date markers for volatile API or release claims. When the user links `Facepunch/sbox-docs`, use `sbox-docs-source-agent.md` and refresh `.tmpbuild/sbox-docs` before broad docs intake.
 - Treat official S&Box release notes as high-value but volatile. Route patch-note and API-change sweeps through `sbox-release-notes-agent.md`, date the reviewed release/API sources, verify exact symbols against local `API.json`, and protect adopted lessons with `sbox_release_notes_audit.ps1`.
+- Treat S&Box Code Search as practical example discovery, not authority. Route `https://sbox.game/codesearch` and public package examples through `sbox-code-search-agent.md`, compare multiple recent packages, verify exact symbols locally, and protect adopted lessons with `sbox_code_search_audit.ps1`.
 - Treat S&Box Learn pages as useful community tutorials. Route them through `sbox-learn-intake-agent.md`; if they affect Razor refresh behavior, use `ui-razor-reactivity-agent.md`; if they affect Node Editor tooling, use `editor-node-tool-agent.md`; preserve the focused audits, hook, and `learn` suite.

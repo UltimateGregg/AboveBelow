@@ -510,8 +510,14 @@ else {
 
                 $protectedSamples = @(
                     [pscustomobject]@{ Name = "Road south"; X = 416.190948; Y = -5200 },
+                    [pscustomobject]@{ Name = "Road south end center"; X = 416.190948; Y = -5460 },
+                    [pscustomobject]@{ Name = "Road south end west edge"; X = 56.190948; Y = -5460 },
+                    [pscustomobject]@{ Name = "Road south end east edge"; X = 776.190948; Y = -5460 },
                     [pscustomobject]@{ Name = "Road center"; X = 416.190948; Y = 0 },
                     [pscustomobject]@{ Name = "Road north"; X = 416.190948; Y = 5200 },
+                    [pscustomobject]@{ Name = "Road north end center"; X = 416.190948; Y = 5460 },
+                    [pscustomobject]@{ Name = "Road north end west edge"; X = 56.190948; Y = 5460 },
+                    [pscustomobject]@{ Name = "Road north end east edge"; X = 776.190948; Y = 5460 },
                     [pscustomobject]@{ Name = "House_Large_01"; X = -1680; Y = 1520 },
                     [pscustomobject]@{ Name = "House_Large_02"; X = -1740; Y = -1540 },
                     [pscustomobject]@{ Name = "House_Small_01"; X = 1120; Y = 1680 },

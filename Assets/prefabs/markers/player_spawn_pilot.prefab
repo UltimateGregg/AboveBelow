@@ -1,0 +1,36 @@
+{
+  "RootObject": {
+    "__guid": "53f8302c-3907-52c8-a85b-138a66b4e601",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "PlayerSpawn_Pilot",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "DroneSpawn",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.PlayerSpawn",
+        "__guid": "23532e5d-f6e0-5f86-a510-ff7e17d69371",
+        "__enabled": true,
+        "Flags": 0,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "Priority": 0,
+        "Role": "Pilot"
+      }
+    ],
+    "Children": []
+  },
+  "ResourceVersion": 3
+}

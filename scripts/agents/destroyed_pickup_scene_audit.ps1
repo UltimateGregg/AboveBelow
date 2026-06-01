@@ -53,6 +53,22 @@ function Get-ObjectComponents {
     return @($components)
 }
 
+function Set-JsonPropertyValue {
+    param([object]$Object, [string]$Name, [object]$Value)
+
+    if ($null -eq $Object -or $null -eq $Object.PSObject) {
+        return
+    }
+
+    $property = $Object.PSObject.Properties[$Name]
+    if ($null -eq $property) {
+        $Object | Add-Member -NotePropertyName $Name -NotePropertyValue $Value -Force
+    }
+    else {
+        $property.Value = $Value
+    }
+}
+
 function Get-AllObjects {
     param([object]$Object)
 
@@ -72,6 +88,33 @@ function Find-ObjectsByName {
     param([object[]]$Objects, [string]$Name)
 
     return @($Objects | Where-Object { [string](Get-JsonPropertyValue -Object $_ -Name "Name") -eq $Name })
+}
+
+function Find-DestroyedPickupGroups {
+    param(
+        [object[]]$Objects,
+        [string]$Name,
+        [object]$PrefabRoot
+    )
+
+    $matches = @(Find-ObjectsByName -Objects $Objects -Name $Name)
+    foreach ($object in @($Objects)) {
+        $prefabPath = [string](Get-JsonPropertyValue -Object $object -Name "__Prefab")
+        if ($prefabPath -notin @("prefabs/environment/burnt_car_wreck.prefab", "Assets/prefabs/environment/burnt_car_wreck.prefab")) {
+            continue
+        }
+
+        $resolved = Resolve-PrefabInstanceForAudit -Instance $object -PrefabRoot $PrefabRoot
+        if ($null -eq $resolved) {
+            continue
+        }
+
+        if ([string](Get-JsonPropertyValue -Object $resolved -Name "Name") -eq $Name) {
+            $matches += $resolved
+        }
+    }
+
+    return @($matches)
 }
 
 function Get-ObjectAndComponentGuids {
@@ -95,6 +138,105 @@ function Get-ObjectAndComponentGuids {
     }
 
     return @($items)
+}
+
+function Copy-AgentJsonObject {
+    param([object]$Object)
+
+    return ($Object | ConvertTo-Json -Depth 100 | ConvertFrom-Json)
+}
+
+function Get-PrefabInstanceIdMap {
+    param([object]$Instance)
+
+    $map = @{}
+    $rawMap = Get-JsonPropertyValue -Object $Instance -Name "__PrefabIdToInstanceId"
+    if ($null -eq $rawMap -or $null -eq $rawMap.PSObject) {
+        return $map
+    }
+
+    foreach ($property in @($rawMap.PSObject.Properties)) {
+        $map[[string]$property.Name] = [string]$property.Value
+    }
+
+    return $map
+}
+
+function Find-PrefabNodeByGuid {
+    param([object]$Object, [string]$Guid, [string]$TargetType)
+
+    if ($null -eq $Object) {
+        return $null
+    }
+
+    if ($TargetType -eq "GameObject" -and [string](Get-JsonPropertyValue -Object $Object -Name "__guid") -eq $Guid) {
+        return $Object
+    }
+
+    foreach ($component in @(Get-ObjectComponents -Object $Object)) {
+        if ($TargetType -eq "Component" -and [string](Get-JsonPropertyValue -Object $component -Name "__guid") -eq $Guid) {
+            return $component
+        }
+    }
+
+    foreach ($child in @(Get-ObjectChildren -Object $Object)) {
+        $match = Find-PrefabNodeByGuid -Object $child -Guid $Guid -TargetType $TargetType
+        if ($null -ne $match) {
+            return $match
+        }
+    }
+
+    return $null
+}
+
+function Resolve-PrefabInstanceForAudit {
+    param([object]$Instance, [object]$PrefabRoot)
+
+    if ($null -eq $Instance -or $null -eq $PrefabRoot) {
+        return $null
+    }
+
+    $resolved = Copy-AgentJsonObject -Object $PrefabRoot
+    $patch = Get-JsonPropertyValue -Object $Instance -Name "__PrefabInstancePatch"
+    foreach ($override in @((Get-JsonPropertyValue -Object $patch -Name "PropertyOverrides"))) {
+        $target = Get-JsonPropertyValue -Object $override -Name "Target"
+        if ($null -eq $target) {
+            continue
+        }
+
+        $targetType = [string](Get-JsonPropertyValue -Object $target -Name "Type")
+        $targetId = [string](Get-JsonPropertyValue -Object $target -Name "IdValue")
+        $propertyName = [string](Get-JsonPropertyValue -Object $override -Name "Property")
+        $value = Get-JsonPropertyValue -Object $override -Name "Value"
+
+        if ([string]::IsNullOrWhiteSpace($targetType) -or
+            [string]::IsNullOrWhiteSpace($targetId) -or
+            [string]::IsNullOrWhiteSpace($propertyName)) {
+            continue
+        }
+
+        $targetObject = Find-PrefabNodeByGuid -Object $resolved -Guid $targetId -TargetType $targetType
+        if ($null -ne $targetObject) {
+            Set-JsonPropertyValue -Object $targetObject -Name $propertyName -Value $value
+        }
+    }
+
+    $idMap = Get-PrefabInstanceIdMap -Instance $Instance
+    foreach ($node in @(Get-AllObjects -Object $resolved)) {
+        $nodeGuid = [string](Get-JsonPropertyValue -Object $node -Name "__guid")
+        if ($idMap.ContainsKey($nodeGuid)) {
+            Set-JsonPropertyValue -Object $node -Name "__guid" -Value $idMap[$nodeGuid]
+        }
+
+        foreach ($component in @(Get-ObjectComponents -Object $node)) {
+            $componentGuid = [string](Get-JsonPropertyValue -Object $component -Name "__guid")
+            if ($idMap.ContainsKey($componentGuid)) {
+                Set-JsonPropertyValue -Object $component -Name "__guid" -Value $idMap[$componentGuid]
+            }
+        }
+    }
+
+    return $resolved
 }
 
 function Get-ComponentByTypeName {
@@ -347,6 +489,25 @@ catch {
     exit (Get-AgentExitCode -Issues $issues -FailOnWarning:$FailOnWarning)
 }
 
+$destroyedPickupPrefabPath = Join-Path $Root "Assets\prefabs\environment\burnt_car_wreck.prefab"
+$destroyedPickupPrefabRelative = ConvertTo-AgentRelativePath -Path $destroyedPickupPrefabPath -Root $Root
+$destroyedPickupPrefabRoot = $null
+if (-not (Test-Path -LiteralPath $destroyedPickupPrefabPath)) {
+    Add-AgentIssue $issues "Error" "Destroyed Pickup Scene" $destroyedPickupPrefabRelative "Destroyed pickup prefab is missing." "Restore the prefab before validating prefab-backed scene placements."
+}
+else {
+    try {
+        $destroyedPickupPrefab = Read-AgentJson -Path $destroyedPickupPrefabPath
+        $destroyedPickupPrefabRoot = Get-JsonPropertyValue -Object $destroyedPickupPrefab -Name "RootObject"
+        if ($null -eq $destroyedPickupPrefabRoot) {
+            Add-AgentIssue $issues "Error" "Destroyed Pickup Scene" $destroyedPickupPrefabRelative "Destroyed pickup prefab has no RootObject." "Restore the prefab root before validating scene placements."
+        }
+    }
+    catch {
+        Add-AgentIssue $issues "Error" "Destroyed Pickup Scene" $destroyedPickupPrefabRelative "Could not parse destroyed pickup prefab JSON: $($_.Exception.Message)" "Fix the prefab before validating prefab-backed scene placements."
+    }
+}
+
 $allObjects = @()
 foreach ($rootObject in @($scene.GameObjects)) {
     $allObjects += Get-AllObjects -Object $rootObject
@@ -382,7 +543,7 @@ $expectedGroups = @(
 )
 
 foreach ($expected in $expectedGroups) {
-    $matches = @(Find-ObjectsByName -Objects $allObjects -Name $expected.Name)
+    $matches = @(Find-DestroyedPickupGroups -Objects $allObjects -Name $expected.Name -PrefabRoot $destroyedPickupPrefabRoot)
     if ($matches.Count -ne 1) {
         Add-AgentIssue $issues "Error" "Destroyed Pickup Scene" $relative "Expected exactly one $($expected.Name); found $($matches.Count)." "Keep exactly one destroyed pickup in the center lane."
         continue
@@ -393,7 +554,7 @@ foreach ($expected in $expectedGroups) {
 
 $pickupGuidOwners = @{}
 foreach ($expected in $expectedGroups) {
-    $matches = @(Find-ObjectsByName -Objects $allObjects -Name $expected.Name)
+    $matches = @(Find-DestroyedPickupGroups -Objects $allObjects -Name $expected.Name -PrefabRoot $destroyedPickupPrefabRoot)
     if ($matches.Count -ne 1) {
         continue
     }

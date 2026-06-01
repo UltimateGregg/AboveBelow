@@ -58,6 +58,7 @@
 - Startup scene: `/scenes/main.scene` (no standalone menu scene by default)
 - Do not reorganize prefab structure without discussion
 - Prefab-property wiring (component refs, child sockets) is mostly automated by `Code/code/Wiring/AutoWire.cs` — extend that file when you add new prefabs
+- Do not add glowing blockout line strips to the playable level (for example `PaintedRoute`, `ApproachPaint`, `DangerStripe`, `EscapeRead`, `BreachMarker`, or launch-pad glow marker strips). If level readability needs help, prefer actual cover, arted surfaces, non-line read markers, or documentation, and run `scripts/agents/run_agent_checks.ps1 -Suite blue-lines -ShowInfo` after scene or generator edits.
 
 ### Code Organization
 ```
@@ -97,6 +98,7 @@ Code/
 - Add known issues to `/docs/known_sbox_patterns.md`
 - When reviewing S&Box Learn tutorials, route useful lessons through `.agents/sbox/sbox-learn-intake-agent.md`, update the short engine reference, and run `scripts/agents/run_agent_checks.ps1 -Suite learn -ShowInfo`.
 - When reviewing S&Box release notes, patch notes, news update posts, or API changes, route useful lessons through `.agents/sbox/sbox-release-notes-agent.md`, update the short engine reference with source dates, verify exact symbols through local `API.json`, and run `scripts/agents/run_agent_checks.ps1 -Suite release-notes -ShowInfo`.
+- When reviewing S&Box Code Search results or public package examples from `https://sbox.game/codesearch`, route useful patterns through `.agents/sbox/sbox-code-search-agent.md`, treat package source as example material rather than API authority, verify exact symbols through local `API.json`, and run `scripts/agents/run_agent_checks.ps1 -Suite code-search -ShowInfo`.
 - For Razor UI reactivity lessons, use `.agents/sbox/ui-razor-reactivity-agent.md` and keep dynamic rendered values covered by `BuildHash()` instead of per-frame `StateHasChanged()`.
 
 ### Common Pitfalls to Avoid
@@ -189,6 +191,15 @@ Use this hook to keep community tutorial lessons grounded in project agents, sub
 
 Use this hook to keep official S&Box patch-note and API-change lessons dated, source-linked, verified against local API shape, and grounded in project agents, docs, hooks, and focused audits.
 
+## S&Box Code Search Intake Hook
+
+**Hook ID:** `sbox-code-search-check`
+**Configuration File:** `./.claude/settings.json`
+**Trigger:** Changes to Code Search-derived docs, Code Search agent routing, `sbox_code_search_audit.ps1`, suite wiring, training wiring, or self-test fixtures.
+**Action:** Runs `.\scripts\agents\run_agent_checks.ps1 -Suite code-search -ShowInfo`.
+
+Use this hook to keep public package examples from `https://sbox.game/codesearch` available as a pattern-discovery resource while still requiring official docs, API lookup, local code, or editor proof before implementation.
+
 ## Editor-First Workflow Hook
 
 **Hook ID:** `sbox-editor-first-workflow-check`
@@ -197,3 +208,12 @@ Use this hook to keep official S&Box patch-note and API-change lessons dated, so
 **Action:** Runs `.\scripts\agents\run_agent_checks.ps1 -Suite editor-first -ShowInfo`.
 
 Use this hook to keep future Codex/agent tasks biased toward live S&Box editor inspection, mutation, save, screenshot, playtest, and log proof before falling back to static scene or prefab JSON edits.
+
+## S&Box Blue Line Blockout Hook
+
+**Hook ID:** `sbox-blue-line-check`
+**Configuration File:** `./.claude/settings.json`
+**Trigger:** Changes to the main scene, level blockout generator, blue-line audit, layout audit, suite wiring, `AGENTS.md`, or `docs/agent_toolkit.md`.
+**Action:** Runs `.\scripts\agents\run_agent_checks.ps1 -Suite blue-lines -ShowInfo`.
+
+Use this hook to prevent Codex/agent level-generation passes from recreating retired glowing blockout line strips in the playable level.

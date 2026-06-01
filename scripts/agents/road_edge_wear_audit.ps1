@@ -66,6 +66,22 @@ function Get-ObjectComponents {
     return @($components)
 }
 
+function Set-JsonPropertyValue {
+    param([object]$Object, [string]$Name, [object]$Value)
+
+    if ($null -eq $Object -or $null -eq $Object.PSObject) {
+        return
+    }
+
+    $property = $Object.PSObject.Properties[$Name]
+    if ($null -eq $property) {
+        $Object | Add-Member -NotePropertyName $Name -NotePropertyValue $Value -Force
+    }
+    else {
+        $property.Value = $Value
+    }
+}
+
 function Get-AllObjects {
     param([object]$Object)
 
@@ -88,6 +104,131 @@ function Find-ObjectsByName {
     )
 
     return @($Objects | Where-Object { [string](Get-JsonPropertyValue -Object $_ -Name "Name") -eq $Name })
+}
+
+function Copy-AgentJsonObject {
+    param([object]$Object)
+
+    return ($Object | ConvertTo-Json -Depth 100 | ConvertFrom-Json)
+}
+
+function Get-PrefabInstanceIdMap {
+    param([object]$Instance)
+
+    $map = @{}
+    $rawMap = Get-JsonPropertyValue -Object $Instance -Name "__PrefabIdToInstanceId"
+    if ($null -eq $rawMap -or $null -eq $rawMap.PSObject) {
+        return $map
+    }
+
+    foreach ($property in @($rawMap.PSObject.Properties)) {
+        $map[[string]$property.Name] = [string]$property.Value
+    }
+
+    return $map
+}
+
+function Find-PrefabNodeByGuid {
+    param([object]$Object, [string]$Guid, [string]$TargetType)
+
+    if ($null -eq $Object) {
+        return $null
+    }
+
+    if ($TargetType -eq "GameObject" -and [string](Get-JsonPropertyValue -Object $Object -Name "__guid") -eq $Guid) {
+        return $Object
+    }
+
+    foreach ($component in @(Get-ObjectComponents -Object $Object)) {
+        if ($TargetType -eq "Component" -and [string](Get-JsonPropertyValue -Object $component -Name "__guid") -eq $Guid) {
+            return $component
+        }
+    }
+
+    foreach ($child in @(Get-ObjectChildren -Object $Object)) {
+        $match = Find-PrefabNodeByGuid -Object $child -Guid $Guid -TargetType $TargetType
+        if ($null -ne $match) {
+            return $match
+        }
+    }
+
+    return $null
+}
+
+function Resolve-PrefabInstanceForAudit {
+    param([object]$Instance, [object]$PrefabRoot)
+
+    if ($null -eq $Instance -or $null -eq $PrefabRoot) {
+        return $null
+    }
+
+    $resolved = Copy-AgentJsonObject -Object $PrefabRoot
+    $patch = Get-JsonPropertyValue -Object $Instance -Name "__PrefabInstancePatch"
+    foreach ($override in @((Get-JsonPropertyValue -Object $patch -Name "PropertyOverrides"))) {
+        $target = Get-JsonPropertyValue -Object $override -Name "Target"
+        if ($null -eq $target) {
+            continue
+        }
+
+        $targetType = [string](Get-JsonPropertyValue -Object $target -Name "Type")
+        $targetId = [string](Get-JsonPropertyValue -Object $target -Name "IdValue")
+        $propertyName = [string](Get-JsonPropertyValue -Object $override -Name "Property")
+        $value = Get-JsonPropertyValue -Object $override -Name "Value"
+
+        if ([string]::IsNullOrWhiteSpace($targetType) -or
+            [string]::IsNullOrWhiteSpace($targetId) -or
+            [string]::IsNullOrWhiteSpace($propertyName)) {
+            continue
+        }
+
+        $targetObject = Find-PrefabNodeByGuid -Object $resolved -Guid $targetId -TargetType $targetType
+        if ($null -ne $targetObject) {
+            Set-JsonPropertyValue -Object $targetObject -Name $propertyName -Value $value
+        }
+    }
+
+    $idMap = Get-PrefabInstanceIdMap -Instance $Instance
+    foreach ($node in @(Get-AllObjects -Object $resolved)) {
+        $nodeGuid = [string](Get-JsonPropertyValue -Object $node -Name "__guid")
+        if ($idMap.ContainsKey($nodeGuid)) {
+            Set-JsonPropertyValue -Object $node -Name "__guid" -Value $idMap[$nodeGuid]
+        }
+
+        foreach ($component in @(Get-ObjectComponents -Object $node)) {
+            $componentGuid = [string](Get-JsonPropertyValue -Object $component -Name "__guid")
+            if ($idMap.ContainsKey($componentGuid)) {
+                Set-JsonPropertyValue -Object $component -Name "__guid" -Value $idMap[$componentGuid]
+            }
+        }
+    }
+
+    return $resolved
+}
+
+function Find-RoadEdgeWearObjects {
+    param([object]$Road, [object]$PrefabRoot)
+
+    $matches = @()
+    foreach ($child in @(Get-ObjectChildren -Object $Road)) {
+        $name = [string](Get-JsonPropertyValue -Object $child -Name "Name")
+        if ($name.StartsWith("RoadEdgeWear_", [System.StringComparison]::Ordinal)) {
+            $matches += $child
+            continue
+        }
+
+        $prefabPath = [string](Get-JsonPropertyValue -Object $child -Name "__Prefab")
+        if ($prefabPath -notin @("prefabs/environment/road_edge_wear_patch.prefab", "Assets/prefabs/environment/road_edge_wear_patch.prefab")) {
+            continue
+        }
+
+        $resolved = Resolve-PrefabInstanceForAudit -Instance $child -PrefabRoot $PrefabRoot
+        $resolvedName = [string](Get-JsonPropertyValue -Object $resolved -Name "Name")
+        if ($null -ne $resolved -and $resolvedName.StartsWith("RoadEdgeWear_", [System.StringComparison]::Ordinal)) {
+            $matches += $resolved
+        }
+    }
+
+    return @($matches)
 }
 
 function Convert-AgentVectorText {
@@ -235,10 +376,19 @@ if ($roadMatches.Count -ne 1) {
 }
 
 $road = $roadMatches[0]
-$roadChildren = @(Get-ObjectChildren -Object $road)
-$wearObjects = @($roadChildren | Where-Object {
-    ([string](Get-JsonPropertyValue -Object $_ -Name "Name")).StartsWith("RoadEdgeWear_", [System.StringComparison]::Ordinal)
-})
+$roadEdgeWearPrefabPath = Join-Path $Root "Assets\prefabs\environment\road_edge_wear_patch.prefab"
+$roadEdgeWearPrefabRoot = $null
+if (Test-Path -LiteralPath $roadEdgeWearPrefabPath) {
+    try {
+        $roadEdgeWearPrefab = Read-AgentJson -Path $roadEdgeWearPrefabPath
+        $roadEdgeWearPrefabRoot = Get-JsonPropertyValue -Object $roadEdgeWearPrefab -Name "RootObject"
+    }
+    catch {
+        $roadEdgeWearPrefabRelative = ConvertTo-AgentRelativePath -Path $roadEdgeWearPrefabPath -Root $Root
+        Add-AgentIssue $issues "Error" "Road Edge Wear" $roadEdgeWearPrefabRelative "Could not parse road-edge wear prefab JSON: $($_.Exception.Message)" "Fix the prefab before validating prefab-backed road-edge wear placements."
+    }
+}
+$wearObjects = @(Find-RoadEdgeWearObjects -Road $road -PrefabRoot $roadEdgeWearPrefabRoot)
 
 $expectedWearTotal = $expectedWearPerSide * 2
 if ($wearObjects.Count -ne $expectedWearTotal) {

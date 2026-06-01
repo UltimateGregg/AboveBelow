@@ -44,6 +44,7 @@ function Reject-Match {
 
 $weapon = Read-ProjectFile "Code/Drone/DroneWeapon.cs"
 $hud = Read-ProjectFile "Code/UI/HudPanel.razor"
+$promptRenderer = Read-ProjectFile "Code/UI/InteractionPromptRenderer.cs"
 $deployer = Read-ProjectFile "Code/Player/DroneDeployer.cs"
 $pilot = Read-ProjectFile "Code/Player/PilotSoldier.cs"
 
@@ -62,8 +63,11 @@ Require-Match "Pilot drone HUD should hide bottom loadout cards while the local 
 Require-Match "Pilot drone HUD should render a single drone action prompt inside the existing reticle stack." `
     $hud "<div\s+class=""reticle-stack"">[\s\S]{0,900}ShowDroneActionPrompt[\s\S]{0,700}drone-action-prompt"
 
-Require-Match "Pilot drone HUD should show a left mouse icon in the reticle action prompt." `
-    $hud "ShowDroneActionPrompt[\s\S]{0,900}mouse-icon[\s\S]{0,260}mouse-button\s+left"
+Require-Match "Pilot drone HUD should render the drone action prompt through the shared interaction prompt renderer." `
+    $hud "ShowDroneActionPrompt[\s\S]{0,900}InteractionPromptRenderer\.Render[\s\S]{0,180}drone-action-prompt"
+
+Require-Match "InteractionPromptRenderer should show a left mouse icon for LMB prompts." `
+    $promptRenderer "glyph\.Equals\(\s*""LMB""[\s\S]{0,900}mouse-icon[\s\S]{0,260}mouse-button\s+left"
 
 Require-Match "Pilot drone HUD should label primary-kamikaze FPV drones as DETONATE." `
     $hud "DroneActionLabel[\s\S]{0,520}PrimaryUsesKamikaze[\s\S]{0,160}""DETONATE"""

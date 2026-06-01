@@ -1,0 +1,206 @@
+{
+  "RootObject": {
+    "__guid": "9ed6be78-091d-336a-9ffd-4339379d1151",
+    "Flags": 0,
+    "Name": "DroneDeployer",
+    "Position": "0,0,0",
+    "Enabled": true,
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.DroneDeployer",
+        "__guid": "86cb82ea-d455-6031-7b33-ad6e01064194",
+        "Slot": 1,
+        "LeftHandVisual": {
+          "_type": "gameobject",
+          "go": "a0266540-961f-c4c3-d25c-d84c78f4c026"
+        },
+        "RightHandVisual": {
+          "_type": "gameobject",
+          "go": "b629eb92-0fc5-f409-0bb4-25bdc3790c4b"
+        },
+        "LeftHandIkTarget": {
+          "_type": "gameobject",
+          "go": "4daf84f0-b854-a25f-93c8-d775fba44c8c"
+        },
+        "RightHandIkTarget": {
+          "_type": "gameobject",
+          "go": "1e63db92-0eb2-e110-2aaf-a06bd98b2aa9"
+        },
+        "GpsDronePrefab": {
+          "_type": "gameobject",
+          "prefab": "prefabs/drone_gps.prefab"
+        },
+        "FpvDronePrefab": {
+          "_type": "gameobject",
+          "prefab": "prefabs/drone_fpv.prefab"
+        },
+        "FiberOpticFpvDronePrefab": {
+          "_type": "gameobject",
+          "prefab": "prefabs/drone_fpv_fiber.prefab"
+        },
+        "LaunchCooldown": 8,
+        "LaunchSpeed": 300,
+        "LaunchSpawnOffset": "60,0,-4",
+        "LeftHandFpOffset": "28,-6,-10",
+        "LeftHandFpRotation": "0,180,0",
+        "RightHandFpOffset": "34,12,-8",
+        "RightHandFpRotation": "0,0,0",
+        "LeftHandTpLocalPos": "20,0,47",
+        "LeftHandTpLocalAngles": "0,0,0",
+        "RightHandTpLocalPos": "22,14,49",
+        "RightHandTpLocalAngles": "0,0,0",
+        "FiberHeldDroneModelPath": "models/drone_fpv_fiber.vmdl",
+        "FiberHeldDroneTint": "1,1,1,1",
+        "SwayLerpRate": 18,
+        "LaunchReadyAt": 0,
+        "DroneInFlight": false
+      }
+    ],
+    "Children": [
+      {
+        "__guid": "a0266540-961f-c4c3-d25c-d84c78f4c026",
+        "Flags": 0,
+        "Name": "LeftHand",
+        "Position": "0,0,0",
+        "Scale": "0.75,0.75,0.75",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "caea97a7-8a06-f889-c475-b579dc6ffc60",
+            "BodyGroups": 18446744073709552000,
+            "Model": "models/weapons/rc_transmitter.vmdl",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ]
+      },
+      {
+        "__guid": "b629eb92-0fc5-f409-0bb4-25bdc3790c4b",
+        "Flags": 0,
+        "Name": "RightHand",
+        "Position": "0,0,0",
+        "Scale": "0.3,0.3,0.3",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "4993558a-508a-2bf8-ca95-655dcc245e76",
+            "BodyGroups": 18446744073709552000,
+            "Model": "models/drone_fpv.vmdl",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ],
+        "Children": [
+          {
+            "__guid": "a3c09bc8-090c-7db8-f4ee-d6a9a0a8b4b4",
+            "Flags": 0,
+            "Name": "HeldPropeller_FL",
+            "Position": "6.71,6.71,1.8",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "Sandbox.ModelRenderer",
+                "__guid": "bafbd758-e0c9-599c-723b-802a1794bc84",
+                "BodyGroups": 18446744073709552000,
+                "Model": "models/drone_fpv_prop.vmdl",
+                "RenderType": "On",
+                "Tint": "1,1,1,1"
+              }
+            ]
+          },
+          {
+            "__guid": "acf190eb-a0ca-6725-4643-854b3f8ed559",
+            "Flags": 0,
+            "Name": "HeldPropeller_FR",
+            "Position": "6.71,-6.71,1.8",
+            "Rotation": "0,180,0",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "Sandbox.ModelRenderer",
+                "__guid": "e88199c0-411a-9ff5-c450-667440065c4c",
+                "BodyGroups": 18446744073709552000,
+                "Model": "models/drone_fpv_prop.vmdl",
+                "RenderType": "On",
+                "Tint": "1,1,1,1"
+              }
+            ]
+          },
+          {
+            "__guid": "0324af8f-c5c5-ad6e-85e9-7afc7eaa4a06",
+            "Flags": 0,
+            "Name": "HeldPropeller_BL",
+            "Position": "-6.71,6.71,1.8",
+            "Rotation": "0,180,0",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "Sandbox.ModelRenderer",
+                "__guid": "1719c9e8-73b6-d069-0a3a-e2637c5a244e",
+                "BodyGroups": 18446744073709552000,
+                "Model": "models/drone_fpv_prop.vmdl",
+                "RenderType": "On",
+                "Tint": "1,1,1,1"
+              }
+            ]
+          },
+          {
+            "__guid": "3e0ebd41-6904-b248-48a7-0474e1879225",
+            "Flags": 0,
+            "Name": "HeldPropeller_BR",
+            "Position": "-6.71,-6.71,1.8",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "Sandbox.ModelRenderer",
+                "__guid": "1a11c900-4ef9-6ff1-a5aa-bd21ffae86c7",
+                "BodyGroups": 18446744073709552000,
+                "Model": "models/drone_fpv_prop.vmdl",
+                "RenderType": "On",
+                "Tint": "1,1,1,1"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "__guid": "4daf84f0-b854-a25f-93c8-d775fba44c8c",
+        "Flags": 0,
+        "Name": "LeftHandIk",
+        "Position": "28,-8,44",
+        "Enabled": true,
+        "Components": []
+      },
+      {
+        "__guid": "1e63db92-0eb2-e110-2aaf-a06bd98b2aa9",
+        "Flags": 0,
+        "Name": "RightHandIk",
+        "Position": "34,10,46",
+        "Enabled": true,
+        "Components": []
+      }
+    ],
+    "NetworkMode": 0,
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": true,
+  "MenuPath": "Drone vs Players/Held Items/Pilot Drone Deployer",
+  "MenuIcon": "settings_remote",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

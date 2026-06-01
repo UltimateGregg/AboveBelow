@@ -186,10 +186,10 @@ public sealed class DroneController : Component
 		if ( !VisualModel.IsValid() || !Body.IsValid() ) return;
 
 		var localVel = Rotation.From( 0, EyeAngles.yaw, 0 ).Inverse * Body.Velocity;
-		var pitch = -(localVel.x / Math.Max( MaxSpeed, 1f )) * VisualTiltDegrees;
+		var pitch = (localVel.x / Math.Max( MaxSpeed, 1f )) * VisualTiltDegrees;
 		var roll  = -(localVel.y / Math.Max( MaxSpeed, 1f )) * VisualTiltDegrees;
 		var tilt = Rotation.From( pitch, 0, roll );
-		var visualTilt = VisualRotationOffset.ToRotation() * tilt;
+		var visualTilt = tilt * VisualRotationOffset.ToRotation();
 
 		VisualModel.LocalRotation = Rotation.Slerp( VisualModel.LocalRotation, visualTilt, Time.Delta * VisualTiltSmoothing );
 	}

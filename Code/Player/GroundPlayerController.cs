@@ -31,6 +31,7 @@ public sealed class GroundPlayerController : Component
 	const int CitizenBodyGroupVisible = 0;
 	const int CitizenBodyGroupHidden = 1;
 	const int CitizenHeadHidden = 2;
+	const string DefaultSlideSoundPath = "sounds/slide_scrape.sound";
 
 	[Property] public Vector3 Gravity { get; set; } = new Vector3( 0, 0, 800 );
 	[Property] public float WalkSpeed { get; set; } = 110f;
@@ -81,11 +82,13 @@ public sealed class GroundPlayerController : Component
 	// ---- Slide ----
 	[Property, Range( 0.3f, 3f )]  public float SlideDuration { get; set; } = 1.1f;
 	[Property, Range( 1f, 3f )]    public float SlideInitialBoost { get; set; } = 1.35f;
+	[Property, Range( 1f, 3f )]    public float SlideSpeedMultiplier { get; set; } = 1.5f;
 	[Property, Range( 0f, 30f )]   public float SlideDrag { get; set; } = 2.2f;
 	[Property, Range( 0f, 30f )]   public float SlideCameraRollDegrees { get; set; } = 8f;
+	[Property] public SoundEvent SlideSound { get; set; }
 
 	// ---- Stamina ----
-	[Property, Range( 1f, 30f )] public float StaminaMaxSeconds { get; set; } = 4f;
+	[Property, Range( 1f, 30f )] public float StaminaMaxSeconds { get; set; } = 8f;
 	[Property, Range( 1f, 30f )] public float StaminaRefillSeconds { get; set; } = 3f;
 	[Property, Range( 0f, 5f )] public float SprintCooldownSeconds { get; set; } = 0.75f;
 	[Property, Range( 0f, 1f )] public float StaminaResumeThreshold { get; set; } = 0.20f;
@@ -112,7 +115,9 @@ public sealed class GroundPlayerController : Component
 
 	// Recoil
 	private Angles _recoilOffset;
+	private Angles _shotNoiseOffset;
 	[Property, Range( 4f, 30f )] public float RecoilReturnRate { get; set; } = 12f;
+	[Property, Range( 6f, 40f )] public float ShotNoiseReturnRate { get; set; } = 18f;
 
 	// ADS state (local-only)
 	float _adsT;
@@ -177,6 +182,17 @@ public sealed class GroundPlayerController : Component
 	{
 		_recoilOffset.pitch -= pitch;
 		_recoilOffset.yaw += yaw;
+	}
+
+	/// <summary>
+	/// Adds a short local-only camera kick used for weapon feel. This is separate
+	/// from authoritative aim recoil and decays faster than the main recoil.
+	/// </summary>
+	public void AddShotNoise( float pitch, float yaw, float roll )
+	{
+		_shotNoiseOffset.pitch -= pitch;
+		_shotNoiseOffset.yaw += yaw;
+		_shotNoiseOffset.roll += roll;
 	}
 
 	protected override void OnEnabled()
@@ -301,6 +317,11 @@ public sealed class GroundPlayerController : Component
 		_recoilOffset.pitch = MathX.Lerp( _recoilOffset.pitch, 0f, recoilDecay );
 		_recoilOffset.yaw   = MathX.Lerp( _recoilOffset.yaw,   0f, recoilDecay );
 
+		var shotNoiseDecay = 1f - MathF.Exp( -ShotNoiseReturnRate * Time.Delta );
+		_shotNoiseOffset.pitch = MathX.Lerp( _shotNoiseOffset.pitch, 0f, shotNoiseDecay );
+		_shotNoiseOffset.yaw = MathX.Lerp( _shotNoiseOffset.yaw, 0f, shotNoiseDecay );
+		_shotNoiseOffset.roll = MathX.Lerp( _shotNoiseOffset.roll, 0f, shotNoiseDecay );
+
 		// ADS lerp. Sprinting / sliding forces ADS off.
 		var wantsAds = _adsRequested && !IsSprinting && !IsSliding && !IsClimbingLadder;
 		_adsT = MathX.Lerp( _adsT, wantsAds ? 1f : 0f, 1f - MathF.Exp( -AdsLerpRate * Time.Delta ) );
@@ -338,10 +359,10 @@ public sealed class GroundPlayerController : Component
 
 		var lookDir = EyeAngles.ToRotation();
 
-		// Build display rotation: recoil pitch + landing dip + slide camera roll.
-		var displayAngles = EyeAngles + _recoilOffset;
+		// Build display rotation: recoil pitch + landing dip + shot noise + slide roll.
+		var displayAngles = EyeAngles + _recoilOffset + _shotNoiseOffset;
 		displayAngles.pitch += _landingDipPitch;
-		if ( IsSliding ) displayAngles.roll = SlideCameraRollDegrees;
+		if ( IsSliding ) displayAngles.roll += SlideCameraRollDegrees;
 		var displayDir = displayAngles.ToRotation();
 
 		if ( Eye.IsValid() )
@@ -516,8 +537,9 @@ public sealed class GroundPlayerController : Component
 				_slideTimeLeft = SlideDuration;
 				_slideDirection = horizVel.Normal;
 				// Initial boost
-				cc.Velocity = (_slideDirection * horizVel.Length * SlideInitialBoost).WithZ( cc.Velocity.z );
+				cc.Velocity = (_slideDirection * horizVel.Length * SlideInitialBoost * SlideSpeedMultiplier).WithZ( cc.Velocity.z );
 				ClearSprintIntent();
+				BroadcastSlideStarted();
 			}
 		}
 
@@ -782,5 +804,18 @@ public sealed class GroundPlayerController : Component
 	{
 		if ( FootstepSound is null ) return;
 		Sound.Play( FootstepSound, WorldPosition );
+	}
+
+	[Rpc.Broadcast]
+	void BroadcastSlideStarted()
+	{
+		if ( SlideSound is not null )
+		{
+			SoundPlayback.PlayAttached( SlideSound, GameObject, WorldPosition );
+			return;
+		}
+
+		var h = Sound.Play( DefaultSlideSoundPath, WorldPosition );
+		SoundPlayback.UpdateAttached( h, GameObject, WorldPosition );
 	}
 }

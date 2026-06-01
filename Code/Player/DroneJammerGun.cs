@@ -1,7 +1,6 @@
 using Sandbox;
 using Sandbox.Citizen;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace DroneVsPlayers;
@@ -18,6 +17,8 @@ namespace DroneVsPlayers;
 [Icon( "wifi_tethering_off" )]
 public sealed class DroneJammerGun : Component
 {
+	const string DefaultBeamVisualPrefabPath = "prefabs/effects/jammer_beam.prefab";
+
 	[Property] public float MaxRange { get; set; } = 4000f;
 	[Property, Range( 1f, 45f )] public float ConeHalfAngle { get; set; } = 12f;
 	[Property] public float TickInterval { get; set; } = 0.1f;
@@ -48,7 +49,7 @@ public sealed class DroneJammerGun : Component
 	TimeSince _timeSincePulse = 10f;
 	SoundHandle _loop;
 	GameObject _beamObject;
-	LineRenderer _beamLine;
+	JammerConeVisual _beamVisual;
 
 	public bool IsSelected => WeaponPose.IsSlotSelected( this, Slot );
 	public bool IsActive { get; private set; }
@@ -170,52 +171,43 @@ public sealed class DroneJammerGun : Component
 		}
 
 		EnsureBeamVisual();
-		if ( !_beamLine.IsValid() )
+		if ( !_beamVisual.IsValid() )
 			return;
 
-		var end = origin + forward * MaxRange;
-		var coneRadians = ConeHalfAngle * (MathF.PI / 180f);
-		var horizontalForward = forward.WithZ( 0f );
-		var right = horizontalForward.IsNearZeroLength
-			? WorldRotation.Right
-			: Vector3.Cross( Vector3.Up, horizontalForward.Normal ).Normal;
-		var leftEdge = (forward * MathF.Cos( coneRadians ) + right * MathF.Sin( coneRadians )).Normal;
-		var rightEdge = (forward * MathF.Cos( coneRadians ) - right * MathF.Sin( coneRadians )).Normal;
-		var faded = new Color( BeamVisualColor.r, BeamVisualColor.g, BeamVisualColor.b, 0.04f );
-
-		_beamLine.Enabled = true;
-		_beamLine.UseVectorPoints = true;
-		_beamLine.VectorPoints = new List<Vector3>
-		{
-			origin + leftEdge * MaxRange * 0.72f,
-			origin,
-			end,
-			origin,
-			origin + rightEdge * MaxRange * 0.72f,
-		};
-		_beamLine.Color = Gradient.FromColors( new[] { BeamVisualColor, faded } );
-		_beamLine.Lighting = false;
-		_beamLine.Additive = true;
-		_beamLine.Wireframe = false;
-		_beamLine.CastShadows = false;
+		_beamVisual.Configure( origin, forward, MaxRange, ConeHalfAngle, BeamVisualColor, true );
 	}
 
 	void HideBeamVisual()
 	{
-		if ( _beamLine.IsValid() )
-			_beamLine.Enabled = false;
+		if ( _beamVisual.IsValid() )
+			_beamVisual.Hide();
 	}
 
 	void EnsureBeamVisual()
 	{
-		if ( _beamObject.IsValid() && _beamLine.IsValid() )
+		if ( _beamObject.IsValid() && _beamVisual.IsValid() )
 			return;
+
+		var beamPrefab = GameObject.GetPrefab( DefaultBeamVisualPrefabPath );
+		if ( beamPrefab.IsValid() )
+		{
+			_beamObject = beamPrefab.Clone( new Transform( Vector3.Zero, Rotation.Identity ), name: "Jammer Beam Visual" );
+			if ( _beamObject.IsValid() )
+			{
+				_beamObject.NetworkMode = NetworkMode.Never;
+				_beamVisual = _beamObject.Components.Get<JammerConeVisual>( FindMode.EverythingInSelfAndDescendants );
+				if ( _beamVisual.IsValid() )
+					return;
+
+				_beamObject.Destroy();
+			}
+		}
 
 		_beamObject = new GameObject( true, "Jammer Beam Visual" )
 		{
 			NetworkMode = NetworkMode.Never
 		};
-		_beamLine = _beamObject.Components.Create<LineRenderer>();
+		_beamVisual = _beamObject.Components.Create<JammerConeVisual>();
 	}
 
 	bool TryGetTraceOriginAndForward( out Vector3 origin, out Vector3 forward )

@@ -80,19 +80,33 @@ def save_motor() -> None:
 
 def save_propeller() -> None:
     rng = random.Random(4103)
-    image = Image.new("RGB", (SIZE, SIZE), (224, 226, 232))
+    image = Image.new("RGB", (SIZE, SIZE), (14, 14, 16))
     pixels = image.load()
     for y in range(SIZE):
         for x in range(SIZE):
-            leading = 28 if (x + y * 2) % 96 < 13 else 0
-            stripe = -48 if 225 < y < 270 else 0
-            scuff = rng.randint(-12, 12)
-            v = clamp(226 + leading + stripe + scuff)
-            pixels[x, y] = (v, v, clamp(v + 7))
+            u = x / (SIZE - 1)
+            v = 1.0 - (y / (SIZE - 1))
+            tip_band = 0.34 <= u <= 0.66 and 0.50 <= v <= 0.75
+            grain = rng.randint(-5, 7)
+            molded_rib = 10 if (x + y * 2) % 88 < 8 else 0
+            span_shadow = -5 if 232 < y < 280 else 0
+
+            if tip_band:
+                stripe = 18 if (y + x // 2) % 72 < 14 else 0
+                pixels[x, y] = (
+                    clamp(238 + stripe + grain),
+                    clamp(92 + stripe // 2 + grain),
+                    clamp(12 + grain // 2),
+                )
+            else:
+                v = clamp(16 + molded_rib + span_shadow + grain)
+                pixels[x, y] = (v, v, clamp(v + 3))
 
     draw = ImageDraw.Draw(image, "RGBA")
-    for x in range(20, SIZE, 82):
-        draw.line((x, 0, x + 140, SIZE), fill=(35, 40, 52, 55), width=3)
+    for x in range(70, SIZE, 92):
+        draw.line((x, 0, x + 130, SIZE), fill=(78, 82, 88, 48), width=2)
+    for y in range(136, 244, 34):
+        draw.line((178, y, 334, y + rng.randrange(-10, 11)), fill=(255, 188, 82, 46), width=2)
     image.filter(ImageFilter.GaussianBlur(0.2)).save(MATERIAL_DIR / "drone_fpv_propeller_color.png")
 
 

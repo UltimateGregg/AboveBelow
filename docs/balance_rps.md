@@ -40,7 +40,7 @@ Pilots also have a ground avatar:
 
 | Soldier | Current Prefab | Current Role | Key Existing Values |
 |---------|----------------|--------------|---------------------|
-| Assault | `Assets/prefabs/soldier_assault.prefab` | Rifle generalist with quick anti-drone cover | 100 HP, rifle 18 damage every 0.12 s, chaff 600 radius / 3 s jam |
+| Assault | `Assets/prefabs/soldier_assault.prefab` | Rifle generalist with quick anti-drone cover | 100 HP, rifle 18 damage every 0.08 s, chaff 600 radius / 3 s jam |
 | Counter-UAV | `Assets/prefabs/soldier_counter_uav.prefab` | Directional anti-RF specialist | 100 HP, jammer 4000 range / 12 degree cone, frag 320 radius / 130 damage |
 | Heavy | `Assets/prefabs/soldier_heavy.prefab` | Tanky close-range area denial | 150 HP, shotgun 8 x 9 damage, EMP 1100 radius / 6 s jam, slower movement |
 

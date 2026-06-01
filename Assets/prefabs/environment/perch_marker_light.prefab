@@ -1,0 +1,86 @@
+{
+  "RootObject": {
+    "__guid": "5eb7bc65-c91f-6c58-c1bc-70b72c29c9d1",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "PerchMarkerLight",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "light_point,light",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "Sandbox.PointLight",
+        "__guid": "231790d9-a27e-f8d6-44a2-f337c5d04c94",
+        "__enabled": true,
+        "Flags": 0,
+        "Attenuation": 1,
+        "FogMode": "Enabled",
+        "FogStrength": 1,
+        "LightColor": "1,0.68,0.22,1",
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "Radius": 360,
+        "ShadowBias": 0.0005,
+        "ShadowHardness": 0,
+        "Shadows": true
+      }
+    ],
+    "Children": [
+      {
+        "__guid": "29f697f6-17d2-131c-411a-405c2981407b",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "WaterTower_PerchMarker_GlowMarker",
+        "Position": "0,0,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "0.699999988,0.699999988,0.0799999982",
+        "Tags": "",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "4787fdd9-c8a5-46a0-6bf0-b0ab37647c46",
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/box.vmdl",
+            "MaterialOverride": "materials/emp_glow.vmat",
+            "RenderType": "On",
+            "Tint": "1,0.68,0.22,1"
+          }
+        ],
+        "Children": [],
+        "__variables": [],
+        "__properties": {
+          "FixedUpdateFrequency": 50,
+          "MaxFixedUpdates": 5,
+          "NetworkFrequency": 30,
+          "NetworkInterpolation": true,
+          "PhysicsSubSteps": 1,
+          "ThreadedAnimation": true,
+          "TimeScale": 1,
+          "UseFixedUpdate": true,
+          "Metadata": {}
+        }
+      }
+    ]
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Environment/PerchMarkerLight",
+  "MenuIcon": "lightbulb",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

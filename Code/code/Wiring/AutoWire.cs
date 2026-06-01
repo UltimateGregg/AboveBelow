@@ -68,6 +68,9 @@ public class AutoWireHelper : Component
 		var pilotLink = root.Components.Get<PilotLink>();
 		var fiber = root.Components.Get<FiberCable>();
 		var droneBase = root.Components.Get<DroneBase>( FindMode.EverythingInSelfAndDescendants );
+		var droneExplosionPrefab = ResolveFirstPrefab(
+			"prefabs/engine/explosion_med.prefab",
+			"models/effects/explosion_med.prefab" );
 
 		if ( controller != null )
 		{
@@ -85,7 +88,7 @@ public class AutoWireHelper : Component
 			weapon.Drone = controller;
 			weapon.MuzzleSocket = root.Children.FirstOrDefault( x => x.Name == "MuzzleSocket" );
 			weapon.TracerPrefab = GameObject.GetPrefab( "prefabs/tracer_default.prefab" );
-			weapon.ExplosionPrefab = GameObject.GetPrefab( "models/effects/explosion_med.prefab" );
+			weapon.ExplosionPrefab = droneExplosionPrefab;
 		}
 
 		if ( jammer != null )
@@ -99,7 +102,7 @@ public class AutoWireHelper : Component
 			pilotLink.Drone = controller;
 			pilotLink.DroneBase = droneBase;
 			pilotLink.Body = root.Components.Get<Rigidbody>();
-			pilotLink.ExplosionPrefab = GameObject.GetPrefab( "models/effects/explosion_med.prefab" );
+			pilotLink.ExplosionPrefab = droneExplosionPrefab;
 		}
 
 		if ( fiber != null )
@@ -192,6 +195,7 @@ public class AutoWireHelper : Component
 			if ( frag != null )
 			{
 				frag.ExplosionPrefab = ResolveFirstPrefab(
+					"prefabs/effects/frag_burst.prefab",
 					"particles/explosion/explosion_medium.prefab",
 					"prefabs/killstreaks/missile_explosion.prefab",
 					"prefabs/effects/explosion.prefab",
@@ -202,6 +206,7 @@ public class AutoWireHelper : Component
 			if ( chaff != null )
 			{
 				chaff.EffectPrefab = ResolveFirstPrefab(
+					"prefabs/effects/chaff_burst.prefab",
 					"prefabs/effects/muzzle_smoke.prefab",
 					"prefabs/helpers/smoke.prefab" );
 			}
@@ -210,6 +215,7 @@ public class AutoWireHelper : Component
 			if ( emp != null )
 			{
 				emp.EffectPrefab = ResolveFirstPrefab(
+					"prefabs/effects/emp_burst.prefab",
 					"prefabs/effects/ring_explosion.prefab",
 					"prefabs/effects/ring_explosion_2.prefab",
 					"prefabs/effects/ring.prefab" );

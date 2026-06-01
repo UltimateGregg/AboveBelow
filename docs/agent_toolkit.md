@@ -27,7 +27,24 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 | Round Re-Prompt Guard | Keep next-round reset from auto-respawning stale team/loadout choices | `scripts/check_round_reprompt_flow.ps1` |
 | Two-Client Lobby Guard | Keep editor play sessions join-first and preserve round probe commands | `scripts/check_two_client_lobby_flow.ps1` |
 | Prefab and Wiring Agent | Validate prefab shape and AutoWire references | `scripts/agents/prefab_wiring_audit.ps1` |
-| Destroyed Pickup Prefab Audit | Keep the S&Box-native crashed pickup prefab placeable, primitive-backed, and free of retired VMDL collision | `scripts/agents/destroyed_pickup_prefab_audit.ps1` |
+| Held Item Prefab Template Audit | Keep reusable weapon, grenade, and pilot-controller item prefabs under `Assets/prefabs/items/` synced from the active loadout child graphs | `scripts/agents/run_agent_checks.ps1 -Suite held-items -ShowInfo` |
+| First-Person Viewmodel Guard | Keep the shared local-only first-person viewmodel root, arms child, stock animation driver, custom visual container, and static item container prefab-backed while runtime item visuals remain per-selection children | `scripts/check_first_person_viewmodel_spawn.ps1 -Root .` |
+| Scene Marker Prefab Audit | Keep reusable player spawn and training dummy spawn marker prefabs under `Assets/prefabs/markers/` available for scene authoring and referenced by saved-scene prefab instances | `scripts/agents/run_agent_checks.ps1 -Suite scene-markers -ShowInfo` |
+| Blockout Blue Line Audit | Keep generated and live level blockouts free of retired glowing line strip markers | `scripts/agents/run_agent_checks.ps1 -Suite blue-lines -ShowInfo` |
+| Arena Boundary Wall Prefab Guard | Keep the four Source 2-style clip blockers backed by `Assets/prefabs/environment/arena_boundary_wall.prefab` with invisible collision and selection-only editor wireframes | `scripts/agents/scene_integrity_audit.ps1 -Root . -ShowInfo` |
+| Terrain Scene Object Prefab Migration | Convert repeated terrain trees, rocks, full and partial grass-card clumps, ground-polish patches, berm soft caps, shape-matching landforms, exact bespoke landforms, and trench segment roots to local environment prefab instances while preserving unknown or hand-edited mismatches | `scripts/agents/migrate_terrain_scene_objects_to_prefab_instances.ps1 -Root . -DryRun` |
+| Composed Environment Prop Prefab Guard | Keep authored prop roots such as `WaterTower` prefab-backed while visual, collider, and ladder children stay owned by the prefab template | `scripts/agents/collision_authoring_agent.ps1 -Root . -ShowInfo` plus `scripts/agents/scene_integrity_audit.ps1 -Root . -ShowInfo` |
+| Building Scene Prefab Audit | Keep playable large and small house roots prefab-backed while visual, collider, ladder, and zone helper children stay owned by the prefab template | `scripts/agents/building_scene_prefab_audit.ps1 -Root . -ShowInfo -RequireMigrated` |
+| Stock Scene Prop Prefab Audit | Keep reusable prefab templates, migration tooling, and saved-scene prefab instances for mounted stock scene props under `Assets/prefabs/environment/stock/` | `scripts/agents/stock_scene_prop_prefab_audit.ps1 -Root . -ShowInfo -RequireMigrated` |
+| Transient Combat Prefab Audit | Keep default ballistic tracers, muzzle flashes, tracer bullet glows, jammer beams, detached fiber cables, grenade detonation visuals, and thrown grenade projectiles prefab-backed while preserving procedural fallbacks | `scripts/agents/run_agent_checks.ps1 -Suite transient-combat -ShowInfo` |
+| Destroyed Pickup Prefab Audit | Keep the S&Box-native crashed pickup prefab placeable, primitive-backed, scene-instance-backed, and free of retired VMDL collision | `scripts/agents/destroyed_pickup_prefab_audit.ps1` plus `scripts/agents/destroyed_pickup_scene_audit.ps1 -Root . -ShowInfo` |
+| Sandbag Cover Prefab Audit | Keep the road sandbag cover spacing, height, material, solid collision, and scene prefab instance contract intact | `scripts/agents/sandbag_cover_audit.ps1 -Root . -ShowInfo` |
+| Road Cover Barrier Prefab Audit | Keep the northwest road-cover barrier prefab-backed with 10 solid concrete pieces and 9 visual detail pieces | `scripts/agents/road_cover_barrier_audit.ps1 -Root . -ShowInfo` |
+| Road Corridor Prefab Audit | Keep the road surface, shoulders, curbs, and 41 centerline dashes prefab-backed while preserving road-length spacing and stable names | `scripts/agents/road_lane_marking_audit.ps1 -Root . -ShowInfo` |
+| Road Edge Wear Prefab Audit | Keep road-edge wear as 24 visual-only prefab-backed decal placements with stable names and randomized edge placement | `scripts/agents/road_edge_wear_audit.ps1 -Root . -ShowInfo` |
+| Level Design Cover Box Prefab Migration | Keep repeated `LevelDesignPass_AboveBelow` collision-bearing dev boxes plus `DroneLaunchPad` and `NorthLowCover` backed by `blockout_cover_box.prefab` while preserving per-placement transform, material, tint, and stable names | `scripts/agents/migrate_terrain_scene_objects_to_prefab_instances.ps1 -Root . -DryRun` |
+| Skyline Model-Collider Box Prefab Migration | Keep skyline dev boxes that need `ModelCollider` backed by `skyline_model_collider_box.prefab` while preserving per-placement transform, material, tint, and stable names | `scripts/agents/migrate_terrain_scene_objects_to_prefab_instances.ps1 -Root . -DryRun` |
+| Visual Dev Box Prefab Migration | Keep renderer-only glow markers, skyline masses, and window-band dev boxes backed by `visual_dev_box.prefab` while preserving per-placement transform, material, tint, and stable names | `scripts/agents/migrate_terrain_scene_objects_to_prefab_instances.ps1 -Root . -DryRun` |
 | Prefab Visual Quality Agent | Catch valid-but-underbaked primitive prefabs before handoff, including silhouette, material massing, collision/detail split, and screenshot proof expectations | `scripts/agents/prefab_visual_quality_audit.ps1` |
 | Prefab Graph Audit | Validate GUID refs, component refs, prefab refs, and resource paths | `scripts/agents/prefab_graph_audit.ps1` |
 | Scene Integrity Audit | Validate main scene managers, spawns, and collider patterns | `scripts/agents/scene_integrity_audit.ps1` |
@@ -54,6 +71,7 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 | S&Box Engine Reference Agent | Verify external S&Box/Source 2 research and guard against obsolete guidance | `scripts/agents/sbox_engine_reference_audit.ps1` |
 | S&Box Docs Source Agent | Refresh and inspect the official `Facepunch/sbox-docs` markdown source before broad official-docs training | `scripts/agents/sbox_docs_source_audit.ps1 -Refresh -ShowInfo` |
 | S&Box Release Notes Intake Agent | Convert official S&Box release notes and API changes into dated project guidance, hooks, and audits | `scripts/agents/sbox_release_notes_audit.ps1` |
+| S&Box Code Search Agent | Use public package examples from `https://sbox.game/codesearch` for pattern discovery while verifying exact symbols locally | `scripts/agents/run_agent_checks.ps1 -Suite code-search -ShowInfo` |
 | S&Box API Lookup | Query local `API.json` for exact S&Box types, members, attributes, and summaries | `scripts/agents/sbox_api_lookup.ps1` |
 | S&Box Learn Intake Agent | Convert useful S&Box Learn tutorials into project docs, audits, hooks, and routing | `scripts/agents/sbox_learn_intake_audit.ps1` |
 | Editor Node Tool Agent | Keep custom S&Box Node Editor tooling editor-only and free of copied tutorial placeholders | `scripts/agents/editor_node_tool_audit.ps1` |
@@ -76,6 +94,8 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 - The Learn intake audit keeps S&Box Learn tutorial lessons wired through a specific agent, Razor subagent, docs, suite, self-test, and Claude hook instead of living only in chat.
 - The docs source audit keeps official `Facepunch/sbox-docs` intake routed through a source clone, dated reference note, agent routing, suite wiring, self-test, and hook instead of brittle page scraping.
 - The release notes audit keeps official S&Box patch-note/API-change lessons dated, source-linked, routed through a dedicated agent, and protected by Suite release-notes instead of living only in chat.
+- The Code Search audit, `sbox_code_search_audit.ps1`, keeps `https://sbox.game/codesearch` available as a public-package pattern resource without treating package source as verified API authority.
+- The scene marker and stock scene prop audits accept strict migration checks when direct marker or mounted stock prop placements are expected to have been converted to saved-scene prefab instances.
 - Full automation is still static unless paired with an editor playtest. Use `current_log_audit.ps1 -RequireFresh` after the playtest to verify current runtime logs.
 
 ## Recommended Usage By Change Type
@@ -87,6 +107,14 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 ```
 
 Start with `.agents/sbox/editor-first-workflow-agent.md`. Check `control_plane_status` or JSON-RPC `tools/list`, inspect with `editor_scene_info` plus scene/component tools, mutate through native MCP where available, save with `editor_save_scene` only when the editor was not already dirty and the edits are agent-owned, and use screenshot/play/log tools for proof. If the editor is pre-dirty, the editor or required tool domain is unavailable, or save ownership is uncertain, report that clearly and separate static fallback work from live-editor proof.
+
+Level blockout or generator changes:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite blue-lines -ShowInfo
+```
+
+Do not reintroduce route, approach, danger, escape/read, breach, or launch-pad glow line strips to the playable level. Use collision-bearing cover, materialized surfaces, or non-line readability cues instead.
 
 Gameplay or C# changes:
 
@@ -134,6 +162,18 @@ Prefab or scene changes:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_wiring_audit.ps1
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite held-items -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/migrate_scene_markers_to_prefab_instances.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite scene-markers -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/migrate_arena_boundaries_to_prefab_instances.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File scripts/agents/migrate_terrain_scene_objects_to_prefab_instances.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File scripts/agents/sync_stock_scene_prop_prefabs.ps1
+powershell -ExecutionPolicy Bypass -File scripts/agents/migrate_stock_scene_props_to_prefab_instances.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite stock-scene-props -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/stock_scene_prop_prefab_audit.ps1 -Root . -ShowInfo -RequireMigrated
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite transient-combat -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/road_cover_barrier_audit.ps1 -Root . -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/road_lane_marking_audit.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_graph_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/scene_integrity_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/collision_authoring_agent.ps1 -ShowInfo
@@ -163,6 +203,14 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/collision_chain_report.p
 ```
 
 The collision agent catches missing building-root coverage and the failure mode where a visible `Visual` child is rotated while sibling `Collision_*` children stay on the old parent transform. For buildings, inspect the house/building root before adding duplicate colliders to `Model_Visual`; renderer-only visual children are valid when sibling `Collision_*` helpers own the blocking shape. Rotate the prop root instead of the visual child, then verify in the editor with collider gizmos and a short walk-into-the-prop playtest.
+
+For playable house prefab migrations, use `house_large_playable.prefab`, `house_small_playable.prefab`, and `house_small_collision_playable.prefab` as separate contracts; the collision-only small-house placements do not share the same child graph as the visual small-house placements.
+
+For readability light marker migrations, use `migrate_readability_light_scene_objects_to_prefab_instances.ps1` and `readability_light_scene_prefab_audit.ps1`; the prefab roots own the `PointLight` and optional glow marker while scene patches keep local radius, color, placement, and marker scale.
+
+For ambient sound emitter migrations, use `migrate_ambient_sound_scene_objects_to_prefab_instances.ps1` and `ambient_sound_scene_prefab_audit.ps1`; the prefab root owns the `AmbientSound` component while scene patches keep local sound events, loop timing, volume, and placement.
+
+For fallback ballistic tracer work, use `ballistic_tracer_prefab_audit.ps1`; `tracer_default.prefab` remains the normal weapon tracer path, while `ballistic_tracer.prefab` backs the lightweight renderer fallback.
 
 For larger collision work, start with `.agents/sbox/collision-chain-agent.md`. The chain splits Codex work into explorer, implementer, verifier, and critic handoffs so a second pass can challenge broad invisible blockers, stale editor state, and weak evidence before final handoff. The report script runs the static evidence stack and writes `.tmpbuild/collision-chain-report.md` as the handoff packet for the next Codex role.
 
@@ -263,6 +311,7 @@ Docs/tooling changes:
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/docs_roadmap_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite sbox-docs -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite code-search -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_engine_reference_audit.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_api_reference_audit.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/test_full_automation_layer.ps1
@@ -281,6 +330,14 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/editor_node_tool_audit.p
 ```
 
 Use `.agents/sbox/sbox-docs-source-agent.md` when the user links `Facepunch/sbox-docs` or asks for broad official docs training. The source snapshot belongs under `.tmpbuild/sbox-docs`; use `.tmpbuild/sbox-docs-source-index.md`, `toc.yml`, and `rg` to inspect it, record the reviewed commit/date, and do not vendor the full docs tree. Use `.agents/sbox/sbox-engine-reference-agent.md` before turning pasted engine research into standing guidance. Prefer official S&Box docs, the public engine repo, local `API.json`, and local project patterns. Keep volatile claims dated and sourced, and turn recurring stale-guidance risks into audit rules rather than leaving them only in chat history.
+
+S&Box Code Search intake:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite code-search -ShowInfo
+```
+
+Use `.agents/sbox/sbox-code-search-agent.md` when reviewing `https://sbox.game/codesearch` or public package examples. Code Search is best for finding practical usage patterns across published game, editor, and unit-test code. Compare multiple recent examples, do not vendor package source, and verify exact C# symbols with `scripts/agents/sbox_api_lookup.ps1`, official API pages, docs source, or existing project code before implementation.
 
 Official S&Box release notes intake:
 

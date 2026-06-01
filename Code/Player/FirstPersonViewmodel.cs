@@ -17,6 +17,12 @@ namespace DroneVsPlayers;
 [Icon( "front_hand" )]
 public sealed class FirstPersonViewmodel : Component
 {
+	const string ViewmodelRootPrefabPath = "prefabs/items/local_first_person_viewmodel.prefab";
+	const string ViewmodelArmsPrefabPath = "prefabs/items/viewmodel_arms.prefab";
+	const string ViewmodelStockWeaponPrefabPath = "prefabs/items/viewmodel_stock_weapon.prefab";
+	const string ViewmodelCustomVisualPrefabPath = "prefabs/items/viewmodel_custom_visual.prefab";
+	const string ViewmodelStaticItemPrefabPath = "prefabs/items/viewmodel_static_item.prefab";
+
 	[Property] public string ArmsModelPath { get; set; } = "facepunch/v_first_person_arms_human";
 	[Property] public string ArmsFallbackModelPath { get; set; } = "models/first_person/first_person_arms_preview.vmdl";
 
@@ -200,12 +206,8 @@ public sealed class FirstPersonViewmodel : Component
 
 		CreateRoot();
 
-		_weaponObject = new GameObject( _root, true, $"Viewmodel Weapon - {item.Key}" )
-		{
-			NetworkMode = NetworkMode.Never
-		};
+		_weaponObject = CreateStockWeaponObject( $"Viewmodel Weapon - {item.Key}" );
 
-		_weaponRenderer = _weaponObject.Components.Create<SkinnedModelRenderer>();
 		_weaponRenderer.Model = weaponModel;
 		_weaponRenderer.RenderType = ModelRenderer.ShadowRenderType.On;
 		_weaponRenderer.UseAnimGraph = true;
@@ -226,12 +228,8 @@ public sealed class FirstPersonViewmodel : Component
 
 		CreateRoot();
 
-		_weaponObject = new GameObject( _root, true, $"Hidden Stock Animation Driver - {item.Key}" )
-		{
-			NetworkMode = NetworkMode.Never
-		};
+		_weaponObject = CreateStockWeaponObject( $"Hidden Stock Animation Driver - {item.Key}" );
 
-		_weaponRenderer = _weaponObject.Components.Create<SkinnedModelRenderer>();
 		_weaponRenderer.Model = weaponModel;
 		_weaponRenderer.UseAnimGraph = true;
 		_weaponRenderer.Parameters.Set( "b_deploy_skip", true );
@@ -239,10 +237,7 @@ public sealed class FirstPersonViewmodel : Component
 		_weaponRenderer.Parameters.Set( "b_twohanded", item.TwoHanded );
 		HideStockAnimationDriver();
 
-		_customVisualRoot = new GameObject( _root, true, $"Custom Viewmodel Visual - {item.Key}" )
-		{
-			NetworkMode = NetworkMode.Never
-		};
+		_customVisualRoot = CreateViewmodelContainer( ViewmodelCustomVisualPrefabPath, $"Custom Viewmodel Visual - {item.Key}" );
 
 		if ( !AddCustomAnimatedVisualCopies( item, _customVisualRoot ) )
 			AddModelPathFallback( item, _customVisualRoot );
@@ -267,10 +262,7 @@ public sealed class FirstPersonViewmodel : Component
 	{
 		CreateRoot();
 
-		_weaponObject = new GameObject( _root, true, $"Viewmodel Item - {item.Key}" )
-		{
-			NetworkMode = NetworkMode.Never
-		};
+		_weaponObject = CreateViewmodelContainer( ViewmodelStaticItemPrefabPath, $"Viewmodel Item - {item.Key}" );
 
 		AddStaticVisualCopies( item, _weaponObject );
 		CreateArmsRenderer( null );
@@ -393,10 +385,38 @@ public sealed class FirstPersonViewmodel : Component
 
 	void CreateRoot()
 	{
-		_root = new GameObject( true, "Local First Person Viewmodel" )
-		{
-			NetworkMode = NetworkMode.Never
-		};
+		var prefab = GameObject.GetPrefab( ViewmodelRootPrefabPath );
+		_root = prefab.IsValid()
+			? prefab.Clone( new Transform( Vector3.Zero, Rotation.Identity ), null, true, "Local First Person Viewmodel" )
+			: new GameObject( true, "Local First Person Viewmodel" );
+
+		_root.NetworkMode = NetworkMode.Never;
+	}
+
+	GameObject CreateStockWeaponObject( string name )
+	{
+		var prefab = GameObject.GetPrefab( ViewmodelStockWeaponPrefabPath );
+		var weaponObject = prefab.IsValid()
+			? prefab.Clone( new Transform( Vector3.Zero, Rotation.Identity ), _root, true, name )
+			: new GameObject( _root, true, name );
+
+		weaponObject.NetworkMode = NetworkMode.Never;
+		_weaponRenderer = weaponObject.Components.Get<SkinnedModelRenderer>();
+		if ( !_weaponRenderer.IsValid() )
+			_weaponRenderer = weaponObject.Components.Create<SkinnedModelRenderer>();
+
+		return weaponObject;
+	}
+
+	GameObject CreateViewmodelContainer( string prefabPath, string name )
+	{
+		var prefab = GameObject.GetPrefab( prefabPath );
+		var container = prefab.IsValid()
+			? prefab.Clone( new Transform( Vector3.Zero, Rotation.Identity ), _root, true, name )
+			: new GameObject( _root, true, name );
+
+		container.NetworkMode = NetworkMode.Never;
+		return container;
 	}
 
 	void CreateArmsRenderer( SkinnedModelRenderer boneMergeTarget )
@@ -408,12 +428,16 @@ public sealed class FirstPersonViewmodel : Component
 		if ( armsModel is null || !armsModel.IsValid )
 			return;
 
-		_armsObject = new GameObject( _root, true, "Viewmodel Arms" )
-		{
-			NetworkMode = NetworkMode.Never
-		};
+		var armsPrefab = GameObject.GetPrefab( ViewmodelArmsPrefabPath );
+		_armsObject = armsPrefab.IsValid()
+			? armsPrefab.Clone( new Transform( Vector3.Zero, Rotation.Identity ), _root, true, "Viewmodel Arms" )
+			: new GameObject( _root, true, "Viewmodel Arms" );
 
-		_armsRenderer = _armsObject.Components.Create<SkinnedModelRenderer>();
+		_armsObject.NetworkMode = NetworkMode.Never;
+		_armsRenderer = _armsObject.Components.Get<SkinnedModelRenderer>();
+		if ( !_armsRenderer.IsValid() )
+			_armsRenderer = _armsObject.Components.Create<SkinnedModelRenderer>();
+
 		_armsRenderer.Model = armsModel;
 		_armsRenderer.RenderType = ModelRenderer.ShadowRenderType.On;
 		_armsRenderer.UseAnimGraph = boneMergeTarget is null;

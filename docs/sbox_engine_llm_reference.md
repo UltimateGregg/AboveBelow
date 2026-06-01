@@ -41,6 +41,14 @@ Official S&Box release notes reviewed on 2026-05-28:
 - latest reviewed release block: `26.05.27` (27 May 2026)
 - recent API-change highlights include `Mesh.AddMorph`, `MorphDelta`, `Editor.CreateModelFromMeshDialog`, `ResourceWriter.AddExternalReference`, and service organization/package-type helpers
 
+Official S&Box Code Search reviewed on 2026-05-30:
+
+- https://sbox.game/codesearch
+- Code Search describes itself as: "Search the source of every published package."
+- The page exposes package type, code type, and year filters for narrowing package examples.
+- Use `.agents/sbox/sbox-code-search-agent.md` before turning public package examples into durable project guidance.
+- Protect this routing with `scripts/agents/sbox_code_search_audit.ps1` or `scripts/agents/run_agent_checks.ps1 -Suite code-search`.
+
 Valve Developer Community Source 2 docs reviewed on 2026-05-27:
 
 - https://developer.valvesoftware.com/wiki/Category:Source_2
@@ -84,6 +92,7 @@ Secondary community tutorial context reviewed on 2026-05-23:
 
 Use `.agents/sbox/sbox-docs-source-agent.md` before broad official docs source sweeps or when `Facepunch/sbox-docs` is provided as training input. Refresh `.tmpbuild/sbox-docs` with `scripts/agents/sbox_docs_source_audit.ps1 -Refresh -ShowInfo`, use `.tmpbuild/sbox-docs-source-index.md`, the source `toc.yml` files, and `rg` for inventory, and record the reviewed commit/date before promoting durable lessons. Use `.agents/sbox/sbox-learn-intake-agent.md` before turning Learn tutorials or broad official editor-doc sweeps into standing project guidance. Use `.agents/sbox/ui-razor-reactivity-agent.md` for tutorials or bugs about Razor refresh behavior.
 Use `.agents/sbox/sbox-release-notes-agent.md` before turning official S&Box patch notes, release notes, or API-change entries into standing project guidance. Prefer `https://sbox.game/release-notes` for dated release summaries and `https://sbox.game/api/changes` plus local `API.json` lookup for exact C# symbol shape.
+Use `.agents/sbox/sbox-code-search-agent.md` before relying on `https://sbox.game/codesearch` examples. Treat public package source as pattern discovery, compare multiple recent packages, and verify exact symbols through local `API.json`, official API pages, docs source, or local project code before implementation.
 
 This is a working reference for agents editing this repo. It is intentionally short. If a task depends on exact API shape, check the current docs, API reference, public source, the local API dump, or local project patterns before changing code.
 

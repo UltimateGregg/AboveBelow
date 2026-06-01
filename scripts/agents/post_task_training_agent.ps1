@@ -188,6 +188,15 @@ $areaRules = @(
         Training = "Official S&Box release-note training should start at https://sbox.game/release-notes and https://sbox.game/api/changes, record source/review dates, verify exact symbols through local API.json, and promote only reusable workflow lessons into docs, agents, hooks, or audits."
     },
     [pscustomobject]@{
+        Name = "CodeSearchResearch"
+        Patterns = @("docs/sbox_engine_llm_reference.md", ".agents/sbox/sbox-code-search-agent.md", "scripts/agents/sbox_code_search_audit.ps1", ".claude/settings.json")
+        Checks = @(
+            "scripts/agents/run_agent_checks.ps1 -Suite code-search -ShowInfo",
+            "scripts/agents/sbox_api_lookup.ps1 -Root . -Query Component -Limit 5"
+        )
+        Training = "S&Box Code Search training should start at https://sbox.game/codesearch, use public package source for pattern discovery only, compare multiple recent examples, verify exact symbols through local API.json, and promote reusable lessons into docs, agents, hooks, or audits."
+    },
+    [pscustomobject]@{
         Name = "LearnResearch"
         Patterns = @("docs/sbox_engine_llm_reference.md", ".agents/sbox/sbox-learn-intake-agent.md", ".agents/sbox/ui-razor-reactivity-agent.md", ".agents/sbox/ui-flow-agent.md", ".agents/sbox/editor-node-tool-agent.md", "scripts/agents/sbox_learn_intake_audit.ps1", "scripts/agents/ui_flow_audit.ps1", "scripts/agents/editor_node_tool_audit.ps1")
         Checks = @(

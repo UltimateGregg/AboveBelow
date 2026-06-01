@@ -343,6 +343,13 @@ def light_marker(
     ) | {"Components": [point_light(name, color, radius)]}
 
 
+def light_only(name: str, position: str, color: str, radius: float) -> dict[str, Any]:
+    return game_object(
+        name,
+        position,
+    ) | {"Components": [point_light(name, color, radius)]}
+
+
 def iter_objects(node: dict[str, Any]):
     yield node
     for child in node.get("Children", []) or []:
@@ -359,6 +366,7 @@ def find_object(scene: dict[str, Any], name: str) -> dict[str, Any] | None:
 
 ROAD_CENTER_X = 416.190948
 ROAD_LENGTH_SCALE = 218.529922
+ROAD_PLANE_LENGTH_SCALE = ROAD_LENGTH_SCALE / 2
 ROAD_DASH_SPACING = 260
 ROAD_DASH_EDGE_MARGIN = 260
 ROAD_EDGE_WEAR_COUNT_PER_SIDE = 12
@@ -513,9 +521,9 @@ def build_road_corridor() -> dict[str, Any]:
     east_shoulder_x = cx + 275
 
     children: list[dict[str, Any]] = [
-        road_plane("RoadShoulder_West", f"{west_shoulder_x},0,0.16", f"2.2,{ROAD_LENGTH_SCALE},1", grass, dirt),
-        road_plane("RoadShoulder_East", f"{east_shoulder_x},0,0.16", f"2.2,{ROAD_LENGTH_SCALE},1", grass, dirt),
-        road_surface("RoadSurface_Main", f"{cx},0,0.2", f"7.2,{ROAD_LENGTH_SCALE},1"),
+        road_plane("RoadShoulder_West", f"{west_shoulder_x},0,0.16", f"2.2,{ROAD_PLANE_LENGTH_SCALE},1", grass, dirt),
+        road_plane("RoadShoulder_East", f"{east_shoulder_x},0,0.16", f"2.2,{ROAD_PLANE_LENGTH_SCALE},1", grass, dirt),
+        road_surface("RoadSurface_Main", f"{cx},0,0.2", f"7.2,{ROAD_PLANE_LENGTH_SCALE},1"),
         road_curb("RoadCurb_West", f"{west_curb_x},0,5", f"0.32,{ROAD_LENGTH_SCALE},0.2"),
         road_curb("RoadCurb_East", f"{east_curb_x},0,5", f"0.32,{ROAD_LENGTH_SCALE},0.2"),
     ]
@@ -590,16 +598,6 @@ def build_road_intersection() -> dict[str, Any]:
     return game_object("RoadIntersection_Center", "0,0,0", children=children)
 
 
-def lane_marker(name: str, position: str, scale: str, tint: str) -> dict[str, Any]:
-    return visual_box(
-        name,
-        position,
-        scale,
-        material="materials/emp_glow.vmat",
-        tint=tint,
-    )
-
-
 def build_north_lane() -> dict[str, Any]:
     concrete = "materials/arena/concrete_wall.vmat"
     metal = "materials/arena/metal_pad.vmat"
@@ -612,9 +610,6 @@ def build_north_lane() -> dict[str, Any]:
         solid_box("NorthLane_RoadSightBreaker_Right", "645,1510,88", "3.4,0.72,3.5", concrete, "0.58,0.62,0.62,1"),
         solid_box("NorthLane_EastHouse_ApproachCover", "945,1325,46", "4.8,0.62,1.85", concrete, "0.70,0.72,0.68,1"),
         solid_box("NorthLane_GullyRockCover_A", "-95,1110,38", "2.1,1.35,1.55", metal, "0.44,0.50,0.52,1"),
-        lane_marker("NorthLane_PaintedRoute_01", "-1470,1160,7", "2.4,0.08,0.04", "0.2,0.85,1,0.85"),
-        lane_marker("NorthLane_PaintedRoute_02", "-670,1195,7", "2.4,0.08,0.04", "0.2,0.85,1,0.85"),
-        lane_marker("NorthLane_PaintedRoute_03", "760,1390,7", "2.4,0.08,0.04", "0.2,0.85,1,0.85"),
     ]
     return game_object("Lane_North_Infiltration", "0,0,0", children=children)
 
@@ -712,8 +707,6 @@ def build_center_lane() -> dict[str, Any]:
         center_lane_destroyed_pickup_north(),
         solid_box("CenterLane_ServiceBarricade_West", "-1090,-205,54", "0.68,3.8,2.15", concrete, "0.62,0.64,0.62,1"),
         solid_box("CenterLane_ServiceBarricade_East", "1120,245,54", "0.68,3.8,2.15", concrete, "0.62,0.64,0.62,1"),
-        lane_marker("CenterLane_DangerStripe_North", "-40,515,8", "4.8,0.08,0.04", "1,0.72,0.18,0.9"),
-        lane_marker("CenterLane_DangerStripe_South", "35,-515,8", "4.8,0.08,0.04", "1,0.72,0.18,0.9"),
     ]
     return game_object("Lane_Center_Killbox", "0,0,0", children=children)
 
@@ -729,9 +722,6 @@ def build_south_lane() -> dict[str, Any]:
         solid_box("SouthLane_SprintGap_RoadCover", "780,-1260,52", "4.6,0.62,2.05", concrete, "0.74,0.72,0.66,1"),
         solid_box("SouthLane_EastHouse_BreachCover", "1510,-1265,48", "0.72,4.2,1.9", concrete, "0.70,0.72,0.68,1"),
         solid_box("SouthLane_DroneDive_Baffle", "1110,-760,116", "0.7,3.4,4.65", metal, "0.42,0.47,0.50,1"),
-        lane_marker("SouthLane_PaintedRoute_01", "-1280,-1080,7", "2.2,0.08,0.04", "0.2,0.85,1,0.85"),
-        lane_marker("SouthLane_PaintedRoute_02", "-240,-1010,7", "2.2,0.08,0.04", "0.2,0.85,1,0.85"),
-        lane_marker("SouthLane_PaintedRoute_03", "930,-1180,7", "2.2,0.08,0.04", "0.2,0.85,1,0.85"),
     ]
     return game_object("Lane_South_Flank", "0,0,0", children=children)
 
@@ -747,9 +737,6 @@ def build_operator_nests() -> dict[str, Any]:
                 solid_box("EastLaunch_NorthBlastWall", "2210,365,58", "3.8,0.52,2.3", concrete, "0.58,0.61,0.62,1"),
                 solid_box("EastLaunch_SouthBlastWall", "2210,-365,58", "3.8,0.52,2.3", concrete, "0.58,0.61,0.62,1"),
                 solid_box("EastLaunch_BackConsoleBlock", "2455,0,48", "0.72,3.6,1.9", metal, "0.38,0.44,0.47,1"),
-                visual_box("EastLaunch_ApproachPaint_North", "2015,520,9", "2.1,0.08,0.05", material="materials/emp_glow.vmat", tint="0.2,0.9,1,0.8"),
-                visual_box("EastLaunch_ApproachPaint_South", "2015,-520,9", "2.1,0.08,0.05", material="materials/emp_glow.vmat", tint="0.2,0.9,1,0.8"),
-                visual_box("EastLaunch_EscapeRead_East", "2570,0,9", "0.08,2.2,0.05", material="materials/emp_glow.vmat", tint="1,0.68,0.22,0.75"),
                 light_marker("EastLaunch_SignalLight", "2310,0,175", "0.2,0.9,1,1", 520),
             ],
         ),
@@ -760,9 +747,6 @@ def build_operator_nests() -> dict[str, Any]:
                 solid_box("MidService_LowWall_West", "1780,510,46", "0.62,3.6,1.85", concrete, "0.64,0.66,0.62,1"),
                 solid_box("MidService_LowWall_North", "2020,820,46", "3.8,0.56,1.85", concrete, "0.64,0.66,0.62,1"),
                 solid_box("MidService_AntennaBase", "2240,690,74", "0.62,0.62,2.95", metal, "0.42,0.48,0.52,1"),
-                visual_box("MidService_ApproachPaint_West", "1665,520,9", "0.08,2.1,0.05", material="materials/emp_glow.vmat", tint="0.2,0.9,1,0.75"),
-                visual_box("MidService_ApproachPaint_South", "2045,405,9", "2.1,0.08,0.05", material="materials/emp_glow.vmat", tint="0.2,0.9,1,0.75"),
-                visual_box("MidService_EscapeRead_East", "2380,690,9", "0.08,1.8,0.05", material="materials/emp_glow.vmat", tint="1,0.68,0.22,0.75"),
                 light_marker("MidService_SignalLight", "2240,690,245", "1,0.68,0.22,1", 420),
             ],
         ),
@@ -772,9 +756,6 @@ def build_operator_nests() -> dict[str, Any]:
             children=[
                 solid_box("NorthHouse_OperatorCover_West", "1250,1885,46", "0.62,3.6,1.85", concrete, "0.64,0.66,0.62,1"),
                 solid_box("NorthHouse_OperatorCover_South", "1465,1555,46", "3.5,0.56,1.85", concrete, "0.64,0.66,0.62,1"),
-                visual_box("NorthHouse_ApproachPaint_West", "1125,1810,9", "0.08,2.0,0.05", material="materials/emp_glow.vmat", tint="0.2,0.9,1,0.75"),
-                visual_box("NorthHouse_ApproachPaint_South", "1465,1440,9", "2.0,0.08,0.05", material="materials/emp_glow.vmat", tint="0.2,0.9,1,0.75"),
-                visual_box("NorthHouse_EscapeRead_Roof", "1610,1810,9", "0.08,1.8,0.05", material="materials/emp_glow.vmat", tint="1,0.68,0.22,0.75"),
                 light_marker("NorthHouse_SignalLight", "1500,1810,205", "0.2,0.9,1,1", 360),
             ],
         ),
@@ -784,9 +765,6 @@ def build_operator_nests() -> dict[str, Any]:
             children=[
                 solid_box("SouthHouse_OperatorCover_West", "1510,-1885,46", "0.62,3.6,1.85", concrete, "0.64,0.66,0.62,1"),
                 solid_box("SouthHouse_OperatorCover_North", "1705,-1545,46", "3.5,0.56,1.85", concrete, "0.64,0.66,0.62,1"),
-                visual_box("SouthHouse_ApproachPaint_West", "1385,-1810,9", "0.08,2.0,0.05", material="materials/emp_glow.vmat", tint="0.2,0.9,1,0.75"),
-                visual_box("SouthHouse_ApproachPaint_North", "1705,-1430,9", "2.0,0.08,0.05", material="materials/emp_glow.vmat", tint="0.2,0.9,1,0.75"),
-                visual_box("SouthHouse_EscapeRead_Roof", "1850,-1810,9", "0.08,1.8,0.05", material="materials/emp_glow.vmat", tint="1,0.68,0.22,0.75"),
                 light_marker("SouthHouse_SignalLight", "1740,-1810,205", "0.2,0.9,1,1", 360),
             ],
         ),
@@ -796,15 +774,11 @@ def build_operator_nests() -> dict[str, Any]:
 
 def build_readability_vfx() -> dict[str, Any]:
     children = [
-        light_marker("LaunchPad_Glow_North", "2140,310,70", "0.2,0.9,1,1", 420, marker_scale="1.6,0.08,0.06"),
-        light_marker("LaunchPad_Glow_South", "2140,-310,70", "0.2,0.9,1,1", 420, marker_scale="1.6,0.08,0.06"),
+        light_only("LaunchPad_Glow_North", "2140,310,70", "0.2,0.9,1,1", 420),
+        light_only("LaunchPad_Glow_South", "2140,-310,70", "0.2,0.9,1,1", 420),
         light_marker("WaterTower_PerchMarker", "-940,1497,360", "1,0.68,0.22,1", 360, marker_scale="0.7,0.7,0.08"),
         light_marker("NorthRoof_PerchMarker", "1120,1680,286", "1,0.68,0.22,1", 320, marker_scale="0.65,0.65,0.08"),
         light_marker("SouthRoof_PerchMarker", "1340,-1660,286", "1,0.68,0.22,1", 320, marker_scale="0.65,0.65,0.08"),
-        visual_box("BreachMarker_NorthHouse_West", "910,1680,8", "0.08,2.6,0.05", material="materials/emp_glow.vmat", tint="0.2,0.9,1,0.75"),
-        visual_box("BreachMarker_NorthHouse_South", "1185,1370,8", "2.6,0.08,0.05", material="materials/emp_glow.vmat", tint="0.2,0.9,1,0.75"),
-        visual_box("BreachMarker_SouthHouse_West", "1130,-1660,8", "0.08,2.6,0.05", material="materials/emp_glow.vmat", tint="0.2,0.9,1,0.75"),
-        visual_box("BreachMarker_SouthHouse_North", "1395,-1370,8", "2.6,0.08,0.05", material="materials/emp_glow.vmat", tint="0.2,0.9,1,0.75"),
     ]
     return game_object("ReadabilityVFX_Blockout", "0,0,0", children=children)
 

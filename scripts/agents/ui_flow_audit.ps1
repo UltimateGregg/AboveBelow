@@ -143,12 +143,12 @@ function Test-HudRolePickerStagedTeamAndLoadouts {
         Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Role picker must show a standalone team selection stage with its own Back button." "Render Drone Pilots/Hunters choices only while SelectedLoadoutTeam is Spectator, followed by a Back action to the main menu."
     }
 
-    $pilotPattern = '(?s)@if\s*\(\s*SelectedLoadoutTeam\s*==\s*PlayerRole\.Pilot\s*\).*?<div\s+class="loadout-section">.*?<div\s+class="choices">.*?GPS DRONE.*?FPV DRONE.*?FIBER FPV.*?ClickMenuOption\s*\(\s*ClearLoadoutTeam\s*\).*?GO BACK'
+    $pilotPattern = '(?s)@if\s*\(\s*SelectedLoadoutTeam\s*==\s*PlayerRole\.Pilot\s*\).*?<div\s+class="loadout-section">.*?<div\s+class="choices">.*?(GPS DRONE|DroneChoiceLabel\s*\(\s*DroneType\.Gps\s*\)).*?(FPV DRONE|DroneChoiceLabel\s*\(\s*DroneType\.Fpv\s*\)).*?(FIBER FPV|DroneChoiceLabel\s*\(\s*DroneType\.FiberOpticFpv\s*\)).*?ClickMenuOption\s*\(\s*ClearLoadoutTeam\s*\).*?GO BACK'
     if ($Text -notmatch $pilotPattern) {
         Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Drone Pilot loadout options must render as the second-stage Pilot picker." "Render GPS, FPV, and Fiber FPV only after the Pilot team is selected, followed by a Back action to team selection."
     }
 
-    $soldierPattern = '(?s)@if\s*\(\s*SelectedLoadoutTeam\s*==\s*PlayerRole\.Soldier\s*\).*?<div\s+class="loadout-section">.*?<div\s+class="choices">.*?ASSAULT.*?COUNTER-UAV.*?HEAVY.*?ClickMenuOption\s*\(\s*ClearLoadoutTeam\s*\).*?GO BACK'
+    $soldierPattern = '(?s)@if\s*\(\s*SelectedLoadoutTeam\s*==\s*PlayerRole\.Soldier\s*\).*?<div\s+class="loadout-section">.*?<div\s+class="choices">.*?(ASSAULT|SoldierChoiceLabel\s*\(\s*SoldierClass\.Assault\s*\)).*?(COUNTER-UAV|SoldierChoiceLabel\s*\(\s*SoldierClass\.CounterUav\s*\)).*?(HEAVY|SoldierChoiceLabel\s*\(\s*SoldierClass\.Heavy\s*\)).*?ClickMenuOption\s*\(\s*ClearLoadoutTeam\s*\).*?GO BACK'
     if ($Text -notmatch $soldierPattern) {
         Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Soldier class options must render as the second-stage Soldier picker." "Render Assault, Counter-UAV, and Heavy only after the Soldier team is selected, followed by a Back action to team selection."
     }
@@ -432,7 +432,7 @@ foreach ($file in $razorFiles) {
         Add-AgentIssue $issues "Error" "UI Flow" $relative "Menu panel does not route clicks through the shared UI click sound wrapper." "Add MenuClickSoundPath, ClickMenuOption(Action), and PlayMenuClickSound() using sounds/ui_menu_click.sound."
     }
 
-    if ((Test-HasDynamicRazorOutput -Text $text) -and -not (Test-HasBuildHash -Text $text)) {
+    if (($text -match '@inherits\s+PanelComponent') -and (Test-HasDynamicRazorOutput -Text $text) -and -not (Test-HasBuildHash -Text $text)) {
         Add-AgentIssue $issues "Warning" "UI Flow" $relative "Dynamic Razor output has no BuildHash override." "Override BuildHash() and include every value that can change rendered markup, especially [Sync] values shown in the HUD."
     }
 

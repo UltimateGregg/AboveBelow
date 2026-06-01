@@ -1,0 +1,25 @@
+{
+  "RootObject": {
+    "__guid": "4a59f554-7b5e-457d-b0f7-0284753a00cc",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "LocalFirstPersonViewmodel",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [],
+    "Children": []
+  },
+  "ShowInMenu": true,
+  "MenuPath": "Drone vs Players/Items/Local First Person Viewmodel",
+  "MenuIcon": "front_hand",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 3
+}

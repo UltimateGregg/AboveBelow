@@ -146,6 +146,55 @@
       }
     },
     {
+      "id": "sbox-blue-line-check",
+      "name": "S&Box Blue Line Blockout Check",
+      "description": "Runs the focused guard when scene blockout surfaces could recreate retired blue line strips",
+      "enabled": true,
+      "trigger": {
+        "type": "file_pattern_change",
+        "patterns": [
+          "AGENTS.md",
+          "Assets/scenes/main.scene",
+          "docs/agent_toolkit.md",
+          "scripts/scene_blockout.py",
+          "scripts/agents/blockout_blue_line_audit.ps1",
+          "scripts/agents/level_layout_audit.ps1",
+          "scripts/agents/run_agent_checks.ps1"
+        ],
+        "events": ["modified", "saved"],
+        "debounce_ms": 1500
+      },
+      "action": {
+        "type": "script",
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          ".\\scripts\\agents\\run_agent_checks.ps1",
+          "-Root",
+          "${WORKSPACE_ROOT}",
+          "-Suite",
+          "blue-lines",
+          "-ShowInfo"
+        ],
+        "cwd": "${WORKSPACE_ROOT}",
+        "timeout_seconds": 90,
+        "capture_output": true,
+        "on_success": {
+          "notify": false,
+          "message": "S&Box blue-line blockout checks passed",
+          "level": "info"
+        },
+        "on_failure": {
+          "notify": true,
+          "message": "S&Box blue-line blockout check failed",
+          "level": "error"
+        }
+      }
+    },
+    {
       "id": "sbox-engine-reference-check",
       "name": "S&Box Engine/API Reference Check",
       "description": "Runs stale engine-guidance and local API-reference checks when docs, agent routing, API dump, or reference audits change",
@@ -358,6 +407,59 @@
         "on_failure": {
           "notify": true,
           "message": "S&Box release-notes intake check failed",
+          "level": "error"
+        }
+      }
+    },
+    {
+      "id": "sbox-code-search-check",
+      "name": "S&Box Code Search Intake Check",
+      "description": "Runs public package example routing checks when Code Search training surfaces change",
+      "enabled": true,
+      "trigger": {
+        "type": "file_pattern_change",
+        "patterns": [
+          "AGENTS.md",
+          "docs/sbox_engine_llm_reference.md",
+          "docs/known_sbox_patterns.md",
+          "docs/agent_toolkit.md",
+          ".agents/sbox/sbox-code-search-agent.md",
+          ".agents/sbox/sbox-engine-reference-agent.md",
+          ".agents/sbox/README.md",
+          "scripts/agents/sbox_code_search_audit.ps1",
+          "scripts/agents/run_agent_checks.ps1",
+          "scripts/agents/post_task_training_agent.ps1",
+          "scripts/agents/test_full_automation_layer.ps1"
+        ],
+        "events": ["modified", "saved"],
+        "debounce_ms": 1500
+      },
+      "action": {
+        "type": "script",
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          ".\\scripts\\agents\\run_agent_checks.ps1",
+          "-Root",
+          "${WORKSPACE_ROOT}",
+          "-Suite",
+          "code-search",
+          "-ShowInfo"
+        ],
+        "cwd": "${WORKSPACE_ROOT}",
+        "timeout_seconds": 90,
+        "capture_output": true,
+        "on_success": {
+          "notify": false,
+          "message": "S&Box Code Search intake checks passed",
+          "level": "info"
+        },
+        "on_failure": {
+          "notify": true,
+          "message": "S&Box Code Search intake check failed",
           "level": "error"
         }
       }

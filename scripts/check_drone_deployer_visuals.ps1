@@ -168,6 +168,10 @@ Require-Pattern $deployer 'GpsHeldPropellerModelPath\s*\{\s*get;\s*set;\s*\}\s*=
     "DroneDeployer GPS held propellers must use the separate textured GPS propeller model path."
 Require-Pattern $deployer 'FpvHeldPropellerModelPath\s*\{\s*get;\s*set;\s*\}\s*=\s*"models/drone_fpv_prop\.vmdl"' `
     "DroneDeployer needs a held FPV propeller model path so the first-person FPV/Fiber preview includes props."
+Require-Pattern $deployer 'HeldPropellerPrefabPath\s*=\s*"prefabs/items/held_drone_propeller\.prefab"' `
+    "DroneDeployer should resolve held drone propeller preview children from a reusable prefab before creating fallback objects."
+Require-Pattern $deployer 'GameObject\.GetPrefab\(\s*HeldPropellerPrefabPath\s*\)' `
+    "DroneDeployer held propeller previews should use the reusable held_drone_propeller prefab path."
 Require-Pattern $deployer 'DroneType\.Gps\s*=>\s*GpsHeldPropellerModelPath' `
     "DroneDeployer must choose the GPS propeller model for GPS held previews instead of reusing the FPV propeller model."
 Require-Pattern $deployer 'new\(\s*"HeldPropeller_FL",\s*new Vector3\(\s*58\.36f,\s*86\.4f,\s*6\.6f\s*\)' `
@@ -200,8 +204,10 @@ Require-Pattern $droneCamera 'SetPilotVisualHidden\(\s*firstPersonActive\s*&&\s*
     "DroneCamera must not force the drone Visual to ShadowsOnly in first-person mode when ShowVisualInFirstPerson is enabled."
 Require-Pattern $droneController 'VisualRotationOffset\s*\{\s*get;\s*set;\s*\}' `
     "DroneController needs a visual rotation offset so GPS can face the root flight direction without fighting ApplyVisualTilt."
-Require-Pattern $droneController 'VisualRotationOffset\.ToRotation\(\)\s*\*\s*tilt' `
-    "DroneController.ApplyVisualTilt must preserve the configured visual rotation offset while adding cosmetic tilt."
+Require-Pattern $droneController 'var\s+pitch\s*=\s*\(\s*localVel\.x\s*/\s*Math\.Max\(\s*MaxSpeed,\s*1f\s*\)\s*\)\s*\*\s*VisualTiltDegrees' `
+    "DroneController.ApplyVisualTilt must pitch the visual nose-down for positive forward velocity and nose-up for backward velocity."
+Require-Pattern $droneController 'tilt\s*\*\s*VisualRotationOffset\.ToRotation\(\)' `
+    "DroneController.ApplyVisualTilt must apply movement tilt in the drone root frame before the GPS visual yaw offset, otherwise GPS forward/back motion leans on the wrong axis."
 Require-Pattern $deployer 'pilot\.LinkedDroneId\s*=\s*clone\.Id' `
     "DroneDeployer should be the code path that links a launched drone to the pilot."
 Require-Pattern $deployer 'DroneInFlight\s*=\s*true' `
@@ -223,6 +229,18 @@ else {
 }
 
 $pilotPrefab = Read-Json "Assets\prefabs\pilot_ground.prefab"
+$heldPropellerPrefab = Read-Json "Assets\prefabs\items\held_drone_propeller.prefab"
+if ($null -ne $heldPropellerPrefab -and $null -ne $heldPropellerPrefab.RootObject) {
+    if ([string]$heldPropellerPrefab.RootObject.Name -ne "HeldDronePropeller") {
+        Add-Error "Assets/prefabs/items/held_drone_propeller.prefab root object should be named HeldDronePropeller."
+    }
+
+    $propellerRenderer = Get-ComponentByType $heldPropellerPrefab.RootObject "Sandbox.ModelRenderer"
+    if ($null -eq $propellerRenderer) {
+        Add-Error "Assets/prefabs/items/held_drone_propeller.prefab must carry a ModelRenderer so DroneDeployer only needs to assign the selected propeller model."
+    }
+}
+
 if ($null -ne $pilotPrefab -and $null -ne $pilotPrefab.RootObject) {
     $droneDeployerObject = @(Get-GameObjects $pilotPrefab.RootObject | Where-Object { $_.Name -eq "DroneDeployer" } | Select-Object -First 1)
     if ($droneDeployerObject.Count -eq 0) {

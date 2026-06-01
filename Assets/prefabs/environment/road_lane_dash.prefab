@@ -1,0 +1,55 @@
+{
+  "RootObject": {
+    "__guid": "2be214e4-970b-47ab-a75c-62fe761f1f69",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "RoadLaneDash",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "0.159999996,2.4000001,0.0399999991",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "Sandbox.ModelRenderer",
+        "__guid": "84974ca3-20d7-4f15-9851-9187966f2a44",
+        "__enabled": true,
+        "Flags": 0,
+        "BodyGroups": 18446744073709552000,
+        "CreateAttachments": false,
+        "LodOverride": null,
+        "MaterialGroup": null,
+        "MaterialOverride": "materials/arena/concrete_wall.vmat",
+        "Materials": null,
+        "Model": "models/dev/box.vmdl",
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "RenderOptions": {
+          "GameLayer": true,
+          "OverlayLayer": false,
+          "BloomLayer": false,
+          "AfterUILayer": false
+        },
+        "RenderType": "On",
+        "Tint": "1,0.78,0.16,1"
+      }
+    ],
+    "Children": []
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Above Below/Environment/Road Lane Dash",
+  "MenuIcon": "road",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

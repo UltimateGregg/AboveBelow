@@ -1,0 +1,47 @@
+{
+  "RootObject": {
+    "__guid": "4da8f1fa-4cc0-4da1-a001-5d8fe764f750",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "BallisticTracer",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.BallisticTracerRenderer",
+        "__guid": "38f44d85-d2a4-4292-898a-a48ef9b0787f",
+        "__enabled": true,
+        "Flags": 0,
+        "HeadWidth": 2.1,
+        "HotColor": "1,0.88,0.24,0.9",
+        "Lifetime": 0.09,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "TailColor": "1,0.45,0.05,0.05",
+        "TailWidth": 0.65,
+        "TracerLength": 95,
+        "TravelSeconds": 0.045
+      }
+    ],
+    "Children": []
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Effects/Ballistic Tracer",
+  "MenuIcon": "show_chart",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

@@ -1,0 +1,44 @@
+{
+  "RootObject": {
+    "__guid": "2c787956-d52a-55e9-a2c2-3cc690cc7901",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "HeldDronePropeller",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "Sandbox.ModelRenderer",
+        "__guid": "f9bd8df3-4ef6-505b-9491-1efa80a6d401",
+        "__enabled": true,
+        "BodyGroups": 18446744073709551615,
+        "Flags": 0,
+        "MaterialGroup": null,
+        "MaterialOverride": null,
+        "Model": null,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "RenderType": "On",
+        "Tint": "1,1,1,1"
+      }
+    ],
+    "Children": []
+  },
+  "ShowInMenu": true,
+  "MenuPath": "Drone vs Players/Items/Held Drone Propeller",
+  "MenuIcon": "toys_fan",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 3
+}

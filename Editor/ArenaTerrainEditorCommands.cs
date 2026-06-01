@@ -21,6 +21,10 @@ public static class ArenaTerrainEditorCommands
 	const int ArenaTerrainResolution = 512;
 	const float ArenaTerrainSize = 21600f;
 	const float ArenaTerrainHeight = 512f;
+	const float RoadCenterX = 416.190948f;
+	const float RoadProtectedHalfWidth = 720f;
+	const float RoadProtectedHalfLength = 5700f;
+	const float RoadProtectedFade = 650f;
 	static readonly Vector3 ArenaTerrainOrigin = new( -ArenaTerrainSize * 0.5f, -ArenaTerrainSize * 0.5f, -8f );
 
 	[ConCmd( "dvp_link_arena_terrain" )]
@@ -330,7 +334,7 @@ public static class ArenaTerrainEditorCommands
 	{
 		var protection = 0f;
 
-		protection = MathF.Max( protection, RectProtection( x, y, 416.190948f, 0f, 720f, 5700f, 650f ) );
+		protection = MathF.Max( protection, RectProtection( x, y, RoadCenterX, 0f, RoadProtectedHalfWidth, RoadProtectedHalfLength, RoadProtectedFade ) );
 		protection = MathF.Max( protection, BoundaryProtection( x, y ) );
 
 		protection = MathF.Max( protection, RotatedRectProtection( x, y, -1680f, 1520f, 12f, 920f, 860f, 620f ) );

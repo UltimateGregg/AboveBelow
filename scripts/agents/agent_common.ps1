@@ -149,6 +149,10 @@ function Resolve-AgentResourcePath {
         return $null
     }
 
+    if (Test-AgentMountedPrimaryAsset -ResourcePath $normalized -Root $Root) {
+        return $null
+    }
+
     $skipPrefixes = @(
         "models/dev/",
         "models/citizen/",
@@ -180,6 +184,39 @@ function Resolve-AgentResourcePath {
     }
 
     return $null
+}
+
+function Test-AgentMountedPrimaryAsset {
+    param(
+        [string]$ResourcePath,
+        [string]$Root
+    )
+
+    $mountedPrimaryAssets = @{
+        "models/props/temporary_fencing/fence_panel_large.vmdl" = "facepunch.fence_panel_large"
+        "models/props/temporary_fencing/fence_panel_large_bent.vmdl" = "facepunch.fence_panel_large_bent"
+        "models/props/trim_sheets/bench/bench_table/bench_table_01.vmdl" = "facepunch.bench_table_01"
+    }
+
+    $normalized = $ResourcePath.Replace("\", "/").TrimStart("/")
+    if (-not $mountedPrimaryAssets.ContainsKey($normalized)) {
+        return $false
+    }
+
+    $projectPath = Join-Path $Root "dronevsplayers.sbproj"
+    if (-not (Test-Path -LiteralPath $projectPath)) {
+        return $false
+    }
+
+    try {
+        $project = Get-Content -LiteralPath $projectPath -Raw | ConvertFrom-Json
+    }
+    catch {
+        return $false
+    }
+
+    $requiredPackage = $mountedPrimaryAssets[$normalized]
+    return @($project.PackageReferences) -contains $requiredPackage
 }
 
 function Get-AgentChangedFiles {

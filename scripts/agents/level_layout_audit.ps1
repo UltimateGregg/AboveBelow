@@ -75,7 +75,23 @@ function Get-ObjectComponents {
     return @($components)
 }
 
-function Get-AllObjects {
+function Set-JsonPropertyValue {
+    param([object]$Object, [string]$Name, [object]$Value)
+
+    if ($null -eq $Object -or $null -eq $Object.PSObject) {
+        return
+    }
+
+    $property = $Object.PSObject.Properties[$Name]
+    if ($null -eq $property) {
+        $Object | Add-Member -NotePropertyName $Name -NotePropertyValue $Value -Force
+    }
+    else {
+        $property.Value = $Value
+    }
+}
+
+function Get-AllRawObjects {
     param([object]$Object)
 
     $objects = @()
@@ -85,6 +101,159 @@ function Get-AllObjects {
 
     $objects += $Object
     foreach ($child in @(Get-ObjectChildren -Object $Object)) {
+        foreach ($descendant in @(Get-AllRawObjects -Object $child)) {
+            $objects += $descendant
+        }
+    }
+
+    return $objects
+}
+
+function Copy-AgentJsonObject {
+    param([object]$Object)
+
+    return ($Object | ConvertTo-Json -Depth 100 | ConvertFrom-Json)
+}
+
+function Get-PrefabInstanceIdMap {
+    param([object]$Instance)
+
+    $map = @{}
+    $rawMap = Get-JsonPropertyValue -Object $Instance -Name "__PrefabIdToInstanceId"
+    if ($null -eq $rawMap -or $null -eq $rawMap.PSObject) {
+        return $map
+    }
+
+    foreach ($property in @($rawMap.PSObject.Properties)) {
+        $map[[string]$property.Name] = [string]$property.Value
+    }
+
+    return $map
+}
+
+function Find-PrefabNodeByGuid {
+    param([object]$Object, [string]$Guid, [string]$TargetType)
+
+    if ($null -eq $Object) {
+        return $null
+    }
+
+    if ($TargetType -eq "GameObject" -and [string](Get-JsonPropertyValue -Object $Object -Name "__guid") -eq $Guid) {
+        return $Object
+    }
+
+    foreach ($component in @(Get-ObjectComponents -Object $Object)) {
+        if ($TargetType -eq "Component" -and [string](Get-JsonPropertyValue -Object $component -Name "__guid") -eq $Guid) {
+            return $component
+        }
+    }
+
+    foreach ($child in @(Get-ObjectChildren -Object $Object)) {
+        $match = Find-PrefabNodeByGuid -Object $child -Guid $Guid -TargetType $TargetType
+        if ($null -ne $match) {
+            return $match
+        }
+    }
+
+    return $null
+}
+
+function Get-PrefabRootForInstance {
+    param([object]$Instance)
+
+    $prefabPath = [string](Get-JsonPropertyValue -Object $Instance -Name "__Prefab")
+    if ([string]::IsNullOrWhiteSpace($prefabPath)) {
+        return $null
+    }
+
+    $relativePath = $prefabPath.Replace("/", "\")
+    if ($relativePath.StartsWith("prefabs\", [System.StringComparison]::OrdinalIgnoreCase)) {
+        $relativePath = "Assets\$relativePath"
+    }
+
+    $fullPrefabPath = Join-Path $Root $relativePath
+    if (-not (Test-Path -LiteralPath $fullPrefabPath)) {
+        return $null
+    }
+
+    if (-not $script:PrefabRootCache.ContainsKey($fullPrefabPath)) {
+        try {
+            $prefab = Read-AgentJson -Path $fullPrefabPath
+            $script:PrefabRootCache[$fullPrefabPath] = Get-JsonPropertyValue -Object $prefab -Name "RootObject"
+        }
+        catch {
+            $script:PrefabRootCache[$fullPrefabPath] = $null
+        }
+    }
+
+    return $script:PrefabRootCache[$fullPrefabPath]
+}
+
+function Resolve-PrefabInstanceForAudit {
+    param([object]$Instance)
+
+    $prefabRoot = Get-PrefabRootForInstance -Instance $Instance
+    if ($null -eq $prefabRoot) {
+        return $null
+    }
+
+    $resolved = Copy-AgentJsonObject -Object $prefabRoot
+    $patch = Get-JsonPropertyValue -Object $Instance -Name "__PrefabInstancePatch"
+    foreach ($override in @((Get-JsonPropertyValue -Object $patch -Name "PropertyOverrides"))) {
+        $target = Get-JsonPropertyValue -Object $override -Name "Target"
+        if ($null -eq $target) {
+            continue
+        }
+
+        $targetType = [string](Get-JsonPropertyValue -Object $target -Name "Type")
+        $targetId = [string](Get-JsonPropertyValue -Object $target -Name "IdValue")
+        $propertyName = [string](Get-JsonPropertyValue -Object $override -Name "Property")
+        $value = Get-JsonPropertyValue -Object $override -Name "Value"
+
+        if ([string]::IsNullOrWhiteSpace($targetType) -or
+            [string]::IsNullOrWhiteSpace($targetId) -or
+            [string]::IsNullOrWhiteSpace($propertyName)) {
+            continue
+        }
+
+        $targetObject = Find-PrefabNodeByGuid -Object $resolved -Guid $targetId -TargetType $targetType
+        if ($null -ne $targetObject) {
+            Set-JsonPropertyValue -Object $targetObject -Name $propertyName -Value $value
+        }
+    }
+
+    $idMap = Get-PrefabInstanceIdMap -Instance $Instance
+    foreach ($node in @(Get-AllRawObjects -Object $resolved)) {
+        $nodeGuid = [string](Get-JsonPropertyValue -Object $node -Name "__guid")
+        if ($idMap.ContainsKey($nodeGuid)) {
+            Set-JsonPropertyValue -Object $node -Name "__guid" -Value $idMap[$nodeGuid]
+        }
+
+        foreach ($component in @(Get-ObjectComponents -Object $node)) {
+            $componentGuid = [string](Get-JsonPropertyValue -Object $component -Name "__guid")
+            if ($idMap.ContainsKey($componentGuid)) {
+                Set-JsonPropertyValue -Object $component -Name "__guid" -Value $idMap[$componentGuid]
+            }
+        }
+    }
+
+    return $resolved
+}
+
+function Get-AllObjects {
+    param([object]$Object)
+
+    if ($null -eq $Object) {
+        return @()
+    }
+
+    $walkObject = Resolve-PrefabInstanceForAudit -Instance $Object
+    if ($null -eq $walkObject) {
+        $walkObject = $Object
+    }
+
+    $objects = @($walkObject)
+    foreach ($child in @(Get-ObjectChildren -Object $walkObject)) {
         foreach ($descendant in @(Get-AllObjects -Object $child)) {
             $objects += $descendant
         }
@@ -229,6 +398,8 @@ function Get-ObjectName {
     return [string](Get-JsonPropertyValue -Object $Object -Name "Name")
 }
 
+$script:PrefabRootCache = @{}
+
 $rootObjects = @()
 foreach ($rootObject in @($scene.GameObjects)) {
     foreach ($object in @(Get-AllObjects -Object $rootObject)) {
@@ -257,9 +428,9 @@ Test-RequiredObjects -AllObjects $levelObjects -Context "Layout Groups" -Names @
 )
 
 $laneChecks = @(
-    @{ Name = "Lane_North_Infiltration"; MinSolid = 8; MinMarkers = 3; Required = @("NorthLane_WaterTower_Berm_West", "NorthLane_WaterTower_Berm_East", "NorthLane_RoadSightBreaker_Left", "NorthLane_RoadSightBreaker_Right") },
-    @{ Name = "Lane_Center_Killbox"; MinSolid = 8; MinMarkers = 2; Required = @("CenterLane_GPSBreak_WestTall", "CenterLane_GPSBreak_EastTall", "CenterLane_ServiceBarricade_West", "CenterLane_ServiceBarricade_East") },
-    @{ Name = "Lane_South_Flank"; MinSolid = 7; MinMarkers = 3; Required = @("SouthLane_TrenchConnector_West", "SouthLane_TrenchConnector_Mid", "SouthLane_DroneDive_Baffle", "SouthLane_EastHouse_BreachCover") }
+    @{ Name = "Lane_North_Infiltration"; MinSolid = 8; MinMarkers = 0; Required = @("NorthLane_WaterTower_Berm_West", "NorthLane_WaterTower_Berm_East", "NorthLane_RoadSightBreaker_Left", "NorthLane_RoadSightBreaker_Right") },
+    @{ Name = "Lane_Center_Killbox"; MinSolid = 8; MinMarkers = 0; Required = @("CenterLane_GPSBreak_WestTall", "CenterLane_GPSBreak_EastTall", "CenterLane_ServiceBarricade_West", "CenterLane_ServiceBarricade_East") },
+    @{ Name = "Lane_South_Flank"; MinSolid = 7; MinMarkers = 0; Required = @("SouthLane_TrenchConnector_West", "SouthLane_TrenchConnector_Mid", "SouthLane_DroneDive_Baffle", "SouthLane_EastHouse_BreachCover") }
 )
 
 foreach ($laneCheck in $laneChecks) {
@@ -307,10 +478,10 @@ foreach ($breaker in @($gpsBreakWest + $gpsBreakEast)) {
 }
 
 $nestChecks = @(
-    @{ Name = "OperatorNest_EastLaunch"; MinSolid = 3; Required = @("EastLaunch_ApproachPaint_North", "EastLaunch_ApproachPaint_South", "EastLaunch_EscapeRead_East", "EastLaunch_SignalLight") },
-    @{ Name = "OperatorNest_MidService"; MinSolid = 3; Required = @("MidService_ApproachPaint_West", "MidService_ApproachPaint_South", "MidService_EscapeRead_East", "MidService_SignalLight") },
-    @{ Name = "OperatorNest_NorthHouse"; MinSolid = 2; Required = @("NorthHouse_ApproachPaint_West", "NorthHouse_ApproachPaint_South", "NorthHouse_EscapeRead_Roof", "NorthHouse_SignalLight") },
-    @{ Name = "OperatorNest_SouthHouse"; MinSolid = 2; Required = @("SouthHouse_ApproachPaint_West", "SouthHouse_ApproachPaint_North", "SouthHouse_EscapeRead_Roof", "SouthHouse_SignalLight") }
+    @{ Name = "OperatorNest_EastLaunch"; MinSolid = 3; Required = @("EastLaunch_SignalLight") },
+    @{ Name = "OperatorNest_MidService"; MinSolid = 3; Required = @("MidService_SignalLight") },
+    @{ Name = "OperatorNest_NorthHouse"; MinSolid = 2; Required = @("NorthHouse_SignalLight") },
+    @{ Name = "OperatorNest_SouthHouse"; MinSolid = 2; Required = @("SouthHouse_SignalLight") }
 )
 
 foreach ($nestCheck in $nestChecks) {
@@ -327,11 +498,11 @@ foreach ($nestCheck in $nestChecks) {
     if ($solidObjects.Count -lt [int]$nestCheck.MinSolid) {
         Add-AgentIssue $issues "Error" "Operator Nests" $relative "$($nestCheck.Name) has $($solidObjects.Count) solid cover object(s), expected at least $($nestCheck.MinSolid)." "Keep each operator nest defensible with authored cover."
     }
-    if ($approachMarkers.Count -lt 2) {
-        Add-AgentIssue $issues "Error" "Operator Nests" $relative "$($nestCheck.Name) has $($approachMarkers.Count) visible soldier approach marker(s), expected at least 2." "Each nest needs at least two readable soldier approach routes."
+    if ($approachMarkers.Count -gt 0) {
+        Add-AgentIssue $issues "Error" "Operator Nests" $relative "$($nestCheck.Name) still contains $($approachMarkers.Count) cyan approach paint marker(s)." "Use physical cover, silhouettes, or non-blue escape/read markers instead of blue blockout line strips."
     }
-    if ($escapeMarkers.Count -lt 1) {
-        Add-AgentIssue $issues "Error" "Operator Nests" $relative "$($nestCheck.Name) has no visible escape/read marker." "Each nest needs one obvious escape or read path so it is not a sealed safe room."
+    if ($escapeMarkers.Count -gt 0) {
+        Add-AgentIssue $issues "Error" "Operator Nests" $relative "$($nestCheck.Name) still contains $($escapeMarkers.Count) escape/read line marker(s)." "Use physical cover, silhouettes, or arted non-line readability instead of blockout line strips."
     }
 
     $solidDirections = New-Object System.Collections.Generic.HashSet[string]
@@ -359,12 +530,40 @@ Test-RequiredObjects -AllObjects $levelObjects -Context "Readability VFX" -Names
     "LaunchPad_Glow_South",
     "WaterTower_PerchMarker",
     "NorthRoof_PerchMarker",
-    "SouthRoof_PerchMarker",
-    "BreachMarker_NorthHouse_West",
-    "BreachMarker_NorthHouse_South",
-    "BreachMarker_SouthHouse_West",
-    "BreachMarker_SouthHouse_North"
+    "SouthRoof_PerchMarker"
 )
+
+$prohibitedBlueLineNames = @($levelObjects | Where-Object {
+    (Get-ObjectName -Object $_) -match "PaintedRoute|ApproachPaint|BreachMarker|DangerStripe|EscapeRead|LaunchPad_Glow_.*_GlowMarker"
+})
+foreach ($marker in $prohibitedBlueLineNames) {
+    Add-AgentIssue $issues "Error" "Readability VFX" $relative "$(Get-ObjectName -Object $marker) is a retired blockout line marker." "Remove line strips from the playable level and keep the scene generator from recreating them."
+}
+
+$prohibitedEmpGlowLines = @($levelObjects | Where-Object {
+    $renderer = Get-ComponentByTypeName -Object $_ -TypeName "ModelRenderer"
+    if ($null -eq $renderer) {
+        return $false
+    }
+
+    $material = [string](Get-JsonPropertyValue -Object $renderer -Name "MaterialOverride")
+    $model = [string](Get-JsonPropertyValue -Object $renderer -Name "Model")
+    if ($model -ne "models/dev/box.vmdl" -or $material -ne "materials/emp_glow.vmat") {
+        return $false
+    }
+
+    $scale = Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $_ -Name "Scale")
+    if ($null -eq $scale) {
+        return $false
+    }
+
+    $thinAxes = @($scale | Where-Object { $_ -le 0.09 }).Count
+    $longAxes = @($scale | Where-Object { $_ -ge 1.5 }).Count
+    return ($thinAxes -ge 1 -and $longAxes -ge 1)
+})
+foreach ($marker in $prohibitedEmpGlowLines) {
+    Add-AgentIssue $issues "Error" "Readability VFX" $relative "$(Get-ObjectName -Object $marker) is a line-like emp_glow dev box." "Use non-line, arted readability cues instead of glowing blockout strips."
+}
 
 $solidColliderObjects = @(Get-AllObjects -Object $levelPass | Where-Object { Test-ObjectHasComponent -Object $_ -TypeName "BoxCollider" })
 foreach ($object in $solidColliderObjects) {

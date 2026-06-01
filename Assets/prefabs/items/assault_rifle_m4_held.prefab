@@ -1,0 +1,140 @@
+{
+  "RootObject": {
+    "__guid": "be452192-704d-2faa-55c8-63ab72eca212",
+    "Flags": 0,
+    "Name": "Weapon",
+    "Position": "20,15,55",
+    "Enabled": true,
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.HitscanWeapon",
+        "__guid": "df16078a-900c-a8bc-8b03-8878024f8a01",
+        "Damage": 18,
+        "MaxRange": 8000,
+        "FireInterval": 0.08,
+        "RecoilDegrees": 0.4,
+        "MagazineSize": 30,
+        "StartingReserveAmmo": 120,
+        "ReloadSeconds": 1.65,
+        "MuzzleSocket": {
+          "_type": "gameobject",
+          "go": "78a6ae3d-e613-fedf-3052-68ca5f0e879c"
+        },
+        "WeaponVisual": {
+          "_type": "gameobject",
+          "go": "30b54c3c-b0de-fcf3-3474-afabb23743c0"
+        },
+        "MuzzleFlash": {
+          "_type": "component",
+          "component_id": "4db68dfb-b419-584e-bbdb-35362698cda9",
+          "go": "01e6af5c-11bb-e871-ac46-e704739ac9b2",
+          "component_type": "PointLight"
+        },
+        "FireSound": "sounds/assault_rifle_fire.sound",
+        "FireSoundFirstPerson": "sounds/m4_fire_fp.sound",
+        "ReloadSound": "sounds/assault_rifle_reload.sound",
+        "MagDropSound": "sounds/mag_drop.sound",
+        "MagInsertSound": "sounds/mag_insert.sound",
+        "BoltRackSound": "sounds/bolt_rack.sound",
+        "EmptyClickSound": "sounds/empty_click.sound",
+        "TracerPrefab": {
+          "_type": "gameobject",
+          "prefab": "prefabs/tracer_default.prefab"
+        },
+        "MuzzleFlashSeconds": 0.045,
+        "FirstPersonOffset": "34,9,-12",
+        "FirstPersonRotationOffset": "0,0,0",
+        "AdsOffset": "28,0,-14",
+        "AdsRotationOffset": "0,0,0",
+        "AdsFovDegrees": 55,
+        "ThirdPersonLocalPosition": "20,15,55",
+        "ThirdPersonLocalAngles": "0,0,0",
+        "AmmoInMagazine": 30,
+        "AmmoReserve": 120,
+        "IsReloading": false,
+        "ReloadFinishTime": 0
+      }
+    ],
+    "Children": [
+      {
+        "__guid": "30b54c3c-b0de-fcf3-3474-afabb23743c0",
+        "Flags": 0,
+        "Name": "WeaponVisual",
+        "Position": "0,0,0",
+        "Rotation": "0,-90,0",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "770c3743-6545-5b66-6d79-5cf217d62362",
+            "BodyGroups": 18446744073709552000,
+            "Model": "models/weapons/assault_rifle_m4.vmdl",
+            "MaterialOverride": null,
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ]
+      },
+      {
+        "__guid": "78a6ae3d-e613-fedf-3052-68ca5f0e879c",
+        "Flags": 0,
+        "Name": "MuzzleSocket",
+        "Position": "20,0,0",
+        "Enabled": true,
+        "Components": [],
+        "Children": [
+          {
+            "__guid": "01e6af5c-11bb-e871-ac46-e704739ac9b2",
+            "Flags": 0,
+            "Name": "MuzzleFlash",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "Sandbox.PointLight",
+                "__guid": "4db68dfb-b419-584e-bbdb-35362698cda9",
+                "LightColor": "1,0.68,0.28,1",
+                "Radius": 120
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "__guid": "eb419ed8-240a-9095-85e0-c7527757c7d3",
+        "Flags": 0,
+        "Name": "LeftHandIk",
+        "Position": "9.5,-5,1.3",
+        "Enabled": true,
+        "Components": []
+      },
+      {
+        "__guid": "72259fd4-de07-62ee-a079-f71be85a7adf",
+        "Flags": 0,
+        "Name": "RightHandIk",
+        "Position": "5,5,-3",
+        "Enabled": true,
+        "Components": []
+      }
+    ],
+    "NetworkMode": 0,
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": true,
+  "MenuPath": "Drone vs Players/Held Items/Assault Rifle M4",
+  "MenuIcon": "my_location",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

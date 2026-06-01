@@ -1,0 +1,144 @@
+{
+  "RootObject": {
+    "__guid": "18105859-00d3-6b75-745d-61bcc17e7ffa",
+    "Flags": 0,
+    "Name": "Weapon",
+    "Position": "20,15,55",
+    "Scale": "0.5,0.5,0.5",
+    "Enabled": true,
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.HitscanWeapon",
+        "__guid": "0eec1ea9-f99b-f180-ad8e-900bfcddb52e",
+        "WeaponDisplayName": "MP7",
+        "Damage": 12,
+        "MaxRange": 1100,
+        "FireInterval": 0.07,
+        "RecoilDegrees": 0.8,
+        "HipSpreadDegrees": 9,
+        "AdsSpreadDegrees": 4.25,
+        "MagazineSize": 40,
+        "StartingReserveAmmo": 160,
+        "ReloadSeconds": 1.85,
+        "Slot": 2,
+        "MuzzleSocket": {
+          "_type": "gameobject",
+          "go": "b82f574f-6ae4-db17-e195-b0081de6a889"
+        },
+        "WeaponVisual": {
+          "_type": "gameobject",
+          "go": "fe53cb73-19e2-6c1e-333e-24b9704c4f44"
+        },
+        "MuzzleFlash": {
+          "_type": "component",
+          "component_id": "fdd4dfb4-1d76-ceda-369e-f4caa824e4ea",
+          "go": "1179ecd2-e87c-50a8-90eb-5b3372fe72d0",
+          "component_type": "PointLight"
+        },
+        "FireSound": "sounds/assault_rifle_fire.sound",
+        "FireSoundFirstPerson": "sounds/m4_fire_fp.sound",
+        "ReloadSound": "sounds/assault_rifle_reload.sound",
+        "MagDropSound": "sounds/mag_drop.sound",
+        "MagInsertSound": "sounds/mag_insert.sound",
+        "BoltRackSound": "sounds/bolt_rack.sound",
+        "EmptyClickSound": "sounds/empty_click.sound",
+        "TracerPrefab": {
+          "_type": "gameobject",
+          "prefab": "prefabs/tracer_default.prefab"
+        },
+        "MuzzleFlashSeconds": 0.04,
+        "FirstPersonOffset": "32,8,-11",
+        "FirstPersonRotationOffset": "0,0,0",
+        "AdsOffset": "22,0,-6",
+        "AdsRotationOffset": "0,0,0",
+        "AdsFovDegrees": 60,
+        "ThirdPersonLocalPosition": "20,15,55",
+        "ThirdPersonLocalAngles": "0,0,0",
+        "TwoHanded": false,
+        "AmmoInMagazine": 40,
+        "AmmoReserve": 160,
+        "IsReloading": false,
+        "ReloadFinishTime": 0
+      }
+    ],
+    "Children": [
+      {
+        "__guid": "fe53cb73-19e2-6c1e-333e-24b9704c4f44",
+        "Flags": 0,
+        "Name": "WeaponVisual",
+        "Position": "0,0,0",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "bc43e42f-7294-20e2-0702-54efb120897e",
+            "BodyGroups": 18446744073709552000,
+            "Model": "models/weapons/smg_mp7.vmdl",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ]
+      },
+      {
+        "__guid": "b82f574f-6ae4-db17-e195-b0081de6a889",
+        "Flags": 0,
+        "Name": "MuzzleSocket",
+        "Position": "22,0,1",
+        "Enabled": true,
+        "Components": [],
+        "Children": [
+          {
+            "__guid": "1179ecd2-e87c-50a8-90eb-5b3372fe72d0",
+            "Flags": 0,
+            "Name": "MuzzleFlash",
+            "Enabled": true,
+            "Components": [
+              {
+                "__type": "Sandbox.PointLight",
+                "__guid": "fdd4dfb4-1d76-ceda-369e-f4caa824e4ea",
+                "LightColor": "1,0.68,0.28,1",
+                "Radius": 120
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "__guid": "d2720993-dce4-a47f-97b5-50040f29b705",
+        "Flags": 0,
+        "Name": "LeftHandIk",
+        "Position": "16,-5,-2",
+        "Enabled": true,
+        "Components": []
+      },
+      {
+        "__guid": "20ecfd6e-3806-a29c-8554-01768c590d7d",
+        "Flags": 0,
+        "Name": "RightHandIk",
+        "Position": "4,4,-2",
+        "Enabled": true,
+        "Components": []
+      }
+    ],
+    "NetworkMode": 0,
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": true,
+  "MenuPath": "Drone vs Players/Held Items/SMG MP7",
+  "MenuIcon": "speed",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

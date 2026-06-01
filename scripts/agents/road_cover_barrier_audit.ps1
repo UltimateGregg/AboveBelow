@@ -60,6 +60,22 @@ function Get-ObjectComponents {
     return @($components)
 }
 
+function Set-JsonPropertyValue {
+    param([object]$Object, [string]$Name, [object]$Value)
+
+    if ($null -eq $Object -or $null -eq $Object.PSObject) {
+        return
+    }
+
+    $property = $Object.PSObject.Properties[$Name]
+    if ($null -eq $property) {
+        $Object | Add-Member -NotePropertyName $Name -NotePropertyValue $Value -Force
+    }
+    else {
+        $property.Value = $Value
+    }
+}
+
 function Get-AllObjects {
     param([object]$Object)
 
@@ -82,6 +98,124 @@ function Find-ObjectsByName {
     )
 
     return @($Objects | Where-Object { [string](Get-JsonPropertyValue -Object $_ -Name "Name") -eq $Name })
+}
+
+function Copy-AgentJsonObject {
+    param([object]$Object)
+
+    return ($Object | ConvertTo-Json -Depth 100 | ConvertFrom-Json)
+}
+
+function Get-PrefabInstanceIdMap {
+    param([object]$Instance)
+
+    $map = @{}
+    $rawMap = Get-JsonPropertyValue -Object $Instance -Name "__PrefabIdToInstanceId"
+    if ($null -eq $rawMap -or $null -eq $rawMap.PSObject) {
+        return $map
+    }
+
+    foreach ($property in @($rawMap.PSObject.Properties)) {
+        $map[[string]$property.Name] = [string]$property.Value
+    }
+
+    return $map
+}
+
+function Find-PrefabNodeByGuid {
+    param([object]$Object, [string]$Guid, [string]$TargetType)
+
+    if ($null -eq $Object) {
+        return $null
+    }
+
+    if ($TargetType -eq "GameObject" -and [string](Get-JsonPropertyValue -Object $Object -Name "__guid") -eq $Guid) {
+        return $Object
+    }
+
+    foreach ($component in @(Get-ObjectComponents -Object $Object)) {
+        if ($TargetType -eq "Component" -and [string](Get-JsonPropertyValue -Object $component -Name "__guid") -eq $Guid) {
+            return $component
+        }
+    }
+
+    foreach ($child in @(Get-ObjectChildren -Object $Object)) {
+        $match = Find-PrefabNodeByGuid -Object $child -Guid $Guid -TargetType $TargetType
+        if ($null -ne $match) {
+            return $match
+        }
+    }
+
+    return $null
+}
+
+function Resolve-PrefabInstanceForAudit {
+    param([object]$Instance, [object]$PrefabRoot)
+
+    if ($null -eq $Instance -or $null -eq $PrefabRoot) {
+        return $null
+    }
+
+    $resolved = Copy-AgentJsonObject -Object $PrefabRoot
+    $patch = Get-JsonPropertyValue -Object $Instance -Name "__PrefabInstancePatch"
+    foreach ($override in @((Get-JsonPropertyValue -Object $patch -Name "PropertyOverrides"))) {
+        $target = Get-JsonPropertyValue -Object $override -Name "Target"
+        if ($null -eq $target) {
+            continue
+        }
+
+        $targetType = [string](Get-JsonPropertyValue -Object $target -Name "Type")
+        $targetId = [string](Get-JsonPropertyValue -Object $target -Name "IdValue")
+        $propertyName = [string](Get-JsonPropertyValue -Object $override -Name "Property")
+        $value = Get-JsonPropertyValue -Object $override -Name "Value"
+
+        if ([string]::IsNullOrWhiteSpace($targetType) -or
+            [string]::IsNullOrWhiteSpace($targetId) -or
+            [string]::IsNullOrWhiteSpace($propertyName)) {
+            continue
+        }
+
+        $targetObject = Find-PrefabNodeByGuid -Object $resolved -Guid $targetId -TargetType $targetType
+        if ($null -ne $targetObject) {
+            Set-JsonPropertyValue -Object $targetObject -Name $propertyName -Value $value
+        }
+    }
+
+    $idMap = Get-PrefabInstanceIdMap -Instance $Instance
+    foreach ($node in @(Get-AllObjects -Object $resolved)) {
+        $nodeGuid = [string](Get-JsonPropertyValue -Object $node -Name "__guid")
+        if ($idMap.ContainsKey($nodeGuid)) {
+            Set-JsonPropertyValue -Object $node -Name "__guid" -Value $idMap[$nodeGuid]
+        }
+
+        foreach ($component in @(Get-ObjectComponents -Object $node)) {
+            $componentGuid = [string](Get-JsonPropertyValue -Object $component -Name "__guid")
+            if ($idMap.ContainsKey($componentGuid)) {
+                Set-JsonPropertyValue -Object $component -Name "__guid" -Value $idMap[$componentGuid]
+            }
+        }
+    }
+
+    return $resolved
+}
+
+function Find-RoadCoverBarrierGroups {
+    param([object]$Road, [object]$PrefabRoot)
+
+    $matches = @(Get-ObjectChildren -Object $Road | Where-Object { [string](Get-JsonPropertyValue -Object $_ -Name "Name") -eq "RoadCover_Northwest_Barrier" })
+    foreach ($child in @(Get-ObjectChildren -Object $Road)) {
+        $prefabPath = [string](Get-JsonPropertyValue -Object $child -Name "__Prefab")
+        if ($prefabPath -notin @("prefabs/environment/road_cover_northwest_barrier.prefab", "Assets/prefabs/environment/road_cover_northwest_barrier.prefab")) {
+            continue
+        }
+
+        $resolved = Resolve-PrefabInstanceForAudit -Instance $child -PrefabRoot $PrefabRoot
+        if ($null -ne $resolved -and [string](Get-JsonPropertyValue -Object $resolved -Name "Name") -eq "RoadCover_Northwest_Barrier") {
+            $matches += $resolved
+        }
+    }
+
+    return @($matches)
 }
 
 function Get-ComponentByTypeName {
@@ -174,6 +308,19 @@ foreach ($rootObject in @($scene.GameObjects)) {
     $allObjects += Get-AllObjects -Object $rootObject
 }
 
+$barrierPrefabPath = Join-Path $Root "Assets\prefabs\environment\road_cover_northwest_barrier.prefab"
+$barrierPrefabRoot = $null
+if (Test-Path -LiteralPath $barrierPrefabPath) {
+    try {
+        $barrierPrefab = Read-AgentJson -Path $barrierPrefabPath
+        $barrierPrefabRoot = Get-JsonPropertyValue -Object $barrierPrefab -Name "RootObject"
+    }
+    catch {
+        $barrierPrefabRelative = ConvertTo-AgentRelativePath -Path $barrierPrefabPath -Root $Root
+        Add-AgentIssue $issues "Error" "Road Cover Barrier" $barrierPrefabRelative "Could not parse road cover barrier prefab JSON: $($_.Exception.Message)" "Fix the prefab before validating prefab-backed barrier placement."
+    }
+}
+
 $roadMatches = @(Find-ObjectsByName -Objects $allObjects -Name "RoadCorridor_Main")
 if ($roadMatches.Count -ne 1) {
     Add-AgentIssue $issues "Error" "Road Cover Barrier" $relative "Expected exactly one RoadCorridor_Main; found $($roadMatches.Count)." "Keep the editor-authored barrier parented to the active road corridor."
@@ -182,7 +329,7 @@ if ($roadMatches.Count -ne 1) {
 }
 
 $road = $roadMatches[0]
-$coverMatches = @(Get-ObjectChildren -Object $road | Where-Object { [string](Get-JsonPropertyValue -Object $_ -Name "Name") -eq "RoadCover_Northwest_Barrier" })
+$coverMatches = @(Find-RoadCoverBarrierGroups -Road $road -PrefabRoot $barrierPrefabRoot)
 if ($coverMatches.Count -ne 1) {
     Add-AgentIssue $issues "Error" "Road Cover Barrier" $relative "Expected exactly one RoadCover_Northwest_Barrier under RoadCorridor_Main; found $($coverMatches.Count)." "Replace the old placeholder with one editor-authored primitive barrier group."
     Write-AgentIssues -Issues $issues -ShowInfo:$ShowInfo

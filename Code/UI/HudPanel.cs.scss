@@ -250,6 +250,13 @@ HudPanel {
                     color: rgba(255, 255, 255, 0.74);
                 }
 
+                .meta {
+                    font-size: 10px;
+                    font-weight: 800;
+                    color: rgba(255, 255, 255, 0.54);
+                    text-transform: uppercase;
+                }
+
                 &:hover {
                     transform: translateY(-2px);
                     border-color: rgba(255, 255, 255, 0.34);
@@ -747,6 +754,91 @@ HudPanel {
             z-index: 10;
         }
 
+        .drone-optic-overlay {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 7;
+            pointer-events: none;
+            background-image: radial-gradient(transparent 38%, rgba(0, 0, 0, 0.34) 64%, rgba(0, 0, 0, 0.68) 100%);
+
+            .optic-ring {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                border-radius: 50%;
+                transform: translate(-50%, -50%);
+                border: 1px solid rgba(180, 246, 255, 0.44);
+                box-shadow: 0 0 18px rgba(77, 210, 255, 0.12);
+            }
+
+            .optic-ring.outer {
+                width: 46vh;
+                height: 46vh;
+            }
+
+            .optic-ring.inner {
+                width: 18vh;
+                height: 18vh;
+                opacity: 0.54;
+            }
+
+            .optic-line {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                background-color: rgba(180, 246, 255, 0.42);
+                box-shadow: 0 0 8px rgba(77, 210, 255, 0.18);
+            }
+
+            .optic-line.horizontal {
+                width: 52vh;
+                height: 1px;
+                transform: translatex(-50%);
+            }
+
+            .optic-line.vertical {
+                width: 1px;
+                height: 52vh;
+                transform: translatey(-50%);
+            }
+
+            .optic-label {
+                position: absolute;
+                right: 32px;
+                bottom: 82px;
+                padding: 4px 8px;
+                border-radius: 3px;
+                border: 1px solid rgba(135, 236, 255, 0.34);
+                background-color: rgba(0, 8, 10, 0.36);
+                color: rgba(175, 246, 255, 0.88);
+                font-size: 11px;
+                font-weight: 900;
+                text-transform: uppercase;
+                text-shadow: 0 0 6px rgba(77, 210, 255, 0.34);
+            }
+
+            &.fpv {
+                .optic-ring,
+                .optic-line {
+                    border-color: rgba(145, 255, 158, 0.4);
+                    background-color: rgba(145, 255, 158, 0.38);
+                    box-shadow: 0 0 16px rgba(122, 255, 138, 0.12);
+                }
+            }
+
+            &.fiber {
+                .optic-ring,
+                .optic-line {
+                    border-color: rgba(255, 211, 77, 0.42);
+                    background-color: rgba(255, 211, 77, 0.36);
+                    box-shadow: 0 0 16px rgba(255, 211, 77, 0.1);
+                }
+            }
+        }
+
         .crosshair {
             position: absolute;
             left: -16px;
@@ -852,6 +944,19 @@ HudPanel {
                 background-color: rgba(white, 0.45);
             }
 
+            .key-icon {
+                min-width: 28px;
+                min-height: 24px;
+                padding: 3px 6px;
+                border-radius: 4px;
+                border: 1px solid rgba(white, 0.42);
+                background-color: rgba(0, 0, 0, 0.38);
+                color: rgba(white, 0.96);
+                font-size: 12px;
+                font-weight: 900;
+                text-align: center;
+            }
+
             .drone-action-copy {
                 padding: 3px 7px;
                 border-radius: 3px;
@@ -894,6 +999,44 @@ HudPanel {
 
             &.arming {
                 opacity: 0.62;
+            }
+        }
+
+        .world-action-prompt {
+            position: absolute;
+            left: -96px;
+            top: 78px;
+            width: 192px;
+            min-height: 32px;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            opacity: 0.92;
+            text-shadow: 0 2px 5px rgba(black, 0.9);
+
+            .key-icon {
+                min-width: 28px;
+                min-height: 24px;
+                padding: 3px 6px;
+                border-radius: 4px;
+                border: 1px solid rgba(white, 0.42);
+                background-color: rgba(0, 0, 0, 0.42);
+                color: rgba(white, 0.96);
+                font-size: 12px;
+                font-weight: 900;
+                text-align: center;
+            }
+
+            .interaction-prompt-copy {
+                padding: 3px 7px;
+                border-radius: 3px;
+                background-color: rgba(0, 0, 0, 0.38);
+                border: 1px solid rgba(255, 255, 255, 0.24);
+                color: rgba(255, 255, 255, 0.94);
+                font-size: 12px;
+                font-weight: 900;
+                text-transform: uppercase;
             }
         }
 
@@ -1260,6 +1403,38 @@ HudPanel {
             .tick.bottom { bottom: -4px; }
             .tick.left   { left: -4px; }
             .tick.right  { right: -4px; }
+        }
+
+        .crosshair.weapon-bloom-1 {
+            .tick.top    { top: -2px; }
+            .tick.bottom { bottom: -2px; }
+            .tick.left   { left: -2px; }
+            .tick.right  { right: -2px; }
+        }
+
+        .crosshair.weapon-bloom-2 {
+            .tick.top    { top: -4px; }
+            .tick.bottom { bottom: -4px; }
+            .tick.left   { left: -4px; }
+            .tick.right  { right: -4px; }
+        }
+
+        .crosshair.weapon-bloom-3,
+        .crosshair.weapon-bloom-4 {
+            .tick.top    { top: -6px; }
+            .tick.bottom { bottom: -6px; }
+            .tick.left   { left: -6px; }
+            .tick.right  { right: -6px; }
+        }
+
+        .crosshair.weapon-bloom-5,
+        .crosshair.weapon-bloom-6,
+        .crosshair.weapon-bloom-7,
+        .crosshair.weapon-bloom-8 {
+            .tick.top    { top: -8px; }
+            .tick.bottom { bottom: -8px; }
+            .tick.left   { left: -8px; }
+            .tick.right  { right: -8px; }
         }
 
         // ─────── ELIMINATED popup ───────

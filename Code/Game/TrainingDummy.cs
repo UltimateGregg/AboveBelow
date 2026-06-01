@@ -29,9 +29,16 @@ public sealed class TrainingDummy : Component
 	[Property] public GameObject Body { get; set; }
 	[Property] public CitizenAnimationHelper AnimationHelper { get; set; }
 	[Property] public Health Health { get; set; }
+	[Property] public NavMeshAgent NavAgent { get; set; }
 	[Property] public bool MoveAround { get; set; } = true;
+	[Property] public bool UseNavMeshNavigation { get; set; } = true;
+	[Property] public bool PressureNearestEnemy { get; set; } = true;
 	[Property, Range( 0f, 512f )] public float WanderRadius { get; set; } = 220f;
 	[Property, Range( 0f, 240f )] public float MoveSpeed { get; set; } = 75f;
+	[Property, Range( 128f, 2500f )] public float EnemyPressureRadius { get; set; } = 900f;
+	[Property, Range( 48f, 360f )] public float EnemyHoldDistance { get; set; } = 130f;
+	[Property, Range( 8f, 64f )] public float NavAgentRadius { get; set; } = 18f;
+	[Property, Range( 48f, 120f )] public float NavAgentHeight { get; set; } = 72f;
 	[Property, Range( 0.25f, 8f )] public float MinPauseSeconds { get; set; } = 0.75f;
 	[Property, Range( 0.25f, 8f )] public float MaxPauseSeconds { get; set; } = 2.25f;
 
@@ -42,10 +49,13 @@ public sealed class TrainingDummy : Component
 	float _pauseUntil;
 	PlayerRole _appliedTeamRole = PlayerRole.Spectator;
 	CharacterController _controller;
+	Vector3 _lastNavTarget;
+	TimeSince _timeSinceNavTargetRefresh = 999f;
 
 	protected override void OnStart()
 	{
 		ResolveRefs();
+		ConfigureNavAgent();
 		_homePosition = WorldPosition;
 		PickMoveTarget();
 		ApplyTeamVisual();
@@ -63,6 +73,7 @@ public sealed class TrainingDummy : Component
 	protected override void OnUpdate()
 	{
 		ResolveRefs();
+		ConfigureNavAgent();
 		ApplyTeamVisual();
 
 		var wishVelocity = GetWishVelocity();
@@ -86,6 +97,7 @@ public sealed class TrainingDummy : Component
 		if ( !MoveAround ) return;
 
 		ResolveRefs();
+		ConfigureNavAgent();
 		if ( !_controller.IsValid() ) return;
 
 		var wishVelocity = GetWishVelocity();
@@ -107,6 +119,9 @@ public sealed class TrainingDummy : Component
 
 		if ( !_controller.IsOnGround )
 			_controller.Velocity -= Vector3.Up * 800f * Time.Delta * 0.5f;
+
+		if ( UseNavMeshNavigation && NavAgent.IsValid() )
+			NavAgent.SetAgentPosition( WorldPosition );
 
 		FaceMoveDirection();
 	}
@@ -152,6 +167,9 @@ public sealed class TrainingDummy : Component
 		if ( _hiddenForDeath || !MoveAround || Time.Now < _pauseUntil )
 			return Vector3.Zero;
 
+		if ( TryGetNavWishVelocity( out var navWishVelocity ) )
+			return navWishVelocity;
+
 		var toTarget = (_moveTarget - WorldPosition).WithZ( 0 );
 		if ( toTarget.Length < 24f )
 		{
@@ -163,11 +181,147 @@ public sealed class TrainingDummy : Component
 		return toTarget.Normal * MoveSpeed;
 	}
 
+	bool TryGetNavWishVelocity( out Vector3 wishVelocity )
+	{
+		wishVelocity = Vector3.Zero;
+		if ( !UseNavMeshNavigation || !NavAgent.IsValid() || Scene?.NavMesh is null )
+			return false;
+
+		var target = ResolveDesiredMoveTarget();
+		var toTarget = (target - WorldPosition).WithZ( 0f );
+		if ( toTarget.Length < 24f )
+		{
+			_pauseUntil = Time.Now + RandomRange( MinPauseSeconds, MaxPauseSeconds );
+			NavAgent.Stop();
+			PickMoveTarget();
+			return true;
+		}
+
+		NavAgent.SetAgentPosition( WorldPosition );
+		if ( _timeSinceNavTargetRefresh > 0.75f || target.Distance( _lastNavTarget ) > 64f || !NavAgent.IsNavigating )
+		{
+			_lastNavTarget = target;
+			_timeSinceNavTargetRefresh = 0f;
+			NavAgent.MoveTo( target );
+		}
+
+		wishVelocity = NavAgent.WishVelocity.WithZ( 0f );
+		if ( wishVelocity.Length < 2f )
+			wishVelocity = toTarget.Normal * MoveSpeed;
+
+		wishVelocity = wishVelocity.ClampLength( MoveSpeed );
+		return true;
+	}
+
+	Vector3 ResolveDesiredMoveTarget()
+	{
+		if ( PressureNearestEnemy && TryFindNearestEnemy( out var enemyPosition ) )
+		{
+			var toEnemy = (enemyPosition - WorldPosition).WithZ( 0f );
+			if ( toEnemy.Length > EnemyHoldDistance )
+				return enemyPosition;
+		}
+
+		return _moveTarget;
+	}
+
 	void PickMoveTarget()
 	{
+		if ( UseNavMeshNavigation && Scene?.NavMesh is not null )
+		{
+			var randomPoint = Scene.NavMesh.GetRandomPoint( _homePosition, MathF.Max( 64f, WanderRadius ) );
+			if ( randomPoint.HasValue )
+			{
+				_moveTarget = randomPoint.Value;
+				return;
+			}
+		}
+
 		var angle = RandomRange( 0f, MathF.PI * 2f );
 		var distance = RandomRange( WanderRadius * 0.35f, WanderRadius );
 		_moveTarget = _homePosition + new Vector3( MathF.Cos( angle ) * distance, MathF.Sin( angle ) * distance, 0f );
+	}
+
+	bool TryFindNearestEnemy( out Vector3 position )
+	{
+		position = Vector3.Zero;
+		var bestDistance = MathF.Max( 0f, EnemyPressureRadius );
+		var found = false;
+
+		foreach ( var ground in Scene.GetAllComponents<GroundPlayerController>() )
+		{
+			if ( !ground.IsValid() )
+				continue;
+
+			var role = ResolvePawnRole( ground.GameObject );
+			if ( !IsOpposingRole( role ) )
+				continue;
+
+			var distance = ground.WorldPosition.Distance( WorldPosition );
+			if ( distance >= bestDistance )
+				continue;
+
+			bestDistance = distance;
+			position = ground.WorldPosition;
+			found = true;
+		}
+
+		foreach ( var drone in Scene.GetAllComponents<DroneController>() )
+		{
+			if ( !drone.IsValid() || !IsOpposingRole( PlayerRole.Pilot ) )
+				continue;
+
+			var distance = drone.WorldPosition.Distance( WorldPosition );
+			if ( distance >= bestDistance )
+				continue;
+
+			bestDistance = distance;
+			position = drone.WorldPosition;
+			found = true;
+		}
+
+		return found;
+	}
+
+	PlayerRole ResolvePawnRole( GameObject pawn )
+	{
+		if ( !pawn.IsValid() )
+			return PlayerRole.Spectator;
+
+		if ( pawn.Components.Get<PilotSoldier>( FindMode.EverythingInSelfAndDescendants ).IsValid() )
+			return PlayerRole.Pilot;
+
+		if ( pawn.Components.Get<SoldierBase>( FindMode.EverythingInSelfAndDescendants ).IsValid() )
+			return PlayerRole.Soldier;
+
+		return PlayerRole.Spectator;
+	}
+
+	bool IsOpposingRole( PlayerRole role )
+	{
+		return role is PlayerRole.Pilot or PlayerRole.Soldier && role != TeamRole;
+	}
+
+	void ConfigureNavAgent()
+	{
+		if ( !UseNavMeshNavigation )
+			return;
+
+		if ( !NavAgent.IsValid() )
+			NavAgent = Components.Get<NavMeshAgent>();
+
+		if ( !NavAgent.IsValid() && Networking.IsHost )
+			NavAgent = Components.Create<NavMeshAgent>();
+
+		if ( !NavAgent.IsValid() )
+			return;
+
+		NavAgent.UpdatePosition = false;
+		NavAgent.UpdateRotation = false;
+		NavAgent.Height = NavAgentHeight;
+		NavAgent.Radius = NavAgentRadius;
+		NavAgent.MaxSpeed = MoveSpeed;
+		NavAgent.Acceleration = MathF.Max( MoveSpeed * 4f, 120f );
 	}
 
 	void FaceMoveDirection()
@@ -226,6 +380,9 @@ public sealed class TrainingDummy : Component
 
 		if ( !_controller.IsValid() )
 			_controller = Components.Get<CharacterController>();
+
+		if ( UseNavMeshNavigation && !NavAgent.IsValid() )
+			NavAgent = Components.Get<NavMeshAgent>();
 
 		if ( !AnimationHelper.IsValid() && Body.IsValid() )
 		{

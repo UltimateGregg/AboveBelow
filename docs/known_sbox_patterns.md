@@ -92,6 +92,17 @@ pawn.NetworkSpawn(connection);  // Sets Network.Owner = connection
 - Verify exact C# symbols through `scripts\agents\sbox_api_lookup.ps1`, official API pages, or existing code before editing gameplay, UI, asset, or editor code.
 - Run `scripts\agents\sbox_release_notes_audit.ps1 -Root . -ShowInfo` or `scripts\agents\run_agent_checks.ps1 -Suite release-notes -ShowInfo` after changing release-note-derived guidance.
 
+### S&Box Code Search Intake
+
+**Pattern:** `https://sbox.game/codesearch` searches the source of published packages and is useful for finding real package usage patterns, but package code is example material rather than authoritative project guidance.
+
+**Workflow:**
+- Use `.agents/sbox/sbox-code-search-agent.md` when a task needs practical examples for an S&Box type, method, editor surface, UI pattern, sound workflow, physics call, or test setup.
+- Filter by package type, code type, and year when the distinction matters; prefer recent game code for runtime behavior and editor code for tooling.
+- Compare multiple packages before adopting a pattern. Do not vendor package source into this repo.
+- Verify exact C# symbols through local `API.json`, official API pages, docs source, or existing project code before implementation.
+- Run `scripts\agents\sbox_code_search_audit.ps1 -Root . -ShowInfo` or `scripts\agents\run_agent_checks.ps1 -Suite code-search -ShowInfo` after changing Code Search-derived guidance.
+
 ### S&Box Learn Tutorial Intake
 
 **Pattern:** S&Box Learn pages are useful day-to-day context, but most are community-written tutorials. Convert them into project behavior only through a small researched workflow.
@@ -616,6 +627,115 @@ public void TakeDamage(DamageInfo info)
 - Use `Rifle` / `Both` for hitscan rifles and the drone jammer, `Shotgun` / `Both` for shotgun, `HoldItem` / `Right` for grenades, and `HoldItem` / `Both` for the pilot deployer.
 - If editor playtest shows head or torso self-occlusion, fix local body/head visibility in the human body path rather than bringing back a separate arms model.
 - Run `.\scripts\agents\run_agent_checks.ps1 -Suite prefab -ShowInfo` after held-item prefab edits so missing hand targets are caught before playtesting.
+
+### Reusable Held-Item Prefabs
+
+**Pattern:** Active class and pilot prefabs still own runtime loadout behavior, but weapon/equipment child graphs should also have standalone reusable prefab templates so item visuals, sockets, IK targets, sounds, and component tuning can be inspected and reused without digging through a character prefab.
+
+**Workflow:**
+- Reusable held-item templates live in `Assets/prefabs/items/` and are generated from the active `Weapon`, `Grenade`, and `DroneDeployer` child graphs.
+- The pilot drone deployer also uses `Assets/prefabs/items/held_drone_propeller.prefab` as the reusable runtime propeller preview object; `DroneDeployer` clones it and assigns the selected GPS/FPV propeller model.
+- `FirstPersonViewmodel` clones `Assets/prefabs/items/local_first_person_viewmodel.prefab` for the shared local-only root, `Assets/prefabs/items/viewmodel_arms.prefab` for the reusable arms child, `Assets/prefabs/items/viewmodel_stock_weapon.prefab` for visible stock weapons or hidden custom-weapon animation drivers, and `Assets/prefabs/items/viewmodel_custom_visual.prefab` / `Assets/prefabs/items/viewmodel_static_item.prefab` for the runtime custom/static visual containers.
+- Use `.\scripts\agents\sync_held_item_prefab_templates.ps1` after intentional held-item prefab edits.
+- Run `.\scripts\agents\run_agent_checks.ps1 -Suite held-items -ShowInfo` and `.\scripts\check_first_person_viewmodel_spawn.ps1 -Root .` to prove templates match the active loadout sources and the first-person root prefab path still exists.
+- Do not treat the visual-only asset pipeline prefabs (`assault_rifle_m4.prefab`, `smg_mp7.prefab`) as complete held-item prefabs; the held-item templates include gameplay components, sockets, IK targets, and item-specific sounds.
+
+### Reusable Scene Marker Prefabs
+
+**Pattern:** Scene markers are gameplay objects too. Repeated `PlayerSpawn` and `TrainingDummySpawn` authoring should start from marker prefabs instead of hand-built empty GameObjects.
+
+**Workflow:**
+- Marker templates live in `Assets/prefabs/markers/`.
+- `player_spawn_soldier.prefab` keeps the legacy `PlayerSpawn` tag and `PlayerSpawn.Role = Soldier`.
+- `player_spawn_pilot.prefab` keeps the legacy `DroneSpawn` tag and `PlayerSpawn.Role = Pilot`.
+- `training_dummy_spawn.prefab` carries `TrainingDummySpawn.PreferredRole = Spectator` for neutral solo-practice placement.
+- Use `.\scripts\agents\migrate_scene_markers_to_prefab_instances.ps1 -DryRun` to preview direct `PlayerSpawn` and `TrainingDummySpawn` placements that can be converted to prefab instances, then run it without `-DryRun` to rewrite saved placements through the engine's `__Prefab` / patch / GUID-map instance format.
+- Run `.\scripts\agents\run_agent_checks.ps1 -Suite scene-markers -ShowInfo` after marker prefab edits.
+
+### Reusable Stock Scene Prop Prefabs
+
+**Pattern:** Mounted stock models that appear as gameplay-cover or dressing objects in `main.scene` should have reusable project prefabs before they are copied around as direct model props.
+
+**Workflow:**
+- Stock prop templates live in `Assets/prefabs/environment/stock/`.
+- Use `.\scripts\agents\sync_stock_scene_prop_prefabs.ps1` after intentional template changes.
+- Use `.\scripts\agents\migrate_stock_scene_props_to_prefab_instances.ps1 -DryRun` to preview direct scene placements that can be converted to prefab instances, then run the same script without `-DryRun` to rewrite the saved scene through the engine's `__Prefab` / patch / GUID-map instance format.
+- Run `.\scripts\agents\stock_scene_prop_prefab_audit.ps1 -Root . -ShowInfo -RequireMigrated` to prove the stock prop prefab templates are present and that the saved scene now references those templates as prefab instances.
+- Use the editor commands `dvp_preview_stock_scene_prop_prefab_migration` and `dvp_migrate_stock_scene_props_to_prefabs` after `Editor/StockScenePropPrefabEditorCommands.cs` is hotloaded to replace direct placements through the S&Box prefab clone API.
+- The non-strict audit reports direct scene uses as migration work. When live scene edits are allowed, prefer editor-owned scene work; static JSON migration is acceptable only when it follows current engine prefab serialization evidence and is verified by reloading the scene in the editor.
+- If `prefab_graph_audit.ps1` reports a direct scene stock path as missing, mount the required Facepunch package, restore the local asset, or intentionally replace the model before treating its prefab template as integrated.
+
+### Reusable Arena Boundary Wall Prefab
+
+**Pattern:** Treat arena edge blockers like Source 2 clip brushes: solid invisible collision first, with terrain, rocks, trees, berms, or other arted dressing used only when the playable edge needs a believable visual reason to turn the player around. The four invisible blockers should share one prefab contract instead of carrying repeated direct renderer, collider, and wireframe component settings in `main.scene`.
+
+**Workflow:**
+- The boundary wall template lives at `Assets/prefabs/environment/arena_boundary_wall.prefab`.
+- Keep exactly one saved scene prefab instance each for `NorthBoundary`, `SouthBoundary`, `EastBoundary`, and `WestBoundary`.
+- The prefab owns the hidden `models/dev/box.vmdl` renderer, static non-trigger `50,50,50` box collider, and selection-only `SelectedHierarchyColliderViewer`; scene instances should only override placement and name.
+- Do not make these boundaries visible as white dev walls in normal editor/play views. Select the object or enable collision debug tooling when the clip boundary needs inspection.
+- Use `.\scripts\agents\migrate_arena_boundaries_to_prefab_instances.ps1 -DryRun` to preview direct boundary wall placements that can be converted, then run it without `-DryRun` to rewrite them as prefab instances.
+- Run `.\scripts\agents\scene_integrity_audit.ps1 -Root . -ShowInfo` after boundary prefab or scene edits. It validates the prefab contract and rejects scene instances that override renderer visibility or material state.
+
+### Reusable Terrain Scene Object Prefabs
+
+**Pattern:** Repeated terrain trees, simple rocks, model-collider exterior rocks, full or partial grass-card clumps, ground-polish patches, berm soft caps, shape-matching landforms, and trench segment roots should use local environment prefabs so trunk, branch, viewer, rock collision, card-crossing, material patch, soft-cap, berm/plateau, and trench berm/endcap contracts live in one template instead of hundreds of scene-authored children or renderers.
+
+**Workflow:**
+- Terrain object templates live at `Assets/prefabs/environment/terrain_assets.prefab`, `terrain_pine.prefab`, `terrain_pine_broad.prefab`, `terrain_pine_windswept.prefab`, `terrain_rock.prefab`, `terrain_rock_model_collider.prefab`, `grass_clump.prefab`, `grass_clump_single_card.prefab`, `grass_clump_five_card.prefab`, `ground_grass_clump_patch.prefab`, `ground_worn_path_patch.prefab`, `berm_soft_cap.prefab`, `Berm.prefab`, `Hill.prefab`, `hill_central_north_box.prefab`, `Plateau.prefab`, `plateau_east_north_terrain.prefab`, and `TrenchSegment.prefab`.
+- Use `.\scripts\agents\migrate_terrain_scene_objects_to_prefab_instances.ps1 -DryRun` to preview direct tree, simple rock, model-collider exterior rock, full or partial grass-card clump, ground-polish patch, berm soft-cap, landform, and trench segment placements whose child/component shape matches the local prefab, then run it without `-DryRun` to rewrite them as saved-scene prefab instances. Exact-name bespoke landform templates such as `hill_central_north_box.prefab` and `plateau_east_north_terrain.prefab` should be listed before the generic `Hill.prefab` / `Plateau.prefab` templates.
+- The migration intentionally skips unknown shape-mismatched rocks, foliage, hills, or plateaus so hand-edited collision stays direct until a new prefab contract is created for that shape.
+- `tree_collision_audit.ps1` resolves terrain tree prefab instances back to their templates, so prefab-backed scene trees still count toward trunk and branch collider coverage.
+- Run `.\scripts\agents\tree_collision_audit.ps1 -Root . -ShowInfo`, `.\scripts\agents\prefab_graph_audit.ps1 -ShowInfo`, and `.\scripts\agents\scene_integrity_audit.ps1 -Root . -ShowInfo` after terrain prefab or scene-placement edits.
+
+### Composed Environment Prop Prefab Instances
+
+**Pattern:** Scene-authored composed props should become prefab instances once their visual, solid collision, trigger, and helper children settle into a reusable contract. The prefab owns the child graph; the scene instance owns only placement.
+
+**Workflow:**
+- `Assets/prefabs/environment/WaterTower.prefab` owns the tower visual, solid tank/platform/leg/brace collision, ladder trigger, `LadderVolume`, and `SelectedHierarchyColliderViewer`.
+- `Assets/prefabs/environment/burnt_car_wreck.prefab` owns the destroyed pickup's 60 primitive child pieces. `CenterLane_DestroyedPickup_North` should be a scene prefab instance that overrides the root name and transform, not a hand-expanded scene group.
+- `Assets/prefabs/environment/house_large_playable.prefab`, `Assets/prefabs/environment/house_small_playable.prefab`, and `Assets/prefabs/environment/house_small_collision_playable.prefab` own the playable house visual, solid collision, ladder, and `Zone_*` helper child contracts. `House_Large_01`, `House_Large_02`, `House_Small_01`, `House_Small_02`, `House_Small_03`, and `House_Small_04` should be scene prefab instances that override placement and any per-placement `Model_Visual` offset/scale instead of hand-expanded scene groups.
+- `Assets/prefabs/environment/road_sandbag_cover_mid.prefab` owns the 18 solid sandbag bodies for the road cover. `RoadSandbagCover_Mid` should be a scene prefab instance after the spacing and height checks pass.
+- `Assets/prefabs/environment/road_cover_northwest_barrier.prefab` owns the northwest road barrier's 10 solid primitive body pieces and 9 visual detail pieces. `RoadCover_Northwest_Barrier` should be a scene prefab instance after the barrier audit passes.
+- `Assets/prefabs/environment/road_surface.prefab`, `road_shoulder.prefab`, and `road_curb.prefab` own the base road renderer/material contracts. `RoadSurface_Main`, both shoulders, and both curbs should be scene prefab instances.
+- `Assets/prefabs/environment/road_lane_dash.prefab` owns the visual-only centerline dash renderer. The 41 `RoadDash_##` placements should be scene prefab instances that preserve the audit's 260-unit spacing contract.
+- `Assets/prefabs/environment/road_edge_wear_patch.prefab` owns the visual-only road-edge wear plane renderer and material. The 24 road-edge wear scene placements should be prefab instances that only override root name, position, rotation, and scale.
+- `Assets/prefabs/environment/blockout_cover_box.prefab` owns the shared `models/dev/box.vmdl` renderer plus static `BoxCollider` shape for repeated `LevelDesignPass_AboveBelow` cover, operator-nest, asset-placeholder blocks, `DroneLaunchPad`, and `NorthLowCover`. Scene instances should override root name, transform, material, and tint instead of duplicating the renderer/collider pair.
+- `Assets/prefabs/environment/skyline_model_collider_box.prefab` owns the shared `models/dev/box.vmdl` renderer plus `ModelCollider` shape for skyline dev boxes that need model collision instead of a `BoxCollider`. Scene instances should override root name, transform, material, and tint instead of duplicating the renderer/collider pair.
+- `Assets/prefabs/environment/visual_dev_box.prefab` owns the shared renderer-only `models/dev/box.vmdl` shape for glow markers, skyline tower masses, and skyline window bands. Scene instances should override root name, transform, material, and tint instead of duplicating visual-only renderer objects.
+- `Assets/prefabs/environment/operator_signal_light.prefab`, `Assets/prefabs/environment/launch_pad_glow_light.prefab`, and `Assets/prefabs/environment/perch_marker_light.prefab` own reusable `PointLight` readability markers. Scene instances should override root name, placement, light radius/color, and glow-marker scale/tint rather than leaving loose direct light roots in `main.scene`.
+- `Assets/prefabs/environment/ambient_sound_point.prefab` owns the reusable `AmbientSound` emitter contract. Scene instances should override root name, placement, sound event, loop timing, and volume instead of leaving repeated ambient emitters as direct scene roots.
+- Keep the WaterTower prefab root at `0,0,0`, identity rotation, and `1,1,1` scale. Scene placements should override the root name, position, rotation, and scale instead of baking placement into the prefab.
+- Keep the destroyed pickup prefab root named `BurntCarWreck`; the scene instance should rename it to `CenterLane_DestroyedPickup_North` through the prefab patch.
+- Keep playable house prefab roots named `HouseLargePlayable`, `HouseSmallPlayable`, and `HouseSmallCollisionPlayable`; scene instances should use their placed house names through the prefab patch.
+- Keep the sandbag cover prefab root named `RoadSandbagCoverMid`; the scene instance should rename it to `RoadSandbagCover_Mid` through the prefab patch.
+- Keep the road-cover barrier prefab root named `RoadCoverNorthwestBarrier`; the scene instance should rename it to `RoadCover_Northwest_Barrier` through the prefab patch.
+- Keep road base prefab roots named `RoadSurface`, `RoadShoulder`, and `RoadCurb`; scene instances should use `RoadSurface_Main`, `RoadShoulder_West`, `RoadShoulder_East`, `RoadCurb_West`, and `RoadCurb_East` names through the prefab patch.
+- Keep the road lane dash prefab root named `RoadLaneDash`; scene instances should use `RoadDash_##` names through the prefab patch.
+- Keep the road-edge wear prefab root named `RoadEdgeWearPatch`; scene instances should use `RoadEdgeWear_West_##` and `RoadEdgeWear_East_##` names through the prefab patch.
+- Keep the blockout cover prefab root named `BlockoutCoverBox`; scene instances should use their lane, nest, placeholder, launch-pad, or low-cover names through the prefab patch.
+- Keep the skyline model-collider prefab root named `SkylineModelColliderBox`; scene instances should use their skyline mass names through the prefab patch.
+- Keep the visual dev-box prefab root named `VisualDevBox`; scene instances should use their marker or skyline names through the prefab patch.
+- Keep readability light prefab roots named `OperatorSignalLight`, `LaunchPadGlowLight`, and `PerchMarkerLight`; scene instances should use their placed signal/glow/perch marker names through the prefab patch.
+- Keep the ambient sound prefab root named `AmbientSoundPoint`; scene instances should use their placed ambient sound names through the prefab patch.
+- Do not migrate composed buildings or props just because a similarly named prefab exists. First compare child collider counts, visual scale, helper components, and audit expectations; if the scene contract differs, update or create the prefab contract before replacing the scene object with a prefab instance. Use `.\scripts\agents\migrate_building_scene_objects_to_prefab_instances.ps1 -DryRun` before changing playable house placements.
+- Run `.\scripts\agents\scene_integrity_audit.ps1 -Root . -ShowInfo`, `.\scripts\agents\collision_authoring_agent.ps1 -Root . -ShowInfo`, `.\scripts\agents\building_scene_prefab_audit.ps1 -Root . -ShowInfo -RequireMigrated`, `.\scripts\agents\readability_light_scene_prefab_audit.ps1 -Root . -ShowInfo -RequireMigrated`, `.\scripts\agents\ambient_sound_scene_prefab_audit.ps1 -Root . -ShowInfo -RequireMigrated`, `.\scripts\agents\destroyed_pickup_scene_audit.ps1 -Root . -ShowInfo`, `.\scripts\agents\sandbag_cover_audit.ps1 -Root . -ShowInfo`, `.\scripts\agents\road_cover_barrier_audit.ps1 -Root . -ShowInfo`, `.\scripts\agents\road_lane_marking_audit.ps1 -Root . -ShowInfo`, `.\scripts\agents\road_edge_wear_audit.ps1 -Root . -ShowInfo`, and `.\scripts\agents\prefab_graph_audit.ps1 -Root . -ShowInfo` after composed-prop prefab or scene-instance edits.
+
+### Transient Combat Prefabs
+
+**Pattern:** Runtime-only combat objects should still have prefab templates when their behavior is shared across multiple weapons or item classes.
+
+**Workflow:**
+- `MuzzleFlashVisual.Spawn(...)` first clones `Assets/prefabs/effects/muzzle_flash.prefab`, then falls back to constructing the object if the prefab is unavailable.
+- Soldier, pilot, and drone hitscan tracers should use the shared `Assets/prefabs/tracer_default.prefab` before falling back to `BallisticTracerRenderer`; that fallback should first clone `Assets/prefabs/effects/ballistic_tracer.prefab`, then construct the same local-only object only if the prefab is unavailable.
+- `TracerLifetime` first clones `Assets/prefabs/effects/tracer_bullet_glow.prefab` for the moving head glow, then falls back to constructing the same sprite child if the prefab is unavailable.
+- `DroneJammerGun` first clones `Assets/prefabs/effects/jammer_beam.prefab` for its local LineRenderer beam, then falls back to constructing the same local-only beam object if the prefab is unavailable.
+- `FiberCable.DetachFromLiveEndpoints()` first clones `Assets/prefabs/effects/detached_fiber_cable.prefab` for the persistent local wire, then falls back to constructing a local-only LineRenderer object if the prefab is unavailable.
+- Chaff, EMP, and frag detonation visuals first clone `Assets/prefabs/effects/chaff_burst.prefab`, `Assets/prefabs/effects/emp_burst.prefab`, or `Assets/prefabs/effects/frag_burst.prefab`, then configure the shared `GrenadeEffectVisual` with the grenade-specific kind and radius.
+- `ThrowableGrenade` first clones `Assets/prefabs/items/thrown_grenade_projectile.prefab`, then applies the grenade-specific model, velocity, fuse, collider, and physics tuning.
+- Keep procedural fallbacks in these paths so combat still functions if an asset reference is temporarily broken during editor iteration.
+- Run `.\scripts\agents\run_agent_checks.ps1 -Suite ballistic-tracers -ShowInfo` after changing fallback ballistic tracer spawning. Run `.\scripts\agents\run_agent_checks.ps1 -Suite transient-combat -ShowInfo` after changing broader muzzle flash, tracer, grenade, cable, or thrown projectile spawning.
 
 ### MCP Component Value Conversion
 

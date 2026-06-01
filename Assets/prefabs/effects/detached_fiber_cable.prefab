@@ -1,0 +1,50 @@
+{
+  "RootObject": {
+    "__guid": "5c67a50b-4afa-55c3-b18a-bce8a1fe9201",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "DetachedFiberCable",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "Sandbox.LineRenderer",
+        "__guid": "ed550d4f-6a8c-52bd-bd3f-30b7eec01801",
+        "__enabled": true,
+        "Additive": false,
+        "BlendMode": "Normal",
+        "CastShadows": false,
+        "EndCap": "None",
+        "Face": "Camera",
+        "Flags": 0,
+        "Lighting": false,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "UseVectorPoints": true,
+        "Width": {
+          "useCurve": false,
+          "constant": 1
+        },
+        "Wireframe": false
+      }
+    ],
+    "Children": []
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Effects/Detached Fiber Cable",
+  "MenuIcon": "timeline",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 3
+}

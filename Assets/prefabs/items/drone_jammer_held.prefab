@@ -1,0 +1,89 @@
+{
+  "RootObject": {
+    "__guid": "72b6d9a2-935b-e9ce-7342-cfd66d64a969",
+    "Flags": 0,
+    "Name": "Weapon",
+    "Position": "20,15,55",
+    "Enabled": true,
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.DroneJammerGun",
+        "__guid": "beac4371-cbc3-e616-b063-d5fb80e9d805",
+        "MaxRange": 4000,
+        "ConeHalfAngle": 12,
+        "TickInterval": 0.1,
+        "PulseDuration": 0.3,
+        "Strength": 1,
+        "LoopSound": "sounds/jammer_loop.sound",
+        "Slot": 1,
+        "FirstPersonOffset": "30,8,-5",
+        "FirstPersonRotationOffset": "0,0,0",
+        "ThirdPersonLocalPosition": "20,15,55",
+        "ThirdPersonLocalAngles": "0,0,0"
+      }
+    ],
+    "Children": [
+      {
+        "__guid": "fe23d588-1fc9-34be-7435-9bf23836df0c",
+        "Flags": 0,
+        "Name": "WeaponVisual",
+        "Position": "0,0,0",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "51974d6a-2bcf-26d1-f03c-34d6ef046c7c",
+            "BodyGroups": 18446744073709552000,
+            "Model": "models/jammer_gun.vmdl",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ]
+      },
+      {
+        "__guid": "efd1d7e6-ff37-f250-35e5-446b1cad26d2",
+        "Flags": 0,
+        "Name": "MuzzleSocket",
+        "Position": "20,0,0",
+        "Enabled": true,
+        "Components": []
+      },
+      {
+        "__guid": "fe8e1d24-e7a0-9f12-9db2-602ada2ae09a",
+        "Flags": 0,
+        "Name": "LeftHandIk",
+        "Position": "5,-5,-3",
+        "Enabled": true,
+        "Components": []
+      },
+      {
+        "__guid": "500221bb-5449-2b26-5344-e42e471cf70a",
+        "Flags": 0,
+        "Name": "RightHandIk",
+        "Position": "-2,5,-4",
+        "Enabled": true,
+        "Components": []
+      }
+    ],
+    "NetworkMode": 0,
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": true,
+  "MenuPath": "Drone vs Players/Held Items/Drone Jammer",
+  "MenuIcon": "wifi_tethering_off",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

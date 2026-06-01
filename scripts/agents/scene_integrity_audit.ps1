@@ -424,6 +424,64 @@ function Test-BoundaryWireframeContract {
         [string]$Path
     )
 
+    $boundaryPrefabInstancePath = "prefabs/environment/arena_boundary_wall.prefab"
+    $boundaryPrefabSceneUses = [regex]::Matches($raw, '"__Prefab"\s*:\s*"prefabs/environment/arena_boundary_wall\.prefab"')
+    if ($boundaryPrefabSceneUses.Count -gt 0) {
+        $boundaryPrefabPath = Join-Path $Root "Assets\prefabs\environment\arena_boundary_wall.prefab"
+        $boundaryPrefabRelative = ConvertTo-AgentRelativePath -Path $boundaryPrefabPath -Root $Root
+        if (-not (Test-Path -LiteralPath $boundaryPrefabPath)) {
+            Add-AgentIssue $issues "Error" "Boundary Walls" $boundaryPrefabRelative "Arena boundary wall prefab is missing, but main.scene references it." "Restore Assets/prefabs/environment/arena_boundary_wall.prefab or replace boundary wall scene instances intentionally."
+        }
+        else {
+            $boundaryPrefabText = Get-Content -LiteralPath $boundaryPrefabPath -Raw
+            $prefabChecks = @(
+                @{
+                    Pattern = '"Name"\s*:\s*"ArenaBoundaryWall"'
+                    Message = "Arena boundary prefab root name should be ArenaBoundaryWall."
+                },
+                @{
+                    Pattern = '"__type"\s*:\s*"Sandbox\.ModelRenderer"[\s\S]{0,300}?"__enabled"\s*:\s*false[\s\S]{0,1200}?"Model"\s*:\s*"models/dev/box\.vmdl"[\s\S]{0,1200}?"RenderType"\s*:\s*"Off"'
+                    Message = "Arena boundary prefab should keep its dev-box ModelRenderer disabled and hidden."
+                },
+                @{
+                    Pattern = '"__type"\s*:\s*"Sandbox\.BoxCollider"[\s\S]{0,1800}?"IsTrigger"\s*:\s*false[\s\S]{0,1800}?"Scale"\s*:\s*"50,50,50"[\s\S]{0,1800}?"Static"\s*:\s*true'
+                    Message = "Arena boundary prefab should keep a solid static 50,50,50 BoxCollider."
+                },
+                @{
+                    Pattern = '"__type"\s*:\s*"DroneVsPlayers\.SelectedHierarchyColliderViewer"[\s\S]{0,800}?"AlwaysDraw"\s*:\s*false[\s\S]{0,800}?"IncludeTriggers"\s*:\s*true'
+                    Message = "Arena boundary prefab should include a selection-only SelectedHierarchyColliderViewer."
+                }
+            )
+
+            foreach ($check in $prefabChecks) {
+                if ($boundaryPrefabText -notmatch $check.Pattern) {
+                    Add-AgentIssue $issues "Error" "Boundary Walls" $boundaryPrefabRelative $check.Message "Keep boundary walls collider-backed and fully hidden unless a designer intentionally selects the object."
+                }
+            }
+        }
+
+        if ($boundaryPrefabSceneUses.Count -ne 4) {
+            Add-AgentIssue $issues "Error" "Boundary Walls" $Path "Expected four arena boundary prefab instances; found $($boundaryPrefabSceneUses.Count)." "Keep one prefab instance each for NorthBoundary, SouthBoundary, EastBoundary, and WestBoundary."
+        }
+
+        foreach ($boundaryName in @("NorthBoundary", "SouthBoundary", "EastBoundary", "WestBoundary")) {
+            $namePattern = '"__Prefab"\s*:\s*"' + [regex]::Escape($boundaryPrefabInstancePath) + '"[\s\S]{0,2200}?"Property"\s*:\s*"Name"[\s\S]{0,300}?"Value"\s*:\s*"' + [regex]::Escape($boundaryName) + '"'
+            $nameMatches = [regex]::Matches($raw, $namePattern)
+            if ($nameMatches.Count -ne 1) {
+                Add-AgentIssue $issues "Error" "Boundary Walls" $Path "Expected exactly one $boundaryName arena boundary prefab instance; found $($nameMatches.Count)." "Keep the four named boundary wall prefab instances auditable through Name property overrides."
+            }
+        }
+
+        $unsafeOverridePattern = '"__Prefab"\s*:\s*"' + [regex]::Escape($boundaryPrefabInstancePath) + '"[\s\S]{0,3200}?"Property"\s*:\s*"(RenderType|MaterialOverride|Materials)"'
+        if ($raw -match $unsafeOverridePattern) {
+            Add-AgentIssue $issues "Error" "Boundary Walls" $Path "An arena boundary prefab instance overrides renderer visibility or material state." "Keep renderer visibility/materials owned by the shared arena boundary prefab."
+        }
+
+        Add-AgentIssue $issues "Info" "Boundary Walls" $Path "Found $($boundaryPrefabSceneUses.Count) arena boundary prefab instance(s) using Assets/prefabs/environment/arena_boundary_wall.prefab."
+
+        return
+    }
+
     if ($null -eq $SceneJson) {
         Add-AgentIssue $issues "Warning" "Boundary Walls" $Path "Could not parse scene JSON for boundary wireframe checks." "Fix scene JSON before relying on invisible boundary wall validation."
         return
@@ -484,10 +542,10 @@ function Test-BoundaryWireframeContract {
         }
 
         if ($null -eq $viewer) {
-            Add-AgentIssue $issues "Error" "Boundary Walls" $Path "$boundaryName has no SelectedHierarchyColliderViewer component." "Add SelectedHierarchyColliderViewer so hidden boundary walls remain visible as editor wireframes."
+            Add-AgentIssue $issues "Error" "Boundary Walls" $Path "$boundaryName has no SelectedHierarchyColliderViewer component." "Add SelectedHierarchyColliderViewer so hidden boundary walls remain inspectable when selected."
         }
-        elseif (-not (Test-JsonBoolValue -Value (Get-JsonPropertyValue -Object $viewer -Name "AlwaysDraw") -Expected $true)) {
-            Add-AgentIssue $issues "Error" "Boundary Walls" $Path "$boundaryName SelectedHierarchyColliderViewer does not AlwaysDraw." "Enable AlwaysDraw so the boundary wireframe is visible in the editor without selecting each wall."
+        elseif (-not (Test-JsonBoolValue -Value (Get-JsonPropertyValue -Object $viewer -Name "AlwaysDraw") -Expected $false)) {
+            Add-AgentIssue $issues "Error" "Boundary Walls" $Path "$boundaryName SelectedHierarchyColliderViewer always draws." "Keep AlwaysDraw disabled so players and normal editor viewport work cannot see the arena blocker."
         }
     }
 }
@@ -507,9 +565,14 @@ foreach ($type in $requiredComponents) {
     }
 }
 
-$pilotSpawns = [regex]::Matches($raw, '"__type"\s*:\s*"DroneVsPlayers\.PlayerSpawn"[\s\S]{0,500}?"Role"\s*:\s*"Pilot"').Count
-$soldierSpawns = [regex]::Matches($raw, '"__type"\s*:\s*"DroneVsPlayers\.PlayerSpawn"[\s\S]{0,500}?"Role"\s*:\s*"Soldier"').Count
-$allSpawns = [regex]::Matches($raw, '"__type"\s*:\s*"DroneVsPlayers\.PlayerSpawn"').Count
+$inlinePilotSpawns = [regex]::Matches($raw, '"__type"\s*:\s*"DroneVsPlayers\.PlayerSpawn"[\s\S]{0,500}?"Role"\s*:\s*"Pilot"').Count
+$inlineSoldierSpawns = [regex]::Matches($raw, '"__type"\s*:\s*"DroneVsPlayers\.PlayerSpawn"[\s\S]{0,500}?"Role"\s*:\s*"Soldier"').Count
+$inlineSpawns = [regex]::Matches($raw, '"__type"\s*:\s*"DroneVsPlayers\.PlayerSpawn"').Count
+$prefabPilotSpawns = [regex]::Matches($raw, '"__Prefab"\s*:\s*"prefabs/markers/player_spawn_pilot\.prefab"').Count
+$prefabSoldierSpawns = [regex]::Matches($raw, '"__Prefab"\s*:\s*"prefabs/markers/player_spawn_soldier\.prefab"').Count
+$pilotSpawns = $inlinePilotSpawns + $prefabPilotSpawns
+$soldierSpawns = $inlineSoldierSpawns + $prefabSoldierSpawns
+$allSpawns = $inlineSpawns + $prefabPilotSpawns + $prefabSoldierSpawns
 
 if ($pilotSpawns -lt 1) {
     Add-AgentIssue $issues "Error" "Spawns" $relative "No Pilot PlayerSpawn components found." "Add at least one pilot spawn point."
@@ -517,7 +580,7 @@ if ($pilotSpawns -lt 1) {
 if ($soldierSpawns -lt 1) {
     Add-AgentIssue $issues "Error" "Spawns" $relative "No Soldier PlayerSpawn components found." "Add at least one soldier spawn point."
 }
-if ($allSpawns -gt ($pilotSpawns + $soldierSpawns)) {
+if ($inlineSpawns -gt ($inlinePilotSpawns + $inlineSoldierSpawns)) {
     Add-AgentIssue $issues "Warning" "Spawns" $relative "Some PlayerSpawn components do not declare Pilot or Soldier role." "Check spawn roles in the editor."
 }
 

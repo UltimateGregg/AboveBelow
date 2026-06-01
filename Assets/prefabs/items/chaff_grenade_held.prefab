@@ -1,0 +1,75 @@
+{
+  "RootObject": {
+    "__guid": "07e52d92-e8de-7fe7-1a40-3428cb577dd3",
+    "Flags": 0,
+    "Name": "Grenade",
+    "Position": "12,14,48",
+    "Enabled": true,
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.ChaffGrenade",
+        "__guid": "4ff2e258-1873-7ec1-11ad-a864ccf78962",
+        "Radius": 600,
+        "JamDuration": 3,
+        "Strength": 1,
+        "FuseSeconds": 1.5,
+        "ThrowRange": 950,
+        "Cooldown": 4,
+        "ThrowInput": "Attack1",
+        "ThrowSound": "sounds/grenade_throw.sound",
+        "DetonateSound": "sounds/grenade_explosion.sound",
+        "Slot": 2,
+        "FirstPersonOffset": "28,8,-10",
+        "FirstPersonRotationOffset": "0,0,0",
+        "ThirdPersonLocalPosition": "12,14,48",
+        "ThirdPersonLocalAngles": "0,0,0"
+      },
+      {
+        "__type": "Sandbox.ModelRenderer",
+        "__guid": "aea2a9f2-943a-48e0-1cbc-64a00d7a7f27",
+        "BodyGroups": 18446744073709552000,
+        "Model": "models/chaff_grenade.vmdl",
+        "RenderType": "On",
+        "Tint": "1,1,1,1"
+      }
+    ],
+    "Children": [
+      {
+        "__guid": "dfcf348e-2eae-37e6-96b3-0a3921508456",
+        "Flags": 0,
+        "Name": "LeftHandIk",
+        "Position": "3,-5,1",
+        "Enabled": true,
+        "Components": []
+      },
+      {
+        "__guid": "f001e724-d13f-5853-e9ed-73b1098194c6",
+        "Flags": 0,
+        "Name": "RightHandIk",
+        "Position": "3,5,1",
+        "Enabled": true,
+        "Components": []
+      }
+    ],
+    "NetworkMode": 0,
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": true,
+  "MenuPath": "Drone vs Players/Held Items/Chaff Grenade",
+  "MenuIcon": "blur_on",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

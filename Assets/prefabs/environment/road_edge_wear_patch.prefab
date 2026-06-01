@@ -1,0 +1,55 @@
+{
+  "RootObject": {
+    "__guid": "8eb57466-75be-41eb-b516-95fa28cfeb27",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "RoadEdgeWearPatch",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "Sandbox.ModelRenderer",
+        "__guid": "49370797-b54d-43bb-bab6-9329ea9d2998",
+        "__enabled": true,
+        "Flags": 0,
+        "BodyGroups": 18446744073709552000,
+        "CreateAttachments": false,
+        "LodOverride": null,
+        "MaterialGroup": null,
+        "MaterialOverride": "materials/arena/road_edge_wear.vmat",
+        "Materials": null,
+        "Model": "models/dev/plane.vmdl",
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "RenderOptions": {
+          "GameLayer": true,
+          "OverlayLayer": false,
+          "BloomLayer": false,
+          "AfterUILayer": false
+        },
+        "RenderType": "On",
+        "Tint": "1,1,1,1"
+      }
+    ],
+    "Children": []
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Above Below/Environment/Road Edge Wear Patch",
+  "MenuIcon": "texture",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

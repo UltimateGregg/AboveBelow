@@ -12,6 +12,8 @@ namespace DroneVsPlayers;
 [Icon( "scatter_plot" )]
 public sealed class FragGrenade : ThrowableGrenade
 {
+	const string DefaultExplosionPrefabPath = "prefabs/effects/frag_burst.prefab";
+
 	[Property] public string WeaponDisplayName { get; set; } = "Frag Grenade";
 	[Property] public float Radius { get; set; } = 320f;
 	[Property] public float Damage { get; set; } = 130f;
@@ -50,11 +52,12 @@ public sealed class FragGrenade : ThrowableGrenade
 	[Rpc.Broadcast]
 	void BroadcastExplosionFx( Vector3 center )
 	{
-		if ( ExplosionPrefab.IsValid() )
-		{
-			ExplosionPrefab.Clone( center );
+		var explosionPrefab = ExplosionPrefab.IsValid()
+			? ExplosionPrefab
+			: GameObject.GetPrefab( DefaultExplosionPrefabPath );
+
+		if ( GrenadeEffectVisual.TrySpawnPrefab( explosionPrefab, center, GrenadeEffectKind.Frag, Radius ) )
 			return;
-		}
 
 		GrenadeEffectVisual.Spawn( center, GrenadeEffectKind.Frag, Radius );
 	}

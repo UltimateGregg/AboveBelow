@@ -247,6 +247,17 @@ $jammer = Read-Text "Code\Player\DroneJammerGun.cs"
 $grenade = Read-Text "Code\Equipment\ThrowableGrenade.cs"
 $deployer = Read-Text "Code\Player\DroneDeployer.cs"
 Require-Pattern $viewmodel 'sealed\s+class\s+FirstPersonViewmodel' "FirstPersonViewmodel component is required."
+Require-Pattern $viewmodel 'ViewmodelRootPrefabPath\s*=\s*"prefabs/items/local_first_person_viewmodel\.prefab"' "FirstPersonViewmodel must use a reusable prefab for the local viewmodel root."
+Require-Pattern $viewmodel 'GameObject\.GetPrefab\(\s*ViewmodelRootPrefabPath\s*\)' "FirstPersonViewmodel must resolve the local viewmodel root prefab before falling back to procedural creation."
+Require-Pattern $viewmodel 'ViewmodelArmsPrefabPath\s*=\s*"prefabs/items/viewmodel_arms\.prefab"' "FirstPersonViewmodel must use a reusable prefab for the local viewmodel arms child."
+Require-Pattern $viewmodel 'GameObject\.GetPrefab\(\s*ViewmodelArmsPrefabPath\s*\)' "FirstPersonViewmodel must resolve the local viewmodel arms prefab before falling back to procedural creation."
+Require-Pattern $viewmodel 'ViewmodelStockWeaponPrefabPath\s*=\s*"prefabs/items/viewmodel_stock_weapon\.prefab"' "FirstPersonViewmodel must use a reusable prefab for stock first-person weapon animation drivers."
+Require-Pattern $viewmodel 'GameObject\.GetPrefab\(\s*ViewmodelStockWeaponPrefabPath\s*\)' "FirstPersonViewmodel must resolve the stock weapon animation driver prefab before falling back to procedural creation."
+Require-Pattern $viewmodel 'ViewmodelCustomVisualPrefabPath\s*=\s*"prefabs/items/viewmodel_custom_visual\.prefab"' "FirstPersonViewmodel must use a reusable prefab for custom first-person visual roots."
+Require-Pattern $viewmodel 'CreateViewmodelContainer\(\s*ViewmodelCustomVisualPrefabPath' "FirstPersonViewmodel must resolve the custom visual root prefab before falling back to procedural creation."
+Require-Pattern $viewmodel 'ViewmodelStaticItemPrefabPath\s*=\s*"prefabs/items/viewmodel_static_item\.prefab"' "FirstPersonViewmodel must use a reusable prefab for static fallback first-person item roots."
+Require-Pattern $viewmodel 'CreateViewmodelContainer\(\s*ViewmodelStaticItemPrefabPath' "FirstPersonViewmodel must resolve the static item root prefab before falling back to procedural creation."
+Require-Pattern $viewmodel 'GameObject\.GetPrefab\(\s*prefabPath\s*\)' "FirstPersonViewmodel container roots must resolve their prefab path before falling back to procedural creation."
 Require-Pattern $viewmodel 'NetworkMode\s*=\s*NetworkMode\.Never' "First-person spawned viewmodel objects must be local-only NetworkMode.Never."
 Require-Pattern $viewmodel 'SkinnedModelRenderer' "FirstPersonViewmodel must create skinned renderers for Facepunch weapon/arms animation drivers."
 Require-Pattern $viewmodel 'ModelRenderer' "FirstPersonViewmodel must support visible custom/static item visuals."
@@ -316,6 +327,67 @@ foreach ($missingPath in @(
 )) {
     if ($viewmodel -match [regex]::Escape($missingPath)) {
         Add-Error "FirstPersonViewmodel must not default to unresolved local stock path: $missingPath"
+    }
+}
+
+$viewmodelRootPrefab = Read-Json "Assets\prefabs\items\local_first_person_viewmodel.prefab"
+if ($null -ne $viewmodelRootPrefab -and $null -ne $viewmodelRootPrefab.RootObject) {
+    if ([string]$viewmodelRootPrefab.RootObject.Name -ne "LocalFirstPersonViewmodel") {
+        Add-Error "Assets\prefabs\items\local_first_person_viewmodel.prefab root object must be named LocalFirstPersonViewmodel."
+    }
+
+    if ([string]$viewmodelRootPrefab.RootObject.NetworkMode -ne "2") {
+        Add-Error "Assets\prefabs\items\local_first_person_viewmodel.prefab root object must stay local-only NetworkMode 2."
+    }
+}
+
+$viewmodelArmsPrefab = Read-Json "Assets\prefabs\items\viewmodel_arms.prefab"
+if ($null -ne $viewmodelArmsPrefab -and $null -ne $viewmodelArmsPrefab.RootObject) {
+    if ([string]$viewmodelArmsPrefab.RootObject.Name -ne "ViewmodelArms") {
+        Add-Error "Assets\prefabs\items\viewmodel_arms.prefab root object must be named ViewmodelArms."
+    }
+
+    if ([string]$viewmodelArmsPrefab.RootObject.NetworkMode -ne "2") {
+        Add-Error "Assets\prefabs\items\viewmodel_arms.prefab root object must stay local-only NetworkMode 2."
+    }
+
+    $viewmodelArmsPrefabRaw = Read-Text "Assets\prefabs\items\viewmodel_arms.prefab"
+    if ($viewmodelArmsPrefabRaw -notmatch '"__type"\s*:\s*"Sandbox\.SkinnedModelRenderer"') {
+        Add-Error "Assets\prefabs\items\viewmodel_arms.prefab must include a Sandbox.SkinnedModelRenderer component for runtime arms setup."
+    }
+}
+
+$viewmodelStockWeaponPrefab = Read-Json "Assets\prefabs\items\viewmodel_stock_weapon.prefab"
+if ($null -ne $viewmodelStockWeaponPrefab -and $null -ne $viewmodelStockWeaponPrefab.RootObject) {
+    if ([string]$viewmodelStockWeaponPrefab.RootObject.Name -ne "ViewmodelStockWeapon") {
+        Add-Error "Assets\prefabs\items\viewmodel_stock_weapon.prefab root object must be named ViewmodelStockWeapon."
+    }
+
+    if ([string]$viewmodelStockWeaponPrefab.RootObject.NetworkMode -ne "2") {
+        Add-Error "Assets\prefabs\items\viewmodel_stock_weapon.prefab root object must stay local-only NetworkMode 2."
+    }
+
+    $viewmodelStockWeaponPrefabRaw = Read-Text "Assets\prefabs\items\viewmodel_stock_weapon.prefab"
+    if ($viewmodelStockWeaponPrefabRaw -notmatch '"__type"\s*:\s*"Sandbox\.SkinnedModelRenderer"') {
+        Add-Error "Assets\prefabs\items\viewmodel_stock_weapon.prefab must include a Sandbox.SkinnedModelRenderer component for runtime stock weapon setup."
+    }
+}
+
+foreach ($viewmodelContainerPrefab in @(
+    @{ Path = "Assets\prefabs\items\viewmodel_custom_visual.prefab"; RootName = "ViewmodelCustomVisual" },
+    @{ Path = "Assets\prefabs\items\viewmodel_static_item.prefab"; RootName = "ViewmodelStaticItem" }
+)) {
+    $prefab = Read-Json $viewmodelContainerPrefab.Path
+    if ($null -eq $prefab -or $null -eq $prefab.RootObject) {
+        continue
+    }
+
+    if ([string]$prefab.RootObject.Name -ne $viewmodelContainerPrefab.RootName) {
+        Add-Error "$($viewmodelContainerPrefab.Path) root object must be named $($viewmodelContainerPrefab.RootName)."
+    }
+
+    if ([string]$prefab.RootObject.NetworkMode -ne "2") {
+        Add-Error "$($viewmodelContainerPrefab.Path) root object must stay local-only NetworkMode 2."
     }
 }
 

@@ -1,0 +1,25 @@
+{
+  "RootObject": {
+    "__guid": "a54f0c34-f15f-4c79-a6c3-73dcfab84f3d",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "ViewmodelStaticItem",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [],
+    "Children": []
+  },
+  "ShowInMenu": true,
+  "MenuPath": "Drone vs Players/Items/Viewmodel Static Item",
+  "MenuIcon": "front_hand",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 3
+}

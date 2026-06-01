@@ -14,6 +14,7 @@ namespace DroneVsPlayers;
 public sealed class TracerLifetime : Component
 {
 	const string DefaultGlowTexture = "materials/skybox/blinding_sun_glow.png";
+	const string DefaultGlowPrefabPath = "prefabs/effects/tracer_bullet_glow.prefab";
 
 	[Property, Range( 0.02f, 1.0f )] public float Lifetime { get; set; } = 0.08f;
 	[Property, Range( 8f, 180f )] public float TracerLength { get; set; } = 70f;
@@ -73,8 +74,15 @@ public sealed class TracerLifetime : Component
 
 		if ( !_bulletGlow.IsValid() )
 		{
-			var glowObject = new GameObject( GameObject, true, "Bullet Glow" );
-			_bulletGlow = glowObject.Components.Create<SpriteRenderer>();
+			var glowPrefab = GameObject.GetPrefab( DefaultGlowPrefabPath );
+			var glowObject = glowPrefab.IsValid()
+				? glowPrefab.Clone( new Transform( Vector3.Zero, Rotation.Identity ), GameObject, true, "Bullet Glow" )
+				: new GameObject( GameObject, true, "Bullet Glow" );
+
+			glowObject.NetworkMode = NetworkMode.Never;
+			_bulletGlow = glowObject.Components.Get<SpriteRenderer>( FindMode.EverythingInSelfAndDescendants );
+			if ( !_bulletGlow.IsValid() )
+				_bulletGlow = glowObject.Components.Create<SpriteRenderer>();
 		}
 
 		if ( !_bulletGlow.IsValid() )

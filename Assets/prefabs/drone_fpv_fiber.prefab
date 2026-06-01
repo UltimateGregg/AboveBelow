@@ -167,6 +167,8 @@
           "component_type": "LineRenderer"
         },
         "TrailSegmentLength": 40,
+        "DroneLeadAngleDegrees": 45,
+        "DroneLeadMaxHorizontalDistance": 600,
         "CableColor": "0.62,0.64,0.66,1",
         "MaxTrailPoints": 256,
         "GroundOffset": 0.5,

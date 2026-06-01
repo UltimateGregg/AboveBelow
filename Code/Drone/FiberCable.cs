@@ -1,4 +1,5 @@
 using Sandbox;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -19,6 +20,8 @@ namespace DroneVsPlayers;
 [Icon( "timeline" )]
 public sealed class FiberCable : Component
 {
+	const string DetachedCablePrefabPath = "prefabs/effects/detached_fiber_cable.prefab";
+
 	[Property] public PilotLink Link { get; set; }
 	[Property] public LineRenderer Line { get; set; }
 	[Property] public Color CableColor { get; set; } = new( 0.62f, 0.64f, 0.66f, 1f );
@@ -28,6 +31,18 @@ public sealed class FiberCable : Component
 	/// added to the laid-cable trail. Smaller = smoother trail, more points.
 	/// </summary>
 	[Property, Range( 8f, 200f )] public float TrailSegmentLength { get; set; } = 40f;
+
+	/// <summary>
+	/// Target angle for the live cable segment as it rises from the laid trail
+	/// to the drone. 45 degrees makes the horizontal lead roughly match height.
+	/// </summary>
+	[Property, Range( 10f, 85f )] public float DroneLeadAngleDegrees { get; set; } = 45f;
+
+	/// <summary>
+	/// Cap for the shifted live lead point so high-altitude flights do not drag
+	/// the visual endpoint too far away from the drone.
+	/// </summary>
+	[Property, Range( 0f, 1200f )] public float DroneLeadMaxHorizontalDistance { get; set; } = 600f;
 
 	/// <summary>
 	/// Hard cap on trail point count to keep the LineRenderer cheap on long
@@ -91,9 +106,10 @@ public sealed class FiberCable : Component
 		// touching the ground" point.
 		var dronePos = WorldPosition;
 		var groundUnderDrone = SampleGroundBelow( dronePos, GameObject );
+		var droneLeadPoint = BuildDroneLeadPoint( dronePos, groundUnderDrone, groundUnderPilot );
 
 		AddTrailPoint( _pilotTrail, groundUnderPilot, ref _lastPilotTrailPoint, ref _hasLastPilotTrailPoint );
-		AddTrailPoint( _droneTrail, groundUnderDrone, ref _lastDroneTrailPoint, ref _hasLastDroneTrailPoint );
+		AddTrailPoint( _droneTrail, droneLeadPoint, ref _lastDroneTrailPoint, ref _hasLastDroneTrailPoint );
 
 		// Build polyline from live pilot to live drone. Pilot trail is walked
 		// backward from newest to oldest, then drone trail continues oldest to
@@ -105,6 +121,7 @@ public sealed class FiberCable : Component
 			AddRenderPoint( _pilotTrail[i] );
 		for ( int i = 0; i < _droneTrail.Count; i++ )
 			AddRenderPoint( _droneTrail[i] );
+		AddRenderPoint( droneLeadPoint );
 		AddRenderPoint( dronePos );
 
 		Line.UseVectorPoints = true;
@@ -135,17 +152,35 @@ public sealed class FiberCable : Component
 		Line.VectorPoints = frozenPoints;
 		ApplyLineStyle();
 
-		var detachedObject = new GameObject( true, "Detached Fiber Cable" )
-		{
-			NetworkMode = NetworkMode.Never
-		};
-		var detachedLine = detachedObject.Components.Create<LineRenderer>();
+		var detachedObject = CreateDetachedCableObject();
+		var detachedLine = detachedObject.Components.Get<LineRenderer>( FindMode.EverythingInSelfAndDescendants );
+		if ( !detachedLine.IsValid() )
+			detachedLine = detachedObject.Components.Create<LineRenderer>();
 		ApplyLineStyle( detachedLine, CableColor );
 		detachedLine.Enabled = true;
 		detachedLine.UseVectorPoints = true;
 		detachedLine.VectorPoints = new List<Vector3>( frozenPoints );
 
 		Line.Enabled = false;
+	}
+
+	GameObject CreateDetachedCableObject()
+	{
+		var prefab = GameObject.GetPrefab( DetachedCablePrefabPath );
+		if ( prefab.IsValid() )
+		{
+			var clone = prefab.Clone( new Transform( Vector3.Zero, Rotation.Identity ), name: "Detached Fiber Cable" );
+			if ( clone.IsValid() )
+			{
+				clone.NetworkMode = NetworkMode.Never;
+				return clone;
+			}
+		}
+
+		return new GameObject( true, "Detached Fiber Cable" )
+		{
+			NetworkMode = NetworkMode.Never
+		};
 	}
 
 	PilotSoldier ResolvePilotPawn()
@@ -185,9 +220,12 @@ public sealed class FiberCable : Component
 	{
 		var points = new List<Vector3>();
 		var pilotPawn = ResolvePilotPawn();
+		var leadDirectionReference = _hasLastPilotTrailPoint ? _lastPilotTrailPoint : WorldPosition;
 		if ( pilotPawn.IsValid() )
 		{
-			AddRenderPoint( points, SampleGroundBelow( pilotPawn.WorldPosition, pilotPawn.GameObject ) );
+			var groundUnderPilot = SampleGroundBelow( pilotPawn.WorldPosition, pilotPawn.GameObject );
+			leadDirectionReference = groundUnderPilot;
+			AddRenderPoint( points, groundUnderPilot );
 		}
 		else if ( _hasLastPilotTrailPoint )
 		{
@@ -199,8 +237,58 @@ public sealed class FiberCable : Component
 		for ( int i = 0; i < _droneTrail.Count; i++ )
 			AddRenderPoint( points, _droneTrail[i] );
 
-		AddRenderPoint( points, SampleGroundBelow( WorldPosition, GameObject ) );
+		var groundUnderDrone = SampleGroundBelow( WorldPosition, GameObject );
+		AddRenderPoint( points, BuildDroneLeadPoint( WorldPosition, groundUnderDrone, leadDirectionReference ) );
 		return points;
+	}
+
+	Vector3 BuildDroneLeadPoint( Vector3 dronePos, Vector3 groundUnderDrone, Vector3 groundUnderPilot )
+	{
+		var verticalDrop = MathF.Max( 0f, dronePos.z - groundUnderDrone.z );
+		if ( verticalDrop <= 0.1f )
+			return groundUnderDrone;
+
+		var angleRadians = DroneLeadAngleDegrees.Clamp( 10f, 85f ) * (MathF.PI / 180f);
+		var horizontalDistance = verticalDrop / MathF.Tan( angleRadians );
+		horizontalDistance = MathF.Min( horizontalDistance, MathF.Max( 0f, DroneLeadMaxHorizontalDistance ) );
+
+		if ( horizontalDistance <= 0.1f )
+			return groundUnderDrone;
+
+		var direction = ResolveDroneLeadDirection( dronePos, groundUnderDrone, groundUnderPilot );
+		var projectedLead = groundUnderDrone + direction * horizontalDistance;
+		var leadTraceStart = new Vector3( projectedLead.x, projectedLead.y, MathF.Max( dronePos.z, projectedLead.z ) + 64f );
+		return SampleGroundBelow( leadTraceStart, GameObject );
+	}
+
+	Vector3 ResolveDroneLeadDirection( Vector3 dronePos, Vector3 groundUnderDrone, Vector3 groundUnderPilot )
+	{
+		if ( _hasLastDroneTrailPoint )
+		{
+			var toExistingTrail = FlatDirection( groundUnderDrone, _lastDroneTrailPoint );
+			if ( toExistingTrail.Length > 0.001f )
+				return toExistingTrail;
+		}
+
+		var toPilot = FlatDirection( groundUnderDrone, groundUnderPilot );
+		if ( toPilot.Length > 0.001f )
+			return toPilot;
+
+		var backward = new Vector3( -WorldRotation.Forward.x, -WorldRotation.Forward.y, 0f );
+		if ( backward.Length > 0.001f )
+			return backward.Normal;
+
+		var droneOffset = FlatDirection( dronePos, groundUnderDrone );
+		if ( droneOffset.Length > 0.001f )
+			return droneOffset;
+
+		return new Vector3( -1f, 0f, 0f );
+	}
+
+	static Vector3 FlatDirection( Vector3 from, Vector3 to )
+	{
+		var offset = new Vector3( to.x - from.x, to.y - from.y, 0f );
+		return offset.Length > 1f ? offset.Normal : Vector3.Zero;
 	}
 
 	Vector3 SampleGroundBelow( Vector3 from, GameObject ignore )

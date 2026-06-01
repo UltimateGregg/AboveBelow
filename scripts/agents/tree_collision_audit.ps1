@@ -16,17 +16,75 @@ $issues = New-Object System.Collections.Generic.List[object]
 Write-AgentSection "Tree Collision Audit"
 Write-Host "Root: $Root"
 
-$treeModels = @(
-    "models/terrain_assets.vmdl",
-    "models/terrain_pine.vmdl",
-    "models/terrain_pine_broad.vmdl",
-    "models/terrain_pine_windswept.vmdl"
+$requiredBranchNames = @(
+    "Collision_Branch_RootFlare_01",
+    "Collision_Branch_RootFlare_02",
+    "Collision_Branch_RootFlare_03",
+    "Collision_Branch_RootFlare_04",
+    "Collision_Branch_RootFlare_05",
+    "Collision_Branch_DeadStub_01",
+    "Collision_Branch_DeadStub_02",
+    "Collision_Branch_DeadStub_03",
+    "Collision_Branch_DeadStub_04",
+    "Collision_Branch_DeadStub_05",
+    "Collision_Branch_DeadStub_06",
+    "Collision_Branch_Whorl_01",
+    "Collision_Branch_Whorl_02",
+    "Collision_Branch_Whorl_03",
+    "Collision_Branch_Whorl_04",
+    "Collision_Branch_Whorl_05",
+    "Collision_Branch_Whorl_06",
+    "Collision_Branch_Whorl_07",
+    "Collision_Branch_Whorl_08",
+    "Collision_Branch_Whorl_09",
+    "Collision_Branch_Whorl_10",
+    "Collision_Branch_Whorl_11",
+    "Collision_Branch_Whorl_12",
+    "Collision_Branch_Whorl_13",
+    "Collision_Branch_Whorl_14",
+    "Collision_Branch_Whorl_15",
+    "Collision_Branch_Whorl_16",
+    "Collision_Branch_Whorl_17",
+    "Collision_Branch_Whorl_18",
+    "Collision_Branch_Whorl_19",
+    "Collision_Branch_Whorl_20",
+    "Collision_Branch_Whorl_21",
+    "Collision_Branch_Whorl_22",
+    "Collision_Branch_Whorl_23",
+    "Collision_Branch_Whorl_24",
+    "Collision_Branch_Whorl_25",
+    "Collision_Branch_Whorl_26"
 )
-$expectedTreeCapsuleRadius = 40.0
+
+$treeCollisionSpecs = @{
+    "models/terrain_assets.vmdl" = @{
+        TrunkLength = 1520.0
+        TrunkWidth = 60.0
+    }
+    "models/terrain_pine.vmdl" = @{
+        TrunkLength = 1520.0
+        TrunkWidth = 60.0
+    }
+    "models/terrain_pine_broad.vmdl" = @{
+        TrunkLength = 1410.0
+        TrunkWidth = 64.0
+    }
+    "models/terrain_pine_windswept.vmdl" = @{
+        TrunkLength = 1640.0
+        TrunkWidth = 64.0
+    }
+}
 $treeModelSet = @{}
-foreach ($model in $treeModels) {
+foreach ($model in $treeCollisionSpecs.Keys) {
     $treeModelSet[$model] = $true
 }
+$treePrefabInstancePaths = @{
+    "prefabs/environment/terrain_assets.prefab" = $true
+    "prefabs/environment/terrain_pine.prefab" = $true
+    "prefabs/environment/terrain_pine_broad.prefab" = $true
+    "prefabs/environment/terrain_pine_windswept.prefab" = $true
+}
+$script:treePrefabRootCache = @{}
 
 function Get-JsonPropertyValue {
     param(
@@ -66,6 +124,44 @@ function Get-ObjectComponents {
     }
 
     return @($components)
+}
+
+function Get-PrefabRootObjectForTreeInstance {
+    param(
+        [object]$Object,
+        [string]$Path
+    )
+
+    $prefabPath = [string](Get-JsonPropertyValue -Object $Object -Name "__Prefab")
+    if ([string]::IsNullOrWhiteSpace($prefabPath)) {
+        return $null
+    }
+
+    $normalizedPrefabPath = $prefabPath.Replace("\", "/")
+    if (-not $script:treePrefabInstancePaths.ContainsKey($normalizedPrefabPath)) {
+        return $null
+    }
+
+    if ($script:treePrefabRootCache.ContainsKey($normalizedPrefabPath)) {
+        return $script:treePrefabRootCache[$normalizedPrefabPath]
+    }
+
+    $fullPrefabPath = Join-Path $Root ("Assets\" + $normalizedPrefabPath.Replace("/", "\"))
+    if (-not (Test-Path -LiteralPath $fullPrefabPath)) {
+        Add-AgentIssue $issues "Error" "Tree Collision" $Path "Scene references missing tree prefab '$normalizedPrefabPath'." "Restore the tree prefab before relying on prefab-backed scene tree collision."
+        return $null
+    }
+
+    try {
+        $prefabJson = Read-AgentJson -Path $fullPrefabPath
+        $rootObject = Get-JsonPropertyValue -Object $prefabJson -Name "RootObject"
+        $script:treePrefabRootCache[$normalizedPrefabPath] = $rootObject
+        return $rootObject
+    }
+    catch {
+        Add-AgentIssue $issues "Error" "Tree Collision" (ConvertTo-AgentRelativePath -Path $fullPrefabPath -Root $Root) "Could not parse tree prefab JSON: $($_.Exception.Message)" "Fix invalid prefab JSON before auditing tree collision."
+        return $null
+    }
 }
 
 function Convert-AgentVectorText {
@@ -115,8 +211,7 @@ function Test-JsonBool {
 function Get-AllObjects {
     param(
         [object]$Object,
-        [string]$Path = "",
-        [double[]]$ParentScale = @(1.0, 1.0, 1.0)
+        [string]$Path = ""
     )
 
     if ($null -eq $Object) {
@@ -125,26 +220,18 @@ function Get-AllObjects {
 
     $name = [string](Get-JsonPropertyValue -Object $Object -Name "Name")
     $currentPath = if ([string]::IsNullOrWhiteSpace($Path)) { $name } else { "$Path/$name" }
-    $scale = Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $Object -Name "Scale") -Default @(1.0, 1.0, 1.0)
-    $parentX = [double]($ParentScale[0])
-    $parentY = [double]($ParentScale[1])
-    $parentZ = [double]($ParentScale[2])
-    $scaleX = [double]($scale[0])
-    $scaleY = [double]($scale[1])
-    $scaleZ = [double]($scale[2])
-    $worldScale = New-Object 'double[]' 3
-    $worldScale[0] = $parentX * $scaleX
-    $worldScale[1] = $parentY * $scaleY
-    $worldScale[2] = $parentZ * $scaleZ
+    $effectiveObject = Get-PrefabRootObjectForTreeInstance -Object $Object -Path $currentPath
+    if ($null -eq $effectiveObject) {
+        $effectiveObject = $Object
+    }
 
     $objects = @([pscustomobject]@{
-        Object = $Object
+        Object = $effectiveObject
         Path = $currentPath
-        WorldScale = $worldScale
     })
 
-    foreach ($child in @(Get-ObjectChildren -Object $Object)) {
-        $objects += @(Get-AllObjects -Object $child -Path $currentPath -ParentScale $worldScale)
+    foreach ($child in @(Get-ObjectChildren -Object $effectiveObject)) {
+        $objects += @(Get-AllObjects -Object $child -Path $currentPath)
     }
 
     return $objects
@@ -170,137 +257,216 @@ function Get-TreeModel {
     return $null
 }
 
-function Get-ColliderComponents {
-    param([object]$Object)
+function Test-IsColliderComponent {
+    param([object]$Component)
 
-    $colliders = @()
-    foreach ($component in @(Get-ObjectComponents -Object $Object)) {
-        $componentType = [string](Get-JsonPropertyValue -Object $component -Name "__type")
-        $hasColliderShape = $null -ne (Get-JsonPropertyValue -Object $component -Name "IsTrigger") -and
-            (
-                $null -ne (Get-JsonPropertyValue -Object $component -Name "Radius") -or
-                $null -ne (Get-JsonPropertyValue -Object $component -Name "Height") -or
-                $null -ne (Get-JsonPropertyValue -Object $component -Name "Start") -or
-                $null -ne (Get-JsonPropertyValue -Object $component -Name "End") -or
-                $null -ne (Get-JsonPropertyValue -Object $component -Name "Scale") -or
-                $null -ne (Get-JsonPropertyValue -Object $component -Name "BoxSize")
-            )
-        if ($componentType.EndsWith("Collider", [System.StringComparison]::OrdinalIgnoreCase) -or $hasColliderShape) {
-            $colliders += $component
+    $componentType = [string](Get-JsonPropertyValue -Object $Component -Name "__type")
+    if ($componentType.EndsWith("Collider", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $true
+    }
+
+    return $null -ne (Get-JsonPropertyValue -Object $Component -Name "IsTrigger") -and
+        (
+            $null -ne (Get-JsonPropertyValue -Object $Component -Name "Radius") -or
+            $null -ne (Get-JsonPropertyValue -Object $Component -Name "Height") -or
+            $null -ne (Get-JsonPropertyValue -Object $Component -Name "Start") -or
+            $null -ne (Get-JsonPropertyValue -Object $Component -Name "End") -or
+            $null -ne (Get-JsonPropertyValue -Object $Component -Name "Scale") -or
+            $null -ne (Get-JsonPropertyValue -Object $Component -Name "BoxSize")
+        )
+}
+
+function Test-IsBoxColliderComponent {
+    param([object]$Component)
+
+    $componentType = [string](Get-JsonPropertyValue -Object $Component -Name "__type")
+    if ($componentType -eq "Sandbox.BoxCollider") {
+        return $true
+    }
+
+    return $null -ne (Get-JsonPropertyValue -Object $Component -Name "Center") -and
+        $null -ne (Get-JsonPropertyValue -Object $Component -Name "Scale") -and
+        $null -eq (Get-JsonPropertyValue -Object $Component -Name "Radius") -and
+        $null -eq (Get-JsonPropertyValue -Object $Component -Name "Start") -and
+        $null -eq (Get-JsonPropertyValue -Object $Component -Name "End")
+}
+
+function Test-IsHierarchyColliderViewerComponent {
+    param([object]$Component)
+
+    $componentType = [string](Get-JsonPropertyValue -Object $Component -Name "__type")
+    if ($componentType -eq "DroneVsPlayers.SelectedHierarchyColliderViewer" -or
+        $componentType -eq "SelectedHierarchyColliderViewer") {
+        return $true
+    }
+
+    return $null -ne (Get-JsonPropertyValue -Object $Component -Name "AlwaysDraw") -and
+        $null -ne (Get-JsonPropertyValue -Object $Component -Name "IncludeTriggers") -and
+        $null -ne (Get-JsonPropertyValue -Object $Component -Name "SolidColliderColor") -and
+        $null -ne (Get-JsonPropertyValue -Object $Component -Name "TriggerColliderColor")
+}
+
+function Test-HierarchyColliderViewer {
+    param(
+        [object]$TreeObject,
+        [string]$ObjectPath,
+        [string]$Path,
+        [string]$Model
+    )
+
+    foreach ($component in @(Get-ObjectComponents -Object $TreeObject)) {
+        if (Test-IsHierarchyColliderViewerComponent -Component $component) {
+            return $true
         }
     }
 
-    foreach ($child in @(Get-ObjectChildren -Object $Object)) {
-        $childName = [string](Get-JsonPropertyValue -Object $child -Name "Name")
-        if (-not $childName.StartsWith("Collision_", [System.StringComparison]::OrdinalIgnoreCase)) {
+    Add-AgentIssue $issues "Error" "Tree Collision" $Path "$ObjectPath uses $Model but lacks SelectedHierarchyColliderViewer on the tree root." "Add the hierarchy collider viewer to pine roots so selecting the tree draws all trunk and branch child collider boxes in the editor."
+    return $false
+}
+
+function Get-BlockingBoxCollider {
+    param([object]$Object)
+
+    foreach ($component in @(Get-ObjectComponents -Object $Object)) {
+        if (-not (Test-IsBoxColliderComponent -Component $component)) {
             continue
         }
 
-        foreach ($component in @(Get-ObjectComponents -Object $child)) {
-            $componentType = [string](Get-JsonPropertyValue -Object $component -Name "__type")
-            $hasColliderShape = $null -ne (Get-JsonPropertyValue -Object $component -Name "IsTrigger") -and
-                (
-                    $null -ne (Get-JsonPropertyValue -Object $component -Name "Radius") -or
-                    $null -ne (Get-JsonPropertyValue -Object $component -Name "Height") -or
-                    $null -ne (Get-JsonPropertyValue -Object $component -Name "Start") -or
-                    $null -ne (Get-JsonPropertyValue -Object $component -Name "End") -or
-                    $null -ne (Get-JsonPropertyValue -Object $component -Name "Scale") -or
-                    $null -ne (Get-JsonPropertyValue -Object $component -Name "BoxSize")
-                )
-            if ($componentType.EndsWith("Collider", [System.StringComparison]::OrdinalIgnoreCase) -or $hasColliderShape) {
-                $colliders += $component
-            }
+        if (-not (Test-JsonBool -Value (Get-JsonPropertyValue -Object $component -Name "Static") -Expected $true)) {
+            continue
+        }
+
+        if (-not (Test-JsonBool -Value (Get-JsonPropertyValue -Object $component -Name "IsTrigger") -Expected $false)) {
+            continue
+        }
+
+        $flags = [string](Get-JsonPropertyValue -Object $component -Name "ColliderFlags")
+        if ($flags -match "IgnoreTraces|IgnoreMass") {
+            continue
+        }
+
+        return $component
+    }
+
+    return $null
+}
+
+function Get-ChildByName {
+    param(
+        [object]$Object,
+        [string]$Name
+    )
+
+    foreach ($child in @(Get-ObjectChildren -Object $Object)) {
+        $childName = [string](Get-JsonPropertyValue -Object $child -Name "Name")
+        if ($childName.Equals($Name, [System.StringComparison]::OrdinalIgnoreCase)) {
+            return $child
         }
     }
 
-    return $colliders
+    return $null
 }
 
-function Get-ColliderWorldRadius {
+function Get-BranchChildren {
+    param([object]$Object)
+
+    $children = @()
+    foreach ($child in @(Get-ObjectChildren -Object $Object)) {
+        $childName = [string](Get-JsonPropertyValue -Object $child -Name "Name")
+        if ($childName.StartsWith("Collision_Branch_", [System.StringComparison]::OrdinalIgnoreCase)) {
+            $children += $child
+        }
+    }
+
+    return $children
+}
+
+function Test-TrunkBox {
     param(
-        [object]$Collider,
-        [double[]]$WorldScale
+        [object]$TreeObject,
+        [string]$ObjectPath,
+        [string]$Path,
+        [string]$Model
     )
 
-    $radius = Get-JsonPropertyValue -Object $Collider -Name "Radius"
-    if ($null -ne $radius) {
-        return [double]$radius * [Math]::Max([double]$WorldScale[0], [double]$WorldScale[1])
+    $trunk = Get-ChildByName -Object $TreeObject -Name "Collision_Trunk"
+    if ($null -eq $trunk) {
+        Add-AgentIssue $issues "Error" "Tree Collision" $Path "$ObjectPath uses $Model but lacks a Collision_Trunk child." "Add a dedicated static BoxCollider child that covers the tree base/trunk from ground to crown."
+        return $false
     }
 
-    $scale = Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $Collider -Name "Scale") -Default @(0.0, 0.0, 0.0)
-    return ([Math]::Max([double]$scale[0] * [double]$WorldScale[0], [double]$scale[1] * [double]$WorldScale[1])) * 0.5
-}
-
-function Get-ColliderLocalRadius {
-    param([object]$Collider)
-
-    $radius = Get-JsonPropertyValue -Object $Collider -Name "Radius"
-    if ($null -eq $radius) {
-        return $null
+    $collider = Get-BlockingBoxCollider -Object $trunk
+    if ($null -eq $collider) {
+        Add-AgentIssue $issues "Error" "Tree Collision" $Path "$ObjectPath/Collision_Trunk is not a non-trigger static Sandbox.BoxCollider." "Replace capsule trunk coverage with a BoxCollider child; the pine contract is trunk box plus branch boxes."
+        return $false
     }
 
-    return [double]$radius
+    $scale = @(Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $collider -Name "Scale") -Default @(0.0, 0.0, 0.0))
+    $sorted = @($scale | Sort-Object -Descending)
+    $spec = $script:treeCollisionSpecs[$Model]
+    $longest = [double]$sorted[0]
+    $crossA = [double]$sorted[1]
+    $crossB = [double]$sorted[2]
+    if ($longest -lt ([double]$spec.TrunkLength * 0.98) -or $crossA -lt [double]$spec.TrunkWidth -or $crossB -lt [double]$spec.TrunkWidth) {
+        Add-AgentIssue $issues "Error" "Tree Collision" $Path "$ObjectPath/Collision_Trunk BoxCollider scale $($scale -join ',') does not cover trunk length>=$([Math]::Round([double]$spec.TrunkLength * 0.98, 2)) and width>=$([double]$spec.TrunkWidth)." "Size the trunk box to encompass the base of the pine all the way up."
+        return $false
+    }
+
+    $position = @(Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $trunk -Name "Position") -Default @(0.0, 0.0, 0.0))
+    $requiredMidHeight = [double]$spec.TrunkLength * 0.5
+    if ([Math]::Abs([double]$position[2] - $requiredMidHeight) -gt ([double]$spec.TrunkLength * 0.15)) {
+        Add-AgentIssue $issues "Error" "Tree Collision" $Path "$ObjectPath/Collision_Trunk center z=$([Math]::Round([double]$position[2], 2)) is not centered along the trunk height $([Math]::Round([double]$spec.TrunkLength, 2))." "Position the trunk box around the vertical trunk span instead of leaving it at the origin."
+        return $false
+    }
+
+    return $true
 }
 
-function Get-ColliderWorldHeight {
+function Test-BranchBoxes {
     param(
-        [object]$Collider,
-        [double[]]$WorldScale
+        [object]$TreeObject,
+        [string]$ObjectPath,
+        [string]$Path,
+        [string]$Model
     )
 
-    $height = Get-JsonPropertyValue -Object $Collider -Name "Height"
-    if ($null -ne $height) {
-        return [double]$height * [double]$WorldScale[2]
-    }
-
-    $start = Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $Collider -Name "Start") -Default @(0.0, 0.0, 0.0)
-    $end = Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $Collider -Name "End") -Default @(0.0, 0.0, 0.0)
-    $deltaX = ([double]$end[0] - [double]$start[0]) * [double]$WorldScale[0]
-    $deltaY = ([double]$end[1] - [double]$start[1]) * [double]$WorldScale[1]
-    $deltaZ = ([double]$end[2] - [double]$start[2]) * [double]$WorldScale[2]
-    $capsuleHeight = [Math]::Sqrt(($deltaX * $deltaX) + ($deltaY * $deltaY) + ($deltaZ * $deltaZ))
-    if ($capsuleHeight -gt 0.0) {
-        return $capsuleHeight
-    }
-
-    $scale = Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $Collider -Name "Scale") -Default @(0.0, 0.0, 0.0)
-    return [double]$scale[2] * [double]$WorldScale[2]
-}
-
-function Test-TreeBlockingCollider {
-    param(
-        [object]$Collider,
-        [double[]]$WorldScale
-    )
-
-    if (-not (Test-JsonBool -Value (Get-JsonPropertyValue -Object $Collider -Name "Static") -Expected $true)) {
+    $branchChildren = @(Get-BranchChildren -Object $TreeObject)
+    if ($branchChildren.Count -lt $script:requiredBranchNames.Count) {
+        Add-AgentIssue $issues "Error" "Tree Collision" $Path "$ObjectPath uses $Model but has $($branchChildren.Count) branch collision child(ren); expected at least $($script:requiredBranchNames.Count)." "Give every authored pine branch its own static BoxCollider child, matching the generated pine branch set."
         return $false
     }
 
-    if (-not (Test-JsonBool -Value (Get-JsonPropertyValue -Object $Collider -Name "IsTrigger") -Expected $false)) {
-        return $false
+    $ok = $true
+    foreach ($branchName in $script:requiredBranchNames) {
+        $branch = Get-ChildByName -Object $TreeObject -Name $branchName
+        if ($null -eq $branch) {
+            Add-AgentIssue $issues "Error" "Tree Collision" $Path "$ObjectPath is missing $branchName." "Keep one collision child per authored pine branch."
+            $ok = $false
+            continue
+        }
+
+        $collider = Get-BlockingBoxCollider -Object $branch
+        if ($null -eq $collider) {
+            Add-AgentIssue $issues "Error" "Tree Collision" $Path "$ObjectPath/$branchName is not a non-trigger static Sandbox.BoxCollider." "Use branch-specific BoxCollider children instead of shared capsules or non-blocking helpers."
+            $ok = $false
+            continue
+        }
+
+        $scale = @(Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $collider -Name "Scale") -Default @(0.0, 0.0, 0.0))
+        $sorted = @($scale | Sort-Object -Descending)
+        if ([double]$sorted[0] -lt 20.0 -or [double]$sorted[1] -lt 12.0 -or [double]$sorted[2] -lt 12.0) {
+            Add-AgentIssue $issues "Error" "Tree Collision" $Path "$ObjectPath/$branchName BoxCollider scale $($scale -join ',') is too small to cover branch wood." "Size every branch box to cover the visible pine branch cylinder, not only a point on it."
+            $ok = $false
+        }
     }
 
-    $flags = [string](Get-JsonPropertyValue -Object $Collider -Name "ColliderFlags")
-    if ($flags -match "IgnoreTraces|IgnoreMass") {
-        return $false
-    }
-
-    $localRadius = Get-ColliderLocalRadius -Collider $Collider
-    if ($null -eq $localRadius -or [Math]::Abs([double]$localRadius - $script:expectedTreeCapsuleRadius) -gt 0.01) {
-        return $false
-    }
-
-    $worldHeight = Get-ColliderWorldHeight -Collider $Collider -WorldScale $WorldScale
-
-    return $worldHeight -ge 650.0
+    return $ok
 }
 
 function Test-TreeObject {
     param(
         [object]$Object,
         [string]$ObjectPath,
-        [double[]]$WorldScale,
         [string]$Path
     )
 
@@ -310,31 +476,36 @@ function Test-TreeObject {
     }
 
     $script:treeCount++
-    $colliders = @(Get-ColliderComponents -Object $Object)
-    if ($colliders.Count -eq 0) {
-        Add-AgentIssue $issues "Error" "Tree Collision" $Path "$ObjectPath uses $model but has no trunk collider." "Give every gameplay tree a static trunk blocker so players cannot walk through the visible trunk."
-        return $true
-    }
+    $ok = $true
 
-    foreach ($collider in $colliders) {
-        if (Test-TreeBlockingCollider -Collider $collider -WorldScale $WorldScale) {
-            $script:blockingTreeCount++
-            return $true
+    $rootColliders = @()
+    foreach ($component in @(Get-ObjectComponents -Object $Object)) {
+        if (Test-IsColliderComponent -Component $component) {
+            $rootColliders += $component
         }
     }
+    if ($rootColliders.Count -gt 0) {
+        $rootTypes = @($rootColliders | ForEach-Object { [string](Get-JsonPropertyValue -Object $_ -Name "__type") }) -join ", "
+        Add-AgentIssue $issues "Error" "Tree Collision" $Path "$ObjectPath still has root collider component(s): $rootTypes." "Remove the old single-collider pine coverage; use Collision_Trunk plus separate Collision_Branch_* BoxCollider children."
+        $ok = $false
+    }
 
-    $details = @($colliders | ForEach-Object {
-        $type = [string](Get-JsonPropertyValue -Object $_ -Name "__type")
-        $static = [string](Get-JsonPropertyValue -Object $_ -Name "Static")
-        $trigger = [string](Get-JsonPropertyValue -Object $_ -Name "IsTrigger")
-        $flags = [string](Get-JsonPropertyValue -Object $_ -Name "ColliderFlags")
-        $localRadius = Get-ColliderLocalRadius -Collider $_
-        $radius = [Math]::Round((Get-ColliderWorldRadius -Collider $_ -WorldScale $WorldScale), 2)
-        $height = [Math]::Round((Get-ColliderWorldHeight -Collider $_ -WorldScale $WorldScale), 2)
-        "$type static=$static trigger=$trigger flags=$flags localRadius=$localRadius radius=$radius height=$height"
-    }) -join "; "
+    if (-not (Test-HierarchyColliderViewer -TreeObject $Object -ObjectPath $ObjectPath -Path $Path -Model $model)) {
+        $ok = $false
+    }
 
-    Add-AgentIssue $issues "Error" "Tree Collision" $Path "$ObjectPath uses $model but lacks a runtime-blocking static trunk collider with Radius=$script:expectedTreeCapsuleRadius ($details)." "Use a non-trigger static CapsuleCollider with Radius=$script:expectedTreeCapsuleRadius and enough height for the visible trunk; do not rely on non-static or ignore-flagged hulls."
+    if (-not (Test-TrunkBox -TreeObject $Object -ObjectPath $ObjectPath -Path $Path -Model $model)) {
+        $ok = $false
+    }
+
+    if (-not (Test-BranchBoxes -TreeObject $Object -ObjectPath $ObjectPath -Path $Path -Model $model)) {
+        $ok = $false
+    }
+
+    if ($ok) {
+        $script:blockingTreeCount++
+    }
+
     return $true
 }
 
@@ -354,7 +525,7 @@ function Test-JsonFile {
     if ($null -ne $rootObject) {
         $objects = @(Get-AllObjects -Object $rootObject)
         foreach ($entry in $objects) {
-            Test-TreeObject -Object $entry.Object -ObjectPath $entry.Path -WorldScale $entry.WorldScale -Path $relative | Out-Null
+            Test-TreeObject -Object $entry.Object -ObjectPath $entry.Path -Path $relative | Out-Null
         }
         return
     }
@@ -362,13 +533,15 @@ function Test-JsonFile {
     foreach ($gameObject in @(Get-JsonPropertyValue -Object $json -Name "GameObjects")) {
         $objects = @(Get-AllObjects -Object $gameObject)
         foreach ($entry in $objects) {
-            Test-TreeObject -Object $entry.Object -ObjectPath $entry.Path -WorldScale $entry.WorldScale -Path $relative | Out-Null
+            Test-TreeObject -Object $entry.Object -ObjectPath $entry.Path -Path $relative | Out-Null
         }
     }
 }
 
 $script:treeCount = 0
 $script:blockingTreeCount = 0
+$script:requiredBranchNames = $requiredBranchNames
+$script:treeCollisionSpecs = $treeCollisionSpecs
 
 $fullScenePath = if ([System.IO.Path]::IsPathRooted($ScenePath)) { $ScenePath } else { Join-Path $Root $ScenePath }
 if (-not (Test-Path -LiteralPath $fullScenePath)) {
@@ -385,12 +558,12 @@ foreach ($prefabName in @("terrain_assets.prefab", "terrain_pine.prefab", "terra
         Test-JsonFile -FullPath $prefabPath
     }
     else {
-        Add-AgentIssue $issues "Error" "Tree Collision" (ConvertTo-AgentRelativePath -Path $prefabPath -Root $Root) "Tree prefab is missing." "Keep each local tree model available as a prefab with built-in trunk collision."
+        Add-AgentIssue $issues "Error" "Tree Collision" (ConvertTo-AgentRelativePath -Path $prefabPath -Root $Root) "Tree prefab is missing." "Keep each local pine model available as a prefab with built-in trunk and branch collision."
     }
 }
 
 if ($ShowInfo) {
-    Add-AgentIssue $issues "Info" "Tree Collision" "" "Checked $script:treeCount tree object(s); $script:blockingTreeCount have runtime-blocking static trunk collision."
+    Add-AgentIssue $issues "Info" "Tree Collision" "" "Checked $script:treeCount pine tree object(s); $script:blockingTreeCount have trunk BoxCollider coverage and $($script:requiredBranchNames.Count) branch BoxCollider children."
 }
 
 Write-AgentIssues -Issues $issues -ShowInfo:$ShowInfo

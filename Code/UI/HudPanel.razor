@@ -3,6 +3,7 @@
 @using System
 @using System.Collections.Generic
 @using System.Linq
+@using DroneVsPlayers
 @namespace DroneVsPlayers
 @inherits PanelComponent
 
@@ -87,16 +88,19 @@
                         <div class="loadout-section">
                             <div class="choices">
                                 <div class="choice pilot" onclick=@(() => ClickMenuOption(SelectGpsDrone))>
-                                    <span class="label">GPS DRONE</span>
-                                    <span class="desc">Long range vs heavy</span>
+                                    <span class="label">@DroneChoiceLabel(DroneType.Gps)</span>
+                                    <span class="desc">@DroneChoiceDescription(DroneType.Gps)</span>
+                                    <span class="meta">@DroneChoiceMeta(DroneType.Gps)</span>
                                 </div>
                                 <div class="choice pilot" onclick=@(() => ClickMenuOption(SelectFpvDrone))>
-                                    <span class="label">FPV DRONE</span>
-                                    <span class="desc">Fast dive vs assault</span>
+                                    <span class="label">@DroneChoiceLabel(DroneType.Fpv)</span>
+                                    <span class="desc">@DroneChoiceDescription(DroneType.Fpv)</span>
+                                    <span class="meta">@DroneChoiceMeta(DroneType.Fpv)</span>
                                 </div>
                                 <div class="choice pilot" onclick=@(() => ClickMenuOption(SelectFiberFpvDrone))>
-                                    <span class="label">FIBER FPV</span>
-                                    <span class="desc">RF immune vs jammer</span>
+                                    <span class="label">@DroneChoiceLabel(DroneType.FiberOpticFpv)</span>
+                                    <span class="desc">@DroneChoiceDescription(DroneType.FiberOpticFpv)</span>
+                                    <span class="meta">@DroneChoiceMeta(DroneType.FiberOpticFpv)</span>
                                 </div>
                             </div>
                         </div>
@@ -111,16 +115,19 @@
                         <div class="loadout-section">
                             <div class="choices">
                                 <div class="choice soldier" onclick=@(() => ClickMenuOption(SelectAssaultSoldier))>
-                                    <span class="label">ASSAULT</span>
-                                    <span class="desc">Rifle answer to fiber</span>
+                                    <span class="label">@SoldierChoiceLabel(SoldierClass.Assault)</span>
+                                    <span class="desc">@SoldierChoiceDescription(SoldierClass.Assault)</span>
+                                    <span class="meta">@SoldierChoiceMeta(SoldierClass.Assault)</span>
                                 </div>
                                 <div class="choice soldier" onclick=@(() => ClickMenuOption(SelectCounterUavSoldier))>
-                                    <span class="label">COUNTER-UAV</span>
-                                    <span class="desc">Jammer answer to GPS</span>
+                                    <span class="label">@SoldierChoiceLabel(SoldierClass.CounterUav)</span>
+                                    <span class="desc">@SoldierChoiceDescription(SoldierClass.CounterUav)</span>
+                                    <span class="meta">@SoldierChoiceMeta(SoldierClass.CounterUav)</span>
                                 </div>
                                 <div class="choice soldier" onclick=@(() => ClickMenuOption(SelectHeavySoldier))>
-                                    <span class="label">HEAVY</span>
-                                    <span class="desc">EMP answer to FPV</span>
+                                    <span class="label">@SoldierChoiceLabel(SoldierClass.Heavy)</span>
+                                    <span class="desc">@SoldierChoiceDescription(SoldierClass.Heavy)</span>
+                                    <span class="meta">@SoldierChoiceMeta(SoldierClass.Heavy)</span>
                                 </div>
                             </div>
                         </div>
@@ -177,6 +184,17 @@
             </div>
         }
 
+        @if ( ShowDroneOpticOverlay )
+        {
+            <div class="drone-optic-overlay @DroneVariantClass">
+                <div class="optic-ring outer"></div>
+                <div class="optic-ring inner"></div>
+                <div class="optic-line horizontal"></div>
+                <div class="optic-line vertical"></div>
+                <div class="optic-label">ZOOM @DroneOpticZoomLabel</div>
+            </div>
+        }
+
         @if ( ShowReticle )
         {
             <div class="reticle-stack">
@@ -191,14 +209,12 @@
 
                 @if ( ShowDroneActionPrompt )
                 {
-                    <div class="drone-action-prompt @DroneActionPromptClass">
-                        <div class="mouse-icon lmb">
-                            <div class="mouse-button left"></div>
-                            <div class="mouse-button right"></div>
-                            <div class="mouse-wheel"></div>
-                        </div>
-                        <div class="drone-action-copy">@DroneActionLabel</div>
-                    </div>
+                    @InteractionPromptRenderer.Render( $"drone-action-prompt {DroneActionPromptClass}", "LMB", DroneActionLabel )
+                }
+
+                @if ( CurrentWorldPrompt.IsValid() )
+                {
+                    @InteractionPromptRenderer.Render( WorldPromptClass, CurrentWorldPrompt.InputGlyph, CurrentWorldPrompt.DisplayText )
                 }
 
                 @if ( ShowSprintMeter )
@@ -267,10 +283,7 @@
 
         @if ( ShowAmmoHud )
         {
-            <div class="bottom-right-ammo @LocalRole.ToString().ToLower()">
-                <div class="ammo-label">@AmmoHudLabel</div>
-                <div class="ammo-value">@AmmoHudValue</div>
-            </div>
+            @AmmoHudRenderer.Render( LocalRole.ToString().ToLower(), AmmoHudLabel, AmmoHudValue )
         }
 
         @if ( ShowLoadoutHud )
@@ -327,28 +340,7 @@
 
         @if ( !GameplayUiBlocked && ShowScoreboard )
         {
-            <div class="scoreboard">
-                <div class="scoreboard-inner">
-                    <div class="scoreboard-title">SCOREBOARD</div>
-                    <div class="scoreboard-table">
-                        <div class="scoreboard-header">
-                            <span class="col-name">Player</span>
-                            <span class="col-k">K</span>
-                            <span class="col-d">D</span>
-                            <span class="col-s">Score</span>
-                        </div>
-                        @foreach ( var row in ScoreboardRows )
-                        {
-                            <div class="scoreboard-row">
-                                <span class="col-name">@row.Name</span>
-                                <span class="col-k">@row.Kills</span>
-                                <span class="col-d">@row.Deaths</span>
-                                <span class="col-s">@row.Score</span>
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
+            @ScoreboardOverlayRenderer.Render( ScoreboardRows )
         }
 
         @if ( OptionsMenuOpen )
@@ -447,6 +439,9 @@
         && LocalDroneViewActive
         && LocalDroneCamera.IsValid()
         && LocalDroneCamera.IsFirstPersonActive;
+    bool ShowDroneOpticOverlay => ShowDroneLcdOverlay
+        && LocalDroneCamera.IsValid()
+        && LocalDroneCamera.IsOpticZoomActive;
     bool ShowDroneActionPrompt => ShowReticle && LocalDroneViewActive && LocalDroneWeapon.IsValid();
     bool ShowScoreboard { get; set; }
 
@@ -522,6 +517,8 @@
 
             if ( Time.Now - _lastHitTime < 0.10f ) classes.Add( "firing" );
             if ( SuppressionOpacity > 0.08f ) classes.Add( "suppressed" );
+            var weaponBloomBucket = CurrentWeaponBloomBucket;
+            if ( weaponBloomBucket > 0 ) classes.Add( $"weapon-bloom-{weaponBloomBucket}" );
             return string.Join( " ", classes );
         }
     }
@@ -979,6 +976,36 @@
         return SelectedLoadoutTeam == team ? $"{className} selected" : className;
     }
 
+    LoadoutDefinitionResource SoldierDefinition( SoldierClass cls ) =>
+        Setup?.GetSoldierLoadoutDefinition( cls ) ?? LoadoutCatalog.FindSoldier( null, cls );
+
+    LoadoutDefinitionResource DroneDefinition( DroneType type ) =>
+        Setup?.GetDroneLoadoutDefinition( type ) ?? LoadoutCatalog.FindDrone( null, type );
+
+    string SoldierChoiceLabel( SoldierClass cls ) => SoldierDefinition( cls )?.DisplayName?.ToUpperInvariant() ?? SoldierClassName( cls ).ToUpperInvariant();
+    string SoldierChoiceDescription( SoldierClass cls ) => SoldierDefinition( cls )?.ShortDescription ?? "";
+    string SoldierChoiceMeta( SoldierClass cls )
+    {
+        var definition = SoldierDefinition( cls );
+        return definition is null ? "" : $"{definition.PrimaryLabel} / {definition.EquipmentLabel}";
+    }
+
+    string DroneChoiceLabel( DroneType type ) => DroneDefinition( type )?.DisplayName?.ToUpperInvariant() ?? DroneVariantName( type ).ToUpperInvariant();
+    string DroneChoiceDescription( DroneType type ) => DroneDefinition( type )?.ShortDescription ?? "";
+    string DroneChoiceMeta( DroneType type )
+    {
+        var definition = DroneDefinition( type );
+        return definition is null ? "" : definition.EquipmentDetail;
+    }
+
+    int LoadoutPreviewHash => HashCode.Combine(
+        SoldierDefinition( SoldierClass.Assault )?.StableHash ?? 0,
+        SoldierDefinition( SoldierClass.CounterUav )?.StableHash ?? 0,
+        SoldierDefinition( SoldierClass.Heavy )?.StableHash ?? 0,
+        DroneDefinition( DroneType.Gps )?.StableHash ?? 0,
+        DroneDefinition( DroneType.Fpv )?.StableHash ?? 0,
+        DroneDefinition( DroneType.FiberOpticFpv )?.StableHash ?? 0 );
+
     LoadoutSlot[] LoadoutSlots => LocalRole switch
     {
         PlayerRole.Pilot => PilotLoadoutSlots(),
@@ -1007,9 +1034,10 @@
         var rifle = LocalSoldierComponent<HitscanWeapon>();
         if ( rifle.IsValid() )
         {
+            var definition = SoldierDefinition( LocalSoldierClass );
             return new LoadoutSlot(
                 1,
-                "Assault Rifle",
+                string.IsNullOrWhiteSpace( definition?.PrimaryLabel ) ? "Assault Rifle" : definition.PrimaryLabel,
                 $"{rifle.Damage:0} dmg / {rifle.MagazineSize} mag",
                 "LMB"
             );
@@ -1018,9 +1046,10 @@
         var shotgun = LocalSoldierComponent<ShotgunWeapon>();
         if ( shotgun.IsValid() )
         {
+            var definition = SoldierDefinition( LocalSoldierClass );
             return new LoadoutSlot(
                 1,
-                "Shotgun",
+                string.IsNullOrWhiteSpace( definition?.PrimaryLabel ) ? "Shotgun" : definition.PrimaryLabel,
                 $"{shotgun.PelletCount} pellets / {shotgun.MaxRange / 1000f:0.0}k range",
                 "LMB"
             );
@@ -1029,9 +1058,10 @@
         var jammer = LocalSoldierComponent<DroneJammerGun>();
         if ( jammer.IsValid() )
         {
+            var definition = SoldierDefinition( LocalSoldierClass );
             return new LoadoutSlot(
                 1,
-                "Drone Jammer",
+                string.IsNullOrWhiteSpace( definition?.PrimaryLabel ) ? "Drone Jammer" : definition.PrimaryLabel,
                 $"{jammer.MaxRange / 1000f:0.0}k range / cone",
                 "LMB"
             );
@@ -1046,9 +1076,10 @@
         if ( !grenade.IsValid() )
             return DisabledSlot( 2, "Equipment", "No equipment found", "LMB" );
 
+        var definition = SoldierDefinition( LocalSoldierClass );
         return new LoadoutSlot(
             2,
-            GrenadeName( grenade ),
+            string.IsNullOrWhiteSpace( definition?.EquipmentLabel ) ? GrenadeName( grenade ) : definition.EquipmentLabel,
             GrenadeDetail( grenade ),
             "LMB"
         );
@@ -1066,10 +1097,11 @@
     LoadoutSlot[] PilotGroundLoadoutSlots()
     {
         var deployer = LocalSoldierComponent<DroneDeployer>();
+        var definition = DroneDefinition( LocalDroneType );
         var primary = deployer.IsValid()
             ? new LoadoutSlot(
                 1,
-                LocalDroneName,
+                string.IsNullOrWhiteSpace( definition?.PrimaryLabel ) ? LocalDroneName : definition.PrimaryLabel,
                 deployer.DroneInFlight ? "Drone airborne" : "Deploy drone",
                 deployer.DroneInFlight ? "F" : "LMB"
             )
@@ -1107,6 +1139,33 @@
 
     DroneWeapon LocalDroneWeapon =>
         LocalDroneController.IsValid() ? LocalDroneController.Components.Get<DroneWeapon>() : null;
+
+    WorldInteractionPrompt CurrentWorldPrompt
+    {
+        get
+        {
+            if ( GameplayUiBlocked )
+                return null;
+
+            var cameraPosition = LocalCameraPosition;
+            return Scene.GetAllComponents<WorldInteractionPrompt>()
+                .Where( prompt => prompt.IsValid() && prompt.IsAvailableFor( cameraPosition, LocalRole ) )
+                .OrderBy( prompt => prompt.WorldPosition.Distance( cameraPosition ) )
+                .FirstOrDefault();
+        }
+    }
+
+    string WorldPromptClass
+    {
+        get
+        {
+            var prompt = CurrentWorldPrompt;
+            var extra = prompt.IsValid() && !string.IsNullOrWhiteSpace( prompt.PromptClass )
+                ? $" {prompt.PromptClass.Trim()}"
+                : "";
+            return $"world-action-prompt{extra}";
+        }
+    }
 
     string DroneActionLabel
     {
@@ -1161,12 +1220,39 @@
         }
         : "drone";
 
-    string LocalSoldierName
+    SoldierClass LocalSoldierClass
     {
         get
         {
             var soldier = LocalSoldierComponent<SoldierBase>();
-            return soldier.IsValid() ? SoldierClassName( soldier.Class ) : "Hunter";
+            return soldier.IsValid() ? soldier.Class : SoldierClass.Assault;
+        }
+    }
+
+    string DroneOpticZoomLabel => LocalDroneCamera.IsValid()
+        ? $"{LocalDroneCamera.OpticZoomFovDegrees:0} FOV"
+        : "";
+
+    DroneType LocalDroneType
+    {
+        get
+        {
+            if ( LocalDroneBase.IsValid() )
+                return LocalDroneBase.Type;
+
+            var pilot = LocalPilotSoldier;
+            return pilot.IsValid() ? pilot.ChosenDrone : DroneType.Gps;
+        }
+    }
+
+    string LocalSoldierName
+    {
+        get
+        {
+            var definition = SoldierDefinition( LocalSoldierClass );
+            return string.IsNullOrWhiteSpace( definition?.DisplayName )
+                ? SoldierClassName( LocalSoldierClass )
+                : definition.DisplayName;
         }
     }
 
@@ -1174,11 +1260,10 @@
     {
         get
         {
-            if ( LocalDroneBase.IsValid() )
-                return DroneVariantName( LocalDroneBase.Type );
-
-            var pilot = LocalPilotSoldier;
-            return pilot.IsValid() ? DroneVariantName( pilot.ChosenDrone ) : "Pilot";
+            var definition = DroneDefinition( LocalDroneType );
+            return string.IsNullOrWhiteSpace( definition?.DisplayName )
+                ? DroneVariantName( LocalDroneType )
+                : definition.DisplayName;
         }
     }
 
@@ -1299,6 +1384,22 @@
             return "";
         }
     }
+
+    float CurrentWeaponBloom
+    {
+        get
+        {
+            if ( CurrentRifleAmmoWeapon.IsValid() )
+                return CurrentRifleAmmoWeapon.CurrentAimBloom;
+
+            if ( CurrentShotgunAmmoWeapon.IsValid() )
+                return CurrentShotgunAmmoWeapon.CurrentAimBloom;
+
+            return 0f;
+        }
+    }
+
+    int CurrentWeaponBloomBucket => Math.Clamp( (int)MathF.Ceiling( CurrentWeaponBloom * 2f ), 0, 8 );
 
     bool LocalDroneViewActive
     {
@@ -1446,8 +1547,6 @@
         }
     }
 
-    record struct ScoreboardRow( string Name, int Kills, int Deaths, int Score );
-
     IReadOnlyList<ScoreboardRow> ScoreboardRows
     {
         get
@@ -1497,15 +1596,22 @@
                     LocalDroneCamera.IsValid() && LocalDroneCamera.IsFirstPersonActive,
                     LocalDroneViewActive,
                     ShowDroneLcdOverlay,
+                    ShowDroneOpticOverlay,
                     ShowDroneActionPrompt,
                     DroneActionLabel,
-                    DroneLcdVariantLabel
+                    DroneLcdVariantLabel,
+                    DroneOpticZoomLabel
                 ),
                 ShowJamWarning,
                 SelectedLoadoutTeam,
                 ObservedSelectionGeneration,
                 ShowScoreboard,
-                HashCode.Combine( VignetteClass, ShowSprintMeter, SprintMeterPercent ),
+                HashCode.Combine(
+                    VignetteClass,
+                    ShowSprintMeter,
+                    SprintMeterPercent,
+                    CurrentWorldPrompt.IsValid() ? CurrentWorldPrompt.StableHash : 0
+                ),
                 Round?.LastWinnerInt ?? -1,
                 HashCode.Combine(
                     RoundEndVisible,
@@ -1519,15 +1625,14 @@
                 )
             ),
             HashCode.Combine(
-                ShowLoadoutHud,
-                SelectedLoadoutSlot,
-                ShowAmmoHud,
-                HashCode.Combine( ShowDroneActionPrompt, DroneActionLabel, DroneLcdVariantLabel ),
+                HashCode.Combine( ShowLoadoutHud, SelectedLoadoutSlot, LoadoutPreviewHash, ShowAmmoHud ),
+                HashCode.Combine( ShowDroneActionPrompt, DroneActionLabel, DroneLcdVariantLabel, WorldPromptClass ),
                 HashCode.Combine(
                     rifleAmmoWeapon.IsValid() ? rifleAmmoWeapon.AmmoInMagazine : -1,
                     rifleAmmoWeapon.IsValid() ? rifleAmmoWeapon.AmmoReserve : -1,
                     shotgunAmmoWeapon.IsValid() ? shotgunAmmoWeapon.AmmoInMagazine : -1,
-                    shotgunAmmoWeapon.IsValid() ? shotgunAmmoWeapon.AmmoReserve : -1
+                    shotgunAmmoWeapon.IsValid() ? shotgunAmmoWeapon.AmmoReserve : -1,
+                    CurrentWeaponBloomBucket
                 ),
                 LocalOptionsState.UiScalePercent,
                 (int)(LocalOptionsState.LookSensitivity * 100f),

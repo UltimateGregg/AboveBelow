@@ -1,0 +1,157 @@
+{
+  "RootObject": {
+    "__guid": "4d186c4f-a484-44f6-8706-0e56786643c6",
+    "Flags": 0,
+    "Name": "GrassClump_FiveCard",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [],
+    "Children": [
+      {
+        "__guid": "0c07258a-8f43-4e17-b1ef-d77aac58c3aa",
+        "Flags": 0,
+        "Name": "BladeCard_A_Front",
+        "Position": "0,0,7",
+        "Rotation": "0,0.707106781,0,0.707106781",
+        "Scale": "0.14,0.92,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "a51f3fd4-18b6-46a2-8d43-23c7ad8461d3",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/plane.vmdl",
+            "MaterialOverride": "materials/arena/grass_blade_card.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "3756f061-5280-49d2-8e36-8ea82a8cf7ff",
+        "Flags": 0,
+        "Name": "BladeCard_A_Back",
+        "Position": "0,0,7",
+        "Rotation": "-0.707106781,0,0.707106781,0",
+        "Scale": "0.14,0.92,1",
+        "Enabled": true,
+        "Components": [],
+        "Children": []
+      },
+      {
+        "__guid": "79bc4cb1-e0e2-46e6-b9e0-a4c3c21f83dd",
+        "Flags": 0,
+        "Name": "BladeCard_B_Front",
+        "Position": "0,0,7",
+        "Rotation": "-0.353553391,0.612372436,0.353553391,0.612372436",
+        "Scale": "0.14,0.92,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "2198200a-d710-4f63-ae21-f3d5f27c8ae8",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/plane.vmdl",
+            "MaterialOverride": "materials/arena/grass_blade_card.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "09615b9b-b238-4a3d-a466-3b1f8e86fef4",
+        "Flags": 0,
+        "Name": "BladeCard_B_Back",
+        "Position": "0,0,7",
+        "Rotation": "-0.612372436,-0.353553391,0.612372436,-0.353553391",
+        "Scale": "0.14,0.92,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "c19221be-cd04-4f77-8cb5-efae01fb5c58",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/plane.vmdl",
+            "MaterialOverride": "materials/arena/grass_blade_card.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "3acae295-cf53-45cc-b563-9a3532cfe995",
+        "Flags": 0,
+        "Name": "BladeCard_C_Front",
+        "Position": "0,0,7",
+        "Rotation": "-0.612372436,0.353553391,0.612372436,0.353553391",
+        "Scale": "0.14,0.92,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "ec4c15d7-f7c5-4508-b9f6-8b36f296cfd4",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/plane.vmdl",
+            "MaterialOverride": "materials/arena/grass_blade_card.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "363b022f-3c5e-4614-a75e-67bc340f257c",
+        "Flags": 0,
+        "Name": "BladeCard_C_Back",
+        "Position": "0,0,7",
+        "Rotation": "-0.353553391,-0.612372436,0.353553391,-0.612372436",
+        "Scale": "0.14,0.92,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "7a23d5b2-ef2d-4cf2-acd6-b30bdd02bfc0",
+            "__enabled": true,
+            "Flags": 0,
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/dev/plane.vmdl",
+            "MaterialOverride": "materials/arena/grass_blade_card.vmat",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ],
+        "Children": []
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Environment/Grass Clump Five Card",
+  "MenuIcon": "grass",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

@@ -1,4 +1,5 @@
 using Sandbox;
+using System;
 using System.Linq;
 
 namespace DroneVsPlayers;
@@ -20,13 +21,20 @@ public sealed class DroneCamera : Component
 	[Property] public string CameraToggleInput { get; set; } = "ToggleDroneCamera";
 	[Property] public float ChaseDistance { get; set; } = 220f;
 	[Property] public float ChaseHeight { get; set; } = 80f;
+	[Property] public bool EnableOpticZoom { get; set; } = true;
+	[Property] public string OpticZoomInput { get; set; } = "Attack2";
+	[Property, Range( 25f, 90f )] public float DefaultFovDegrees { get; set; } = 80f;
+	[Property, Range( 18f, 75f )] public float OpticZoomFovDegrees { get; set; } = 38f;
+	[Property, Range( 0.5f, 30f )] public float OpticZoomLerpRate { get; set; } = 14f;
 
 	/// <summary>
 	/// Current local camera mode after runtime toggles are applied.
 	/// </summary>
 	public bool IsFirstPersonActive => _firstPersonActive;
+	public bool IsOpticZoomActive => _opticZoomActive;
 
 	bool _firstPersonActive;
+	bool _opticZoomActive;
 
 	public void SetFirstPersonActive( bool active )
 	{
@@ -46,12 +54,14 @@ public sealed class DroneCamera : Component
 
 		if ( IsProxy )
 		{
+			_opticZoomActive = false;
 			SetPilotVisualHidden( false );
 			return;
 		}
 
 		if ( !Drone.IsValid() )
 		{
+			_opticZoomActive = false;
 			SetPilotVisualHidden( false );
 			return;
 		}
@@ -62,6 +72,7 @@ public sealed class DroneCamera : Component
 		// place because DroneController is gated on the same condition.
 		if ( !RemoteController.IsLocalDroneViewActive( Scene ) )
 		{
+			_opticZoomActive = false;
 			SetPilotVisualHidden( false );
 			return;
 		}
@@ -78,6 +89,11 @@ public sealed class DroneCamera : Component
 
 		var lookRot = Drone.EyeAngles.ToRotation();
 		var firstPersonActive = _firstPersonActive && CameraSocket.IsValid();
+		_opticZoomActive = EnableOpticZoom
+			&& firstPersonActive
+			&& !LocalOptionsState.ConsumesGameplayInput
+			&& !string.IsNullOrWhiteSpace( OpticZoomInput )
+			&& Input.Down( OpticZoomInput );
 		SetPilotVisualHidden( firstPersonActive && !ShowVisualInFirstPerson );
 
 		if ( firstPersonActive )
@@ -91,6 +107,12 @@ public sealed class DroneCamera : Component
 			cam.WorldPosition = Drone.WorldPosition + chaseRot.Backward * ChaseDistance + Vector3.Up * ChaseHeight;
 			cam.WorldRotation = lookRot;
 		}
+
+		var targetFov = _opticZoomActive ? OpticZoomFovDegrees : DefaultFovDegrees;
+		cam.FieldOfView = MathX.Lerp(
+			cam.FieldOfView,
+			targetFov,
+			1f - MathF.Exp( -OpticZoomLerpRate * Time.Delta ) );
 	}
 
 	protected override void OnDestroy()

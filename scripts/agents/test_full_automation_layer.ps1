@@ -73,6 +73,7 @@ $requiredScripts = @(
     "scripts/agents/sbox_docs_source_audit.ps1",
     "scripts/agents/sbox_engine_reference_audit.ps1",
     "scripts/agents/sbox_release_notes_audit.ps1",
+    "scripts/agents/sbox_code_search_audit.ps1",
     "scripts/agents/sbox_api_lookup.ps1",
     "scripts/agents/sbox_api_reference_audit.ps1",
     "scripts/agents/sbox_learn_intake_audit.ps1",
@@ -84,6 +85,8 @@ $requiredScripts = @(
 
 # Release-notes audit coverage marker: S&Box Release Notes Intake Agent
 # https://sbox.game/release-notes is protected by the "release-notes" suite and sbox_release_notes_audit.ps1.
+# Code Search audit coverage marker: S&Box Code Search Agent
+# https://sbox.game/codesearch is protected by the "code-search" suite and sbox_code_search_audit.ps1.
 
 foreach ($script in $requiredScripts) {
     if (-not (Test-Path -LiteralPath (Join-Path $Root $script))) {
@@ -99,7 +102,7 @@ if (Test-Path -LiteralPath $runner) {
         Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner does not declare a ValidateSet for suites." "Restore suite validation on the Suite parameter."
     }
 
-    foreach ($suite in @("ui", "prefab-graph", "scene", "terrain", "logs", "readiness", "train", "asset-production", "modeldoc", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain", "api", "sbox-docs", "release-notes", "learn", "editor-node-tool", "editor-first")) {
+    foreach ($suite in @("ui", "prefab-graph", "scene", "terrain", "logs", "readiness", "train", "asset-production", "modeldoc", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain", "api", "sbox-docs", "release-notes", "code-search", "learn", "editor-node-tool", "editor-first")) {
         $quotedSuite = '"' + [regex]::Escape($suite) + '"'
         if ($validateSetMatch.Success -and $validateSetMatch.Groups["values"].Value -notmatch $quotedSuite) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner ValidateSet does not expose suite '$suite'." "Add the suite to the Suite parameter ValidateSet."
@@ -1322,18 +1325,26 @@ if (Test-Path -LiteralPath $sceneAudit) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit did not fail on a boundary wall with RenderType On." "Keep boundary walls collider-backed and editor-wireframed, not solid-rendered in play."
         }
 
-        $validBoundaryFixture = (Get-Content -LiteralPath $scenePath -Raw).Replace('"RenderType": "On"', '"RenderType": "Off"')
+        $alwaysDrawFixture = (Get-Content -LiteralPath $scenePath -Raw).Replace('"RenderType": "On"', '"RenderType": "Off"')
+        $alwaysDrawFixture | Set-Content -LiteralPath $scenePath -Encoding UTF8
+
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sceneAudit -ScriptArgs @("-Root", $tempRoot) -Label "always-drawn invisible boundary wall" -SourcePath "scripts/agents/scene_integrity_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit did not fail on a boundary wall that always draws its collision viewer." "Keep invisible boundary walls fully hidden unless selected."
+        }
+
+        $validBoundaryFixture = (Get-Content -LiteralPath $scenePath -Raw).Replace('"AlwaysDraw": true', '"AlwaysDraw": false')
         $validBoundaryFixture = [regex]::Replace(
             $validBoundaryFixture,
             '"Sandbox\.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "50,50,50" \}',
-            '"Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "50,50,50" }, { "__type": "DroneVsPlayers.SelectedHierarchyColliderViewer", "AlwaysDraw": true, "IncludeTriggers": true }',
+            '"Sandbox.BoxCollider", "Center": "0,0,0", "IsTrigger": false, "Static": true, "Scale": "50,50,50" }, { "__type": "DroneVsPlayers.SelectedHierarchyColliderViewer", "AlwaysDraw": false, "IncludeTriggers": true }',
             1
         )
         $validBoundaryFixture | Set-Content -LiteralPath $scenePath -Encoding UTF8
 
         & powershell -NoProfile -ExecutionPolicy Bypass -File $sceneAudit -Root $tempRoot | Out-Host
         if ($LASTEXITCODE -ne 0) {
-            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit failed on a valid invisible boundary wireframe fixture." "Avoid false positives when boundary walls are hidden as renderers but visible through editor wireframe gizmos."
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit failed on a valid fully invisible boundary fixture." "Avoid false positives when boundary walls are hidden as renderers and collision viewers only draw on selection."
         }
     }
     finally {
@@ -2161,6 +2172,88 @@ Evidence:
         & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxReleaseNotesAudit -Root $tempRoot | Out-Host
         if ($LASTEXITCODE -ne 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_release_notes_audit.ps1" "Release-notes audit failed on complete routing fixtures." "Avoid false positives for valid official release-note workflow wiring."
+        }
+    }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
+        }
+    }
+}
+
+$sboxCodeSearchAudit = Join-Path $Root "scripts/agents/sbox_code_search_audit.ps1"
+if (Test-Path -LiteralPath $sboxCodeSearchAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-code-search-audit-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot ".agents\sbox") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "docs") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "scripts\agents") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot ".claude") | Out-Null
+
+        "https://sbox.game/codesearch" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\sbox_engine_llm_reference.md") -Encoding UTF8
+        "S&Box Code Search Agent" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\sbox-code-search-agent.md") -Encoding UTF8
+        "https://sbox.game/codesearch" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\sbox-engine-reference-agent.md") -Encoding UTF8
+        "S&Box Code Search Intake" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\known_sbox_patterns.md") -Encoding UTF8
+        "S&Box Code Search Agent" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
+        "sbox-code-search-agent.md" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
+        "S&Box Code Search" | Set-Content -LiteralPath (Join-Path $tempRoot "AGENTS.md") -Encoding UTF8
+        '"code-search"' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
+        "sbox_code_search_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
+        "CodeSearchResearch" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\post_task_training_agent.ps1") -Encoding UTF8
+        '{"hooks":[]}' | Set-Content -LiteralPath (Join-Path $tempRoot ".claude\settings.json") -Encoding UTF8
+
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sboxCodeSearchAudit -ScriptArgs @("-Root", $tempRoot) -Label "incomplete Code Search intake routing" -SourcePath "scripts/agents/sbox_code_search_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_code_search_audit.ps1" "Code Search audit did not fail on incomplete routing fixtures." "Keep the fixture strict enough to catch missing Code Search docs, agent, hook, suite, and self-test wiring."
+        }
+
+        @'
+# S&Box Engine LLM Reference
+
+Official S&Box Code Search reviewed on 2026-05-30:
+
+- https://sbox.game/codesearch
+- Search the source of every published package.
+- package type
+- code type
+- year
+- sbox-code-search-agent.md
+- sbox_code_search_audit.ps1
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "docs\sbox_engine_llm_reference.md") -Encoding UTF8
+
+        @'
+# S&Box Code Search Agent
+
+## Purpose
+
+Review published packages at https://sbox.game/codesearch.
+
+Sources:
+- published packages
+- package type
+- code type
+- year
+- sbox_api_lookup.ps1
+
+Evidence:
+- sbox_code_search_audit.ps1
+
+Do not vendor package source.
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\sbox-code-search-agent.md") -Encoding UTF8
+
+        "https://sbox.game/codesearch sbox-code-search-agent.md" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\sbox-engine-reference-agent.md") -Encoding UTF8
+        "S&Box Code Search Intake https://sbox.game/codesearch sbox-code-search-agent.md sbox_code_search_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\known_sbox_patterns.md") -Encoding UTF8
+        "S&Box Code Search Agent sbox-code-search-agent.md sbox_code_search_audit.ps1 run_agent_checks.ps1 -Suite code-search" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
+        "Code Search sbox-code-search-agent.md sbox_code_search_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
+        "S&Box Code Search sbox-code-search-agent.md run_agent_checks.ps1 -Suite code-search" | Set-Content -LiteralPath (Join-Path $tempRoot "AGENTS.md") -Encoding UTF8
+        '"code-search" sbox_code_search_audit.ps1' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
+        'S&Box Code Search Agent "code-search" sbox_code_search_audit.ps1' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
+        "CodeSearchResearch sbox_code_search_audit.ps1 https://sbox.game/codesearch" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\post_task_training_agent.ps1") -Encoding UTF8
+        '{"hooks":[{"id":"sbox-code-search-check","action":{"args":["-Suite","code-search",".\\scripts\\agents\\sbox_code_search_audit.ps1"]}}]}' | Set-Content -LiteralPath (Join-Path $tempRoot ".claude\settings.json") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxCodeSearchAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_code_search_audit.ps1" "Code Search audit failed on complete routing fixtures." "Avoid false positives for valid Code Search workflow wiring."
         }
     }
     finally {

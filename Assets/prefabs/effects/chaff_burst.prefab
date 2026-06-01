@@ -1,0 +1,38 @@
+{
+  "RootObject": {
+    "__guid": "7b8b77e0-4cf1-55f3-a4e5-52e3442fd101",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "ChaffGrenadeEffect",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.GrenadeEffectVisual",
+        "__guid": "4a0e6a4a-59b2-51e3-9a35-45078930ad01",
+        "__enabled": true,
+        "Flags": 0,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null
+      }
+    ],
+    "Children": []
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Effects/Chaff Burst",
+  "MenuIcon": "blur_on",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 3
+}

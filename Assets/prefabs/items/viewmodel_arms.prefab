@@ -1,0 +1,47 @@
+{
+  "RootObject": {
+    "__guid": "619232bc-9d06-4f8f-a205-966c3580e6d2",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "ViewmodelArms",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "Sandbox.SkinnedModelRenderer",
+        "__guid": "5f1694cf-2f69-48da-877e-81acfb4f7515",
+        "__enabled": true,
+        "BodyGroups": 18446744073709551615,
+        "BoneMergeTarget": null,
+        "CreateBoneObjects": false,
+        "Flags": 0,
+        "MaterialGroup": null,
+        "MaterialOverride": null,
+        "Model": null,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "RenderType": "On",
+        "Tint": "1,1,1,1",
+        "UseAnimGraph": true
+      }
+    ],
+    "Children": []
+  },
+  "ShowInMenu": true,
+  "MenuPath": "Drone vs Players/Items/Viewmodel Arms",
+  "MenuIcon": "front_hand",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 3
+}

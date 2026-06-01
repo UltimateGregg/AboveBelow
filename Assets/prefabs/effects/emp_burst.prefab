@@ -1,0 +1,38 @@
+{
+  "RootObject": {
+    "__guid": "89354809-f3fe-50a2-96c3-829ba3c00a01",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "EmpGrenadeEffect",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.GrenadeEffectVisual",
+        "__guid": "f7ed290a-f9f4-55dd-af62-0ef2993b2501",
+        "__enabled": true,
+        "Flags": 0,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null
+      }
+    ],
+    "Children": []
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Effects/EMP Burst",
+  "MenuIcon": "bolt",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 3
+}

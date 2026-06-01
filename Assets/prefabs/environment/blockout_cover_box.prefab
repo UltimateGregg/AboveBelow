@@ -1,0 +1,55 @@
+{
+  "RootObject": {
+    "__guid": "e5ab31b1-023b-47b3-a709-cbf75f38ad45",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "BlockoutCoverBox",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [
+      {
+        "__type": "Sandbox.ModelRenderer",
+        "__guid": "75a8ca35-b42d-47ff-a4ad-b3ff86833110",
+        "Flags": 0,
+        "BodyGroups": 18446744073709551615,
+        "Model": "models/dev/box.vmdl",
+        "MaterialOverride": "materials/arena/concrete_wall.vmat",
+        "RenderType": "On",
+        "Tint": "1,1,1,1"
+      },
+      {
+        "__type": "Sandbox.BoxCollider",
+        "__guid": "3a6c9324-cb29-4c46-9dfb-a7267c99881f",
+        "Flags": 0,
+        "Center": "0,0,0",
+        "Scale": "50,50,50",
+        "Static": true,
+        "IsTrigger": false
+      }
+    ],
+    "Children": [],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Environment/BlockoutCoverBox",
+  "MenuIcon": "view_in_ar",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

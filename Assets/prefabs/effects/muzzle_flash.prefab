@@ -1,0 +1,44 @@
+{
+  "RootObject": {
+    "__guid": "c35f32c0-5d3c-5f6f-8e5f-c35d1b6a7101",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "MuzzleFlash",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.MuzzleFlashVisual",
+        "__guid": "970a4bea-1cd4-5f26-a849-fd92d4e48b21",
+        "__enabled": true,
+        "EndSize": "72,54",
+        "FlashColor": "1,0.72,0.18,0.95",
+        "Flags": 0,
+        "Lifetime": 0.055,
+        "LightRadius": 150,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "SpriteTexturePath": "materials/skybox/blinding_sun_glow.png",
+        "StartSize": "42,32"
+      }
+    ],
+    "Children": []
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Effects/Muzzle Flash",
+  "MenuIcon": "flare",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 3
+}

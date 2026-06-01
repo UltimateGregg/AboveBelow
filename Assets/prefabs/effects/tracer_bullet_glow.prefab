@@ -1,0 +1,47 @@
+{
+  "RootObject": {
+    "__guid": "4f5347a6-8e10-57f4-bd4d-8825d60d8d01",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "TracerBulletGlow",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "Sandbox.SpriteRenderer",
+        "__guid": "7c65afeb-80ed-54e8-9c1a-9cb8be0b4d01",
+        "__enabled": true,
+        "Additive": true,
+        "Billboard": "Always",
+        "Color": "1,0.9,0.28,0.95",
+        "Flags": 0,
+        "FogStrength": 0,
+        "IsSorted": false,
+        "Lighting": false,
+        "Opaque": false,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "Shadows": false,
+        "Size": "5,5"
+      }
+    ],
+    "Children": []
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Effects/Tracer Bullet Glow",
+  "MenuIcon": "flare",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 3
+}

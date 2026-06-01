@@ -22,6 +22,10 @@ public sealed class HitscanWeapon : Component
 	[Property] public float RecoilDegrees { get; set; } = 0.4f;
 	[Property, Range( 0f, 20f )] public float HipSpreadDegrees { get; set; } = 0f;
 	[Property, Range( 0f, 20f )] public float AdsSpreadDegrees { get; set; } = 0f;
+	[Property, Range( 0f, 8f )] public float SpreadImpulseDegrees { get; set; } = 0.45f;
+	[Property, Range( 0f, 10f )] public float MaxDynamicSpreadDegrees { get; set; } = 3.5f;
+	[Property, Range( 0.05f, 2f )] public float SpreadRecoverySeconds { get; set; } = 0.45f;
+	[Property, Range( 0f, 1f )] public float AdsDynamicSpreadScale { get; set; } = 0.45f;
 	[Property] public int MagazineSize { get; set; } = 30;
 	[Property] public int StartingReserveAmmo { get; set; } = 120;
 	[Property] public float ReloadSeconds { get; set; } = 1.65f;
@@ -61,6 +65,7 @@ public sealed class HitscanWeapon : Component
 
 	TimeSince _timeSinceFire = 10f;
 	TimeSince _timeSinceMuzzleFlash = 10f;
+	float _dynamicSpreadDegrees;
 
 	// Reload step scheduling. Reset to false on BeginReload, flipped to true as
 	// each step's elapsed time is reached during OnUpdate.
@@ -78,6 +83,7 @@ public sealed class HitscanWeapon : Component
 		? 1f
 		: (1f - ReloadRemaining / ReloadSeconds).Clamp( 0f, 1f );
 	public float ReadyFraction => IsReloading ? ReloadReadyFraction : CooldownReadyFraction;
+	public float CurrentAimBloom => _dynamicSpreadDegrees;
 	public string AmmoDisplay => IsReloading
 		? $"RELOAD {ReloadRemaining:0.0}s"
 		: $"{AmmoInMagazine}/{AmmoReserve}";
@@ -98,6 +104,7 @@ public sealed class HitscanWeapon : Component
 		UpdateReloadStepSounds();
 		UpdateMuzzleFlash();
 		UpdateWeaponPose();
+		UpdateDynamicSpread();
 
 		if ( IsProxy ) return;
 		if ( !IsSelected ) return;
@@ -117,6 +124,11 @@ public sealed class HitscanWeapon : Component
 				RequestFire( GetFireOrigin( pc ), pc.EyeAngles.ToRotation().Forward );
 				// Camera-only recoil kick. RecoilDegrees up + small random yaw drift.
 				pc.AddRecoil( RecoilDegrees, Random.Shared.Float( -RecoilDegrees * 0.3f, RecoilDegrees * 0.3f ) );
+				pc.AddShotNoise(
+					RecoilDegrees * 0.18f,
+					Random.Shared.Float( -RecoilDegrees * 0.12f, RecoilDegrees * 0.12f ),
+					Random.Shared.Float( -RecoilDegrees * 0.35f, RecoilDegrees * 0.35f ) );
+				AddClientPredictedSpreadImpulse();
 				_timeSinceFire = 0f;
 			}
 		}
@@ -153,6 +165,33 @@ public sealed class HitscanWeapon : Component
 		AmmoReserve -= loaded;
 		IsReloading = false;
 		ReloadFinishTime = 0f;
+	}
+
+	void UpdateDynamicSpread()
+	{
+		if ( _dynamicSpreadDegrees <= 0f )
+			return;
+
+		var recoverySeconds = MathF.Max( 0.05f, SpreadRecoverySeconds );
+		var decay = 1f - MathF.Exp( -Time.Delta / recoverySeconds );
+		_dynamicSpreadDegrees = MathX.Lerp( _dynamicSpreadDegrees, 0f, decay );
+		if ( _dynamicSpreadDegrees < 0.01f )
+			_dynamicSpreadDegrees = 0f;
+	}
+
+	void AddSpreadImpulse()
+	{
+		_dynamicSpreadDegrees = MathF.Min(
+			MathF.Max( 0f, MaxDynamicSpreadDegrees ),
+			_dynamicSpreadDegrees + MathF.Max( 0f, SpreadImpulseDegrees ) );
+	}
+
+	void AddClientPredictedSpreadImpulse()
+	{
+		if ( !Networking.IsActive || Networking.IsHost )
+			return;
+
+		AddSpreadImpulse();
 	}
 
 	void BeginReload()
@@ -235,6 +274,7 @@ public sealed class HitscanWeapon : Component
 
 		Fire( requestedOrigin, aimDirection );
 		AmmoInMagazine = Math.Max( 0, AmmoInMagazine - 1 );
+		AddSpreadImpulse();
 		_timeSinceFire = 0f;
 
 		if ( AmmoInMagazine <= 0 )
@@ -334,7 +374,7 @@ public sealed class HitscanWeapon : Component
 		var dir = aimDirection.IsNearZeroLength
 			? pc.EyeAngles.ToRotation().Forward
 			: aimDirection.Normal;
-		dir = ApplySpread( dir, pc.IsAds ? AdsSpreadDegrees : HipSpreadDegrees );
+		dir = ApplySpread( dir, CurrentSpreadDegrees( pc ) );
 
 		var tr = Scene.Trace
 			.Ray( origin, origin + dir * MaxRange )
@@ -375,6 +415,13 @@ public sealed class HitscanWeapon : Component
 		var pitch = MathF.Sin( angle ) * radius;
 
 		return (lookRot * Rotation.From( pitch, yaw, 0f )).Forward;
+	}
+
+	float CurrentSpreadDegrees( GroundPlayerController pc )
+	{
+		var baseSpread = pc.IsValid() && pc.IsAds ? AdsSpreadDegrees : HipSpreadDegrees;
+		var dynamicScale = pc.IsValid() && pc.IsAds ? AdsDynamicSpreadScale : 1f;
+		return MathF.Max( 0f, baseSpread + _dynamicSpreadDegrees * dynamicScale );
 	}
 
 	[Rpc.Broadcast]
@@ -468,6 +515,10 @@ public sealed class HitscanWeapon : Component
 				line.UseVectorPoints = true;
 				line.VectorPoints = new System.Collections.Generic.List<Vector3> { from, to };
 			}
+		}
+		else
+		{
+			BallisticTracerRenderer.Spawn( Scene, from, to );
 		}
 	}
 

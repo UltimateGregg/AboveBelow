@@ -29,7 +29,8 @@
         "IsSprinting": false,
         "FootstepSound": "sounds/footstep.sound",
         "JumpSound": "sounds/jump_grunt.sound",
-        "LandSound": "sounds/land_thud.sound"
+        "LandSound": "sounds/land_thud.sound",
+        "SlideSound": "sounds/slide_scrape.sound"
       },
       {
         "__type": "DroneVsPlayers.Health",
@@ -89,7 +90,7 @@
                 "__guid": "33333333-a000-3100-0000-000000000001",
                 "Damage": 18,
                 "MaxRange": 8000,
-                "FireInterval": 0.12,
+                "FireInterval": 0.08,
                 "RecoilDegrees": 0.4,
                 "MagazineSize": 30,
                 "StartingReserveAmmo": 120,

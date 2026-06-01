@@ -16,6 +16,7 @@ namespace DroneVsPlayers;
 [Icon( "link" )]
 public sealed class PilotLink : Component
 {
+	const string DefaultExplosionPrefabPath = "prefabs/engine/explosion_med.prefab";
 	const string DefaultExplosionSoundPath = "sounds/grenade_explosion.sound";
 
 	[Property] public DroneController Drone { get; set; }
@@ -114,9 +115,10 @@ public sealed class PilotLink : Component
 	[Rpc.Broadcast]
 	void BroadcastExplosionFx( Vector3 center )
 	{
-		if ( ExplosionPrefab.IsValid() )
+		var explosionPrefab = ResolveExplosionPrefab();
+		if ( explosionPrefab.IsValid() )
 		{
-			ExplosionPrefab.Clone( center );
+			explosionPrefab.Clone( center );
 		}
 		else
 		{
@@ -127,6 +129,14 @@ public sealed class PilotLink : Component
 			Sound.Play( ExplosionSound, center );
 		else
 			Sound.Play( DefaultExplosionSoundPath, center );
+	}
+
+	GameObject ResolveExplosionPrefab()
+	{
+		if ( ExplosionPrefab.IsValid() )
+			return ExplosionPrefab;
+
+		return GameObject.GetPrefab( DefaultExplosionPrefabPath );
 	}
 
 	void HookPilotHealth()

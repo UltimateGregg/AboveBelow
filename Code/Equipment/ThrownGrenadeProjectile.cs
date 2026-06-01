@@ -26,6 +26,7 @@ public sealed class ThrownGrenadeProjectile : Component
 	[Property] public float Elasticity { get; set; } = 0.32f;
 	[Property] public float Friction { get; set; } = 0.8f;
 	[Property] public float RollingResistance { get; set; } = 0.45f;
+	[Property, Range( 0f, 20f )] public float SleepThreshold { get; set; } = 2f;
 	[Property] public float SpinMin { get; set; } = 420f;
 	[Property] public float SpinMax { get; set; } = 980f;
 	[Property] public float OwnerCollisionGraceSeconds { get; set; } = 0.12f;
@@ -48,6 +49,7 @@ public sealed class ThrownGrenadeProjectile : Component
 		float elasticity,
 		float friction,
 		float rollingResistance,
+		float sleepThreshold,
 		float spinMin,
 		float spinMax,
 		float ownerCollisionGraceSeconds )
@@ -64,6 +66,7 @@ public sealed class ThrownGrenadeProjectile : Component
 		Elasticity = MathF.Max( 0f, elasticity );
 		Friction = MathF.Max( 0f, friction );
 		RollingResistance = MathF.Max( 0f, rollingResistance );
+		SleepThreshold = MathF.Max( 0f, sleepThreshold );
 		SpinMin = MathF.Max( 0f, MathF.Min( spinMin, spinMax ) );
 		SpinMax = MathF.Max( SpinMin, MathF.Max( spinMin, spinMax ) );
 		OwnerCollisionGraceSeconds = MathF.Max( 0f, ownerCollisionGraceSeconds );
@@ -137,6 +140,7 @@ public sealed class ThrownGrenadeProjectile : Component
 		Body.MotionEnabled = true;
 		Body.StartAsleep = false;
 		Body.EnhancedCcd = true;
+		Body.SleepThreshold = SleepThreshold;
 
 		if ( applyInitialVelocity )
 		{

@@ -44,6 +44,23 @@ public sealed class GrenadeEffectVisual : Component
 		visual.Configure( kind, radius );
 	}
 
+	public static bool TrySpawnPrefab( GameObject prefab, Vector3 center, GrenadeEffectKind kind, float radius )
+	{
+		if ( !prefab.IsValid() )
+			return false;
+
+		var clone = prefab.Clone( center );
+		if ( !clone.IsValid() )
+			return false;
+
+		clone.NetworkMode = NetworkMode.Never;
+		var visual = clone.Components.Get<GrenadeEffectVisual>( FindMode.EverythingInSelfAndDescendants );
+		if ( visual.IsValid() )
+			visual.Configure( kind, radius );
+
+		return true;
+	}
+
 	void Configure( GrenadeEffectKind kind, float radius )
 	{
 		_timeSinceSpawn = 0f;

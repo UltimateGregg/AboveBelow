@@ -23,6 +23,9 @@ public sealed class ShotgunWeapon : Component
 	[Property] public float MaxRange { get; set; } = 2400f;
 	[Property] public float FireInterval { get; set; } = 0.7f;
 	[Property] public float RecoilDegrees { get; set; } = 1.4f;
+	[Property, Range( 0f, 10f )] public float SpreadImpulseDegrees { get; set; } = 2.0f;
+	[Property, Range( 0f, 12f )] public float MaxDynamicSpreadDegrees { get; set; } = 5.0f;
+	[Property, Range( 0.05f, 2f )] public float SpreadRecoverySeconds { get; set; } = 0.65f;
 	[Property] public int MagazineSize { get; set; } = 6;
 	[Property] public int StartingReserveAmmo { get; set; } = 24;
 	[Property] public float ReloadSeconds { get; set; } = 2.4f;
@@ -56,6 +59,7 @@ public sealed class ShotgunWeapon : Component
 
 	TimeSince _timeSinceFire = 10f;
 	TimeSince _timeSinceReloadStart = 10f;
+	float _dynamicSpreadDegrees;
 
 	public bool IsSelected => WeaponPose.IsSlotSelected( this, Slot );
 	public bool IsReady => IsSelected && !IsReloading && AmmoInMagazine > 0 && CooldownRemaining <= 0f;
@@ -68,6 +72,7 @@ public sealed class ShotgunWeapon : Component
 		? 1f
 		: (1f - ReloadRemaining / ReloadSeconds).Clamp( 0f, 1f );
 	public float ReadyFraction => IsReloading ? ReloadReadyFraction : CooldownReadyFraction;
+	public float CurrentAimBloom => MathF.Max( 0f, SpreadDegrees * 0.25f + _dynamicSpreadDegrees );
 	public string AmmoDisplay => IsReloading
 		? $"RELOAD {ReloadRemaining:0.0}s"
 		: $"{AmmoInMagazine}/{AmmoReserve}";
@@ -84,6 +89,7 @@ public sealed class ShotgunWeapon : Component
 	{
 		ResolvePrefabReferences();
 		CompleteReloadIfReady();
+		UpdateDynamicSpread();
 
 		if ( ApplySelectionVisualState() )
 		{
@@ -115,6 +121,11 @@ public sealed class ShotgunWeapon : Component
 			{
 				RequestFire( GetFireOrigin( pc ), pc.EyeAngles.ToRotation().Forward );
 				pc.AddRecoil( RecoilDegrees, Random.Shared.Float( -RecoilDegrees * 0.25f, RecoilDegrees * 0.25f ) );
+				pc.AddShotNoise(
+					RecoilDegrees * 0.22f,
+					Random.Shared.Float( -RecoilDegrees * 0.10f, RecoilDegrees * 0.10f ),
+					Random.Shared.Float( -RecoilDegrees * 0.45f, RecoilDegrees * 0.45f ) );
+				AddClientPredictedSpreadImpulse();
 			}
 			_timeSinceFire = 0f;
 		}
@@ -174,6 +185,33 @@ public sealed class ShotgunWeapon : Component
 		ReloadFinishTime = 0f;
 	}
 
+	void UpdateDynamicSpread()
+	{
+		if ( _dynamicSpreadDegrees <= 0f )
+			return;
+
+		var recoverySeconds = MathF.Max( 0.05f, SpreadRecoverySeconds );
+		var decay = 1f - MathF.Exp( -Time.Delta / recoverySeconds );
+		_dynamicSpreadDegrees = MathX.Lerp( _dynamicSpreadDegrees, 0f, decay );
+		if ( _dynamicSpreadDegrees < 0.01f )
+			_dynamicSpreadDegrees = 0f;
+	}
+
+	void AddSpreadImpulse()
+	{
+		_dynamicSpreadDegrees = MathF.Min(
+			MathF.Max( 0f, MaxDynamicSpreadDegrees ),
+			_dynamicSpreadDegrees + MathF.Max( 0f, SpreadImpulseDegrees ) );
+	}
+
+	void AddClientPredictedSpreadImpulse()
+	{
+		if ( !Networking.IsActive || Networking.IsHost )
+			return;
+
+		AddSpreadImpulse();
+	}
+
 	void BeginReload()
 	{
 		if ( IsReloading ) return;
@@ -220,6 +258,7 @@ public sealed class ShotgunWeapon : Component
 
 		Fire( requestedOrigin, aimDirection );
 		AmmoInMagazine = Math.Max( 0, AmmoInMagazine - 1 );
+		AddSpreadImpulse();
 		_timeSinceFire = 0f;
 
 		if ( AmmoInMagazine <= 0 )
@@ -255,12 +294,13 @@ public sealed class ShotgunWeapon : Component
 		var lookRot = Rotation.LookAt( aim );
 		var attackerId = DamageAttribution.OwnerConnectionId( pc.GameObject );
 		var shotRotation = Random.Shared.Float( 0f, 360f );
+		var spreadDegrees = MathF.Max( 0f, SpreadDegrees + _dynamicSpreadDegrees );
 
 		PlayFireFx( origin, lookRot.Forward );
 
 		for ( int i = 0; i < PelletCount; i++ )
 		{
-			var dir = PelletDirection( lookRot, i, PelletCount, shotRotation );
+			var dir = PelletDirection( lookRot, i, PelletCount, shotRotation, spreadDegrees );
 
 			var tr = Scene.Trace
 				.Ray( origin, origin + dir * MaxRange )
@@ -303,13 +343,13 @@ public sealed class ShotgunWeapon : Component
 		ImpactEffects.Spawn( position, kind );
 	}
 
-	Vector3 PelletDirection( Rotation lookRot, int pelletIndex, int pelletCount, float shotRotation )
+	Vector3 PelletDirection( Rotation lookRot, int pelletIndex, int pelletCount, float shotRotation, float spreadDegrees )
 	{
-		if ( pelletCount <= 1 || SpreadDegrees <= 0f )
+		if ( pelletCount <= 1 || spreadDegrees <= 0f )
 			return lookRot.Forward;
 
 		var t = (pelletIndex + 0.5f) / pelletCount;
-		var radius = MathF.Sqrt( t ) * SpreadDegrees;
+		var radius = MathF.Sqrt( t ) * spreadDegrees;
 		var angle = (shotRotation + pelletIndex * 137.50777f) * (MathF.PI / 180f);
 		var yaw = MathF.Cos( angle ) * radius;
 		var pitch = MathF.Sin( angle ) * radius;
@@ -358,6 +398,10 @@ public sealed class ShotgunWeapon : Component
 				line.UseVectorPoints = true;
 				line.VectorPoints = new System.Collections.Generic.List<Vector3> { from, to };
 			}
+		}
+		else
+		{
+			BallisticTracerRenderer.Spawn( Scene, from, to, 0.65f );
 		}
 	}
 }

@@ -1,0 +1,75 @@
+{
+  "RootObject": {
+    "__guid": "7cbf3454-fd17-55f7-b730-92003763565a",
+    "Flags": 0,
+    "Name": "Grenade",
+    "Position": "12,14,48",
+    "Enabled": true,
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.EmpGrenade",
+        "__guid": "ada8d788-be61-48c4-30d0-382a438f2269",
+        "Radius": 1100,
+        "JamDuration": 6,
+        "Strength": 1,
+        "FuseSeconds": 2.5,
+        "ThrowRange": 950,
+        "Cooldown": 8,
+        "ThrowInput": "Attack1",
+        "ThrowSound": "sounds/grenade_throw.sound",
+        "DetonateSound": "sounds/grenade_explosion.sound",
+        "Slot": 2,
+        "FirstPersonOffset": "28,8,-10",
+        "FirstPersonRotationOffset": "0,0,0",
+        "ThirdPersonLocalPosition": "12,14,48",
+        "ThirdPersonLocalAngles": "0,0,0"
+      },
+      {
+        "__type": "Sandbox.ModelRenderer",
+        "__guid": "4d4f8ff0-7f17-4663-1793-a0ffb068bcf6",
+        "BodyGroups": 18446744073709552000,
+        "Model": "models/emp_grenade.vmdl",
+        "RenderType": "On",
+        "Tint": "1,1,1,1"
+      }
+    ],
+    "Children": [
+      {
+        "__guid": "7ac9deb4-4cad-5f91-e63c-a10f7336c0a3",
+        "Flags": 0,
+        "Name": "LeftHandIk",
+        "Position": "3,-5,1",
+        "Enabled": true,
+        "Components": []
+      },
+      {
+        "__guid": "f3e2fd08-947c-350a-3aaf-b6d48baff1ef",
+        "Flags": 0,
+        "Name": "RightHandIk",
+        "Position": "3,5,1",
+        "Enabled": true,
+        "Components": []
+      }
+    ],
+    "NetworkMode": 0,
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": true,
+  "MenuPath": "Drone vs Players/Held Items/EMP Grenade",
+  "MenuIcon": "bolt",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

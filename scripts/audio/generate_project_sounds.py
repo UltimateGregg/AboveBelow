@@ -299,6 +299,15 @@ def footstep(seed: int) -> list[float]:
     return render(0.18, build, peak=0.24)
 
 
+def slide_scrape() -> list[float]:
+    def build(b):
+        add_filtered_noise(b, 0.000, 0.760, 0.20, 3001, lowpass=0.055, highpass=0.040, attack=0.030, release=0.160, curve=0.80)
+        add_filtered_noise(b, 0.035, 0.590, 0.12, 3002, lowpass=0.160, highpass=0.110, attack=0.010, release=0.120, curve=1.00)
+        add_tone(b, 0.025, 0.650, 82, 48, 0.075, attack=0.020, release=0.180, curve=1.20)
+        add_debris(b, 10, 0.075, 0.570, 0.032, 3003)
+    return render(0.82, build, peak=0.42)
+
+
 def jump_grunt() -> list[float]:
     def build(b):
         add_filtered_noise(b, 0.000, 0.130, 0.16, 2801, lowpass=0.07, highpass=0.04, release=0.070, curve=1.8)
@@ -625,6 +634,7 @@ SOUNDS = {
     "mag_insert.wav": mag_insert,
     "round_start_swell.wav": round_swell,
     "shotgun_fire.wav": shotgun_fire,
+    "slide_scrape.wav": slide_scrape,
     "ui_hitmarker.wav": lambda: hitmarker(False),
     "ui_hitmarker_kill.wav": lambda: hitmarker(True),
     "ui_menu_click.wav": ui_menu_click,

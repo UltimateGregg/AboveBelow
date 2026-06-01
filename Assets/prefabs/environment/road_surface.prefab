@@ -1,0 +1,55 @@
+{
+  "RootObject": {
+    "__guid": "c1ad6867-8584-4d85-9275-62025a482346",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "RoadSurface",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "7.19999981,109.264961,1",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "Sandbox.ModelRenderer",
+        "__guid": "230f49ff-850b-4214-aac9-82da4bcb6ca9",
+        "__enabled": true,
+        "Flags": 0,
+        "BodyGroups": 18446744073709552000,
+        "CreateAttachments": false,
+        "LodOverride": null,
+        "MaterialGroup": null,
+        "MaterialOverride": "materials/arena/asphalt_cover.vmat",
+        "Materials": null,
+        "Model": "models/dev/plane.vmdl",
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "RenderOptions": {
+          "GameLayer": true,
+          "OverlayLayer": false,
+          "BloomLayer": false,
+          "AfterUILayer": false
+        },
+        "RenderType": "On",
+        "Tint": "1,1,1,1"
+      }
+    ],
+    "Children": []
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Above Below/Environment/Road Surface",
+  "MenuIcon": "road",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

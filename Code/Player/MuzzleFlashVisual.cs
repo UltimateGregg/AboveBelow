@@ -12,6 +12,7 @@ namespace DroneVsPlayers;
 public sealed class MuzzleFlashVisual : Component
 {
 	const string DefaultSpriteTexture = "materials/skybox/blinding_sun_glow.png";
+	const string DefaultPrefabPath = "prefabs/effects/muzzle_flash.prefab";
 
 	[Property, Range( 0.02f, 0.2f )] public float Lifetime { get; set; } = 0.055f;
 	[Property] public string SpriteTexturePath { get; set; } = DefaultSpriteTexture;
@@ -35,10 +36,26 @@ public sealed class MuzzleFlashVisual : Component
 			return;
 
 		var dir = direction.Normal;
+		var flashPosition = origin + dir * 10f;
+		var flashRotation = Rotation.LookAt( dir );
+		var prefab = GameObject.GetPrefab( DefaultPrefabPath );
+		if ( prefab.IsValid() )
+		{
+			var clone = prefab.Clone( new Transform( flashPosition, flashRotation ), name: "Muzzle Flash" );
+			var prefabFlash = clone.Components.Get<MuzzleFlashVisual>( FindMode.EverythingInSelfAndDescendants );
+			if ( prefabFlash.IsValid() )
+			{
+				prefabFlash.Configure( scale );
+				return;
+			}
+
+			clone.Destroy();
+		}
+
 		var flashObject = new GameObject( true, "Muzzle Flash" )
 		{
-			WorldPosition = origin + dir * 10f,
-			WorldRotation = Rotation.LookAt( dir )
+			WorldPosition = flashPosition,
+			WorldRotation = flashRotation
 		};
 
 		var flash = flashObject.Components.Create<MuzzleFlashVisual>();

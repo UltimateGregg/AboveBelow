@@ -62,8 +62,8 @@ Require-Match "GroundPlayerController should clear latched sprint when stamina i
 Require-Match "GroundPlayerController should clear latched sprint when movement input stops." `
     $controller "if\s*\(\s*!hasMoveInput\s*\)[\s\S]{0,90}_sprintToggled\s*=\s*false"
 
-Require-Match "GroundPlayerController should use the faster arcade sprint limit." `
-    $controller "StaminaMaxSeconds\s*\{\s*get;\s*set;\s*\}\s*=\s*4f"
+Require-Match "GroundPlayerController should let every character sprint for the doubled arcade duration." `
+    $controller "StaminaMaxSeconds\s*\{\s*get;\s*set;\s*\}\s*=\s*8f"
 
 Require-Match "GroundPlayerController should use the faster arcade sprint recovery." `
     $controller "StaminaRefillSeconds\s*\{\s*get;\s*set;\s*\}\s*=\s*3f"

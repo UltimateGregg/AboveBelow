@@ -1,0 +1,48 @@
+{
+  "RootObject": {
+    "__guid": "69553501-c8fa-90f8-c5f9-e303bd597ed7",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "LaunchPadGlowLight",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "light_point,light",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "Sandbox.PointLight",
+        "__guid": "95db9251-e158-8e8f-dba4-1cc49608055a",
+        "__enabled": true,
+        "Flags": 0,
+        "Attenuation": 1,
+        "FogMode": "Enabled",
+        "FogStrength": 1,
+        "LightColor": "0.2,0.9,1,1",
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "Radius": 420,
+        "ShadowBias": 0.0005,
+        "ShadowHardness": 0,
+        "Shadows": true
+      }
+    ],
+    "Children": []
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Environment/LaunchPadGlowLight",
+  "MenuIcon": "lightbulb",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

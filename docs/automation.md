@@ -115,6 +115,19 @@ This hook catches unsafe documentation close to the edit that introduced it:
 
 It is docs-and-agent only. It does not compile code, change assets, mutate prefabs, or run broad product checks.
 
+## Documentation Hook: S&Box Code Search Intake Check
+
+**Hook ID:** `sbox-code-search-check`
+**Configuration file:** `./.claude/settings.json`
+**Trigger:** Code Search docs, agent routing docs, suite wiring, self-test fixtures, or `sbox_code_search_audit.ps1` are saved.
+**Action:** Runs:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Root . -Suite code-search -ShowInfo
+```
+
+This hook keeps `https://sbox.game/codesearch` available as a public-package pattern resource while making future agents verify exact C# symbols through `API.json`, official API pages, docs source, local project code, or editor proof before implementation.
+
 ### Developer Workflow
 
 #### Before (Manual)

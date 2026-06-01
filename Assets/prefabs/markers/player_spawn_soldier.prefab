@@ -1,0 +1,36 @@
+{
+  "RootObject": {
+    "__guid": "6c1dd512-7b9c-5a4d-92df-d0d83b67a101",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "PlayerSpawn_Soldier",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "PlayerSpawn",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.PlayerSpawn",
+        "__guid": "9baf65e1-2287-5e5d-91c7-9e76c5051d11",
+        "__enabled": true,
+        "Flags": 0,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "Priority": 0,
+        "Role": "Soldier"
+      }
+    ],
+    "Children": []
+  },
+  "ResourceVersion": 3
+}

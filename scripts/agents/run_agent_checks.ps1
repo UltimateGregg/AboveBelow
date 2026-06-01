@@ -1,6 +1,6 @@
 param(
     [string]$Root = "",
-    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "scene", "terrain", "collision", "collision-chain", "asset", "asset-production", "modeldoc", "blender-live", "sound", "networking", "gameplay-regression", "docs", "api", "sbox-docs", "release-notes", "learn", "editor-node-tool", "editor-first", "balance", "playtest", "logs", "readiness", "train", "self-test")]
+    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "held-items", "scene-markers", "buildings", "readability-lights", "ambient-sounds", "ballistic-tracers", "stock-scene-props", "transient-combat", "scene", "blue-lines", "terrain", "collision", "collision-chain", "nav", "asset", "asset-production", "modeldoc", "blender-live", "sound", "networking", "gameplay-regression", "docs", "api", "sbox-docs", "release-notes", "code-search", "learn", "editor-node-tool", "editor-first", "balance", "playtest", "logs", "readiness", "train", "self-test")]
     [string]$Suite = "quick",
     [switch]$ShowInfo,
     [switch]$FailOnWarning
@@ -41,6 +41,11 @@ if ($FailOnWarning) {
     $commonArgs += "-FailOnWarning"
 }
 
+$sceneMarkerArgs = $commonArgs + "-RequireMigrated"
+$buildingSceneArgs = $commonArgs + "-RequireMigrated"
+$readabilityLightArgs = $commonArgs + "-RequireMigrated"
+$ambientSoundArgs = $commonArgs + "-RequireMigrated"
+
 $quickLogArgs = @("-Root", $Root, "-ShowInfo")
 if ($FailOnWarning) {
     $quickLogArgs += "-FailOnWarning"
@@ -53,12 +58,23 @@ switch ($Suite) {
             @{ Name = "build_log_sentinel.ps1"; Args = $commonArgs },
             @{ Name = "sbox_whitelist_audit.ps1"; Args = $commonArgs },
             @{ Name = "gameplay_regression_guard.ps1"; Args = $commonArgs },
+            @{ Name = "m4_fire_rate_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs },
+            @{ Name = "held_item_prefab_template_audit.ps1"; Args = $commonArgs },
+            @{ Name = "scene_marker_prefab_audit.ps1"; Args = $sceneMarkerArgs },
+            @{ Name = "stock_scene_prop_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "building_scene_prefab_audit.ps1"; Args = $buildingSceneArgs },
+            @{ Name = "readability_light_scene_prefab_audit.ps1"; Args = $readabilityLightArgs },
+            @{ Name = "ambient_sound_scene_prefab_audit.ps1"; Args = $ambientSoundArgs },
+            @{ Name = "ballistic_tracer_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "transient_combat_prefab_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs },
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
+            @{ Name = "blockout_blue_line_audit.ps1"; Args = $commonArgs },
             @{ Name = "terrain_floor_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
             @{ Name = "tree_collision_audit.ps1"; Args = $commonArgs },
+            @{ Name = "nav_collision_qa_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs },
             @{ Name = "aaa_asset_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
@@ -74,6 +90,8 @@ switch ($Suite) {
             @{ Name = "sbox_docs_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_release_notes_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_code_search_audit.ps1"; Args = $commonArgs },
+            @{ Name = "code_search_feature_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
@@ -88,12 +106,23 @@ switch ($Suite) {
             @{ Name = "build_log_sentinel.ps1"; Args = $commonArgs },
             @{ Name = "sbox_whitelist_audit.ps1"; Args = $commonArgs },
             @{ Name = "gameplay_regression_guard.ps1"; Args = $commonArgs },
+            @{ Name = "m4_fire_rate_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs },
+            @{ Name = "held_item_prefab_template_audit.ps1"; Args = $commonArgs },
+            @{ Name = "scene_marker_prefab_audit.ps1"; Args = $sceneMarkerArgs },
+            @{ Name = "stock_scene_prop_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "building_scene_prefab_audit.ps1"; Args = $buildingSceneArgs },
+            @{ Name = "readability_light_scene_prefab_audit.ps1"; Args = $readabilityLightArgs },
+            @{ Name = "ambient_sound_scene_prefab_audit.ps1"; Args = $ambientSoundArgs },
+            @{ Name = "ballistic_tracer_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "transient_combat_prefab_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs },
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
+            @{ Name = "blockout_blue_line_audit.ps1"; Args = $commonArgs },
             @{ Name = "terrain_floor_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
             @{ Name = "tree_collision_audit.ps1"; Args = $commonArgs },
+            @{ Name = "nav_collision_qa_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs },
             @{ Name = "aaa_asset_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
@@ -110,6 +139,8 @@ switch ($Suite) {
             @{ Name = "sbox_docs_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_release_notes_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_code_search_audit.ps1"; Args = $commonArgs },
+            @{ Name = "code_search_feature_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
@@ -137,14 +168,31 @@ switch ($Suite) {
     "prefab" {
         $scripts = @(
             @{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs },
+            @{ Name = "held_item_prefab_template_audit.ps1"; Args = $commonArgs },
+            @{ Name = "scene_marker_prefab_audit.ps1"; Args = $sceneMarkerArgs },
+            @{ Name = "stock_scene_prop_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "building_scene_prefab_audit.ps1"; Args = $buildingSceneArgs },
+            @{ Name = "readability_light_scene_prefab_audit.ps1"; Args = $readabilityLightArgs },
+            @{ Name = "ambient_sound_scene_prefab_audit.ps1"; Args = $ambientSoundArgs },
+            @{ Name = "ballistic_tracer_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "transient_combat_prefab_audit.ps1"; Args = $commonArgs },
             @{ Name = "destroyed_pickup_prefab_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_visual_quality_audit.ps1"; Args = $commonArgs }
         )
     }
     "prefab-graph" { $scripts = @(@{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs }) }
+    "held-items" { $scripts = @(@{ Name = "held_item_prefab_template_audit.ps1"; Args = $commonArgs }) }
+    "scene-markers" { $scripts = @(@{ Name = "scene_marker_prefab_audit.ps1"; Args = $sceneMarkerArgs }) }
+    "buildings" { $scripts = @(@{ Name = "building_scene_prefab_audit.ps1"; Args = $buildingSceneArgs }) }
+    "readability-lights" { $scripts = @(@{ Name = "readability_light_scene_prefab_audit.ps1"; Args = $readabilityLightArgs }) }
+    "ambient-sounds" { $scripts = @(@{ Name = "ambient_sound_scene_prefab_audit.ps1"; Args = $ambientSoundArgs }) }
+    "ballistic-tracers" { $scripts = @(@{ Name = "ballistic_tracer_prefab_audit.ps1"; Args = $commonArgs }) }
+    "stock-scene-props" { $scripts = @(@{ Name = "stock_scene_prop_prefab_audit.ps1"; Args = $commonArgs }) }
+    "transient-combat" { $scripts = @(@{ Name = "transient_combat_prefab_audit.ps1"; Args = $commonArgs }) }
     "scene" {
         $scripts = @(
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
+            @{ Name = "blockout_blue_line_audit.ps1"; Args = $commonArgs },
             @{ Name = "terrain_floor_audit.ps1"; Args = $commonArgs },
             @{ Name = "floating_center_ladder_audit.ps1"; Args = $commonArgs },
             @{ Name = "sandbag_cover_audit.ps1"; Args = $commonArgs },
@@ -152,21 +200,28 @@ switch ($Suite) {
             @{ Name = "road_lane_marking_audit.ps1"; Args = $commonArgs },
             @{ Name = "road_edge_wear_audit.ps1"; Args = $commonArgs },
             @{ Name = "destroyed_pickup_scene_audit.ps1"; Args = $commonArgs },
+            @{ Name = "building_scene_prefab_audit.ps1"; Args = $buildingSceneArgs },
+            @{ Name = "readability_light_scene_prefab_audit.ps1"; Args = $readabilityLightArgs },
+            @{ Name = "ambient_sound_scene_prefab_audit.ps1"; Args = $ambientSoundArgs },
             @{ Name = "level_layout_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
-            @{ Name = "tree_collision_audit.ps1"; Args = $commonArgs }
+            @{ Name = "tree_collision_audit.ps1"; Args = $commonArgs },
+            @{ Name = "nav_collision_qa_audit.ps1"; Args = $commonArgs }
         )
     }
+    "blue-lines" { $scripts = @(@{ Name = "blockout_blue_line_audit.ps1"; Args = $commonArgs }) }
     "terrain" { $scripts = @(@{ Name = "terrain_floor_audit.ps1"; Args = $commonArgs }) }
     "collision" {
         $scripts = @(
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
             @{ Name = "tree_collision_audit.ps1"; Args = $commonArgs },
+            @{ Name = "nav_collision_qa_audit.ps1"; Args = $commonArgs },
             @{ Name = "floating_center_ladder_audit.ps1"; Args = $commonArgs },
             @{ Name = "level_layout_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs }
         )
     }
+    "nav" { $scripts = @(@{ Name = "nav_collision_qa_audit.ps1"; Args = $commonArgs }) }
     "collision-chain" {
         $scripts = @(
             @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs },
@@ -177,6 +232,7 @@ switch ($Suite) {
         $scripts = @(
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
             @{ Name = "drone_variant_visual_audit.ps1"; Args = $commonArgs },
+            @{ Name = "drone_fpv_propeller_texture_audit.ps1"; Args = $commonArgs },
             @{ Name = "fbx_material_slot_audit.ps1"; Args = $commonArgs }
         )
     }
@@ -193,6 +249,7 @@ switch ($Suite) {
             @{ Name = "material_texture_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
             @{ Name = "drone_variant_visual_audit.ps1"; Args = $commonArgs },
+            @{ Name = "drone_fpv_propeller_texture_audit.ps1"; Args = $commonArgs },
             @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
             @{ Name = "fbx_material_slot_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs },
@@ -215,6 +272,7 @@ switch ($Suite) {
             @{ Name = "sbox_docs_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_release_notes_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_code_search_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
@@ -226,6 +284,15 @@ switch ($Suite) {
     "release-notes" {
         $scripts = @(
             @{ Name = "sbox_release_notes_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs }
+        )
+    }
+    "code-search" {
+        $scripts = @(
+            @{ Name = "sbox_code_search_audit.ps1"; Args = $commonArgs },
+            @{ Name = "code_search_feature_audit.ps1"; Args = $commonArgs },
+            @{ Name = "nav_collision_qa_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs }
         )
@@ -246,7 +313,12 @@ switch ($Suite) {
     }
     "editor-node-tool" { $scripts = @(@{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs }) }
     "editor-first" { $scripts = @(@{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs }) }
-    "balance" { $scripts = @(@{ Name = "balance_tuning_report.ps1"; Args = @("-Root", $Root) }) }
+    "balance" {
+        $scripts = @(
+            @{ Name = "m4_fire_rate_audit.ps1"; Args = $commonArgs },
+            @{ Name = "balance_tuning_report.ps1"; Args = @("-Root", $Root) }
+        )
+    }
     "playtest" { $scripts = @(@{ Name = "playtest_checklist.ps1"; Args = @("-Root", $Root, "-ChangeArea", "All") }) }
     "logs" { $scripts = @(@{ Name = "current_log_audit.ps1"; Args = $commonArgs }) }
     "readiness" { $scripts = @(@{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root, "-ShowFiles") }) }
@@ -257,6 +329,8 @@ switch ($Suite) {
             @{ Name = "sbox_docs_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_release_notes_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_code_search_audit.ps1"; Args = $commonArgs },
+            @{ Name = "code_search_feature_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_api_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },

@@ -23,7 +23,8 @@ $relative = ConvertTo-AgentRelativePath -Path $fullScenePath -Root $Root
 $roadCenterX = 416.190948
 $dashSpacing = 260.0
 $dashEdgeMargin = 260.0
-$boxUnit = 50.0
+$planeHalfUnit = 50.0
+$boxHalfUnit = 25.0
 $positionTolerance = 0.25
 $scaleTolerance = 0.01
 
@@ -78,6 +79,127 @@ function Find-ObjectsByName {
     )
 
     return @($Objects | Where-Object { [string](Get-JsonPropertyValue -Object $_ -Name "Name") -eq $Name })
+}
+
+function Get-PrefabInstanceRootPropertyValue {
+    param(
+        [object]$Instance,
+        [object]$PrefabRoot,
+        [string]$PropertyName
+    )
+
+    $value = Get-JsonPropertyValue -Object $PrefabRoot -Name $PropertyName
+    $rootGuid = [string](Get-JsonPropertyValue -Object $PrefabRoot -Name "__guid")
+    $patch = Get-JsonPropertyValue -Object $Instance -Name "__PrefabInstancePatch"
+    foreach ($override in @((Get-JsonPropertyValue -Object $patch -Name "PropertyOverrides"))) {
+        $target = Get-JsonPropertyValue -Object $override -Name "Target"
+        if ($null -eq $target) {
+            continue
+        }
+
+        $targetType = [string](Get-JsonPropertyValue -Object $target -Name "Type")
+        $targetId = [string](Get-JsonPropertyValue -Object $target -Name "IdValue")
+        $overridePropertyName = [string](Get-JsonPropertyValue -Object $override -Name "Property")
+        if ($targetType -eq "GameObject" -and $targetId -eq $rootGuid -and $overridePropertyName -eq $PropertyName) {
+            $value = Get-JsonPropertyValue -Object $override -Name "Value"
+        }
+    }
+
+    return $value
+}
+
+function Get-PrefabRootForInstance {
+    param(
+        [object]$Instance,
+        [hashtable]$PrefabRootsByPath
+    )
+
+    $prefabPath = [string](Get-JsonPropertyValue -Object $Instance -Name "__Prefab")
+    if ([string]::IsNullOrWhiteSpace($prefabPath)) {
+        return $null
+    }
+
+    if ($PrefabRootsByPath.ContainsKey($prefabPath)) {
+        return $PrefabRootsByPath[$prefabPath]
+    }
+
+    $assetsPath = "Assets/$prefabPath"
+    if ($PrefabRootsByPath.ContainsKey($assetsPath)) {
+        return $PrefabRootsByPath[$assetsPath]
+    }
+
+    return $null
+}
+
+function Get-RoadChildResolvedName {
+    param(
+        [object]$Child,
+        [hashtable]$PrefabRootsByPath
+    )
+
+    $name = [string](Get-JsonPropertyValue -Object $Child -Name "Name")
+    if (-not [string]::IsNullOrWhiteSpace($name)) {
+        return $name
+    }
+
+    $prefabRoot = Get-PrefabRootForInstance -Instance $Child -PrefabRootsByPath $PrefabRootsByPath
+    if ($null -eq $prefabRoot) {
+        return ""
+    }
+
+    return [string](Get-PrefabInstanceRootPropertyValue -Instance $Child -PrefabRoot $prefabRoot -PropertyName "Name")
+}
+
+function Get-RoadChildResolvedProperty {
+    param(
+        [object]$Child,
+        [hashtable]$PrefabRootsByPath,
+        [string]$PropertyName
+    )
+
+    $value = Get-JsonPropertyValue -Object $Child -Name $PropertyName
+    if ($null -ne $value) {
+        return $value
+    }
+
+    $prefabRoot = Get-PrefabRootForInstance -Instance $Child -PrefabRootsByPath $PrefabRootsByPath
+    if ($null -eq $prefabRoot) {
+        return $null
+    }
+
+    return Get-PrefabInstanceRootPropertyValue -Instance $Child -PrefabRoot $prefabRoot -PropertyName $PropertyName
+}
+
+function Find-RoadChildrenByResolvedName {
+    param(
+        [object[]]$Children,
+        [hashtable]$PrefabRootsByPath,
+        [string]$Name
+    )
+
+    return @($Children | Where-Object {
+        (Get-RoadChildResolvedName -Child $_ -PrefabRootsByPath $PrefabRootsByPath) -eq $Name
+    })
+}
+
+function Convert-RoadDashChild {
+    param(
+        [object]$Child,
+        [hashtable]$PrefabRootsByPath
+    )
+
+    $name = Get-RoadChildResolvedName -Child $Child -PrefabRootsByPath $PrefabRootsByPath
+    if ($name.StartsWith("RoadDash_", [System.StringComparison]::Ordinal)) {
+        $position = Get-RoadChildResolvedProperty -Child $Child -PrefabRootsByPath $PrefabRootsByPath -PropertyName "Position"
+        $scale = Get-RoadChildResolvedProperty -Child $Child -PrefabRootsByPath $PrefabRootsByPath -PropertyName "Scale"
+        return [pscustomobject]@{
+            Name = $name
+            Position = Convert-AgentVectorText -Value $position
+            Scale = Convert-AgentVectorText -Value $scale
+        }
+    }
+
+    return $null
 }
 
 function Convert-AgentVectorText {
@@ -153,39 +275,81 @@ if ($roadMatches.Count -ne 1) {
 
 $road = $roadMatches[0]
 $roadChildren = @(Get-ObjectChildren -Object $road)
-$surface = @(Find-ObjectsByName -Objects $roadChildren -Name "RoadSurface_Main")
+$roadPrefabRootsByPath = @{}
+foreach ($roadPrefabRelativePath in @(
+    "Assets\prefabs\environment\road_lane_dash.prefab",
+    "Assets\prefabs\environment\road_surface.prefab",
+    "Assets\prefabs\environment\road_shoulder.prefab",
+    "Assets\prefabs\environment\road_curb.prefab"
+)) {
+    $roadPrefabPath = Join-Path $Root $roadPrefabRelativePath
+    if (Test-Path -LiteralPath $roadPrefabPath) {
+        try {
+            $roadPrefab = Read-AgentJson -Path $roadPrefabPath
+            $rootObject = Get-JsonPropertyValue -Object $roadPrefab -Name "RootObject"
+            $normalizedRelativePath = $roadPrefabRelativePath.Replace("\", "/")
+            $roadPrefabRootsByPath[$normalizedRelativePath] = $rootObject
+            $roadPrefabRootsByPath[$normalizedRelativePath.Replace("Assets/", "")] = $rootObject
+        }
+        catch {
+            $roadPrefabDisplayPath = ConvertTo-AgentRelativePath -Path $roadPrefabPath -Root $Root
+            Add-AgentIssue $issues "Error" "Road Lane Markings" $roadPrefabDisplayPath "Could not parse road prefab JSON: $($_.Exception.Message)" "Fix the prefab before validating prefab-backed road placements."
+        }
+    }
+}
+
+$surface = @(Find-RoadChildrenByResolvedName -Children $roadChildren -PrefabRootsByPath $roadPrefabRootsByPath -Name "RoadSurface_Main")
 if ($surface.Count -ne 1) {
     Add-AgentIssue $issues "Error" "Road Lane Markings" $relative "Expected exactly one RoadSurface_Main under RoadCorridor_Main; found $($surface.Count)." "Keep the road surface parented directly under the road corridor."
     Write-AgentIssues -Issues $issues -ShowInfo:$ShowInfo
     exit (Get-AgentExitCode -Issues $issues -FailOnWarning:$FailOnWarning)
 }
 
-$surfaceScale = Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $surface[0] -Name "Scale")
+$surfaceScale = Convert-AgentVectorText -Value (Get-RoadChildResolvedProperty -Child $surface[0] -PrefabRootsByPath $roadPrefabRootsByPath -PropertyName "Scale")
 if ($null -eq $surfaceScale) {
     Add-AgentIssue $issues "Error" "Road Lane Markings" $relative "RoadSurface_Main has an invalid Scale value." "Use explicit numeric scene scale for road coverage checks."
     Write-AgentIssues -Issues $issues -ShowInfo:$ShowInfo
     exit (Get-AgentExitCode -Issues $issues -FailOnWarning:$FailOnWarning)
 }
 
+foreach ($shoulderName in @("RoadShoulder_West", "RoadShoulder_East")) {
+    $shoulder = @(Find-RoadChildrenByResolvedName -Children $roadChildren -PrefabRootsByPath $roadPrefabRootsByPath -Name $shoulderName)
+    if ($shoulder.Count -ne 1) {
+        Add-AgentIssue $issues "Error" "Road Lane Markings" $relative "Expected exactly one $shoulderName under RoadCorridor_Main; found $($shoulder.Count)." "Keep both road shoulders parented directly under the road corridor."
+        continue
+    }
+
+    $shoulderScale = Convert-AgentVectorText -Value (Get-RoadChildResolvedProperty -Child $shoulder[0] -PrefabRootsByPath $roadPrefabRootsByPath -PropertyName "Scale")
+    if ($null -eq $shoulderScale) {
+        Add-AgentIssue $issues "Error" "Road Lane Markings" $relative "$shoulderName has an invalid Scale value." "Use explicit numeric scene scale for road shoulder coverage checks."
+        continue
+    }
+
+    if ([Math]::Abs($shoulderScale[1] - $surfaceScale[1]) -gt $scaleTolerance) {
+        Add-AgentIssue $issues "Error" "Road Lane Markings" $relative "$shoulderName length scale is $($shoulderScale[1]), but RoadSurface_Main length scale is $($surfaceScale[1])." "Keep road shoulders the same rendered length as the asphalt plane."
+    }
+}
+
+$surfaceHalfLength = $surfaceScale[1] * $planeHalfUnit
 foreach ($curbName in @("RoadCurb_West", "RoadCurb_East")) {
-    $curb = @(Find-ObjectsByName -Objects $roadChildren -Name $curbName)
+    $curb = @(Find-RoadChildrenByResolvedName -Children $roadChildren -PrefabRootsByPath $roadPrefabRootsByPath -Name $curbName)
     if ($curb.Count -ne 1) {
         Add-AgentIssue $issues "Error" "Road Lane Markings" $relative "Expected exactly one $curbName under RoadCorridor_Main; found $($curb.Count)." "Keep both road curbs parented directly under the road corridor."
         continue
     }
 
-    $curbScale = Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $curb[0] -Name "Scale")
+    $curbScale = Convert-AgentVectorText -Value (Get-RoadChildResolvedProperty -Child $curb[0] -PrefabRootsByPath $roadPrefabRootsByPath -PropertyName "Scale")
     if ($null -eq $curbScale) {
         Add-AgentIssue $issues "Error" "Road Lane Markings" $relative "$curbName has an invalid Scale value." "Use explicit numeric scene scale for road curb coverage checks."
         continue
     }
 
-    if ([Math]::Abs($curbScale[1] - $surfaceScale[1]) -gt $scaleTolerance) {
-        Add-AgentIssue $issues "Error" "Road Lane Markings" $relative "$curbName length scale is $($curbScale[1]), but RoadSurface_Main length scale is $($surfaceScale[1])." "Extend both curbs to the full road-surface length."
+    $curbHalfLength = $curbScale[1] * $boxHalfUnit
+    if ([Math]::Abs($curbHalfLength - $surfaceHalfLength) -gt $scaleTolerance) {
+        Add-AgentIssue $issues "Error" "Road Lane Markings" $relative "$curbName half-length is $([Math]::Round($curbHalfLength, 2)), but RoadSurface_Main half-length is $([Math]::Round($surfaceHalfLength, 2))." "Match rendered curb length to the asphalt plane; dev boxes use a 25-unit half extent while dev planes use 50."
     }
 }
 
-$surfaceHalfLength = ($surfaceScale[1] * $boxUnit) / 2.0
 $dashExtent = [Math]::Floor(($surfaceHalfLength - $dashEdgeMargin) / $dashSpacing) * $dashSpacing
 if ($dashExtent -lt $dashSpacing) {
     Add-AgentIssue $issues "Error" "Road Lane Markings" $relative "RoadSurface_Main is too short to derive centerline dash coverage." "Check the road surface scale before validating dashes."
@@ -198,17 +362,9 @@ for ($y = -$dashExtent; $y -le $dashExtent + 0.01; $y += $dashSpacing) {
     $expectedDashYs.Add([double]$y)
 }
 
-$dashes = @($roadChildren | Where-Object {
-    ([string](Get-JsonPropertyValue -Object $_ -Name "Name")).StartsWith("RoadDash_", [System.StringComparison]::Ordinal)
-} | ForEach-Object {
-    $position = Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $_ -Name "Position")
-    $scale = Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $_ -Name "Scale")
-    [pscustomobject]@{
-        Name = [string](Get-JsonPropertyValue -Object $_ -Name "Name")
-        Position = $position
-        Scale = $scale
-    }
-} | Sort-Object { if ($null -eq $_.Position) { [double]::NegativeInfinity } else { $_.Position[1] } })
+$dashes = @($roadChildren | ForEach-Object {
+    Convert-RoadDashChild -Child $_ -PrefabRootsByPath $roadPrefabRootsByPath
+} | Where-Object { $null -ne $_ } | Sort-Object { if ($null -eq $_.Position) { [double]::NegativeInfinity } else { $_.Position[1] } })
 
 if ($dashes.Count -ne $expectedDashYs.Count) {
     Add-AgentIssue $issues "Error" "Road Lane Markings" $relative "Expected $($expectedDashYs.Count) centered road dash(es) for the current road length; found $($dashes.Count)." "Copy the dash markers down the full road at 260-unit intervals."

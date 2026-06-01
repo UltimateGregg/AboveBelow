@@ -20,6 +20,8 @@ namespace DroneVsPlayers;
 [Icon( "settings_remote" )]
 public sealed class DroneDeployer : Component
 {
+	const string HeldPropellerPrefabPath = "prefabs/items/held_drone_propeller.prefab";
+
 	[Property] public int Slot { get; set; } = SoldierLoadout.PrimarySlot;
 
 	[Property] public GameObject LeftHandVisual { get; set; }
@@ -30,6 +32,7 @@ public sealed class DroneDeployer : Component
 	[Property] public GameObject GpsDronePrefab { get; set; }
 	[Property] public GameObject FpvDronePrefab { get; set; }
 	[Property] public GameObject FiberOpticFpvDronePrefab { get; set; }
+	[Property] public GameSetup Setup { get; set; }
 
 	[Property] public float LaunchCooldown { get; set; } = 8f;
 	[Property] public float LaunchSpeed { get; set; } = 300f;
@@ -125,6 +128,7 @@ public sealed class DroneDeployer : Component
 	protected override void OnStart()
 	{
 		ResolvePrefabReferences();
+		ResolveSetup();
 		UpdateChosenDroneVisual();
 		ApplySelectionVisualState();
 	}
@@ -132,6 +136,7 @@ public sealed class DroneDeployer : Component
 	protected override void OnUpdate()
 	{
 		ResolvePrefabReferences();
+		ResolveSetup();
 		UpdateChosenDroneVisual();
 
 		var pc = Components.GetInAncestors<GroundPlayerController>();
@@ -226,6 +231,14 @@ public sealed class DroneDeployer : Component
 			RightHandIkTarget = GameObject.Children.FirstOrDefault( x => x.Name == "RightHandIk" );
 	}
 
+	void ResolveSetup()
+	{
+		if ( Setup.IsValid() )
+			return;
+
+		Setup = Scene.GetAllComponents<GameSetup>().FirstOrDefault();
+	}
+
 	void UpdateChosenDroneVisual()
 	{
 		if ( !RightHandVisual.IsValid() )
@@ -237,13 +250,7 @@ public sealed class DroneDeployer : Component
 
 		var chosenDrone = GetChosenDrone();
 
-		var modelPath = chosenDrone switch
-		{
-			DroneType.Gps => GpsHeldDroneModelPath,
-			DroneType.Fpv => FpvHeldDroneModelPath,
-			DroneType.FiberOpticFpv => FiberHeldDroneModelPath,
-			_ => FpvHeldDroneModelPath
-		};
+		var modelPath = ResolveHeldDroneModelPath( chosenDrone );
 
 		if ( !string.IsNullOrWhiteSpace( modelPath ) && _activeHeldDroneModelPath != modelPath )
 		{
@@ -304,12 +311,7 @@ public sealed class DroneDeployer : Component
 		{
 			var propeller = RightHandVisual.Children.FirstOrDefault( child => child.Name == spec.Name );
 			if ( !propeller.IsValid() )
-			{
-				propeller = new GameObject( RightHandVisual, true, spec.Name )
-				{
-					NetworkMode = NetworkMode.Never
-				};
-			}
+				propeller = CreateHeldPropellerVisual( spec.Name );
 
 			propeller.LocalPosition = spec.LocalPosition;
 			propeller.LocalRotation = spec.LocalRotation.ToRotation();
@@ -318,6 +320,25 @@ public sealed class DroneDeployer : Component
 			if ( !propeller.Components.Get<ModelRenderer>().IsValid() )
 				propeller.Components.Create<ModelRenderer>();
 		}
+	}
+
+	GameObject CreateHeldPropellerVisual( string name )
+	{
+		var prefab = GameObject.GetPrefab( HeldPropellerPrefabPath );
+		if ( prefab.IsValid() )
+		{
+			var clone = prefab.Clone( new Transform( Vector3.Zero, Rotation.Identity ), RightHandVisual, true, name );
+			if ( clone.IsValid() )
+			{
+				clone.NetworkMode = NetworkMode.Never;
+				return clone;
+			}
+		}
+
+		return new GameObject( RightHandVisual, true, name )
+		{
+			NetworkMode = NetworkMode.Never
+		};
 	}
 
 	void UpdateHeldPropellerVisuals( DroneType chosenDrone )
@@ -388,6 +409,30 @@ public sealed class DroneDeployer : Component
 		}
 
 		return null;
+	}
+
+	string ResolveHeldDroneModelPath( DroneType chosenDrone )
+	{
+		var definition = Setup.IsValid()
+			? Setup.GetAuthoredDroneLoadoutDefinition( chosenDrone )
+			: null;
+
+		if ( definition is not null )
+		{
+			if ( !string.IsNullOrWhiteSpace( definition.HeldModelPath ) )
+				return definition.HeldModelPath;
+
+			if ( !string.IsNullOrWhiteSpace( definition.PreviewModelPath ) )
+				return definition.PreviewModelPath;
+		}
+
+		return chosenDrone switch
+		{
+			DroneType.Gps => GpsHeldDroneModelPath,
+			DroneType.Fpv => FpvHeldDroneModelPath,
+			DroneType.FiberOpticFpv => FiberHeldDroneModelPath,
+			_ => FpvHeldDroneModelPath
+		};
 	}
 
 	void UpdateHandVisual( GameObject visual, GameObject ikTarget, GroundPlayerController pc, bool forceThirdPerson,
@@ -610,13 +655,7 @@ public sealed class DroneDeployer : Component
 			return;
 		}
 
-		var prefab = pilot.ChosenDrone switch
-		{
-			DroneType.Gps => GpsDronePrefab,
-			DroneType.Fpv => FpvDronePrefab,
-			DroneType.FiberOpticFpv => FiberOpticFpvDronePrefab,
-			_ => FpvDronePrefab,
-		};
+		var prefab = ResolveLaunchPrefab( pilot.ChosenDrone );
 
 		if ( !prefab.IsValid() )
 		{
@@ -654,6 +693,30 @@ public sealed class DroneDeployer : Component
 
 		pilot.LinkedDroneId = clone.Id;
 		DroneInFlight = true;
+	}
+
+	GameObject ResolveLaunchPrefab( DroneType chosenDrone )
+	{
+		ResolveSetup();
+
+		var definition = Setup.IsValid()
+			? Setup.GetAuthoredDroneLoadoutDefinition( chosenDrone )
+			: null;
+
+		if ( definition is not null && !string.IsNullOrWhiteSpace( definition.PrefabPath ) )
+		{
+			var resourcePrefab = GameObject.GetPrefab( definition.PrefabPath );
+			if ( resourcePrefab.IsValid() )
+				return resourcePrefab;
+		}
+
+		return chosenDrone switch
+		{
+			DroneType.Gps => GpsDronePrefab,
+			DroneType.Fpv => FpvDronePrefab,
+			DroneType.FiberOpticFpv => FiberOpticFpvDronePrefab,
+			_ => FpvDronePrefab,
+		};
 	}
 
 	static bool CanMutateState() => !Networking.IsActive || Networking.IsHost;

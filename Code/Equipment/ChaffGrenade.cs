@@ -12,6 +12,8 @@ namespace DroneVsPlayers;
 [Icon( "blur_on" )]
 public sealed class ChaffGrenade : ThrowableGrenade
 {
+	const string DefaultEffectPrefabPath = "prefabs/effects/chaff_burst.prefab";
+
 	[Property] public float Radius { get; set; } = 600f;
 	[Property] public float JamDuration { get; set; } = 3f;
 	[Property, Range( 0f, 1f )] public float Strength { get; set; } = 1f;
@@ -40,11 +42,12 @@ public sealed class ChaffGrenade : ThrowableGrenade
 	[Rpc.Broadcast]
 	void BroadcastEffect( Vector3 center )
 	{
-		if ( EffectPrefab.IsValid() )
-		{
-			EffectPrefab.Clone( center );
+		var effectPrefab = EffectPrefab.IsValid()
+			? EffectPrefab
+			: GameObject.GetPrefab( DefaultEffectPrefabPath );
+
+		if ( GrenadeEffectVisual.TrySpawnPrefab( effectPrefab, center, GrenadeEffectKind.Chaff, Radius ) )
 			return;
-		}
 
 		GrenadeEffectVisual.Spawn( center, GrenadeEffectKind.Chaff, Radius );
 	}

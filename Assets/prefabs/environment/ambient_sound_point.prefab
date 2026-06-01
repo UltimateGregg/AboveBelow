@@ -1,0 +1,44 @@
+{
+  "RootObject": {
+    "__guid": "93c56fe3-a762-b7b1-0aff-72d9a9c6ba32",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "AmbientSoundPoint",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.AmbientSound",
+        "__guid": "c4fef2a1-4779-97bd-4541-643b0331e5f2",
+        "__enabled": true,
+        "Flags": 0,
+        "LoopDurationSeconds": 16,
+        "LoopOverlapSeconds": 1.25,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "Sound": "sounds/ambient_light_wind.sound",
+        "VolumeScale": 0.75
+      }
+    ],
+    "Children": []
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Environment/AmbientSoundPoint",
+  "MenuIcon": "volume_up",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

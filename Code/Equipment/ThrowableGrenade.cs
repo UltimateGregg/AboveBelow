@@ -14,12 +14,18 @@ namespace DroneVsPlayers;
 [Icon( "egg" )]
 public abstract class ThrowableGrenade : Component
 {
+	const string DefaultProjectilePrefabPath = "prefabs/items/thrown_grenade_projectile.prefab";
+
 	[Property] public float FuseSeconds { get; set; } = 1.5f;
 	[Property] public float ThrowRange { get; set; } = 900f;
 	[Property] public float ThrowSpeed { get; set; } = 950f;
 	[Property] public float Cooldown { get; set; } = 4f;
 	[Property] public string ThrowInput { get; set; } = "Attack1";
+	[Property] public string AltThrowInput { get; set; } = "Attack2";
 	[Property] public float ThrowArcHeight { get; set; } = 55f;
+	[Property] public bool CookOnHold { get; set; } = true;
+	[Property, Range( 0.1f, 1f )] public float AltThrowSpeedScale { get; set; } = 0.55f;
+	[Property] public bool DropOnOwnerDeath { get; set; } = true;
 	[Property] public Vector3 ProjectileGravity { get; set; } = new( 0f, 0f, 800f );
 	[Property] public float ProjectileRestOffset { get; set; } = 2.5f;
 	[Property] public float ProjectileSpinDegreesPerSecond { get; set; } = 540f;
@@ -31,6 +37,7 @@ public abstract class ThrowableGrenade : Component
 	[Property] public float ProjectileElasticity { get; set; } = 0.32f;
 	[Property] public float ProjectileFriction { get; set; } = 0.8f;
 	[Property] public float ProjectileRollingResistance { get; set; } = 0.45f;
+	[Property, Range( 0f, 20f )] public float ProjectileSleepThreshold { get; set; } = 2f;
 	[Property] public float ProjectileSpinMin { get; set; } = 420f;
 	[Property] public float ProjectileSpinMax { get; set; } = 980f;
 	[Property] public float ProjectileOwnerCollisionGraceSeconds { get; set; } = 0.12f;
@@ -59,13 +66,17 @@ public abstract class ThrowableGrenade : Component
 
 	TimeSince _timeSinceThrow = 100f;
 	float _predictedProjectileEndTime;
+	bool _isCooking;
+	float _cookStartedAt;
+	Health _ownerHealth;
+	Action<DamageInfo> _ownerKillHandler;
 
 	public bool IsSelected => WeaponPose.IsSlotSelected( this, Slot );
 
-	public bool IsArmed => HasLiveProjectile || Time.Now < _predictedProjectileEndTime;
+	public bool IsArmed => HasLiveProjectile || _isCooking || Time.Now < _predictedProjectileEndTime;
 	public bool IsReady => !IsArmed && CooldownRemaining <= 0f;
 	public float FuseRemaining => IsArmed
-		? MathF.Max( 0f, MathF.Max( FuseEndTime, _predictedProjectileEndTime ) - Time.Now )
+		? MathF.Max( 0f, MathF.Max( MathF.Max( FuseEndTime, _predictedProjectileEndTime ), _isCooking ? _cookStartedAt + FuseSeconds : 0f ) - Time.Now )
 		: 0f;
 	public float CooldownRemaining => IsArmed ? 0f : MathF.Max( 0f, Cooldown - _timeSinceThrow );
 	public float CooldownReadyFraction => Cooldown <= 0f
@@ -76,6 +87,11 @@ public abstract class ThrowableGrenade : Component
 	{
 		ResolvePrefabReferences();
 		ApplySelectionVisualState();
+	}
+
+	protected override void OnDestroy()
+	{
+		UnhookOwnerHealth();
 	}
 
 	protected override void OnUpdate()
@@ -97,13 +113,28 @@ public abstract class ThrowableGrenade : Component
 		if ( IsProxy ) return;
 		if ( LocalOptionsState.ConsumesGameplayInput ) return;
 
-		if ( IsSelected && !IsArmed && _timeSinceThrow >= Cooldown && Input.Pressed( ThrowInput ) )
-			BeginThrow();
+		if ( _isCooking )
+		{
+			if ( FuseRemaining <= 0.05f || Input.Released( ThrowInput ) )
+				ReleaseCookedThrow( false );
+			return;
+		}
+
+		if ( !IsSelected || IsArmed || _timeSinceThrow < Cooldown )
+			return;
+
+		if ( Input.Pressed( ThrowInput ) )
+		{
+			if ( CookOnHold )
+				StartCookingThrow();
+			else
+				BeginThrow( Input.Down( AltThrowInput ), FuseSeconds );
+		}
 	}
 
 	internal bool ApplySelectionVisualState()
 	{
-		var visibleInHand = IsSelected && !IsArmed;
+		var visibleInHand = IsSelected && !HasLiveProjectile;
 		var visible = visibleInHand && !FirstPersonViewmodel.ShouldHideWorldHeldItem( this, visibleInHand );
 		WeaponPose.SetVisibility( GameObject, visible );
 		WeaponPose.ApplyHandPose( this, visible, HoldType, Handedness, LeftHandIkTarget, RightHandIkTarget );
@@ -122,17 +153,45 @@ public abstract class ThrowableGrenade : Component
 			RightHandIkTarget = GameObject.Children.FirstOrDefault( x => x.Name == "RightHandIk" );
 	}
 
-	void BeginThrow()
+	void StartCookingThrow()
+	{
+		if ( _isCooking )
+			return;
+
+		var pc = Components.GetInAncestors<GroundPlayerController>();
+		if ( !pc.IsValid() )
+			return;
+
+		_isCooking = true;
+		_cookStartedAt = Time.Now;
+		_predictedProjectileEndTime = Time.Now + FuseSeconds;
+		HookOwnerHealth();
+	}
+
+	void ReleaseCookedThrow( bool forceDrop )
+	{
+		if ( !_isCooking )
+			return;
+
+		var elapsed = MathF.Max( 0f, Time.Now - _cookStartedAt );
+		var remainingFuse = MathF.Max( 0.05f, FuseSeconds - elapsed );
+		var alternateThrow = !forceDrop && Input.Down( AltThrowInput );
+		_isCooking = false;
+		UnhookOwnerHealth();
+		BeginThrow( alternateThrow, remainingFuse, forceDrop );
+	}
+
+	void BeginThrow( bool alternateThrow, float fuseSeconds, bool forceDrop = false )
 	{
 		var pc = Components.GetInAncestors<GroundPlayerController>();
 		if ( !pc.IsValid() ) return;
 
-		var origin = GetThrowOrigin( pc );
-		var velocity = GetThrowVelocity( pc );
+		var origin = forceDrop ? WorldPosition + Vector3.Up * ProjectileRestOffset : GetThrowOrigin( pc );
+		var velocity = forceDrop ? GetDropVelocity( pc ) : GetThrowVelocity( pc, alternateThrow );
 		var modelPath = ResolveVisualModelPath();
 
-		_predictedProjectileEndTime = Time.Now + FuseSeconds;
-		ServerThrow( origin, velocity, modelPath );
+		_predictedProjectileEndTime = Time.Now + MathF.Max( 0.05f, fuseSeconds );
+		ServerThrow( origin, velocity, modelPath, fuseSeconds );
 		_timeSinceThrow = 0f;
 	}
 
@@ -151,11 +210,21 @@ public abstract class ThrowableGrenade : Component
 			+ look.Up * FirstPersonOffset.z;
 	}
 
-	Vector3 GetThrowVelocity( GroundPlayerController pc )
+	Vector3 GetThrowVelocity( GroundPlayerController pc, bool alternateThrow )
 	{
 		var dir = FlattenThrowDirection( pc.EyeAngles.ToRotation().Forward );
-		var lift = Vector3.Up * MathF.Max( 0f, ThrowArcHeight * 4f );
-		return dir * MathF.Max( 1f, ThrowSpeed ) + lift;
+		var speedScale = alternateThrow ? AltThrowSpeedScale.Clamp( 0.1f, 1f ) : 1f;
+		var lift = Vector3.Up * MathF.Max( 0f, ThrowArcHeight * 4f * speedScale );
+		return dir * MathF.Max( 1f, ThrowSpeed * speedScale ) + lift;
+	}
+
+	Vector3 GetDropVelocity( GroundPlayerController pc )
+	{
+		var forward = pc.EyeAngles.ToRotation().Forward.WithZ( 0f );
+		if ( forward.IsNearZeroLength )
+			forward = Vector3.Forward;
+
+		return forward.Normal * MathF.Max( 48f, ThrowSpeed * 0.12f ) + Vector3.Up * MathF.Max( 32f, ThrowArcHeight );
 	}
 
 	static Vector3 FlattenThrowDirection( Vector3 aim )
@@ -166,6 +235,28 @@ public abstract class ThrowableGrenade : Component
 
 		var z = aim.z.Clamp( -0.22f, 0.12f );
 		return (flat.Normal + Vector3.Up * z).Normal;
+	}
+
+	void HookOwnerHealth()
+	{
+		if ( !DropOnOwnerDeath || _ownerKillHandler is not null )
+			return;
+
+		_ownerHealth = Components.GetInAncestors<Health>();
+		if ( !_ownerHealth.IsValid() )
+			return;
+
+		_ownerKillHandler = _ => ReleaseCookedThrow( true );
+		_ownerHealth.OnKilled += _ownerKillHandler;
+	}
+
+	void UnhookOwnerHealth()
+	{
+		if ( _ownerHealth.IsValid() && _ownerKillHandler is not null )
+			_ownerHealth.OnKilled -= _ownerKillHandler;
+
+		_ownerHealth = null;
+		_ownerKillHandler = null;
 	}
 
 	internal void ResolveProjectileDetonation( ThrownGrenadeProjectile projectile, Vector3 position )
@@ -200,7 +291,7 @@ public abstract class ThrowableGrenade : Component
 	}
 
 	[Rpc.Broadcast]
-	void ServerThrow( Vector3 origin, Vector3 velocity, string modelPath )
+	void ServerThrow( Vector3 origin, Vector3 velocity, string modelPath, float fuseSeconds )
 	{
 		if ( !CanMutateState() ) return;
 		if ( HasLiveProjectile || _timeSinceThrow < Cooldown ) return;
@@ -208,26 +299,33 @@ public abstract class ThrowableGrenade : Component
 		var pc = Components.GetInAncestors<GroundPlayerController>();
 		if ( !pc.IsValid() ) return;
 
+		var clampedFuse = MathF.Max( 0.05f, fuseSeconds );
 		HasLiveProjectile = true;
-		FuseEndTime = Time.Now + FuseSeconds;
+		FuseEndTime = Time.Now + clampedFuse;
 		_timeSinceThrow = 0f;
 
 		BroadcastThrowSound( origin );
-		SpawnProjectile( pc.GameObject, origin, velocity, modelPath );
+		SpawnProjectile( pc.GameObject, origin, velocity, modelPath, clampedFuse );
 	}
 
-	void SpawnProjectile( GameObject ignoreRoot, Vector3 origin, Vector3 velocity, string modelPath )
+	void SpawnProjectile( GameObject ignoreRoot, Vector3 origin, Vector3 velocity, string modelPath, float fuseSeconds )
 	{
-		var projectileObject = new GameObject( true, $"{GetType().Name} Projectile" )
-		{
-			NetworkMode = NetworkMode.Object,
-			WorldPosition = origin,
-			WorldRotation = velocity.IsNearZeroLength ? WorldRotation : Rotation.LookAt( velocity.Normal )
-		};
+		var projectileRotation = velocity.IsNearZeroLength ? WorldRotation : Rotation.LookAt( velocity.Normal );
+		var projectileName = $"{GetType().Name} Projectile";
+		var projectilePrefab = GameObject.GetPrefab( DefaultProjectilePrefabPath );
+		var projectileObject = projectilePrefab.IsValid()
+			? projectilePrefab.Clone( new Transform( origin, projectileRotation ), name: projectileName )
+			: new GameObject( true, projectileName );
+
+		projectileObject.NetworkMode = NetworkMode.Object;
+		projectileObject.WorldPosition = origin;
+		projectileObject.WorldRotation = projectileRotation;
 
 		if ( !string.IsNullOrWhiteSpace( modelPath ) )
 		{
-			var renderer = projectileObject.Components.Create<ModelRenderer>();
+			var renderer = projectileObject.Components.Get<ModelRenderer>();
+			if ( !renderer.IsValid() )
+				renderer = projectileObject.Components.Create<ModelRenderer>();
 			renderer.Model = Model.Load( modelPath );
 		}
 		else
@@ -235,13 +333,15 @@ public abstract class ThrowableGrenade : Component
 			Log.Warning( $"[{GetType().Name}] No model found for thrown grenade projectile." );
 		}
 
-		var projectile = projectileObject.Components.Create<ThrownGrenadeProjectile>();
+		var projectile = projectileObject.Components.Get<ThrownGrenadeProjectile>();
+		if ( !projectile.IsValid() )
+			projectile = projectileObject.Components.Create<ThrownGrenadeProjectile>();
 		projectile.Configure(
 			this,
 			ignoreRoot,
 			velocity,
 			ProjectileGravity,
-			FuseSeconds,
+			fuseSeconds,
 			ProjectileColliderRadius,
 			ProjectileColliderLength,
 			ProjectileMass,
@@ -250,10 +350,12 @@ public abstract class ThrowableGrenade : Component
 			ProjectileElasticity,
 			ProjectileFriction,
 			ProjectileRollingResistance,
+			ProjectileSleepThreshold,
 			ProjectileSpinMin,
 			ProjectileSpinMax,
 			ProjectileOwnerCollisionGraceSeconds );
 
+		// SpawnProjectile is only reached from ServerThrow after CanMutateState().
 		if ( Networking.IsActive )
 			projectileObject.NetworkSpawn();
 	}
