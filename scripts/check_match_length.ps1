@@ -20,6 +20,73 @@ function Read-ProjectFile {
     return Get-Content -LiteralPath $fullPath -Raw
 }
 
+function Resolve-PrefabResourcePath {
+    param([string]$PrefabPath)
+
+    if ([string]::IsNullOrWhiteSpace($PrefabPath)) {
+        return $null
+    }
+
+    $normalized = $PrefabPath.Replace("\", "/").TrimStart("/")
+    if ($normalized.StartsWith("Assets/", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return Join-Path $Root $normalized
+    }
+
+    if ($normalized.StartsWith("prefabs/", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return Join-Path $Root ("Assets/" + $normalized)
+    }
+
+    return Join-Path $Root $normalized
+}
+
+function Add-ReferencedPrefabText {
+    param(
+        [string]$Text,
+        [System.Collections.Generic.List[string]]$Bodies,
+        [System.Collections.Generic.HashSet[string]]$Visited
+    )
+
+    foreach ($match in [regex]::Matches($Text, '"__Prefab"\s*:\s*"(?<path>[^"]+)"')) {
+        $prefabPath = Resolve-PrefabResourcePath -PrefabPath $match.Groups["path"].Value
+        if ([string]::IsNullOrWhiteSpace($prefabPath)) {
+            continue
+        }
+
+        $resolvedPrefabPath = $prefabPath
+        if (Test-Path -LiteralPath $prefabPath) {
+            $resolvedPrefabPath = (Resolve-Path -LiteralPath $prefabPath).Path
+        }
+
+        if (-not $Visited.Add($resolvedPrefabPath)) {
+            continue
+        }
+
+        if (!(Test-Path -LiteralPath $prefabPath)) {
+            continue
+        }
+
+        $prefabText = Get-Content -LiteralPath $prefabPath -Raw
+        if ($null -eq $prefabText) {
+            $prefabText = ""
+        }
+
+        $Bodies.Add($prefabText)
+        Add-ReferencedPrefabText -Text $prefabText -Bodies $Bodies -Visited $Visited
+    }
+}
+
+function Read-ProjectFileWithReferencedPrefabs {
+    param([string]$Path)
+
+    $text = Read-ProjectFile $Path
+    $bodies = [System.Collections.Generic.List[string]]::new()
+    $bodies.Add($text)
+    $visited = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    Add-ReferencedPrefabText -Text $text -Bodies $bodies -Visited $visited
+
+    return ($bodies -join "`n")
+}
+
 function Require-Match {
     param(
         [string]$Label,
@@ -34,7 +101,7 @@ function Require-Match {
 
 $gameRules = Read-ProjectFile "Code/Game/GameRules.cs"
 $roundManager = Read-ProjectFile "Code/Game/RoundManager.cs"
-$scene = Read-ProjectFile "Assets/scenes/main.scene"
+$scene = Read-ProjectFileWithReferencedPrefabs "Assets/scenes/main.scene"
 $gameplayLoop = Read-ProjectFile "docs/gameplay_loop.md"
 $gameRulesScenePattern = '"__type"\s*:\s*"DroneVsPlayers\.GameRules"[\s\S]{0,2400}"RoundTimeSeconds"\s*:\s*' + $ExpectedSeconds + '\b'
 $roundManagerScenePattern = '"__type"\s*:\s*"DroneVsPlayers\.RoundManager"[\s\S]{0,1600}"RoundLengthSeconds"\s*:\s*' + $ExpectedSeconds + '\b'

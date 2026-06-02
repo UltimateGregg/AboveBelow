@@ -28,7 +28,110 @@
         "OnComponentUpdate": null
       }
     ],
-    "Children": []
+    "Children": [
+      {
+        "__guid": "89354809-f3fe-50a2-96c3-829ba3c00a11",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "EMP Ring",
+        "Position": "0,0,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Tags": "",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.ParticleEffect",
+            "__guid": "89354809-f3fe-50a2-96c3-829ba3c00a12",
+            "__enabled": true,
+            "Flags": 0
+          },
+          {
+            "__type": "Sandbox.ParticleSpriteRenderer",
+            "__guid": "89354809-f3fe-50a2-96c3-829ba3c00a13",
+            "__enabled": true,
+            "Flags": 0
+          },
+          {
+            "__type": "Sandbox.ParticleConeEmitter",
+            "__guid": "89354809-f3fe-50a2-96c3-829ba3c00a14",
+            "__enabled": true,
+            "Flags": 0
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "89354809-f3fe-50a2-96c3-829ba3c00a21",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "EMP Spark Pulse",
+        "Position": "0,0,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Tags": "",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.ParticleEffect",
+            "__guid": "89354809-f3fe-50a2-96c3-829ba3c00a22",
+            "__enabled": true,
+            "Flags": 0
+          },
+          {
+            "__type": "Sandbox.ParticleSpriteRenderer",
+            "__guid": "89354809-f3fe-50a2-96c3-829ba3c00a23",
+            "__enabled": true,
+            "Flags": 0
+          },
+          {
+            "__type": "Sandbox.ParticleSphereEmitter",
+            "__guid": "89354809-f3fe-50a2-96c3-829ba3c00a24",
+            "__enabled": true,
+            "Flags": 0
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "89354809-f3fe-50a2-96c3-829ba3c00a31",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "Explosion Light",
+        "Position": "0,0,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Tags": "light_point,light",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.PointLight",
+            "__guid": "89354809-f3fe-50a2-96c3-829ba3c00a32",
+            "__enabled": true,
+            "Flags": 0,
+            "Radius": 620,
+            "LightColor": "0.1,0.78,1,1",
+            "Shadows": false
+          }
+        ],
+        "Children": []
+      }
+    ]
   },
   "ShowInMenu": false,
   "MenuPath": "Drone vs Players/Effects/EMP Burst",

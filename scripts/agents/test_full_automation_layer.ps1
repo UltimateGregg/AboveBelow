@@ -43,6 +43,18 @@ $requiredScripts = @(
     "scripts/agents/ui_flow_audit.ps1",
     "scripts/agents/prefab_wiring_audit.ps1",
     "scripts/agents/prefab_graph_audit.ps1",
+    "scripts/agents/first_person_viewmodel_prefab_audit.ps1",
+    "scripts/agents/grenade_effect_prefab_audit.ps1",
+    "scripts/agents/migrate_scene_singletons_to_prefab_instances.ps1",
+    "scripts/agents/muzzle_flash_prefab_audit.ps1",
+    "scripts/agents/runtime_prefab_fallback_audit.ps1",
+    "scripts/agents/scene_prefab_coverage_audit.ps1",
+    "scripts/agents/scene_singleton_prefab_audit.ps1",
+    "scripts/agents/team_comms_prefab_audit.ps1",
+    "scripts/agents/team_voice_prefab_audit.ps1",
+    "scripts/agents/terrain_scene_prefab_migration_audit.ps1",
+    "scripts/agents/thrown_grenade_projectile_prefab_audit.ps1",
+    "scripts/agents/training_dummy_prefab_audit.ps1",
     "scripts/agents/scene_integrity_audit.ps1",
     "scripts/agents/terrain_floor_audit.ps1",
     "scripts/agents/sandbag_cover_audit.ps1",
@@ -2079,7 +2091,7 @@ scripts/agents/editor_node_tool_audit.ps1
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\editor-node-tool-agent.md") -Encoding UTF8
 
         "BuildHash() StateHasChanged()" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\ui-flow-agent.md") -Encoding UTF8
-        "Test-HasDynamicRazorOutput Test-HasBuildHash Test-CallsStateHasChangedFromTick Dynamic Razor output has no BuildHash Razor Tick() calls StateHasChanged()" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\ui_flow_audit.ps1") -Encoding UTF8
+        "Test-InheritsRazorPanel Test-HasDynamicRazorOutput Test-HasBuildHash Test-CallsStateHasChangedFromTick Dynamic Razor output has no BuildHash Razor Tick() calls StateHasChanged()" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\ui_flow_audit.ps1") -Encoding UTF8
         "S&Box Learn Intake Agent UI Razor Reactivity Agent Editor Node Tool Agent sbox_learn_intake_audit.ps1 ui-razor-reactivity-agent.md editor-node-tool-agent.md" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
         "sbox-learn-intake-agent.md ui-razor-reactivity-agent.md editor-node-tool-agent.md sbox_learn_intake_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
         '"learn" sbox_learn_intake_audit.ps1 editor_node_tool_audit.ps1' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8

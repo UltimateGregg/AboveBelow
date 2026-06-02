@@ -56,6 +56,12 @@
         "AnimationHelper": null,
         "Body": null,
         "Health": null,
+        "NavAgent": {
+          "_type": "component",
+          "component_id": "55555555-0001-0400-0000-000000000001",
+          "go": "55555555-0001-0000-0000-000000000001",
+          "component_type": "NavMeshAgent"
+        },
         "MaxPauseSeconds": 2.25,
         "MinPauseSeconds": 0.75,
         "MoveAround": true,
@@ -69,6 +75,12 @@
         "RespawnSeconds": 4,
         "TeamRole": "Soldier",
         "WanderRadius": 220
+      },
+      {
+        "__type": "Sandbox.NavMeshAgent",
+        "__guid": "55555555-0001-0400-0000-000000000001",
+        "__enabled": true,
+        "Flags": 0
       }
     ],
     "Children": [

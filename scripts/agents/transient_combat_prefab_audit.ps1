@@ -42,9 +42,11 @@ Test-RequiredText -Path "Assets/prefabs/effects/muzzle_flash.prefab" `
     -Area "Transient Combat Prefab" `
     -Patterns @(
         '"Name"\s*:\s*"MuzzleFlash"',
-        '"__type"\s*:\s*"DroneVsPlayers\.MuzzleFlashVisual"'
+        '"__type"\s*:\s*"DroneVsPlayers\.MuzzleFlashVisual"',
+        '"__type"\s*:\s*"Sandbox\.SpriteRenderer"',
+        '"__type"\s*:\s*"Sandbox\.PointLight"'
     ) `
-    -Recommendation "Create a reusable muzzle flash prefab and keep MuzzleFlashVisual.Spawn prefab-backed with a procedural fallback."
+    -Recommendation "Create a reusable muzzle flash prefab that owns its sprite and light, and keep MuzzleFlashVisual.Spawn prefab-backed with a procedural fallback."
 
 Test-RequiredText -Path "Assets/prefabs/effects/tracer_bullet_glow.prefab" `
     -Area "Transient Combat Prefab" `
@@ -88,10 +90,13 @@ Test-RequiredText -Path "Assets/prefabs/items/thrown_grenade_projectile.prefab" 
     -Patterns @(
         '"Name"\s*:\s*"ThrownGrenadeProjectile"',
         '"__type"\s*:\s*"DroneVsPlayers\.ThrownGrenadeProjectile"',
+        '"__type"\s*:\s*"Sandbox\.ModelRenderer"',
         '"__type"\s*:\s*"Sandbox\.CapsuleCollider"',
-        '"__type"\s*:\s*"Sandbox\.Rigidbody"'
+        '"__type"\s*:\s*"Sandbox\.Rigidbody"',
+        '"Body"\s*:\s*\{\s*"_type"\s*:\s*"component"',
+        '"Collider"\s*:\s*\{\s*"_type"\s*:\s*"component"'
     ) `
-    -Recommendation "Create a reusable thrown grenade projectile prefab with the physics components the runtime configures."
+    -Recommendation "Create a reusable thrown grenade projectile prefab with renderer, physics components, and wired behavior refs that runtime configures."
 
 foreach ($effect in @(
     @{ Path = "Assets/prefabs/effects/chaff_burst.prefab"; Name = "ChaffGrenadeEffect" },
@@ -102,9 +107,12 @@ foreach ($effect in @(
         -Area "Transient Combat Prefab" `
         -Patterns @(
             ('"Name"\s*:\s*"{0}"' -f [regex]::Escape($effect.Name)),
-            '"__type"\s*:\s*"DroneVsPlayers\.GrenadeEffectVisual"'
+            '"__type"\s*:\s*"DroneVsPlayers\.GrenadeEffectVisual"',
+            '"__type"\s*:\s*"Sandbox\.ParticleEffect"',
+            '"__type"\s*:\s*"Sandbox\.ParticleSpriteRenderer"',
+            '"__type"\s*:\s*"Sandbox\.PointLight"'
         ) `
-        -Recommendation "Create reusable grenade detonation effect prefabs and keep grenade effect spawning prefab-backed with typed procedural fallbacks."
+        -Recommendation "Create reusable grenade detonation effect prefabs with prefab-owned particle/light children and keep grenade effect spawning prefab-backed with typed repair fallbacks."
 }
 
 Test-RequiredText -Path "Code/Player/MuzzleFlashVisual.cs" `
@@ -187,9 +195,12 @@ Test-RequiredText -Path "Code/Equipment/GrenadeEffectVisual.cs" `
     -Patterns @(
         'TrySpawnPrefab',
         'Components\.Get<GrenadeEffectVisual>',
-        'Configure\( kind, radius \)'
+        'Configure\( kind, radius \)',
+        'GameObject\.Children\.FirstOrDefault',
+        'Components\.Get<ParticleEffect>\(\)\s*\?\?\s*child\.Components\.Create<ParticleEffect>\(\)',
+        'Components\.Get<PointLight>\(\)\s*\?\?\s*child\.Components\.Create<PointLight>\(\)'
     ) `
-    -Recommendation "Let grenade effect prefabs reuse GrenadeEffectVisual while still applying grenade-specific radius and kind at spawn time."
+    -Recommendation "Let grenade effect prefabs reuse GrenadeEffectVisual and prefab-authored particle/light children while still applying grenade-specific radius and kind at spawn time."
 
 Test-RequiredText -Path "Code/Equipment/ChaffGrenade.cs" `
     -Area "Transient Combat Code" `

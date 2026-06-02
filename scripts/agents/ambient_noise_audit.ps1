@@ -63,6 +63,61 @@ function Get-SoundSources {
     return @($json.Sounds)
 }
 
+function Resolve-PrefabResourcePath {
+    param(
+        [string]$PrefabPath,
+        [string]$Root
+    )
+
+    if ([string]::IsNullOrWhiteSpace($PrefabPath)) {
+        return $null
+    }
+
+    $normalized = $PrefabPath.Replace("\", "/").TrimStart("/")
+    if ($normalized.StartsWith("Assets/", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return Join-Path $Root $normalized
+    }
+
+    if ($normalized.StartsWith("prefabs/", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return Join-Path $Root ("Assets/" + $normalized)
+    }
+
+    return Join-Path $Root $normalized
+}
+
+function Get-PatchOverrideValue {
+    param(
+        [object]$Patch,
+        [string]$TargetType,
+        [string]$Property,
+        [object]$Default = $null
+    )
+
+    if ($null -eq $Patch -or $null -eq $Patch.PropertyOverrides) {
+        return $Default
+    }
+
+    foreach ($override in @($Patch.PropertyOverrides)) {
+        if ($override.Target.Type -eq $TargetType -and $override.Property -eq $Property) {
+            return $override.Value
+        }
+    }
+
+    return $Default
+}
+
+function Get-AmbientSoundComponent {
+    param([object]$Object)
+
+    foreach ($component in @($Object.Components)) {
+        if ([string]$component.__type -eq "DroneVsPlayers.AmbientSound" -or $component.PSObject.Properties.Name -contains "Sound") {
+            return $component
+        }
+    }
+
+    return $null
+}
+
 Write-AgentSection "Ambient Noise Audit"
 Write-Host "Root: $Root"
 
@@ -92,12 +147,58 @@ function Add-AmbientNamedSoundRefs {
     }
 }
 
+function Add-AmbientPrefabInstanceSoundRefs {
+    param(
+        [object[]]$Objects,
+        [System.Collections.Generic.List[object]]$Refs,
+        [string]$Root
+    )
+
+    foreach ($object in @($Objects)) {
+        $prefab = ([string]$object.__Prefab).Replace("\", "/")
+        if ($prefab -eq "prefabs/environment/ambient_sound_point.prefab") {
+            $prefabPath = Resolve-PrefabResourcePath -PrefabPath $prefab -Root $Root
+            if ($null -ne $prefabPath -and (Test-Path -LiteralPath $prefabPath)) {
+                try {
+                    $prefabJson = Get-Content -LiteralPath $prefabPath -Raw | ConvertFrom-Json
+                    $template = $prefabJson.RootObject
+                    $templateComponent = Get-AmbientSoundComponent -Object $template
+                    $patch = $object.__PrefabInstancePatch
+                    $name = [string](Get-PatchOverrideValue -Patch $patch -TargetType "GameObject" -Property "Name" -Default $template.Name)
+
+                    if ($name.StartsWith("Ambient", [System.StringComparison]::OrdinalIgnoreCase) -and $null -ne $templateComponent) {
+                        $component = [pscustomobject]@{
+                            Sound = [string](Get-PatchOverrideValue -Patch $patch -TargetType "Component" -Property "Sound" -Default $templateComponent.Sound)
+                            LoopDurationSeconds = Get-PatchOverrideValue -Patch $patch -TargetType "Component" -Property "LoopDurationSeconds" -Default $templateComponent.LoopDurationSeconds
+                            LoopOverlapSeconds = Get-PatchOverrideValue -Patch $patch -TargetType "Component" -Property "LoopOverlapSeconds" -Default $templateComponent.LoopOverlapSeconds
+                        }
+
+                        $Refs.Add([pscustomobject]@{
+                            ObjectName = $name
+                            Sound = [string]$component.Sound
+                            Component = $component
+                        })
+                    }
+                }
+                catch {
+                    Add-AgentIssue $issues "Error" "Ambient Noise" "Assets/scenes/main.scene" "Failed to parse ambient sound prefab instance '$prefab': $($_.Exception.Message)" "Fix the ambient sound prefab before auditing scene ambience."
+                }
+            }
+        }
+
+        if ($null -ne $object.Children) {
+            Add-AmbientPrefabInstanceSoundRefs -Objects @($object.Children) -Refs $Refs -Root $Root
+        }
+    }
+}
+
 $ambientRefs = New-Object System.Collections.Generic.List[object]
 $scenePath = Join-Path $Root "Assets\scenes\main.scene"
 if (Test-Path -LiteralPath $scenePath) {
     try {
         $sceneJson = Get-Content -LiteralPath $scenePath -Raw | ConvertFrom-Json
         Add-AmbientNamedSoundRefs -Objects @($sceneJson.GameObjects) -Refs $ambientRefs
+        Add-AmbientPrefabInstanceSoundRefs -Objects @($sceneJson.GameObjects) -Refs $ambientRefs -Root $Root
 
         foreach ($ref in $ambientRefs) {
             $sound = $ref.Sound.Replace("\", "/")
@@ -134,7 +235,7 @@ if (Test-Path -LiteralPath $scenePath) {
             }
         }
 
-        Add-AgentIssue $issues "Info" "Ambient Noise" "Assets/scenes/main.scene" "Checked $($ambientRefs.Count) AmbientSound scene emitter(s)."
+        Add-AgentIssue $issues "Info" "Ambient Noise" "Assets/scenes/main.scene" "Checked $($ambientRefs.Count) AmbientSound scene/prefab emitter(s)."
     }
     catch {
         Add-AgentIssue $issues "Error" "Ambient Noise" "Assets/scenes/main.scene" "Failed to parse scene JSON: $($_.Exception.Message)" "Fix scene JSON before auditing ambient emitters."

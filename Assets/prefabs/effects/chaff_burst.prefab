@@ -28,7 +28,110 @@
         "OnComponentUpdate": null
       }
     ],
-    "Children": []
+    "Children": [
+      {
+        "__guid": "7b8b77e0-4cf1-55f3-a4e5-52e3442fd111",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "Chaff Smoke",
+        "Position": "0,0,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Tags": "",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.ParticleEffect",
+            "__guid": "7b8b77e0-4cf1-55f3-a4e5-52e3442fd112",
+            "__enabled": true,
+            "Flags": 0
+          },
+          {
+            "__type": "Sandbox.ParticleSpriteRenderer",
+            "__guid": "7b8b77e0-4cf1-55f3-a4e5-52e3442fd113",
+            "__enabled": true,
+            "Flags": 0
+          },
+          {
+            "__type": "Sandbox.ParticleConeEmitter",
+            "__guid": "7b8b77e0-4cf1-55f3-a4e5-52e3442fd114",
+            "__enabled": true,
+            "Flags": 0
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "7b8b77e0-4cf1-55f3-a4e5-52e3442fd121",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "Chaff Metallic Flash",
+        "Position": "0,0,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Tags": "",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.ParticleEffect",
+            "__guid": "7b8b77e0-4cf1-55f3-a4e5-52e3442fd122",
+            "__enabled": true,
+            "Flags": 0
+          },
+          {
+            "__type": "Sandbox.ParticleSpriteRenderer",
+            "__guid": "7b8b77e0-4cf1-55f3-a4e5-52e3442fd123",
+            "__enabled": true,
+            "Flags": 0
+          },
+          {
+            "__type": "Sandbox.ParticleSphereEmitter",
+            "__guid": "7b8b77e0-4cf1-55f3-a4e5-52e3442fd124",
+            "__enabled": true,
+            "Flags": 0
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "7b8b77e0-4cf1-55f3-a4e5-52e3442fd131",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "Explosion Light",
+        "Position": "0,0,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Tags": "light_point,light",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.PointLight",
+            "__guid": "7b8b77e0-4cf1-55f3-a4e5-52e3442fd132",
+            "__enabled": true,
+            "Flags": 0,
+            "Radius": 320,
+            "LightColor": "0.6,0.9,1,1",
+            "Shadows": false
+          }
+        ],
+        "Children": []
+      }
+    ]
   },
   "ShowInMenu": false,
   "MenuPath": "Drone vs Players/Effects/Chaff Burst",

@@ -47,6 +47,15 @@
         "__type": "DroneVsPlayers.SoldierLoadout",
         "__guid": "33333333-c500-0000-0000-000000000001",
         "SelectedSlot": 1
+      },
+      {
+        "__type": "DroneVsPlayers.TeamVoice",
+        "__guid": "33333333-c600-0000-0000-000000000001",
+        "TeamOnly": true,
+        "RoleAwareRouting": true,
+        "HunterProximityDistance": 1400,
+        "PilotRadioVolume": 1,
+        "HunterProximityVolume": 0.92
       }
     ],
     "Children": [

@@ -82,6 +82,7 @@ Test-FileHasPatterns ".agents/sbox/ui-flow-agent.md" @(
 ) "UI Flow Agent"
 
 Test-FileHasPatterns "scripts/agents/ui_flow_audit.ps1" @(
+    "Test-InheritsRazorPanel",
     "Test-HasDynamicRazorOutput",
     "Test-HasBuildHash",
     "Test-CallsStateHasChangedFromTick",

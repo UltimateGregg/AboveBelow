@@ -136,6 +136,7 @@ function Assert-TruthyJsonOption {
 
 $deployer = Read-Text "Code\Player\DroneDeployer.cs"
 $viewmodel = Read-Text "Code\Player\FirstPersonViewmodel.cs"
+$controller = Read-Text "Code\Player\GroundPlayerController.cs"
 $droneCamera = Read-Text "Code\Drone\DroneCamera.cs"
 $droneController = Read-Text "Code\Drone\DroneController.cs"
 $gameSetup = Read-Text "Code\Game\GameSetup.cs"
@@ -147,11 +148,31 @@ Require-Pattern $viewmodel 'IsSameOrDescendant\(' `
     "FirstPersonViewmodel static copies must skip renderers under hidden held-item visual roots."
 Require-Pattern $viewmodel 'Key\s*=\s*\$"deployer:\{deployer\.GameObject\.Id\}:\{chosenDrone\}:\{deployer\.DroneInFlight\}"' `
     "DroneDeployer viewmodel keys must include the selected drone type and launch state so the copied visual rebuilds when those states change."
+Require-Pattern $viewmodel 'UsesPilotHumanBodyHands' `
+    "Pilot drone deployer first-person visuals should use the pilot-only human-body hand path instead of sharing hunter weapon/grenade viewmodel arms."
+Require-Pattern $viewmodel 'owner\s+is\s+DroneDeployer' `
+    "FirstPersonViewmodel must not hide the pilot deployer's world-held controller/drone visuals while pilot human hands are posing them."
+Require-Pattern $viewmodel 'UsesPilotHumanBodyHands\(\s*deployer\s*\)[\s\S]{0,160}continue' `
+    "FirstPersonViewmodel must skip spawning local static arms for the pilot deployer so the body hands can grip the controller and held drone."
+Require-Pattern $controller 'ShouldShowPilotBodyHands' `
+    "GroundPlayerController must keep body hands visible for the pilot deployer while hunter weapon/grenade viewmodels still hide body hands."
 
 Require-Pattern $deployer 'LeftHandIkFpOffset' `
     "DroneDeployer needs a separate LeftHandIkFpOffset so the controller grip target is not forced to the controller model origin."
 Require-Pattern $deployer 'RightHandIkFpOffset' `
     "DroneDeployer needs a separate RightHandIkFpOffset so the drone grip target is not forced to the drone model origin."
+Require-Pattern $deployer 'var\s+rightTarget\s*=\s*RightHandIkTarget\.IsValid\(\)\s*\?\s*RightHandIkTarget\s*:\s*RightHandVisual' `
+    "DroneDeployer must drive the right pilot hand from the explicit IK grip target instead of the held drone model origin."
+Require-Pattern $deployer 'PilotHandHoldType' `
+    "DroneDeployer needs a pilot-only hand hold type so drone-controller grip poses can be tuned without changing hunter weapons or grenades."
+Require-Pattern $deployer 'helper\.HoldType\s*=\s*PilotHandHoldType' `
+    "DroneDeployer must apply the pilot-only hand hold type to the citizen hand helper."
+Require-Pattern $deployer 'UseVisualRelativeFirstPersonIkTargets' `
+    "DroneDeployer first-person pilot hand IK should be anchored to the held controller/drone visuals so hands stay connected while moving and turning."
+Require-Pattern $deployer 'firstPersonIkAnchor\.WorldTransform\.PointToWorld\(\s*ikFpOffset\s*\)' `
+    "DroneDeployer must resolve first-person IK target position from the held visual transform, not only from independent eye-space offsets."
+Require-Pattern $deployer 'firstPersonIkAnchor\.WorldTransform\.RotationToWorld\(\s*ikFpRot\.ToRotation\(\)\s*\)' `
+    "DroneDeployer must resolve first-person IK target rotation from the held visual transform so grip anchors rotate with the controller/drone."
 Require-Pattern $deployer 'LeftHandIkTpLocalPos' `
     "DroneDeployer needs a separate LeftHandIkTpLocalPos so third-person controller grip targets can differ from visuals."
 Require-Pattern $deployer 'RightHandIkTpLocalPos' `
@@ -196,6 +217,22 @@ Require-Pattern $roundFlow 'linkedDrone\.GameObject\.Destroy\(\)' `
     "dvp_fpv_visual_probe must destroy extra linked drones before creating or reusing the proof drone."
 Require-Pattern $roundFlow 'deployer\.DroneInFlight\s*=\s*true' `
     "dvp_fpv_visual_probe must mark DroneDeployer.DroneInFlight so the pilot cannot deploy a second drone from the loadout slot during proof."
+Require-Pattern $roundFlow 'dvp_pilot_deployer_visual_probe' `
+    "RoundFlowDebugCommands needs a ground-side pilot deployer visual proof command for GPS, FPV, and Fiber pilots."
+Require-Pattern $roundFlow 'deployer\.DroneInFlight\s*=\s*false' `
+    "Pilot deployer visual proof must keep the held drone in hand instead of switching to launched-drone state."
+Require-Pattern $roundFlow 'remote\.DroneViewActive\s*=\s*false' `
+    "Pilot deployer visual proof must stay in ground first-person mode, not drone-camera mode."
+Require-Pattern $roundFlow 'loadout\.SelectSlot\(\s*SoldierLoadout\.PrimarySlot\s*\)' `
+    "Pilot deployer visual proof must select the deployer slot so the left controller and right held drone are visible together."
+Require-Pattern $gameSetup 'DebugSpawnPilotPawnForProbe[\s\S]{0,260}RequireRoleChoice\s*=\s*false' `
+    "Pilot deployer visual proof must suppress the loadout picker through the forced pilot spawn helper so screenshots show the first-person held controller and drone."
+Require-Pattern $roundFlow 'setup\.DebugSpawnPilotPawnForProbe\(\s*local,\s*selectedType\s*\)' `
+    "Pilot deployer visual proof must use the forced pilot spawn helper instead of racing the normal loadout selection timing."
+Require-Pattern $roundFlow 'DestroyExtraLocalPilotPawns' `
+    "Pilot deployer visual proof must remove stale same-owner pilot pawns so screenshots do not include duplicate pilot bodies."
+Require-Pattern $roundFlow 'controller\.FirstPerson\s*=\s*true' `
+    "Pilot deployer visual proof must force the local pilot controller into first-person mode."
 Require-Pattern $viewmodel 'CopyRenderer\.Model\s*=\s*visual\.Source\.Model' `
     "FirstPersonViewmodel static copies must refresh renderer models from the source so GPS propeller copies update after DroneDeployer switches the serialized FPV fallback to GPS."
 Require-Pattern $droneCamera 'ShowVisualInFirstPerson\s*\{\s*get;\s*set;\s*\}\s*=\s*true' `

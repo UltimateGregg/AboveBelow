@@ -258,6 +258,7 @@ Require-Pattern $viewmodel 'CreateViewmodelContainer\(\s*ViewmodelCustomVisualPr
 Require-Pattern $viewmodel 'ViewmodelStaticItemPrefabPath\s*=\s*"prefabs/items/viewmodel_static_item\.prefab"' "FirstPersonViewmodel must use a reusable prefab for static fallback first-person item roots."
 Require-Pattern $viewmodel 'CreateViewmodelContainer\(\s*ViewmodelStaticItemPrefabPath' "FirstPersonViewmodel must resolve the static item root prefab before falling back to procedural creation."
 Require-Pattern $viewmodel 'GameObject\.GetPrefab\(\s*prefabPath\s*\)' "FirstPersonViewmodel container roots must resolve their prefab path before falling back to procedural creation."
+Require-Pattern $viewmodel 'Components\.Get<ModelRenderer>\(\)' "FirstPersonViewmodel model-path fallback should reuse prefab-authored ModelRenderer components before creating repair fallback renderers."
 Require-Pattern $viewmodel 'NetworkMode\s*=\s*NetworkMode\.Never' "First-person spawned viewmodel objects must be local-only NetworkMode.Never."
 Require-Pattern $viewmodel 'SkinnedModelRenderer' "FirstPersonViewmodel must create skinned renderers for Facepunch weapon/arms animation drivers."
 Require-Pattern $viewmodel 'ModelRenderer' "FirstPersonViewmodel must support visible custom/static item visuals."
@@ -389,12 +390,18 @@ foreach ($viewmodelContainerPrefab in @(
     if ([string]$prefab.RootObject.NetworkMode -ne "2") {
         Add-Error "$($viewmodelContainerPrefab.Path) root object must stay local-only NetworkMode 2."
     }
+
+    $prefabRaw = Read-Text $viewmodelContainerPrefab.Path
+    if ($prefabRaw -notmatch '"__type"\s*:\s*"Sandbox\.ModelRenderer"') {
+        Add-Error "$($viewmodelContainerPrefab.Path) must include a Sandbox.ModelRenderer component for runtime custom/static visual setup."
+    }
 }
 
 Require-Pattern $controller 'UseLocalFirstPersonViewmodel' "GroundPlayerController must expose the local first-person viewmodel toggle."
 Require-Pattern $controller 'LocalFirstPersonViewmodelActive' "GroundPlayerController must track active local first-person viewmodel state."
 Require-Pattern $controller 'EnsureLocalFirstPersonViewmodel' "GroundPlayerController must create the local viewmodel component."
-Require-Pattern $controller 'SetBodyGroup\(\s*"Hands"\s*,\s*handsOnly\s*&&\s*UseLocalFirstPersonViewmodel\s*\?' "Local body hands must be hidden while first-person viewmodels are enabled."
+Require-Pattern $controller 'hideBodyHands\s*=\s*handsOnly\s*&&\s*UseLocalFirstPersonViewmodel\s*&&\s*!\s*ShouldShowPilotBodyHands\(\)' "Local body hands must stay hidden for first-person viewmodels except the pilot drone deployer human-hands path."
+Require-Pattern $controller 'ShouldShowPilotBodyHands' "GroundPlayerController must keep the pilot deployer's body-hand exception explicit."
 Require-Pattern $deployer 'hideForFirstPersonViewmodel' "DroneDeployer must keep updating hidden first-person hand visuals for copied viewmodel fallback."
 Require-Pattern $deployer 'WeaponPose\.SetVisibility\(\s*LeftHandVisual\s*,\s*!hideForFirstPersonViewmodel' "DroneDeployer left-hand visual should hide renderers but keep transforms updating for fallback copies."
 

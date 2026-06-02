@@ -934,6 +934,24 @@ public sealed class GameSetup : Component, Component.INetworkListener
 		RespawnWithSelectedLoadout( channel, role );
 	}
 
+#if DEBUG
+	public void DebugSpawnPilotPawnForProbe( Connection channel, DroneType type )
+	{
+		if ( channel is null )
+			return;
+
+		RequireRoleChoice = false;
+		_selectedLocalRole = PlayerRole.Pilot;
+		_selectedLocalDrone = type;
+		_hasLocalLoadout = true;
+		_selectedDroneTypes[channel.Id] = type;
+
+		AssignConnectionToTeam( channel.Id, PlayerRole.Pilot );
+		SpawnPilotPawn( channel, type );
+		RefreshSoloTrainingDummies( PlayerRole.Pilot );
+	}
+#endif
+
 	// Legacy: HudPanel calls this for the old direct role picker. We
 	// route both options into the new selection flow with a default class.
 	public void SelectLocalRole( PlayerRole role )

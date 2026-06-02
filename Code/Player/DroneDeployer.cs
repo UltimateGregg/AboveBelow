@@ -39,17 +39,19 @@ public sealed class DroneDeployer : Component
 	/// <summary>Eye-space offset where the drone clone appears at launch (fwd, right, up).</summary>
 	[Property] public Vector3 LaunchSpawnOffset { get; set; } = new( 60f, 0f, -4f );
 
-	[Property] public Vector3 LeftHandFpOffset { get; set; } = new( 28f, -6f, -10f );
+	[Property] public Vector3 LeftHandFpOffset { get; set; } = new( 30f, -5f, -12f );
 	[Property] public Angles LeftHandFpRotation { get; set; } = new( 0f, 0f, 0f );
-	[Property] public Vector3 LeftHandIkFpOffset { get; set; } = new( 28f, -10f, -12f );
-	[Property] public Angles LeftHandIkFpRotation { get; set; } = new( 0f, 180f, 0f );
-	[Property] public Vector3 RightHandFpOffset { get; set; } = new( 26f, 6f, -10f );
+	[Property] public Vector3 LeftHandIkFpOffset { get; set; } = new( -1.5f, 7f, 11f );
+	[Property] public Angles LeftHandIkFpRotation { get; set; } = new( 60f, -10f, 0f );
+	[Property] public Vector3 RightHandFpOffset { get; set; } = new( 36f, 12f, -10f );
 	[Property] public Angles RightHandFpRotation { get; set; } = new( 0f, 0f, 0f );
 	[Property] public Angles GpsHeldDroneFpRotationOffset { get; set; } = new( 0f, -90f, 0f );
-	[Property] public Vector3 RightHandIkFpOffset { get; set; } = new( 32f, 10f, -10f );
-	[Property] public Angles RightHandIkFpRotation { get; set; } = new( 0f, 0f, 0f );
-	[Property] public Vector3 RightHandControllerIkFpOffset { get; set; } = new( 29f, -2f, -12f );
-	[Property] public Angles RightHandControllerIkFpRotation { get; set; } = new( 0f, 180f, 0f );
+	[Property] public Vector3 RightHandIkFpOffset { get; set; } = new( 0f, 0f, -13f );
+	[Property] public Angles RightHandIkFpRotation { get; set; } = new( 10f, 0f, 170f );
+	[Property] public Vector3 RightHandControllerIkFpOffset { get; set; } = new( -1.5f, -5f, 1f );
+	[Property] public Angles RightHandControllerIkFpRotation { get; set; } = new( 0f, 0f, 0f );
+	[Property] public bool UseVisualRelativeFirstPersonIkTargets { get; set; } = true;
+	[Property] public bool UsePilotBodyHands { get; set; } = true;
 
 	[Property] public Vector3 LeftHandTpLocalPos { get; set; } = new( 20f, 0f, 47f );
 	[Property] public Angles LeftHandTpLocalAngles { get; set; } = new( 0f, 0f, 0f );
@@ -73,6 +75,7 @@ public sealed class DroneDeployer : Component
 	[Property] public Color GpsHeldDroneTint { get; set; } = Color.White;
 	[Property] public Color FpvHeldDroneTint { get; set; } = Color.White;
 	[Property] public Color FiberHeldDroneTint { get; set; } = Color.White;
+	[Property] public CitizenAnimationHelper.HoldTypes PilotHandHoldType { get; set; } = CitizenAnimationHelper.HoldTypes.HoldItem;
 
 	[Property, Range( 1f, 30f )] public float SwayLerpRate { get; set; } = 18f;
 
@@ -160,7 +163,8 @@ public sealed class DroneDeployer : Component
 				LeftHandTpLocalPos,
 				LeftHandTpLocalAngles,
 				LeftHandIkTpLocalPos,
-				LeftHandIkTpLocalAngles );
+				LeftHandIkTpLocalAngles,
+				LeftHandVisual );
 
 			UpdateHandVisual(
 				RightHandVisual,
@@ -174,7 +178,8 @@ public sealed class DroneDeployer : Component
 				RightHandTpLocalPos,
 				RightHandTpLocalAngles,
 				DroneInFlight ? RightHandControllerIkTpLocalPos : RightHandIkTpLocalPos,
-				DroneInFlight ? RightHandControllerIkTpLocalAngles : RightHandIkTpLocalAngles );
+				DroneInFlight ? RightHandControllerIkTpLocalAngles : RightHandIkTpLocalAngles,
+				DroneInFlight ? LeftHandVisual : RightHandVisual );
 		}
 		UpdateCitizenHands( pc, droneViewActive );
 
@@ -437,7 +442,7 @@ public sealed class DroneDeployer : Component
 
 	void UpdateHandVisual( GameObject visual, GameObject ikTarget, GroundPlayerController pc, bool forceThirdPerson,
 		Vector3 visualFpOffset, Angles visualFpRot, Vector3 ikFpOffset, Angles ikFpRot,
-		Vector3 visualTpPos, Angles visualTpRot, Vector3 ikTpPos, Angles ikTpRot )
+		Vector3 visualTpPos, Angles visualTpRot, Vector3 ikTpPos, Angles ikTpRot, GameObject ikAnchorVisual )
 	{
 		if ( !visual.IsValid() && !ikTarget.IsValid() ) return;
 
@@ -453,11 +458,22 @@ public sealed class DroneDeployer : Component
 		var look = pc.EyeAngles.ToRotation();
 		var visualPos = EyeOffsetToWorld( pc, look, visualFpOffset );
 		var visualRot = look * visualFpRot.ToRotation();
-		var ikPos = EyeOffsetToWorld( pc, look, ikFpOffset );
-		var ikRot = look * ikFpRot.ToRotation();
 
 		ApplySmoothedWorldPose( visual, visualPos, visualRot );
-		ApplySmoothedWorldPose( ikTarget, ikPos, ikRot );
+
+		var firstPersonIkAnchor = ikAnchorVisual.IsValid() ? ikAnchorVisual : visual;
+		if ( UseVisualRelativeFirstPersonIkTargets && firstPersonIkAnchor.IsValid() )
+		{
+			var ikPos = firstPersonIkAnchor.WorldTransform.PointToWorld( ikFpOffset );
+			var ikRot = firstPersonIkAnchor.WorldTransform.RotationToWorld( ikFpRot.ToRotation() );
+			ApplyWorldPose( ikTarget, ikPos, ikRot );
+			return;
+		}
+
+		ApplySmoothedWorldPose(
+			ikTarget,
+			EyeOffsetToWorld( pc, look, ikFpOffset ),
+			look * ikFpRot.ToRotation() );
 	}
 
 	static Vector3 EyeOffsetToWorld( GroundPlayerController pc, Rotation look, Vector3 offset )
@@ -515,13 +531,11 @@ public sealed class DroneDeployer : Component
 		}
 
 		var leftTarget = LeftHandIkTarget.IsValid() ? LeftHandIkTarget : LeftHandVisual;
-		var rightTarget = DroneInFlight || droneViewActive
-			? (RightHandIkTarget.IsValid() ? RightHandIkTarget : LeftHandVisual)
-			: (RightHandVisual.IsValid() ? RightHandVisual : RightHandIkTarget);
+		var rightTarget = RightHandIkTarget.IsValid() ? RightHandIkTarget : RightHandVisual;
 
 		if ( IsSelected )
 		{
-			helper.HoldType = CitizenAnimationHelper.HoldTypes.HoldItem;
+			helper.HoldType = PilotHandHoldType;
 			helper.Handedness = CitizenAnimationHelper.Hand.Both;
 			helper.IkLeftHand = leftTarget;
 			helper.IkRightHand = rightTarget;

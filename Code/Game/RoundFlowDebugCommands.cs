@@ -24,6 +24,90 @@ public static class RoundFlowDebugCommands
 		LogProbe( label );
 	}
 
+	[ConCmd( "dvp_pilot_deployer_visual_probe" )]
+	public static void PilotDeployerVisualProbe( string droneType = "Fpv" )
+	{
+		if ( !Enum.TryParse<DroneType>( droneType, true, out var selectedType ) )
+		{
+			Log.Warning( $"[RoundProbe] Unknown DroneType '{droneType}'." );
+			LogProbe( $"pilot-deployer-visual-unknown-{droneType}" );
+			return;
+		}
+
+		if ( Networking.IsActive && !Networking.IsHost )
+		{
+			Log.Warning( "[RoundProbe] dvp_pilot_deployer_visual_probe must run on the host." );
+			LogProbe( "pilot-deployer-visual-not-host" );
+			return;
+		}
+
+		var scene = Game.ActiveScene;
+		var setup = Find<GameSetup>();
+		var local = Connection.Local ?? Connection.All.FirstOrDefault();
+		if ( scene is null || local is null )
+		{
+			Log.Warning( "[RoundProbe] Cannot run pilot deployer visual probe without an active scene and local connection." );
+			LogProbe( "pilot-deployer-visual-no-local" );
+			return;
+		}
+
+		if ( setup is not null && setup.IsValid() )
+		{
+			setup.DebugSpawnPilotPawnForProbe( local, selectedType );
+		}
+
+		var pilot = scene.GetAllComponents<PilotSoldier>()
+			.FirstOrDefault( p => !p.IsProxy && p.GameObject.Network.Owner?.Id == local.Id )
+			?? scene.GetAllComponents<PilotSoldier>().FirstOrDefault( p => !p.IsProxy );
+
+		if ( !pilot.IsValid() )
+		{
+			Log.Warning( "[RoundProbe] Pilot deployer visual probe could not find a local pilot pawn." );
+			LogProbe( "pilot-deployer-visual-no-pilot" );
+			return;
+		}
+
+		DestroyExtraLocalPilotPawns( scene, pilot, local.Id );
+		LocalOptionsState.SetOpen( false );
+
+		pilot.ChosenDrone = selectedType;
+		pilot.LinkedDroneId = default;
+
+		foreach ( var linkedDrone in scene.GetAllComponents<DroneBase>()
+			.Where( drone => IsProbeDroneLinkedTo( drone, pilot, local.Id ) )
+			.ToList() )
+		{
+			linkedDrone.GameObject.Destroy();
+		}
+
+		var remote = pilot.Components.Get<RemoteController>( FindMode.EverythingInSelfAndDescendants );
+		if ( remote.IsValid() )
+		{
+			remote.DroneViewActive = false;
+			remote.SetDroneViewActive( false );
+		}
+
+		var loadout = pilot.Components.Get<SoldierLoadout>( FindMode.EverythingInSelfAndDescendants );
+		if ( loadout.IsValid() )
+			loadout.SelectSlot( SoldierLoadout.PrimarySlot );
+
+		var controller = pilot.Components.Get<GroundPlayerController>( FindMode.EverythingInSelfAndDescendants );
+		if ( controller.IsValid() )
+			controller.FirstPerson = true;
+
+		var deployer = pilot.Components.Get<DroneDeployer>( FindMode.EverythingInSelfAndDescendants );
+		if ( deployer.IsValid() )
+		{
+			deployer.DroneInFlight = false;
+			deployer.LaunchReadyAt = 0f;
+			deployer.ApplySelectionVisualState();
+			Log.Info( $"[RoundProbe] Pilot deployer uses stock S&Box body hands for first-person IK: bodyHands={deployer.UsePilotBodyHands}, holdType={deployer.PilotHandHoldType}." );
+		}
+
+		Log.Info( $"[RoundProbe] Pilot deployer visual proof active: local pilot is holding the {selectedType} drone under the right hand and RC controller at the left hand." );
+		LogProbe( $"pilot-deployer-visual-active-{selectedType}" );
+	}
+
 	[ConCmd( "dvp_fpv_visual_probe" )]
 	public static void FpvVisualProbe( string droneType = "Fpv", string view = "FirstPerson" )
 	{
@@ -287,6 +371,28 @@ public static class RoundFlowDebugCommands
 		return scene.GetAllComponents<DroneBase>()
 			.Count( drone => drone.Type == selectedType && IsProbeDroneLinkedTo( drone, pilot, ownerId ) && IsProbeDroneAlive( drone ) );
 	}
+
+	static void DestroyExtraLocalPilotPawns( Scene scene, PilotSoldier keep, Guid ownerId )
+	{
+		foreach ( var pilot in scene.GetAllComponents<PilotSoldier>().ToList() )
+		{
+			if ( !pilot.IsValid() || !pilot.GameObject.IsValid() )
+				continue;
+			if ( keep.IsValid() && pilot.GameObject.Id == keep.GameObject.Id )
+				continue;
+			if ( pilot.IsProxy )
+				continue;
+
+			var owner = pilot.GameObject.Network.Owner?.Id ?? default;
+			if ( owner != ownerId )
+				continue;
+			if ( !pilot.GameObject.Name.StartsWith( "Pilot -", StringComparison.Ordinal ) )
+				continue;
+
+			pilot.GameObject.Destroy();
+		}
+	}
+
 	static bool IsProbeDroneLinkedTo( DroneBase drone, PilotSoldier pilot, Guid ownerId )
 	{
 		if ( !drone.IsValid() ) return false;

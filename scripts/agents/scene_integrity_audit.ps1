@@ -146,6 +146,65 @@ function Get-AllSceneObjects {
     return $objects
 }
 
+function Resolve-PrefabResourcePath {
+    param(
+        [string]$Root,
+        [string]$PrefabPath
+    )
+
+    if ([string]::IsNullOrWhiteSpace($PrefabPath)) {
+        return $null
+    }
+
+    $normalized = $PrefabPath.Replace("\", "/").TrimStart("/")
+    if ($normalized.StartsWith("Assets/", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return Join-Path $Root $normalized
+    }
+
+    if ($normalized.StartsWith("prefabs/", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return Join-Path $Root ("Assets/" + $normalized)
+    }
+
+    return Join-Path $Root $normalized
+}
+
+function Add-PrefabTextBodies {
+    param(
+        [string]$Root,
+        [string]$Text,
+        [System.Collections.Generic.List[string]]$Bodies,
+        [System.Collections.Generic.HashSet[string]]$Visited
+    )
+
+    foreach ($match in [regex]::Matches($Text, '"__Prefab"\s*:\s*"(?<path>[^"]+)"')) {
+        $prefabPath = Resolve-PrefabResourcePath -Root $Root -PrefabPath $match.Groups["path"].Value
+        if ([string]::IsNullOrWhiteSpace($prefabPath)) {
+            continue
+        }
+
+        $resolvedPrefabPath = $prefabPath
+        if (Test-Path -LiteralPath $prefabPath) {
+            $resolvedPrefabPath = (Resolve-Path -LiteralPath $prefabPath).Path
+        }
+
+        if (-not $Visited.Add($resolvedPrefabPath)) {
+            continue
+        }
+
+        if (-not (Test-Path -LiteralPath $prefabPath)) {
+            continue
+        }
+
+        $prefabText = Get-Content -LiteralPath $prefabPath -Raw
+        if ($null -eq $prefabText) {
+            $prefabText = ""
+        }
+
+        $Bodies.Add($prefabText)
+        Add-PrefabTextBodies -Root $Root -Text $prefabText -Bodies $Bodies -Visited $Visited
+    }
+}
+
 function Find-SceneObjectsByName {
     param(
         [object[]]$Objects,
@@ -559,9 +618,23 @@ $requiredComponents = @(
     "DroneVsPlayers.HudPanel"
 )
 
+$sceneAndPrefabBodies = [System.Collections.Generic.List[string]]::new()
+$sceneAndPrefabBodies.Add($raw)
+$visitedPrefabPaths = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+Add-PrefabTextBodies -Root $Root -Text $raw -Bodies $sceneAndPrefabBodies -Visited $visitedPrefabPaths
+
 foreach ($type in $requiredComponents) {
-    if ($raw -notmatch ('"__type"\s*:\s*"' + [regex]::Escape($type) + '"')) {
-        Add-AgentIssue $issues "Error" "Scene Components" $relative "Missing required scene component '$type'." "Restore the GameManager/ScreenPanel setup in the editor."
+    $pattern = '"__type"\s*:\s*"' + [regex]::Escape($type) + '"'
+    $found = $false
+    foreach ($body in $sceneAndPrefabBodies) {
+        if ($body -match $pattern) {
+            $found = $true
+            break
+        }
+    }
+
+    if (-not $found) {
+        Add-AgentIssue $issues "Error" "Scene Components" $relative "Missing required scene component '$type'." "Restore the GameManager/HUD setup in the scene or through a saved scene prefab instance."
     }
 }
 

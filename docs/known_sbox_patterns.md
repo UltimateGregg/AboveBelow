@@ -628,6 +628,17 @@ public void TakeDamage(DamageInfo info)
 - If editor playtest shows head or torso self-occlusion, fix local body/head visibility in the human body path rather than bringing back a separate arms model.
 - Run `.\scripts\agents\run_agent_checks.ps1 -Suite prefab -ShowInfo` after held-item prefab edits so missing hand targets are caught before playtesting.
 
+### First-Person Grip Anchor Tuning
+
+**Pattern:** First-person hand IK targets should behave like authored grip anchors on the visible held item. If the controller, weapon, drone, or prop moves with eye sway, slot state, variant selection, or launch state, the hand target should move from that visual's transform rather than from a separate eye-space position.
+
+**Workflow:**
+- Use the S&Box editor as the tuning surface: start play mode, spawn or select the target pawn, inspect the held item with `scene_find_objects` / `scene_find_by_component` and `component_get`, and make temporary pose changes with `component_set`.
+- For controller, weapon, and drone grips, prefer visual-relative local offsets or child grip GameObjects under the held item. ModelDoc attachments can own the same concept for model-level anchors when the asset itself should expose them, but prefab/component anchors are usually faster for team-specific gameplay poses.
+- Keep team-specific first-person visuals separated. Pilot controller/drone hand paths should not reuse hunter weapon or grenade viewmodel arms, hold types, or animation assumptions unless the shared behavior is intentional and covered by an audit.
+- Capture editor screenshots before persisting values to prefabs or reusable held-item templates. Static prefab JSON can prove the targets exist, but it cannot prove the thumb/finger silhouette reads correctly from the active first-person camera.
+- When a live proof command or selector fails, verify the live component type names with `component_list` / `scene_get_object` and check play/hotload state before continuing with more offset guesses.
+
 ### Reusable Held-Item Prefabs
 
 **Pattern:** Active class and pilot prefabs still own runtime loadout behavior, but weapon/equipment child graphs should also have standalone reusable prefab templates so item visuals, sockets, IK targets, sounds, and component tuning can be inspected and reused without digging through a character prefab.
@@ -635,9 +646,9 @@ public void TakeDamage(DamageInfo info)
 **Workflow:**
 - Reusable held-item templates live in `Assets/prefabs/items/` and are generated from the active `Weapon`, `Grenade`, and `DroneDeployer` child graphs.
 - The pilot drone deployer also uses `Assets/prefabs/items/held_drone_propeller.prefab` as the reusable runtime propeller preview object; `DroneDeployer` clones it and assigns the selected GPS/FPV propeller model.
-- `FirstPersonViewmodel` clones `Assets/prefabs/items/local_first_person_viewmodel.prefab` for the shared local-only root, `Assets/prefabs/items/viewmodel_arms.prefab` for the reusable arms child, `Assets/prefabs/items/viewmodel_stock_weapon.prefab` for visible stock weapons or hidden custom-weapon animation drivers, and `Assets/prefabs/items/viewmodel_custom_visual.prefab` / `Assets/prefabs/items/viewmodel_static_item.prefab` for the runtime custom/static visual containers.
+- `FirstPersonViewmodel` clones `Assets/prefabs/items/local_first_person_viewmodel.prefab` for the shared local-only root, `Assets/prefabs/items/viewmodel_arms.prefab` for the reusable arms child, `Assets/prefabs/items/viewmodel_stock_weapon.prefab` for visible stock weapons or hidden custom-weapon animation drivers, and `Assets/prefabs/items/viewmodel_custom_visual.prefab` / `Assets/prefabs/items/viewmodel_static_item.prefab` for the runtime custom/static visual containers. The custom/static visual container prefabs own a `Sandbox.ModelRenderer` for model-path fallback setup; copied source-renderer children remain runtime/per-item because their count, transform, model, and material come from the selected held item.
 - Use `.\scripts\agents\sync_held_item_prefab_templates.ps1` after intentional held-item prefab edits.
-- Run `.\scripts\agents\run_agent_checks.ps1 -Suite held-items -ShowInfo` and `.\scripts\check_first_person_viewmodel_spawn.ps1 -Root .` to prove templates match the active loadout sources and the first-person root prefab path still exists.
+- Run `.\scripts\agents\run_agent_checks.ps1 -Suite held-items -ShowInfo` and `.\scripts\agents\run_agent_checks.ps1 -Suite viewmodel-prefab -ShowInfo` to prove templates match the active loadout sources and the first-person root prefab path still exists.
 - Do not treat the visual-only asset pipeline prefabs (`assault_rifle_m4.prefab`, `smg_mp7.prefab`) as complete held-item prefabs; the held-item templates include gameplay components, sockets, IK targets, and item-specific sounds.
 
 ### Reusable Scene Marker Prefabs
@@ -651,6 +662,25 @@ public void TakeDamage(DamageInfo info)
 - `training_dummy_spawn.prefab` carries `TrainingDummySpawn.PreferredRole = Spectator` for neutral solo-practice placement.
 - Use `.\scripts\agents\migrate_scene_markers_to_prefab_instances.ps1 -DryRun` to preview direct `PlayerSpawn` and `TrainingDummySpawn` placements that can be converted to prefab instances, then run it without `-DryRun` to rewrite saved placements through the engine's `__Prefab` / patch / GUID-map instance format.
 - Run `.\scripts\agents\run_agent_checks.ps1 -Suite scene-markers -ShowInfo` after marker prefab edits.
+
+### Terrain Scene Prefab Drift
+
+**Pattern:** Shape-matching terrain, landform, grass, trench, skyline, and level-design scene objects should not stay expanded in `main.scene` once a reusable prefab template exists.
+
+**Workflow:**
+- Run `.\scripts\agents\migrate_terrain_scene_objects_to_prefab_instances.ps1 -Root . -DryRun` to preview scene objects that can safely become prefab instances.
+- Run the migration without `-DryRun` only for intentional prefab instance rewrites, then run `.\scripts\agents\run_agent_checks.ps1 -Suite terrain-scene-prefabs -ShowInfo` and `.\scripts\agents\run_agent_checks.ps1 -Suite prefab-graph -ShowInfo`.
+- If the migration skips an object because its shape does not match an existing template, either leave it direct as hand-authored scene content or create a distinct prefab contract before migrating it.
+
+### Scene Prefab Coverage
+
+**Pattern:** Component-bearing objects saved in `main.scene` should be prefab instances unless they are truly scene-local metadata or the unique terrain floor. Empty organizational containers can stay direct.
+
+**Workflow:**
+- Keep `Scene Information` direct with only `Sandbox.SceneInformation`.
+- Keep `BlockoutMap/ArenaFloor` direct with only `Sandbox.Terrain` because it binds the scene's authored terrain resource.
+- Everything else that owns components should be prefab-backed or covered by a deliberately narrow exception in `scripts/agents/scene_prefab_coverage_audit.ps1`.
+- Run `.\scripts\agents\run_agent_checks.ps1 -Suite scene-prefab-coverage -ShowInfo` after scene or migration edits.
 
 ### Reusable Stock Scene Prop Prefabs
 
@@ -729,13 +759,36 @@ public void TakeDamage(DamageInfo info)
 **Workflow:**
 - `MuzzleFlashVisual.Spawn(...)` first clones `Assets/prefabs/effects/muzzle_flash.prefab`, then falls back to constructing the object if the prefab is unavailable.
 - Soldier, pilot, and drone hitscan tracers should use the shared `Assets/prefabs/tracer_default.prefab` before falling back to `BallisticTracerRenderer`; that fallback should first clone `Assets/prefabs/effects/ballistic_tracer.prefab`, then construct the same local-only object only if the prefab is unavailable.
+- `Assets/prefabs/effects/muzzle_flash.prefab` should own `MuzzleFlashVisual`, `SpriteRenderer`, and `PointLight`. `MuzzleFlashVisual` still configures size, color, sprite texture, and fade at spawn time, but component creation should be a repair fallback for damaged prefabs only.
+- `Assets/prefabs/effects/chaff_burst.prefab`, `emp_burst.prefab`, and `frag_burst.prefab` should own their particle burst children and `Explosion Light` child. `GrenadeEffectVisual` still configures kind-specific count, scale, color, radius, and lifetime at spawn time, but should reuse prefab-authored child objects/components before creating repair fallbacks.
+- Project-owned scene singleton roots and reusable engine roots should be prefab-backed when they carry reusable gameplay, UI, camera, lighting, or skybox components. `GameManager`, `HUD`, `BlindingSun_WestSky`, `Sun`, `2D Skybox`, and `Camera` should remain saved prefab instances of `Assets/prefabs/systems/game_manager.prefab`, `Assets/prefabs/ui/hud.prefab`, `Assets/prefabs/environment/blinding_sun_glare.prefab`, `Assets/prefabs/environment/sun_directional.prefab`, `Assets/prefabs/environment/skybox_2d.prefab`, and `Assets/prefabs/systems/main_camera.prefab`; use `scripts/agents/migrate_scene_singletons_to_prefab_instances.ps1 -DryRun` and `scene_singleton_prefab_audit.ps1 -RequireMigrated` after scene saves. Keep `Scene Information` direct because it is main-scene metadata rather than a reusable object contract.
 - `TracerLifetime` first clones `Assets/prefabs/effects/tracer_bullet_glow.prefab` for the moving head glow, then falls back to constructing the same sprite child if the prefab is unavailable.
 - `DroneJammerGun` first clones `Assets/prefabs/effects/jammer_beam.prefab` for its local LineRenderer beam, then falls back to constructing the same local-only beam object if the prefab is unavailable.
 - `FiberCable.DetachFromLiveEndpoints()` first clones `Assets/prefabs/effects/detached_fiber_cable.prefab` for the persistent local wire, then falls back to constructing a local-only LineRenderer object if the prefab is unavailable.
 - Chaff, EMP, and frag detonation visuals first clone `Assets/prefabs/effects/chaff_burst.prefab`, `Assets/prefabs/effects/emp_burst.prefab`, or `Assets/prefabs/effects/frag_burst.prefab`, then configure the shared `GrenadeEffectVisual` with the grenade-specific kind and radius.
-- `ThrowableGrenade` first clones `Assets/prefabs/items/thrown_grenade_projectile.prefab`, then applies the grenade-specific model, velocity, fuse, collider, and physics tuning.
+- `ThrowableGrenade` first clones `Assets/prefabs/items/thrown_grenade_projectile.prefab`, then applies the grenade-specific model, velocity, fuse, collider, and physics tuning. The prefab should own `ModelRenderer`, `CapsuleCollider`, `Rigidbody`, and wired `ThrownGrenadeProjectile.Body` / `.Collider` refs; runtime component creation is only a repair fallback.
 - Keep procedural fallbacks in these paths so combat still functions if an asset reference is temporarily broken during editor iteration.
+- Runtime `new GameObject` creation in `Code/` should be rare and classified. Prefer a prefab first, then a repair fallback for broken assets; keep only intentionally dynamic per-item copies as direct runtime children. Run `.\scripts\agents\run_agent_checks.ps1 -Suite runtime-prefab-fallbacks -ShowInfo` after adding a new runtime object path.
 - Run `.\scripts\agents\run_agent_checks.ps1 -Suite ballistic-tracers -ShowInfo` after changing fallback ballistic tracer spawning. Run `.\scripts\agents\run_agent_checks.ps1 -Suite transient-combat -ShowInfo` after changing broader muzzle flash, tracer, grenade, cable, or thrown projectile spawning.
+
+### Team Voice Prefab Ownership
+
+**Pattern:** Spawned player pawns should carry their shared team voice routing component in the prefab contract, with `GameSetup` keeping a repair fallback for legacy or broken prefabs.
+
+**Workflow:**
+- `Assets/prefabs/soldier.prefab`, `soldier_assault.prefab`, `soldier_heavy.prefab`, and `pilot_ground.prefab` should carry `DroneVsPlayers.TeamVoice` on the root with team-only, role-aware routing defaults.
+- Keep `GameSetup.EnsureTeamVoice(...)` as a fallback that finds prefab-authored `TeamVoice`, creates one only if missing, assigns `Setup`, and reapplies the routing profile after spawn.
+- `Assets/prefabs/systems/game_manager.prefab` should carry `DroneVsPlayers.TeamComms` with team chat enabled and `[TEAM]` prefix defaults. Keep `GameSetup.EnsureTeamComms()` as a fallback that finds prefab-authored `TeamComms`, creates one only if missing, and assigns `Setup`.
+- Run `.\scripts\agents\run_agent_checks.ps1 -Suite team-voice-prefabs -ShowInfo` after changing character voice prefab ownership.
+
+### Training Dummy Prefab Ownership
+
+**Pattern:** Training dummy navigation should be prefab-authored, with runtime repair only as a compatibility fallback.
+
+**Workflow:**
+- `Assets/prefabs/training_dummy.prefab` should carry `Sandbox.NavMeshAgent` on the root and wire `TrainingDummy.NavAgent` to that component.
+- Keep `TrainingDummy.ConfigureNavAgent()` able to find or create a missing `NavMeshAgent` so legacy or temporarily damaged prefabs still move.
+- Run `.\scripts\agents\run_agent_checks.ps1 -Suite training-dummy-prefab -ShowInfo` after changing the training dummy prefab or nav ownership.
 
 ### MCP Component Value Conversion
 

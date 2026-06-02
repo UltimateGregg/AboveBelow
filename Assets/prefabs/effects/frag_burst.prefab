@@ -28,7 +28,147 @@
         "OnComponentUpdate": null
       }
     ],
-    "Children": []
+    "Children": [
+      {
+        "__guid": "76f0c3e9-944a-57ab-825d-e6a1da223111",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "Frag Fireball",
+        "Position": "0,0,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Tags": "",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.ParticleEffect",
+            "__guid": "76f0c3e9-944a-57ab-825d-e6a1da223112",
+            "__enabled": true,
+            "Flags": 0
+          },
+          {
+            "__type": "Sandbox.ParticleSpriteRenderer",
+            "__guid": "76f0c3e9-944a-57ab-825d-e6a1da223113",
+            "__enabled": true,
+            "Flags": 0
+          },
+          {
+            "__type": "Sandbox.ParticleSphereEmitter",
+            "__guid": "76f0c3e9-944a-57ab-825d-e6a1da223114",
+            "__enabled": true,
+            "Flags": 0
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "76f0c3e9-944a-57ab-825d-e6a1da223121",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "Frag Smoke",
+        "Position": "0,0,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Tags": "",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.ParticleEffect",
+            "__guid": "76f0c3e9-944a-57ab-825d-e6a1da223122",
+            "__enabled": true,
+            "Flags": 0
+          },
+          {
+            "__type": "Sandbox.ParticleSpriteRenderer",
+            "__guid": "76f0c3e9-944a-57ab-825d-e6a1da223123",
+            "__enabled": true,
+            "Flags": 0
+          },
+          {
+            "__type": "Sandbox.ParticleConeEmitter",
+            "__guid": "76f0c3e9-944a-57ab-825d-e6a1da223124",
+            "__enabled": true,
+            "Flags": 0
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "76f0c3e9-944a-57ab-825d-e6a1da223131",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "Frag Sparks",
+        "Position": "0,0,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Tags": "",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.ParticleEffect",
+            "__guid": "76f0c3e9-944a-57ab-825d-e6a1da223132",
+            "__enabled": true,
+            "Flags": 0
+          },
+          {
+            "__type": "Sandbox.ParticleSpriteRenderer",
+            "__guid": "76f0c3e9-944a-57ab-825d-e6a1da223133",
+            "__enabled": true,
+            "Flags": 0
+          },
+          {
+            "__type": "Sandbox.ParticleSphereEmitter",
+            "__guid": "76f0c3e9-944a-57ab-825d-e6a1da223134",
+            "__enabled": true,
+            "Flags": 0
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "76f0c3e9-944a-57ab-825d-e6a1da223141",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "Explosion Light",
+        "Position": "0,0,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Tags": "light_point,light",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.PointLight",
+            "__guid": "76f0c3e9-944a-57ab-825d-e6a1da223142",
+            "__enabled": true,
+            "Flags": 0,
+            "Radius": 360,
+            "LightColor": "1,0.45,0.16,1",
+            "Shadows": false
+          }
+        ],
+        "Children": []
+      }
+    ]
   },
   "ShowInMenu": false,
   "MenuPath": "Drone vs Players/Effects/Frag Burst",

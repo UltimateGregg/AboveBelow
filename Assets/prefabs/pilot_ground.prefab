@@ -52,6 +52,15 @@
         "__type": "DroneVsPlayers.SoldierLoadout",
         "__guid": "33333333-d600-0000-0000-000000000001",
         "SelectedSlot": 1
+      },
+      {
+        "__type": "DroneVsPlayers.TeamVoice",
+        "__guid": "33333333-d700-0000-0000-000000000001",
+        "TeamOnly": true,
+        "RoleAwareRouting": true,
+        "HunterProximityDistance": 1400,
+        "PilotRadioVolume": 1,
+        "HunterProximityVolume": 0.92
       }
     ],
     "Children": [
@@ -247,10 +256,16 @@
                 "LaunchCooldown": 8,
                 "LaunchSpeed": 300,
                 "LaunchSpawnOffset": "60,0,-4",
-                "LeftHandFpOffset": "28,-6,-10",
+                "LeftHandFpOffset": "30,-5,-12",
                 "LeftHandFpRotation": "0,180,0",
-                "RightHandFpOffset": "34,12,-8",
+                "LeftHandIkFpOffset": "31,-10,-4",
+                "LeftHandIkFpRotation": "60,170,0",
+                "RightHandFpOffset": "36,12,-10",
                 "RightHandFpRotation": "0,0,0",
+                "RightHandIkFpOffset": "37,13,-24",
+                "RightHandIkFpRotation": "10,0,-10",
+                "UseVisualRelativeFirstPersonIkTargets": true,
+                "UsePilotBodyHands": true,
                 "LeftHandTpLocalPos": "20,0,47",
                 "LeftHandTpLocalAngles": "0,0,0",
                 "RightHandTpLocalPos": "22,14,49",

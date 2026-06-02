@@ -1,6 +1,7 @@
 using Sandbox;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DroneVsPlayers;
 
@@ -95,7 +96,7 @@ public sealed class GrenadeEffectVisual : Component
 	void CreateFlashBurst( string name, Color color, float scale, int count, float lifetime )
 	{
 		var child = CreateParticleObject( name, color, scale, count, lifetime );
-		var emitter = child.Components.Create<ParticleSphereEmitter>();
+		var emitter = child.Components.Get<ParticleSphereEmitter>() ?? child.Components.Create<ParticleSphereEmitter>();
 		emitter.Burst = count;
 		emitter.Duration = 0.08f;
 		emitter.Loop = false;
@@ -107,7 +108,7 @@ public sealed class GrenadeEffectVisual : Component
 	void CreateSmokeBurst( string name, Color color, float scale, int count, float lifetime )
 	{
 		var child = CreateParticleObject( name, color, scale, count, lifetime );
-		var emitter = child.Components.Create<ParticleConeEmitter>();
+		var emitter = child.Components.Get<ParticleConeEmitter>() ?? child.Components.Create<ParticleConeEmitter>();
 		emitter.Burst = count;
 		emitter.Duration = 0.12f;
 		emitter.Loop = false;
@@ -123,7 +124,7 @@ public sealed class GrenadeEffectVisual : Component
 	void CreateSparkBurst( string name, Color color, float scale, int count, float lifetime )
 	{
 		var child = CreateParticleObject( name, color, scale, count, lifetime );
-		var emitter = child.Components.Create<ParticleSphereEmitter>();
+		var emitter = child.Components.Get<ParticleSphereEmitter>() ?? child.Components.Create<ParticleSphereEmitter>();
 		emitter.Burst = count;
 		emitter.Duration = 0.05f;
 		emitter.Loop = false;
@@ -137,7 +138,7 @@ public sealed class GrenadeEffectVisual : Component
 		var child = CreateParticleObject( name, color, scale, count, lifetime );
 		child.LocalRotation = Rotation.From( 90f, 0f, 0f );
 
-		var emitter = child.Components.Create<ParticleConeEmitter>();
+		var emitter = child.Components.Get<ParticleConeEmitter>() ?? child.Components.Create<ParticleConeEmitter>();
 		emitter.Burst = count;
 		emitter.Duration = 0.06f;
 		emitter.Loop = false;
@@ -151,12 +152,10 @@ public sealed class GrenadeEffectVisual : Component
 
 	GameObject CreateParticleObject( string name, Color color, float scale, int count, float lifetime )
 	{
-		var child = new GameObject( GameObject, true, name )
-		{
-			LocalPosition = Vector3.Zero
-		};
+		var child = GetOrCreateChild( name );
+		child.LocalPosition = Vector3.Zero;
 
-		var effect = child.Components.Create<ParticleEffect>();
+		var effect = child.Components.Get<ParticleEffect>() ?? child.Components.Create<ParticleEffect>();
 		effect.MaxParticles = Math.Max( 1, count );
 		effect.Lifetime = MathF.Max( 0.05f, lifetime );
 		effect.ApplyColor = true;
@@ -169,7 +168,7 @@ public sealed class GrenadeEffectVisual : Component
 		effect.Damping = 0.5f;
 		effect.LocalSpace = 0f;
 
-		var renderer = child.Components.Create<ParticleSpriteRenderer>();
+		var renderer = child.Components.Get<ParticleSpriteRenderer>() ?? child.Components.Create<ParticleSpriteRenderer>();
 		renderer.Additive = color.r > 0.75f || color.b > 0.75f;
 		renderer.Lighting = false;
 		renderer.DepthFeather = 24f;
@@ -180,8 +179,10 @@ public sealed class GrenadeEffectVisual : Component
 
 	void CreateLightPulse( Color color, float radius )
 	{
-		var child = new GameObject( GameObject, true, "Explosion Light" );
-		var light = child.Components.Create<PointLight>();
+		var child = GetOrCreateChild( "Explosion Light" );
+		child.LocalPosition = Vector3.Zero;
+
+		var light = child.Components.Get<PointLight>() ?? child.Components.Create<PointLight>();
 		light.LightColor = color;
 		light.Radius = MathF.Max( 64f, radius );
 
@@ -191,6 +192,15 @@ public sealed class GrenadeEffectVisual : Component
 			Radius = light.Radius,
 			Color = color
 		} );
+	}
+
+	GameObject GetOrCreateChild( string name )
+	{
+		var child = GameObject.Children.FirstOrDefault( x => x.Name == name );
+		if ( child.IsValid() )
+			return child;
+
+		return new GameObject( GameObject, true, name );
 	}
 
 	protected override void OnUpdate()

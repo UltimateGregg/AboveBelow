@@ -371,7 +371,7 @@ $trainingDummyBodyCheck = @{
 }
 
 Test-Prefab -Path "Assets/prefabs/soldier.prefab" `
-    -RequiredComponents $soldierBase `
+    -RequiredComponents ($soldierBase + @("DroneVsPlayers.TeamVoice")) `
     -RequiredNodes @("Body", "Eye", "Weapon", "MuzzleSocket", "WeaponVisual", "LeftHandIk", "RightHandIk") `
     -PropertyChecks $humanBodyCheck
 Test-NoLegacyFirstPersonArms -Path "Assets/prefabs/soldier.prefab"
@@ -379,7 +379,7 @@ Test-HumanBodyRenderer -Path "Assets/prefabs/soldier.prefab"
 Test-HeldItemTargets -Path "Assets/prefabs/soldier.prefab" -HeldItemNames @("Weapon")
 
 Test-Prefab -Path "Assets/prefabs/soldier_assault.prefab" `
-    -RequiredComponents ($soldierBase + @("DroneVsPlayers.AssaultSoldier", "DroneVsPlayers.HitscanWeapon", "DroneVsPlayers.ChaffGrenade")) `
+    -RequiredComponents ($soldierBase + @("DroneVsPlayers.AssaultSoldier", "DroneVsPlayers.HitscanWeapon", "DroneVsPlayers.ChaffGrenade", "DroneVsPlayers.TeamVoice")) `
     -RequiredNodes @("Body", "Eye", "Weapon", "Grenade", "MuzzleSocket", "WeaponVisual", "LeftHandIk", "RightHandIk") `
     -PropertyChecks $humanBodyCheck
 Test-NoLegacyFirstPersonArms -Path "Assets/prefabs/soldier_assault.prefab"
@@ -396,7 +396,7 @@ Test-HeldItemTargets -Path "Assets/prefabs/soldier_counter_uav.prefab" -HeldItem
 Test-CounterUavJammerGripTargets -Path "Assets/prefabs/soldier_counter_uav.prefab"
 
 Test-Prefab -Path "Assets/prefabs/soldier_heavy.prefab" `
-	-RequiredComponents ($soldierBase + @("DroneVsPlayers.HeavySoldier", "DroneVsPlayers.ShotgunWeapon", "DroneVsPlayers.EmpGrenade")) `
+	-RequiredComponents ($soldierBase + @("DroneVsPlayers.HeavySoldier", "DroneVsPlayers.ShotgunWeapon", "DroneVsPlayers.EmpGrenade", "DroneVsPlayers.TeamVoice")) `
 	-RequiredNodes @("Body", "Eye", "Weapon", "Grenade", "MuzzleSocket", "WeaponVisual", "LeftHandIk", "RightHandIk") `
 	-PropertyChecks $humanBodyCheck
 Test-NoLegacyFirstPersonArms -Path "Assets/prefabs/soldier_heavy.prefab"
@@ -404,7 +404,7 @@ Test-HumanBodyRenderer -Path "Assets/prefabs/soldier_heavy.prefab"
 Test-HeldItemTargets -Path "Assets/prefabs/soldier_heavy.prefab" -HeldItemNames @("Weapon", "Grenade")
 
 Test-Prefab -Path "Assets/prefabs/pilot_ground.prefab" `
-    -RequiredComponents @("Sandbox.CharacterController", "DroneVsPlayers.GroundPlayerController", "DroneVsPlayers.Health", "DroneVsPlayers.PilotSoldier", "DroneVsPlayers.RemoteController", "DroneVsPlayers.SoldierLoadout", "DroneVsPlayers.DroneDeployer") `
+    -RequiredComponents @("Sandbox.CharacterController", "DroneVsPlayers.GroundPlayerController", "DroneVsPlayers.Health", "DroneVsPlayers.PilotSoldier", "DroneVsPlayers.RemoteController", "DroneVsPlayers.SoldierLoadout", "DroneVsPlayers.DroneDeployer", "DroneVsPlayers.TeamVoice") `
     -RequiredNodes @("Body", "Eye", "Weapon", "DroneDeployer", "LeftHandIk", "RightHandIk") `
     -PropertyChecks $pilotGroundCheck
 Test-NoLegacyFirstPersonArms -Path "Assets/prefabs/pilot_ground.prefab"
@@ -412,7 +412,7 @@ Test-HumanBodyRenderer -Path "Assets/prefabs/pilot_ground.prefab"
 Test-HeldItemTargets -Path "Assets/prefabs/pilot_ground.prefab" -HeldItemNames @("Weapon", "DroneDeployer")
 
 Test-Prefab -Path "Assets/prefabs/training_dummy.prefab" `
-    -RequiredComponents @("Sandbox.CharacterController", "DroneVsPlayers.Health", "DroneVsPlayers.TrainingDummy", "Sandbox.Citizen.CitizenAnimationHelper") `
+    -RequiredComponents @("Sandbox.CharacterController", "DroneVsPlayers.Health", "DroneVsPlayers.TrainingDummy", "Sandbox.NavMeshAgent", "Sandbox.Citizen.CitizenAnimationHelper") `
     -RequiredNodes @("Body") `
     -PropertyChecks $trainingDummyBodyCheck
 Test-HumanBodyRenderer -Path "Assets/prefabs/training_dummy.prefab"
@@ -450,11 +450,20 @@ Test-AllLineRendererColorSerialization
 $scenePath = Join-Path $Root "Assets\scenes\main.scene"
 if (Test-Path -LiteralPath $scenePath) {
     $sceneRaw = Get-Content -LiteralPath $scenePath -Raw
-    if ($sceneRaw -notmatch "GameManager") {
-        Add-AgentIssue $issues "Error" "Scene" "Assets/scenes/main.scene" "main.scene does not contain a GameManager marker." "Restore the main gameplay manager object."
+    $gameManagerPrefabPath = Join-Path $Root "Assets\prefabs\systems\game_manager.prefab"
+    $gameManagerPrefabRaw = ""
+    if (Test-Path -LiteralPath $gameManagerPrefabPath) {
+        $gameManagerPrefabRaw = Get-Content -LiteralPath $gameManagerPrefabPath -Raw
     }
-    if ($sceneRaw -notmatch "DroneVsPlayers\.AutoWireHelper") {
-        Add-AgentIssue $issues "Warning" "Scene" "Assets/scenes/main.scene" "main.scene does not appear to include AutoWireHelper." "Add AutoWireHelper to GameManager or verify all prefab references manually."
+
+    if ($sceneRaw -notmatch "GameManager" -and $sceneRaw -notmatch "prefabs/systems/game_manager\.prefab") {
+        Add-AgentIssue $issues "Error" "Scene" "Assets/scenes/main.scene" "main.scene does not contain a GameManager marker or prefab instance." "Restore the main gameplay manager object."
+    }
+    if ($sceneRaw -notmatch "DroneVsPlayers\.AutoWireHelper" -and $gameManagerPrefabRaw -notmatch "DroneVsPlayers\.AutoWireHelper") {
+        Add-AgentIssue $issues "Warning" "Scene" "Assets/scenes/main.scene" "main.scene and game_manager.prefab do not appear to include AutoWireHelper." "Add AutoWireHelper to GameManager or verify all prefab references manually."
+    }
+    if ($gameManagerPrefabRaw -and $gameManagerPrefabRaw -notmatch "DroneVsPlayers\.TeamComms") {
+        Add-AgentIssue $issues "Warning" "GameManager Prefab" "Assets/prefabs/systems/game_manager.prefab" "GameManager prefab does not include TeamComms." "Keep shared team chat on the GameManager prefab with GameSetup retaining only the repair fallback."
     }
 }
 else {

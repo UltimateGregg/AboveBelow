@@ -14,7 +14,26 @@
     "NetworkOrphaned": 0,
     "NetworkTransmit": true,
     "OwnerTransfer": 1,
-    "Components": [],
+    "Components": [
+      {
+        "__type": "Sandbox.ModelRenderer",
+        "__guid": "b4b087ff-b00f-4ea1-b494-37cdaf2f3fe8",
+        "__enabled": true,
+        "BodyGroups": 18446744073709551615,
+        "Flags": 0,
+        "MaterialGroup": null,
+        "MaterialOverride": null,
+        "Model": null,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "RenderType": "On",
+        "Tint": "1,1,1,1"
+      }
+    ],
     "Children": []
   },
   "ShowInMenu": true,

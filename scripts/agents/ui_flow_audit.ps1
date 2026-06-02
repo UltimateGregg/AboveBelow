@@ -81,6 +81,12 @@ function Test-HasBuildHash {
     return $Text -match '(?m)\bprotected\s+override\s+int\s+BuildHash\s*\('
 }
 
+function Test-InheritsRazorPanel {
+    param([string]$Text)
+
+    return $Text -match '(?m)^\s*@inherits\s+(?:[A-Za-z_][A-Za-z0-9_.]*\.)?(?:Panel|PanelComponent)\b'
+}
+
 function Test-HasDynamicRazorOutput {
     param([string]$Text)
 
@@ -432,7 +438,7 @@ foreach ($file in $razorFiles) {
         Add-AgentIssue $issues "Error" "UI Flow" $relative "Menu panel does not route clicks through the shared UI click sound wrapper." "Add MenuClickSoundPath, ClickMenuOption(Action), and PlayMenuClickSound() using sounds/ui_menu_click.sound."
     }
 
-    if (($text -match '@inherits\s+PanelComponent') -and (Test-HasDynamicRazorOutput -Text $text) -and -not (Test-HasBuildHash -Text $text)) {
+    if ((Test-InheritsRazorPanel -Text $text) -and (Test-HasDynamicRazorOutput -Text $text) -and -not (Test-HasBuildHash -Text $text)) {
         Add-AgentIssue $issues "Warning" "UI Flow" $relative "Dynamic Razor output has no BuildHash override." "Override BuildHash() and include every value that can change rendered markup, especially [Sync] values shown in the HUD."
     }
 

@@ -353,12 +353,19 @@ if ($agentReadmeText -notmatch 'sbox-engine-reference-agent\.md' -or $agentReadm
 $newAgentScripts = @($changed | Where-Object { $_.Status -eq "??" -and $_.Path -like "scripts/agents/*.ps1" })
 foreach ($script in $newAgentScripts) {
     $leaf = Split-Path $script.Path -Leaf
-    if ($runnerText -notmatch [regex]::Escape($leaf)) {
+    $isOneShotMigrationHelper = $leaf -like "migrate_*"
+    if (-not $isOneShotMigrationHelper -and $runnerText -notmatch [regex]::Escape($leaf)) {
         Add-AgentIssue $issues "Warning" "Post-Task Training" $script.Path "New agent script is not referenced by run_agent_checks.ps1." "Wire recurring checks into a named suite."
     }
 
     if ($selfTestText -notmatch [regex]::Escape($leaf)) {
-        Add-AgentIssue $issues "Warning" "Post-Task Training" $script.Path "New agent script is not protected by test_full_automation_layer.ps1." "Add a required-script entry or a focused red/green fixture."
+        $recommendation = if ($isOneShotMigrationHelper) {
+            "Protect one-shot migration helpers in the full-layer self-test, but do not run mutating helpers from recurring suites."
+        }
+        else {
+            "Add a required-script entry or a focused red/green fixture."
+        }
+        Add-AgentIssue $issues "Warning" "Post-Task Training" $script.Path "New agent script is not protected by test_full_automation_layer.ps1." $recommendation
     }
 }
 

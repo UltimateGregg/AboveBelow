@@ -16,6 +16,8 @@ Run every report:
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite full
 ```
 
+When a script edits `Assets/scenes/main.scene` while the editor is open, check `editor_scene_info` first. If the editor is clean, reload the current scene through the native MCP `scene_load` / `scene_open` tool after the saved-file edit so the user does not have to clear the reload prompt manually. Do not reload over user-owned unsaved editor changes.
+
 ## Agents
 
 | Agent | Purpose | Script |
@@ -28,15 +30,18 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 | Two-Client Lobby Guard | Keep editor play sessions join-first and preserve round probe commands | `scripts/check_two_client_lobby_flow.ps1` |
 | Prefab and Wiring Agent | Validate prefab shape and AutoWire references | `scripts/agents/prefab_wiring_audit.ps1` |
 | Held Item Prefab Template Audit | Keep reusable weapon, grenade, and pilot-controller item prefabs under `Assets/prefabs/items/` synced from the active loadout child graphs | `scripts/agents/run_agent_checks.ps1 -Suite held-items -ShowInfo` |
-| First-Person Viewmodel Guard | Keep the shared local-only first-person viewmodel root, arms child, stock animation driver, custom visual container, and static item container prefab-backed while runtime item visuals remain per-selection children | `scripts/check_first_person_viewmodel_spawn.ps1 -Root .` |
+| First-Person Viewmodel Guard | Keep the shared local-only first-person viewmodel root, arms child, stock animation driver, custom visual container, and static item container prefab-backed, including prefab-owned fallback renderers while per-selection copies stay runtime children | `scripts/agents/run_agent_checks.ps1 -Suite viewmodel-prefab -ShowInfo` |
 | Scene Marker Prefab Audit | Keep reusable player spawn and training dummy spawn marker prefabs under `Assets/prefabs/markers/` available for scene authoring and referenced by saved-scene prefab instances | `scripts/agents/run_agent_checks.ps1 -Suite scene-markers -ShowInfo` |
+| Scene Prefab Coverage Audit | Keep component-bearing saved scene objects prefab-backed except for scene metadata and the unique ArenaFloor terrain | `scripts/agents/run_agent_checks.ps1 -Suite scene-prefab-coverage -ShowInfo` |
 | Blockout Blue Line Audit | Keep generated and live level blockouts free of retired glowing line strip markers | `scripts/agents/run_agent_checks.ps1 -Suite blue-lines -ShowInfo` |
 | Arena Boundary Wall Prefab Guard | Keep the four Source 2-style clip blockers backed by `Assets/prefabs/environment/arena_boundary_wall.prefab` with invisible collision and selection-only editor wireframes | `scripts/agents/scene_integrity_audit.ps1 -Root . -ShowInfo` |
 | Terrain Scene Object Prefab Migration | Convert repeated terrain trees, rocks, full and partial grass-card clumps, ground-polish patches, berm soft caps, shape-matching landforms, exact bespoke landforms, and trench segment roots to local environment prefab instances while preserving unknown or hand-edited mismatches | `scripts/agents/migrate_terrain_scene_objects_to_prefab_instances.ps1 -Root . -DryRun` |
+| Terrain Scene Prefab Migration Audit | Fail when shape-matching terrain, landform, grass, trench, skyline, or level-design scene objects remain expanded instead of prefab-backed | `scripts/agents/run_agent_checks.ps1 -Suite terrain-scene-prefabs -ShowInfo` |
 | Composed Environment Prop Prefab Guard | Keep authored prop roots such as `WaterTower` prefab-backed while visual, collider, and ladder children stay owned by the prefab template | `scripts/agents/collision_authoring_agent.ps1 -Root . -ShowInfo` plus `scripts/agents/scene_integrity_audit.ps1 -Root . -ShowInfo` |
 | Building Scene Prefab Audit | Keep playable large and small house roots prefab-backed while visual, collider, ladder, and zone helper children stay owned by the prefab template | `scripts/agents/building_scene_prefab_audit.ps1 -Root . -ShowInfo -RequireMigrated` |
 | Stock Scene Prop Prefab Audit | Keep reusable prefab templates, migration tooling, and saved-scene prefab instances for mounted stock scene props under `Assets/prefabs/environment/stock/` | `scripts/agents/stock_scene_prop_prefab_audit.ps1 -Root . -ShowInfo -RequireMigrated` |
 | Transient Combat Prefab Audit | Keep default ballistic tracers, muzzle flashes, tracer bullet glows, jammer beams, detached fiber cables, grenade detonation visuals, and thrown grenade projectiles prefab-backed while preserving procedural fallbacks | `scripts/agents/run_agent_checks.ps1 -Suite transient-combat -ShowInfo` |
+| Runtime Prefab Fallback Audit | Classify every runtime `new GameObject` path in `Code/` as a prefab-backed repair fallback or intentional per-item runtime copy | `scripts/agents/run_agent_checks.ps1 -Suite runtime-prefab-fallbacks -ShowInfo` |
 | Destroyed Pickup Prefab Audit | Keep the S&Box-native crashed pickup prefab placeable, primitive-backed, scene-instance-backed, and free of retired VMDL collision | `scripts/agents/destroyed_pickup_prefab_audit.ps1` plus `scripts/agents/destroyed_pickup_scene_audit.ps1 -Root . -ShowInfo` |
 | Sandbag Cover Prefab Audit | Keep the road sandbag cover spacing, height, material, solid collision, and scene prefab instance contract intact | `scripts/agents/sandbag_cover_audit.ps1 -Root . -ShowInfo` |
 | Road Cover Barrier Prefab Audit | Keep the northwest road-cover barrier prefab-backed with 10 solid concrete pieces and 9 visual detail pieces | `scripts/agents/road_cover_barrier_audit.ps1 -Root . -ShowInfo` |
@@ -211,6 +216,16 @@ For readability light marker migrations, use `migrate_readability_light_scene_ob
 For ambient sound emitter migrations, use `migrate_ambient_sound_scene_objects_to_prefab_instances.ps1` and `ambient_sound_scene_prefab_audit.ps1`; the prefab root owns the `AmbientSound` component while scene patches keep local sound events, loop timing, volume, and placement.
 
 For fallback ballistic tracer work, use `ballistic_tracer_prefab_audit.ps1`; `tracer_default.prefab` remains the normal weapon tracer path, while `ballistic_tracer.prefab` backs the lightweight renderer fallback.
+For newly added runtime `new GameObject` code, use `runtime_prefab_fallback_audit.ps1`; reusable objects should resolve a prefab before repair-fallback construction, while intentionally dynamic per-item copies need an explicit allow-list rationale.
+For project-owned scene singleton and reusable engine roots, use `migrate_scene_singletons_to_prefab_instances.ps1 -DryRun` and `scene_singleton_prefab_audit.ps1 -RequireMigrated`; this keeps `GameManager`, `HUD`, `BlindingSun_WestSky`, `Sun`, `2D Skybox`, and `Camera` prefab-backed without broad terrain, boundary, or jammer validation. `Scene Information` remains direct scene metadata.
+
+For character voice prefab ownership, use `team_voice_prefab_audit.ps1`; non-jammer soldier/pilot prefabs should own `TeamVoice`, while `GameSetup` keeps the runtime fallback for old or damaged prefabs.
+For shared team chat prefab ownership, use `team_comms_prefab_audit.ps1`; `game_manager.prefab` should own `TeamComms`, while `GameSetup` keeps the runtime fallback for old or damaged scenes.
+For thrown grenade projectile prefab ownership, use `thrown_grenade_projectile_prefab_audit.ps1`; the projectile prefab should own renderer, collider, rigidbody, and behavior refs, while `ThrowableGrenade` only assigns the per-grenade model and runtime values.
+For muzzle flash prefab ownership, use `muzzle_flash_prefab_audit.ps1`; the prefab should own the additive sprite and light components that `MuzzleFlashVisual` configures at runtime.
+For grenade detonation effect prefab ownership, use `grenade_effect_prefab_audit.ps1`; chaff, EMP, and frag burst prefabs should own their particle child objects and `Explosion Light` child while `GrenadeEffectVisual` only configures runtime values.
+
+For training dummy prefab ownership, use `training_dummy_prefab_audit.ps1`; the prefab should own `NavMeshAgent` and wire `TrainingDummy.NavAgent`, while `TrainingDummy` keeps its repair fallback.
 
 For larger collision work, start with `.agents/sbox/collision-chain-agent.md`. The chain splits Codex work into explorer, implementer, verifier, and critic handoffs so a second pass can challenge broad invisible blockers, stale editor state, and weak evidence before final handoff. The report script runs the static evidence stack and writes `.tmpbuild/collision-chain-report.md` as the handoff packet for the next Codex role.
 
@@ -290,6 +305,14 @@ fallbacks stay layered, filtered, and repeatable. Held-item sounds such as gun
 fire, reloads, dry-fire clicks, jammer loops, and throw cues should route through
 `SoundPlayback.PlayAttached` so their handles follow the weapon or player object
 instead of remaining at an old world position.
+
+For first-person held-item hand or IK fixes, keep the proof loop in the editor:
+spawn/select the relevant pawn in play mode, inspect the held item with
+`scene_find_objects` / `scene_find_by_component` and `component_get`, tune
+temporary values with `component_set`, and capture `editor_take_screenshot`
+proof before copying values back to prefab JSON or reusable held-item templates.
+Grip targets should normally be visual-relative anchors on the rendered item so
+the hand stays connected while the player moves or turns.
 
 Balance changes:
 

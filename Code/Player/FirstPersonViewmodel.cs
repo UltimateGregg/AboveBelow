@@ -115,9 +115,16 @@ public sealed class FirstPersonViewmodel : Component
 	{
 		if ( owner is null || !selected || owner.IsProxy )
 			return false;
+		if ( UsesPilotHumanBodyHands( owner ) )
+			return false;
 
 		var pc = owner.Components.GetInAncestors<GroundPlayerController>();
 		return pc.IsValid() && pc.UseLocalFirstPersonViewmodel && pc.LocalFirstPersonViewmodelActive;
+	}
+
+	public static bool UsesPilotHumanBodyHands( Component owner )
+	{
+		return owner is DroneDeployer deployer && deployer.UsePilotBodyHands;
 	}
 
 	protected override void OnUpdate()
@@ -366,12 +373,18 @@ public sealed class FirstPersonViewmodel : Component
 		if ( customModel is null || !customModel.IsValid )
 			return;
 
-		var copyObject = new GameObject( parent, true, "WeaponVisual" )
+		var copyObject = parent;
+		var copyRenderer = copyObject.Components.Get<ModelRenderer>();
+		if ( !copyRenderer.IsValid() )
 		{
-			NetworkMode = NetworkMode.Never
-		};
+			copyObject = new GameObject( parent, true, "WeaponVisual" )
+			{
+				NetworkMode = NetworkMode.Never
+			};
+			copyRenderer = copyObject.Components.Create<ModelRenderer>();
+		}
 
-		var copyRenderer = copyObject.Components.Create<ModelRenderer>();
+		copyObject.NetworkMode = NetworkMode.Never;
 		copyRenderer.Model = customModel;
 		copyRenderer.RenderType = ModelRenderer.ShadowRenderType.On;
 
@@ -833,6 +846,8 @@ public sealed class FirstPersonViewmodel : Component
 		{
 			if ( !deployer.IsValid() || !deployer.IsSelected || IsDroneViewActive() )
 				continue;
+			if ( UsesPilotHumanBodyHands( deployer ) )
+				continue;
 
 			var pilot = deployer.Components.GetInAncestors<PilotSoldier>();
 			var chosenDrone = pilot.IsValid() ? pilot.ChosenDrone : DroneType.Fpv;
@@ -843,7 +858,7 @@ public sealed class FirstPersonViewmodel : Component
 				Root = deployer.GameObject,
 				HiddenStaticVisualRoot = deployer.DroneInFlight ? deployer.RightHandVisual : null,
 				LeftHandTarget = deployer.LeftHandIkTarget,
-				RightHandTarget = deployer.DroneInFlight ? deployer.LeftHandIkTarget : deployer.RightHandIkTarget,
+				RightHandTarget = deployer.RightHandIkTarget,
 				Key = $"deployer:{deployer.GameObject.Id}:{chosenDrone}:{deployer.DroneInFlight}",
 				RenderMode = ViewmodelRenderMode.StaticFallback,
 				TwoHanded = true,

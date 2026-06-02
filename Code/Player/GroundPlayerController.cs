@@ -405,15 +405,31 @@ public sealed class GroundPlayerController : Component
 			ResolvePrefabReferences();
 		if ( !Body.IsValid() ) return;
 
+		var hideBodyHands = handsOnly && UseLocalFirstPersonViewmodel && !ShouldShowPilotBodyHands();
 		foreach ( var renderer in Body.Components.GetAll<SkinnedModelRenderer>( FindMode.EverythingInSelfAndDescendants ) )
 		{
 			renderer.RenderType = ModelRenderer.ShadowRenderType.On;
 			renderer.SetBodyGroup( "Head", handsOnly ? CitizenHeadHidden : CitizenBodyGroupVisible );
 			renderer.SetBodyGroup( "Chest", handsOnly ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
 			renderer.SetBodyGroup( "Legs", handsOnly ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
-			renderer.SetBodyGroup( "Hands", handsOnly && UseLocalFirstPersonViewmodel ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
+			renderer.SetBodyGroup( "Hands", hideBodyHands ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
 			renderer.SetBodyGroup( "Feet", handsOnly ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
 		}
+	}
+
+	bool ShouldShowPilotBodyHands()
+	{
+		var remote = Components.Get<RemoteController>();
+		if ( remote.IsValid() && remote.DroneViewActive )
+			return false;
+
+		foreach ( var deployer in Components.GetAll<DroneDeployer>( FindMode.EverythingInSelfAndDescendants ) )
+		{
+			if ( deployer.IsValid() && deployer.IsSelected && deployer.UsePilotBodyHands )
+				return true;
+		}
+
+		return false;
 	}
 
 	void EnsureLocalFirstPersonViewmodel()

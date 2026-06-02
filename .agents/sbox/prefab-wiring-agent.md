@@ -17,16 +17,20 @@ Protect prefab, scene, and AutoWire consistency for class, drone, weapon, and eq
 - Preserve the per-class and per-variant prefab names listed in `AGENTS.md`.
 - New prefab references should be repeatable through `AutoWire.cs` or documented manual inspector wiring.
 - Soldier prefabs should keep `Body`, `Eye`, `Weapon` or `DroneDeployer`, and expected held equipment children.
+- Soldier and pilot-ground prefabs should own `TeamVoice` on the character root when the prefab is not otherwise off-limits for concurrent work; `GameSetup` may still repair missing voice components on spawned legacy pawns.
+- The `GameManager` prefab should own `TeamComms`; `GameSetup.EnsureTeamComms()` is only the repair fallback for legacy or damaged scenes.
+- The training dummy prefab should own `Sandbox.NavMeshAgent` and wire `TrainingDummy.NavAgent`; the runtime repair path is only a fallback for legacy or damaged prefabs.
 - Reusable held-item prefabs live under `Assets/prefabs/items/` and are regenerated from the active class/pilot loadout children with `scripts/agents/sync_held_item_prefab_templates.ps1`.
 - When `Weapon`, `Grenade`, or `DroneDeployer` child graphs change on active character prefabs, run the sync script and then `held_item_prefab_template_audit.ps1` so the standalone item templates do not drift.
 - The pilot drone deployer's runtime held propeller preview should stay backed by `Assets/prefabs/items/held_drone_propeller.prefab`; `DroneDeployer` assigns the selected GPS/FPV propeller model after cloning it.
 - The local first-person viewmodel root should stay backed by `Assets/prefabs/items/local_first_person_viewmodel.prefab`; `FirstPersonViewmodel` clones it before adding per-item runtime weapon and copied visual children.
 - The local first-person arms child should stay backed by `Assets/prefabs/items/viewmodel_arms.prefab`; `FirstPersonViewmodel` clones it and assigns the stock or fallback arms model plus bonemerge/animgraph runtime state.
 - The stock first-person weapon animation driver should stay backed by `Assets/prefabs/items/viewmodel_stock_weapon.prefab`; `FirstPersonViewmodel` clones it for both visible stock weapons and hidden custom-weapon animation drivers.
-- Custom first-person visual roots and static fallback item roots should stay backed by `Assets/prefabs/items/viewmodel_custom_visual.prefab` and `Assets/prefabs/items/viewmodel_static_item.prefab`; copied renderer children remain runtime/per-item.
+- Custom first-person visual roots and static fallback item roots should stay backed by `Assets/prefabs/items/viewmodel_custom_visual.prefab` and `Assets/prefabs/items/viewmodel_static_item.prefab`; those prefabs should own a `Sandbox.ModelRenderer` for model-path fallback setup, while copied source-renderer children remain runtime/per-item.
 - Reusable scene marker prefabs live under `Assets/prefabs/markers/`. Keep `PlayerSpawn_Soldier`, `PlayerSpawn_Pilot`, and `TrainingDummySpawn` available for new map authoring instead of hand-building repeated marker GameObjects, and keep saved `main.scene` placements as prefab instances.
 - The reusable arena boundary wall lives at `Assets/prefabs/environment/arena_boundary_wall.prefab`. Keep the four saved `main.scene` boundary walls as prefab instances, with hidden dev-box rendering, static solid collision, and `SelectedHierarchyColliderViewer` editor wireframes owned by the prefab.
 - Reusable terrain tree, simple rock, model-collider exterior rock, grass-card, partial grass-card, ground-polish patch, berm soft-cap, landform, and trench segment prefabs live under `Assets/prefabs/environment/terrain_*.prefab`, `grass_clump.prefab`, `grass_clump_single_card.prefab`, `grass_clump_five_card.prefab`, `ground_grass_clump_patch.prefab`, `ground_worn_path_patch.prefab`, `berm_soft_cap.prefab`, `Berm.prefab`, `Hill.prefab`, `hill_central_north_box.prefab`, `Plateau.prefab`, `plateau_east_north_terrain.prefab`, and `TrenchSegment.prefab`. Use `scripts/agents/migrate_terrain_scene_objects_to_prefab_instances.ps1` for repeated placements whose child/component shape matches the template; create a distinct prefab contract for hills/plateaus whose child/component shape does not match the generic templates.
+- `scripts/agents/terrain_scene_prefab_migration_audit.ps1` should report zero shape-matching terrain scene objects left to migrate; if it finds candidates, run the terrain migration intentionally instead of leaving expanded scene copies.
 - Composed environment props with child collision, such as `Assets/prefabs/environment/WaterTower.prefab`, should own their visual/collider/ladder contract in the prefab. Saved scene placements should be prefab instances that only override the root name and transform; keep the prefab root at `0,0,0` / identity / `1,1,1`.
 - The destroyed pickup cover prop lives at `Assets/prefabs/environment/burnt_car_wreck.prefab`. Keep `CenterLane_DestroyedPickup_North` as a saved scene prefab instance so the 60 primitive children, 24 solid pieces, and 36 detail pieces stay owned by the prefab contract instead of being hand-expanded in `main.scene`.
 - The playable house props live at `Assets/prefabs/environment/house_large_playable.prefab`, `Assets/prefabs/environment/house_small_playable.prefab`, and `Assets/prefabs/environment/house_small_collision_playable.prefab`. Keep `House_Large_01`, `House_Large_02`, `House_Small_01`, `House_Small_02`, `House_Small_03`, and `House_Small_04` as saved scene prefab instances so visual, collision, ladder, and zone helper children stay owned by the prefab contract.
@@ -40,9 +44,15 @@ Protect prefab, scene, and AutoWire consistency for class, drone, weapon, and eq
 - The visual-only dev-box template lives at `Assets/prefabs/environment/visual_dev_box.prefab`. Keep repeated renderer-only glow markers, skyline tower masses, and window bands as prefab instances with local material, tint, transform, and stable-name overrides.
 - Reusable readability light prefabs live at `Assets/prefabs/environment/operator_signal_light.prefab`, `Assets/prefabs/environment/launch_pad_glow_light.prefab`, and `Assets/prefabs/environment/perch_marker_light.prefab`. Keep the operator signal lights, launch-pad glow lights, and perch marker lights as saved scene prefab instances with per-placement root name, position, radius/color, and optional glow-marker scale/tint overrides.
 - The ambient sound emitter template lives at `Assets/prefabs/environment/ambient_sound_point.prefab`. Keep `AmbientLightWind`, `AmbientBirdsChirping`, `AmbientBirdsCanopyFar`, and `AmbientCrowsDistant` as saved scene prefab instances with per-placement sound, loop timing, volume, and position overrides.
+- Scene gameplay and reusable engine singleton roots should stay prefab-backed: `Assets/prefabs/systems/game_manager.prefab`, `Assets/prefabs/ui/hud.prefab`, `Assets/prefabs/environment/blinding_sun_glare.prefab`, `Assets/prefabs/environment/sun_directional.prefab`, `Assets/prefabs/environment/skybox_2d.prefab`, and `Assets/prefabs/systems/main_camera.prefab`. Keep `GameManager`, `HUD`, `BlindingSun_WestSky`, `Sun`, `2D Skybox`, and `Camera` as saved `main.scene` prefab instances. Leave `Scene Information` direct because it is scene metadata, not a reusable object contract.
+- Component-bearing saved scene objects should be prefab instances except for narrow scene-local exceptions: `Scene Information` metadata and the unique `ArenaFloor` terrain. Direct empty containers are allowed for hierarchy organization.
 - Reusable stock scene prop prefabs live under `Assets/prefabs/environment/stock/`. Use them for repeated mounted stock shrubs, benches, fences, trees, and bins before hand-authoring direct model props in `main.scene`.
 - Stock scene prop migration should use `scripts/agents/migrate_stock_scene_props_to_prefab_instances.ps1` or run through `dvp_preview_stock_scene_prop_prefab_migration` / `dvp_migrate_stock_scene_props_to_prefabs` after the editor has hotloaded `Editor/StockScenePropPrefabEditorCommands.cs`; do not hand-author prefab-instance JSON without current serialized evidence.
 - Transient combat objects should stay prefab-backed when they have reusable behavior. Default ballistic tracers use `Assets/prefabs/tracer_default.prefab`; muzzle flashes use `Assets/prefabs/effects/muzzle_flash.prefab`; tracer bullet glows use `Assets/prefabs/effects/tracer_bullet_glow.prefab`; jammer beams use `Assets/prefabs/effects/jammer_beam.prefab`; detached fiber cables use `Assets/prefabs/effects/detached_fiber_cable.prefab`; grenade detonation visuals use `Assets/prefabs/effects/chaff_burst.prefab`, `Assets/prefabs/effects/emp_burst.prefab`, and `Assets/prefabs/effects/frag_burst.prefab`; thrown grenade projectiles use `Assets/prefabs/items/thrown_grenade_projectile.prefab`.
+- Runtime `new GameObject` calls in `Code/` should either be prefab-backed repair fallbacks or explicitly intentional per-item/editor-only objects; run the runtime prefab fallback audit after adding new runtime object creation.
+- The muzzle flash prefab should own its additive `SpriteRenderer` and short-range `PointLight`; `MuzzleFlashVisual` should only create those components as a fallback for damaged prefabs.
+- Grenade detonation effect prefabs should own their particle burst children and `Explosion Light`; `GrenadeEffectVisual` should reuse existing `ParticleEffect`, emitter, renderer, and light components before creating repair fallbacks.
+- The thrown grenade projectile prefab should own its `ModelRenderer`, `CapsuleCollider`, `Rigidbody`, and `ThrownGrenadeProjectile` component references. `ThrowableGrenade` may still assign the grenade-specific model and repair missing components for damaged prefabs.
 - The lightweight `BallisticTracerRenderer` fallback should also stay prefab-backed through `Assets/prefabs/effects/ballistic_tracer.prefab`; `tracer_default.prefab` remains the normal weapon tracer path when configured.
 - Drone prefabs should keep `Visual`, `CameraSocket`, `MuzzleSocket`, and their variant identity component.
 - Fiber FPV should keep `JamSusceptibility = 0` unless the balance spec changes.
@@ -53,11 +63,12 @@ Protect prefab, scene, and AutoWire consistency for class, drone, weapon, and eq
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_wiring_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/held_item_prefab_template_audit.ps1
-powershell -ExecutionPolicy Bypass -File scripts/check_first_person_viewmodel_spawn.ps1
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite viewmodel-prefab -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/migrate_scene_markers_to_prefab_instances.ps1 -DryRun
 powershell -ExecutionPolicy Bypass -File scripts/agents/scene_marker_prefab_audit.ps1 -Root . -ShowInfo -RequireMigrated
 powershell -ExecutionPolicy Bypass -File scripts/agents/migrate_arena_boundaries_to_prefab_instances.ps1 -DryRun
 powershell -ExecutionPolicy Bypass -File scripts/agents/migrate_terrain_scene_objects_to_prefab_instances.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File scripts/agents/terrain_scene_prefab_migration_audit.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/collision_authoring_agent.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/migrate_building_scene_objects_to_prefab_instances.ps1 -DryRun
 powershell -ExecutionPolicy Bypass -File scripts/agents/building_scene_prefab_audit.ps1 -Root . -ShowInfo -RequireMigrated
@@ -65,6 +76,10 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/migrate_readability_ligh
 powershell -ExecutionPolicy Bypass -File scripts/agents/readability_light_scene_prefab_audit.ps1 -Root . -ShowInfo -RequireMigrated
 powershell -ExecutionPolicy Bypass -File scripts/agents/migrate_ambient_sound_scene_objects_to_prefab_instances.ps1 -DryRun
 powershell -ExecutionPolicy Bypass -File scripts/agents/ambient_sound_scene_prefab_audit.ps1 -Root . -ShowInfo -RequireMigrated
+powershell -ExecutionPolicy Bypass -File scripts/agents/migrate_scene_singletons_to_prefab_instances.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File scripts/agents/scene_singleton_prefab_audit.ps1 -Root . -ShowInfo -RequireMigrated
+powershell -ExecutionPolicy Bypass -File scripts/agents/scene_prefab_coverage_audit.ps1 -Root . -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/team_comms_prefab_audit.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/sync_stock_scene_prop_prefabs.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/migrate_stock_scene_props_to_prefab_instances.ps1 -DryRun
 powershell -ExecutionPolicy Bypass -File scripts/agents/stock_scene_prop_prefab_audit.ps1
@@ -73,7 +88,11 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/destroyed_pickup_scene_a
 powershell -ExecutionPolicy Bypass -File scripts/agents/road_cover_barrier_audit.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/road_lane_marking_audit.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/transient_combat_prefab_audit.ps1
+powershell -ExecutionPolicy Bypass -File scripts/agents/muzzle_flash_prefab_audit.ps1 -Root . -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/grenade_effect_prefab_audit.ps1 -Root . -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/thrown_grenade_projectile_prefab_audit.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/ballistic_tracer_prefab_audit.ps1 -Root . -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/runtime_prefab_fallback_audit.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_graph_audit.ps1
 powershell -ExecutionPolicy Bypass -File scripts/agents/scene_integrity_audit.ps1
 ```

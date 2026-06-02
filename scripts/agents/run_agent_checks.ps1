@@ -1,6 +1,6 @@
 param(
     [string]$Root = "",
-    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "held-items", "scene-markers", "buildings", "readability-lights", "ambient-sounds", "ballistic-tracers", "stock-scene-props", "transient-combat", "scene", "blue-lines", "terrain", "collision", "collision-chain", "nav", "asset", "asset-production", "modeldoc", "blender-live", "sound", "networking", "gameplay-regression", "docs", "api", "sbox-docs", "release-notes", "code-search", "learn", "editor-node-tool", "editor-first", "balance", "playtest", "logs", "readiness", "train", "self-test")]
+    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "held-items", "viewmodel-prefab", "runtime-prefab-fallbacks", "terrain-scene-prefabs", "scene-prefab-coverage", "scene-markers", "buildings", "readability-lights", "ambient-sounds", "scene-singletons", "ballistic-tracers", "muzzle-flash-prefab", "grenade-effects", "team-voice-prefabs", "team-comms-prefab", "training-dummy-prefab", "thrown-grenade-projectile", "stock-scene-props", "transient-combat", "scene", "blue-lines", "terrain", "collision", "collision-chain", "nav", "asset", "asset-production", "modeldoc", "blender-live", "sound", "networking", "gameplay-regression", "docs", "api", "sbox-docs", "release-notes", "code-search", "learn", "editor-node-tool", "editor-first", "balance", "playtest", "logs", "readiness", "train", "self-test")]
     [string]$Suite = "quick",
     [switch]$ShowInfo,
     [switch]$FailOnWarning
@@ -45,6 +45,7 @@ $sceneMarkerArgs = $commonArgs + "-RequireMigrated"
 $buildingSceneArgs = $commonArgs + "-RequireMigrated"
 $readabilityLightArgs = $commonArgs + "-RequireMigrated"
 $ambientSoundArgs = $commonArgs + "-RequireMigrated"
+$sceneSingletonArgs = $commonArgs + "-RequireMigrated"
 
 $quickLogArgs = @("-Root", $Root, "-ShowInfo")
 if ($FailOnWarning) {
@@ -61,12 +62,22 @@ switch ($Suite) {
             @{ Name = "m4_fire_rate_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs },
             @{ Name = "held_item_prefab_template_audit.ps1"; Args = $commonArgs },
+            @{ Name = "first_person_viewmodel_prefab_audit.ps1"; Args = $commonArgs },
             @{ Name = "scene_marker_prefab_audit.ps1"; Args = $sceneMarkerArgs },
             @{ Name = "stock_scene_prop_prefab_audit.ps1"; Args = $commonArgs },
             @{ Name = "building_scene_prefab_audit.ps1"; Args = $buildingSceneArgs },
             @{ Name = "readability_light_scene_prefab_audit.ps1"; Args = $readabilityLightArgs },
             @{ Name = "ambient_sound_scene_prefab_audit.ps1"; Args = $ambientSoundArgs },
+            @{ Name = "scene_singleton_prefab_audit.ps1"; Args = $sceneSingletonArgs },
+            @{ Name = "terrain_scene_prefab_migration_audit.ps1"; Args = $commonArgs },
+            @{ Name = "scene_prefab_coverage_audit.ps1"; Args = $commonArgs },
             @{ Name = "ballistic_tracer_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "muzzle_flash_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "grenade_effect_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "team_voice_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "team_comms_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "training_dummy_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "thrown_grenade_projectile_prefab_audit.ps1"; Args = $commonArgs },
             @{ Name = "transient_combat_prefab_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs },
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
@@ -114,7 +125,16 @@ switch ($Suite) {
             @{ Name = "building_scene_prefab_audit.ps1"; Args = $buildingSceneArgs },
             @{ Name = "readability_light_scene_prefab_audit.ps1"; Args = $readabilityLightArgs },
             @{ Name = "ambient_sound_scene_prefab_audit.ps1"; Args = $ambientSoundArgs },
+            @{ Name = "scene_singleton_prefab_audit.ps1"; Args = $sceneSingletonArgs },
+            @{ Name = "terrain_scene_prefab_migration_audit.ps1"; Args = $commonArgs },
+            @{ Name = "scene_prefab_coverage_audit.ps1"; Args = $commonArgs },
             @{ Name = "ballistic_tracer_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "muzzle_flash_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "grenade_effect_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "team_voice_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "team_comms_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "training_dummy_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "thrown_grenade_projectile_prefab_audit.ps1"; Args = $commonArgs },
             @{ Name = "transient_combat_prefab_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs },
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
@@ -174,19 +194,40 @@ switch ($Suite) {
             @{ Name = "building_scene_prefab_audit.ps1"; Args = $buildingSceneArgs },
             @{ Name = "readability_light_scene_prefab_audit.ps1"; Args = $readabilityLightArgs },
             @{ Name = "ambient_sound_scene_prefab_audit.ps1"; Args = $ambientSoundArgs },
+            @{ Name = "scene_singleton_prefab_audit.ps1"; Args = $sceneSingletonArgs },
+            @{ Name = "terrain_scene_prefab_migration_audit.ps1"; Args = $commonArgs },
+            @{ Name = "scene_prefab_coverage_audit.ps1"; Args = $commonArgs },
             @{ Name = "ballistic_tracer_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "muzzle_flash_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "grenade_effect_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "team_voice_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "team_comms_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "training_dummy_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "thrown_grenade_projectile_prefab_audit.ps1"; Args = $commonArgs },
             @{ Name = "transient_combat_prefab_audit.ps1"; Args = $commonArgs },
+            @{ Name = "runtime_prefab_fallback_audit.ps1"; Args = $commonArgs },
             @{ Name = "destroyed_pickup_prefab_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_visual_quality_audit.ps1"; Args = $commonArgs }
         )
     }
     "prefab-graph" { $scripts = @(@{ Name = "prefab_graph_audit.ps1"; Args = $commonArgs }) }
     "held-items" { $scripts = @(@{ Name = "held_item_prefab_template_audit.ps1"; Args = $commonArgs }) }
+    "viewmodel-prefab" { $scripts = @(@{ Name = "first_person_viewmodel_prefab_audit.ps1"; Args = $commonArgs }) }
+    "runtime-prefab-fallbacks" { $scripts = @(@{ Name = "runtime_prefab_fallback_audit.ps1"; Args = $commonArgs }) }
+    "terrain-scene-prefabs" { $scripts = @(@{ Name = "terrain_scene_prefab_migration_audit.ps1"; Args = $commonArgs }) }
+    "scene-prefab-coverage" { $scripts = @(@{ Name = "scene_prefab_coverage_audit.ps1"; Args = $commonArgs }) }
     "scene-markers" { $scripts = @(@{ Name = "scene_marker_prefab_audit.ps1"; Args = $sceneMarkerArgs }) }
     "buildings" { $scripts = @(@{ Name = "building_scene_prefab_audit.ps1"; Args = $buildingSceneArgs }) }
     "readability-lights" { $scripts = @(@{ Name = "readability_light_scene_prefab_audit.ps1"; Args = $readabilityLightArgs }) }
     "ambient-sounds" { $scripts = @(@{ Name = "ambient_sound_scene_prefab_audit.ps1"; Args = $ambientSoundArgs }) }
+    "scene-singletons" { $scripts = @(@{ Name = "scene_singleton_prefab_audit.ps1"; Args = $sceneSingletonArgs }) }
     "ballistic-tracers" { $scripts = @(@{ Name = "ballistic_tracer_prefab_audit.ps1"; Args = $commonArgs }) }
+    "muzzle-flash-prefab" { $scripts = @(@{ Name = "muzzle_flash_prefab_audit.ps1"; Args = $commonArgs }) }
+    "grenade-effects" { $scripts = @(@{ Name = "grenade_effect_prefab_audit.ps1"; Args = $commonArgs }) }
+    "team-voice-prefabs" { $scripts = @(@{ Name = "team_voice_prefab_audit.ps1"; Args = $commonArgs }) }
+    "team-comms-prefab" { $scripts = @(@{ Name = "team_comms_prefab_audit.ps1"; Args = $commonArgs }) }
+    "training-dummy-prefab" { $scripts = @(@{ Name = "training_dummy_prefab_audit.ps1"; Args = $commonArgs }) }
+    "thrown-grenade-projectile" { $scripts = @(@{ Name = "thrown_grenade_projectile_prefab_audit.ps1"; Args = $commonArgs }) }
     "stock-scene-props" { $scripts = @(@{ Name = "stock_scene_prop_prefab_audit.ps1"; Args = $commonArgs }) }
     "transient-combat" { $scripts = @(@{ Name = "transient_combat_prefab_audit.ps1"; Args = $commonArgs }) }
     "scene" {
@@ -203,6 +244,7 @@ switch ($Suite) {
             @{ Name = "building_scene_prefab_audit.ps1"; Args = $buildingSceneArgs },
             @{ Name = "readability_light_scene_prefab_audit.ps1"; Args = $readabilityLightArgs },
             @{ Name = "ambient_sound_scene_prefab_audit.ps1"; Args = $ambientSoundArgs },
+            @{ Name = "scene_singleton_prefab_audit.ps1"; Args = $sceneSingletonArgs },
             @{ Name = "level_layout_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
             @{ Name = "tree_collision_audit.ps1"; Args = $commonArgs },

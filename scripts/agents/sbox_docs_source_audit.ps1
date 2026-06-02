@@ -68,6 +68,29 @@ function Invoke-GitCommand {
     return $true
 }
 
+function Invoke-GitCapture {
+    param(
+        [string[]]$GitArgs
+    )
+
+    $oldErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        $output = & git @GitArgs 2>&1
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $oldErrorActionPreference
+    }
+
+    [pscustomobject]@{
+        ExitCode = $exitCode
+        Output = @($output)
+        Text = (($output | Select-Object -First 1) -join "").Trim()
+        Details = (($output | Out-String).Trim())
+    }
+}
+
 Test-FileHasPatterns "docs/sbox_engine_llm_reference.md" @(
     "Official docs source repo reviewed on \d{4}-\d{2}-\d{2}",
     "https://github\.com/Facepunch/sbox-docs",
@@ -216,9 +239,16 @@ else {
             }
         }
 
-        $head = @(& git -C $snapshotDir log -1 --format="%H" 2>$null | Select-Object -First 1)
-        $date = @(& git -C $snapshotDir log -1 --format="%cI" 2>$null | Select-Object -First 1)
-        $subject = @(& git -C $snapshotDir log -1 --format="%s" 2>$null | Select-Object -First 1)
+        $gitProbe = Invoke-GitCapture -GitArgs @("-C", $snapshotDir, "rev-parse", "--is-inside-work-tree")
+        $gitMetadataAvailable = $gitProbe.ExitCode -eq 0
+        if (-not $gitMetadataAvailable) {
+            $detail = if ([string]::IsNullOrWhiteSpace($gitProbe.Details)) { "git metadata probe exited $($gitProbe.ExitCode)." } else { $gitProbe.Details }
+            Add-AgentIssue $issues "Warning" "S&Box Docs Source" ".tmpbuild/sbox-docs" "Could not read git metadata from the local docs snapshot." "Run sbox_docs_source_audit.ps1 -Refresh, or mark the cache safe with git config if the checkout is trusted. Details: $detail"
+        }
+
+        $head = if ($gitMetadataAvailable) { @((Invoke-GitCapture -GitArgs @("-C", $snapshotDir, "log", "-1", "--format=%H")).Text) } else { @("unknown") }
+        $date = if ($gitMetadataAvailable) { @((Invoke-GitCapture -GitArgs @("-C", $snapshotDir, "log", "-1", "--format=%cI")).Text) } else { @("unknown") }
+        $subject = if ($gitMetadataAvailable) { @((Invoke-GitCapture -GitArgs @("-C", $snapshotDir, "log", "-1", "--format=%s")).Text) } else { @("unknown") }
         $markdownFiles = @(Get-ChildItem -LiteralPath $docsDir -Recurse -File -Filter "*.md" | Sort-Object FullName)
         $markdownCount = $markdownFiles.Count
         $tocCount = @(Get-ChildItem -LiteralPath $docsDir -Recurse -File -Filter "toc.yml").Count
