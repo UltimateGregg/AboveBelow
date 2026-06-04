@@ -200,7 +200,7 @@
                 "__guid": "33333333-d000-3600-0000-000000000001",
                 "Flags": 0,
                 "Name": "LeftHandIk",
-                "Position": "16,-5,-2",
+                "Position": "14,-8,0",
                 "Enabled": true,
                 "Components": []
               },
@@ -208,7 +208,7 @@
                 "__guid": "33333333-d000-3700-0000-000000000001",
                 "Flags": 0,
                 "Name": "RightHandIk",
-                "Position": "4,4,-2",
+                "Position": "8,4,0",
                 "Enabled": true,
                 "Components": []
               }

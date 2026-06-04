@@ -42,7 +42,7 @@ public sealed class GroundPlayerController : Component
 	[Property] public GameObject Eye { get; set; }
 	[Property] public CitizenAnimationHelper AnimationHelper { get; set; }
 	[Property] public bool FirstPerson { get; set; } = true;
-	[Property] public bool UseLocalFirstPersonViewmodel { get; set; } = true;
+	[Property] public bool UseLocalFirstPersonViewmodel { get; set; } = false;
 
 	// ---- Camera FOV ----
 	[Property, Range( 50f, 110f )] public float BaseFovDegrees { get; set; } = 80f;

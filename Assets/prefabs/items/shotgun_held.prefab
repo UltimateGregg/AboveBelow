@@ -58,7 +58,7 @@
         "__guid": "bdd2b417-fe2b-99db-6e63-4d624fedb163",
         "Flags": 0,
         "Name": "LeftHandIk",
-        "Position": "24,-5,-1",
+        "Position": "20,-10,0",
         "Enabled": true,
         "Components": []
       },
@@ -66,7 +66,7 @@
         "__guid": "75f62c5e-39c9-8064-95e9-6b660797c6db",
         "Flags": 0,
         "Name": "RightHandIk",
-        "Position": "5,5,-3",
+        "Position": "8,5,0",
         "Enabled": true,
         "Components": []
       }

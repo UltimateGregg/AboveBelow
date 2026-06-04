@@ -39,11 +39,11 @@ public sealed class DroneDeployer : Component
 	/// <summary>Eye-space offset where the drone clone appears at launch (fwd, right, up).</summary>
 	[Property] public Vector3 LaunchSpawnOffset { get; set; } = new( 60f, 0f, -4f );
 
-	[Property] public Vector3 LeftHandFpOffset { get; set; } = new( 30f, -5f, -12f );
+	[Property] public Vector3 LeftHandFpOffset { get; set; } = new( 30f, -18f, -12f );
 	[Property] public Angles LeftHandFpRotation { get; set; } = new( 0f, 0f, 0f );
 	[Property] public Vector3 LeftHandIkFpOffset { get; set; } = new( -1.5f, 7f, 11f );
 	[Property] public Angles LeftHandIkFpRotation { get; set; } = new( 60f, -10f, 0f );
-	[Property] public Vector3 RightHandFpOffset { get; set; } = new( 36f, 12f, -10f );
+	[Property] public Vector3 RightHandFpOffset { get; set; } = new( 36f, -5f, -20f );
 	[Property] public Angles RightHandFpRotation { get; set; } = new( 0f, 0f, 0f );
 	[Property] public Angles GpsHeldDroneFpRotationOffset { get; set; } = new( 0f, -90f, 0f );
 	[Property] public Vector3 RightHandIkFpOffset { get; set; } = new( 0f, 0f, -13f );
