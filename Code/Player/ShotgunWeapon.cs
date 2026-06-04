@@ -46,6 +46,8 @@ public sealed class ShotgunWeapon : Component
 	[Property, Range( 30f, 90f )] public float AdsFovDegrees { get; set; } = 65f;
 	[Property] public Vector3 ThirdPersonLocalPosition { get; set; } = new( 20f, 15f, 55f );
 	[Property] public Angles ThirdPersonLocalAngles { get; set; } = new( 0f, 0f, 0f );
+	/// <summary>How tightly the viewmodel tracks the view. High = rigidly attached to hands; low = laggy sway.</summary>
+	[Property, Range( 18f, 240f )] public float ViewmodelSwayLerpRate { get; set; } = 120f;
 	[Property] public CitizenAnimationHelper.HoldTypes HoldType { get; set; } = CitizenAnimationHelper.HoldTypes.Shotgun;
 	[Property] public CitizenAnimationHelper.Hand Handedness { get; set; } = CitizenAnimationHelper.Hand.Both;
 
@@ -104,7 +106,8 @@ public sealed class ShotgunWeapon : Component
 				this, IsProxy,
 				FirstPersonOffset, FirstPersonRotationOffset,
 				AdsOffset, AdsRotationOffset,
-				ThirdPersonLocalPosition, ThirdPersonLocalAngles );
+				ThirdPersonLocalPosition, ThirdPersonLocalAngles,
+				ViewmodelSwayLerpRate );
 		}
 
 		if ( IsProxy ) return;

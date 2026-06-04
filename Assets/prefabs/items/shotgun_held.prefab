@@ -58,7 +58,7 @@
         "__guid": "bdd2b417-fe2b-99db-6e63-4d624fedb163",
         "Flags": 0,
         "Name": "LeftHandIk",
-        "Position": "20,-10,0",
+        "Position": "27,-3,-2",
         "Enabled": true,
         "Components": []
       },
