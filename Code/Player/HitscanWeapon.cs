@@ -317,7 +317,7 @@ public sealed class HitscanWeapon : Component
 	internal bool ApplySelectionVisualState()
 	{
 		var selected = IsSelected;
-		var visible = selected && !FirstPersonViewmodel.ShouldHideWorldHeldItem( this, selected );
+		var visible = selected;
 		WeaponPose.SetVisibility( GameObject, visible );
 		WeaponPose.ApplyHandPose( this, visible, HoldType, Handedness, LeftHandIkTarget, RightHandIkTarget );
 		if ( !selected )
