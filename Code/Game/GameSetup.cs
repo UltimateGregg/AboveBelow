@@ -194,6 +194,8 @@ public sealed class GameSetup : Component, Component.INetworkListener
 	{
 		if ( ShouldSkipRuntimeScene() ) return;
 		ResolveManagerRefs();
+		if ( Rules.IsValid() )
+			Rules.ApplyBalanceConfig();
 		EnsureTeamComms();
 		CaptureTrainingDummySpawnPoints();
 	}
@@ -465,7 +467,7 @@ public sealed class GameSetup : Component, Component.INetworkListener
 		DespawnPawn( channel.Id );
 
 		// Pilot's ground avatar.
-		var groundPrefab = ResolvePilotGroundPrefab();
+		var groundPrefab = GameSetupPrefabResolver.ResolvePilotGroundPrefab( this );
 		if ( !groundPrefab.IsValid() )
 		{
 			Log.Warning( "[GameSetup] Pilot ground prefab not found." );
@@ -477,6 +479,7 @@ public sealed class GameSetup : Component, Component.INetworkListener
 		var pilot = pawn.Components.Get<PilotSoldier>( FindMode.EverythingInSelfAndDescendants );
 		if ( pilot.IsValid() )
 			pilot.ChosenDrone = type;
+		BalanceApplier.ApplyPilotGround( pawn, GetActiveBalanceConfig() );
 		EnsureTeamVoice( pawn );
 
 		if ( Networking.IsActive )
@@ -496,7 +499,7 @@ public sealed class GameSetup : Component, Component.INetworkListener
 		_selectedSoldierClasses[channel.Id] = cls;
 		DespawnPawn( channel.Id );
 
-		var prefab = ResolveSoldierPrefab( cls );
+		var prefab = GameSetupPrefabResolver.ResolveSoldierPrefab( this, cls );
 		if ( !prefab.IsValid() )
 		{
 			Log.Warning( $"[GameSetup] Soldier prefab for {cls} not found." );
@@ -505,6 +508,7 @@ public sealed class GameSetup : Component, Component.INetworkListener
 
 		var spawn = PickSpawn( PlayerRole.Soldier );
 		var pawn = prefab.Clone( spawn, name: $"{cls} - {channel.DisplayName}" );
+		BalanceApplier.ApplySoldier( pawn, cls, GetActiveBalanceConfig() );
 		EnsureTeamVoice( pawn );
 		if ( Networking.IsActive )
 			pawn.NetworkSpawn( channel );
@@ -546,7 +550,7 @@ public sealed class GameSetup : Component, Component.INetworkListener
 
 		DespawnSoloTrainingDummies();
 
-		var prefab = ResolveTrainingDummyPrefab();
+		var prefab = GameSetupPrefabResolver.ResolveTrainingDummyPrefab( this );
 		if ( !prefab.IsValid() )
 		{
 			Log.Warning( "[GameSetup] Training dummy prefab not found." );
@@ -567,9 +571,7 @@ public sealed class GameSetup : Component, Component.INetworkListener
 				dummy.SetHomePosition( spawn.Position );
 			}
 
-			var health = clone.Components.Get<Health>( FindMode.EverythingInSelfAndDescendants );
-			if ( health.IsValid() && Rules.IsValid() )
-				health.MaxHealth = dummyRole == PlayerRole.Pilot ? Rules.PilotGroundHealth : Rules.SoldierHealth;
+			BalanceApplier.ApplyTrainingDummy( clone, dummyRole, GetActiveBalanceConfig() );
 
 			if ( Networking.IsActive )
 				clone.NetworkSpawn();
@@ -671,84 +673,6 @@ public sealed class GameSetup : Component, Component.INetworkListener
 
 		voice.Setup = this;
 		voice.ApplyVoiceRoutingProfile();
-	}
-
-	GameObject ResolvePilotGroundPrefab()
-	{
-		if ( PilotGroundPrefab.IsValid() ) return PilotGroundPrefab;
-		if ( !string.IsNullOrWhiteSpace( PilotGroundPrefabPath ) )
-		{
-			var p = GameObject.GetPrefab( PilotGroundPrefabPath );
-			if ( p.IsValid() ) return p;
-		}
-		// Fallback to the legacy soldier prefab so pilots at least spawn.
-		return SoldierPrefab.IsValid() ? SoldierPrefab : GameObject.GetPrefab( SoldierPrefabPath );
-	}
-
-	GameObject ResolveTrainingDummyPrefab()
-	{
-		if ( TrainingDummyPrefab.IsValid() ) return TrainingDummyPrefab;
-		if ( !string.IsNullOrWhiteSpace( TrainingDummyPrefabPath ) )
-		{
-			var p = GameObject.GetPrefab( TrainingDummyPrefabPath );
-			if ( p.IsValid() ) return p;
-		}
-		return null;
-	}
-
-	GameObject ResolveSoldierPrefab( SoldierClass cls )
-	{
-		var definition = GetAuthoredSoldierLoadoutDefinition( cls );
-		var definitionPrefab = ResolvePrefabPath( definition?.PrefabPath );
-		if ( definitionPrefab.IsValid() )
-			return definitionPrefab;
-
-		var (inspector, path) = cls switch
-		{
-			SoldierClass.Assault => (AssaultPrefab, AssaultPrefabPath),
-			SoldierClass.CounterUav => (CounterUavPrefab, CounterUavPrefabPath),
-			SoldierClass.Heavy => (HeavyPrefab, HeavyPrefabPath),
-			_ => (SoldierPrefab, SoldierPrefabPath),
-		};
-		if ( inspector.IsValid() ) return inspector;
-		if ( !string.IsNullOrWhiteSpace( path ) )
-		{
-			var p = GameObject.GetPrefab( path );
-			if ( p.IsValid() ) return p;
-		}
-		return SoldierPrefab.IsValid() ? SoldierPrefab : GameObject.GetPrefab( SoldierPrefabPath );
-	}
-
-	GameObject ResolveDronePrefab( DroneType type )
-	{
-		var definition = GetAuthoredDroneLoadoutDefinition( type );
-		var definitionPrefab = ResolvePrefabPath( definition?.PrefabPath );
-		if ( definitionPrefab.IsValid() )
-			return definitionPrefab;
-
-		var (inspector, path) = type switch
-		{
-			DroneType.Gps => (GpsDronePrefab, GpsDronePrefabPath),
-			DroneType.Fpv => (FpvDronePrefab, FpvDronePrefabPath),
-			DroneType.FiberOpticFpv => (FiberOpticFpvDronePrefab, FiberOpticFpvDronePrefabPath),
-			_ => (DronePrefab, DronePrefabPath),
-		};
-		if ( inspector.IsValid() ) return inspector;
-		if ( !string.IsNullOrWhiteSpace( path ) )
-		{
-			var p = GameObject.GetPrefab( path );
-			if ( p.IsValid() ) return p;
-		}
-		return DronePrefab.IsValid() ? DronePrefab : GameObject.GetPrefab( DronePrefabPath );
-	}
-
-	static GameObject ResolvePrefabPath( string prefabPath )
-	{
-		if ( string.IsNullOrWhiteSpace( prefabPath ) )
-			return null;
-
-		var prefab = GameObject.GetPrefab( prefabPath );
-		return prefab.IsValid() ? prefab : null;
 	}
 
 	public bool NeedsLocalRoleChoice()
@@ -969,5 +893,13 @@ public sealed class GameSetup : Component, Component.INetworkListener
 
 		if ( !Round.IsValid() )
 			Round = Components.Get<RoundManager>() ?? Scene.GetAllComponents<RoundManager>().FirstOrDefault();
+	}
+
+	BalanceConfigResource GetActiveBalanceConfig()
+	{
+		if ( !Rules.IsValid() )
+			ResolveManagerRefs();
+
+		return Rules.IsValid() ? Rules.GetActiveBalanceConfig() : null;
 	}
 }

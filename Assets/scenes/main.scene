@@ -33311,14 +33311,6 @@
                 },
                 "Property": "Scale",
                 "Value": "216,1.20000005,8"
-              },
-              {
-                "Target": {
-                  "Type": "Component",
-                  "IdValue": "601ed2cc-40ab-5e72-a6f4-136193d6c502"
-                },
-                "Property": "__enabled",
-                "Value": false
               }
             ],
             "MovedObjects": []
@@ -33361,14 +33353,6 @@
                 },
                 "Property": "Scale",
                 "Value": "216,1.20000005,8"
-              },
-              {
-                "Target": {
-                  "Type": "Component",
-                  "IdValue": "601ed2cc-40ab-5e72-a6f4-136193d6c502"
-                },
-                "Property": "__enabled",
-                "Value": false
               }
             ],
             "MovedObjects": []
@@ -33411,14 +33395,6 @@
                 },
                 "Property": "Scale",
                 "Value": "1.20000005,216,8"
-              },
-              {
-                "Target": {
-                  "Type": "Component",
-                  "IdValue": "601ed2cc-40ab-5e72-a6f4-136193d6c502"
-                },
-                "Property": "__enabled",
-                "Value": false
               }
             ],
             "MovedObjects": []
@@ -33461,14 +33437,6 @@
                 },
                 "Property": "Scale",
                 "Value": "1.20000005,216,8"
-              },
-              {
-                "Target": {
-                  "Type": "Component",
-                  "IdValue": "601ed2cc-40ab-5e72-a6f4-136193d6c502"
-                },
-                "Property": "__enabled",
-                "Value": false
               }
             ],
             "MovedObjects": []

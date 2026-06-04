@@ -23,6 +23,7 @@ Prefer official, dated sources:
 - existing project code and audited patterns.
 
 Treat release-note summaries as volatile. Record the reviewed date and the source update date before promoting a claim into standing guidance. If a release note names a C# symbol, verify the exact symbol through `https://sbox.game/api`, API changes, local `API.json`, or existing code before implementation.
+If the release note names a symbol that the local dump does not expose yet, keep it as pending guidance and say exactly what failed verification. Do not use the release note alone as a method signature.
 
 ## Work
 

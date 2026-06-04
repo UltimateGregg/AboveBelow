@@ -679,6 +679,7 @@ public sealed class DroneDeployer : Component
 
 		var clone = prefab.Clone( new Transform( position, rotation ),
 			name: $"Drone[{pilot.ChosenDrone}] - {pilot.GameObject.Name}" );
+		BalanceApplier.ApplyDrone( clone, pilot.ChosenDrone, GetActiveBalanceConfig() );
 
 		var link = clone.Components.Get<PilotLink>( FindMode.EverythingInSelfAndDescendants );
 		if ( link.IsValid() )
@@ -731,6 +732,15 @@ public sealed class DroneDeployer : Component
 			DroneType.FiberOpticFpv => FiberOpticFpvDronePrefab,
 			_ => FpvDronePrefab,
 		};
+	}
+
+	BalanceConfigResource GetActiveBalanceConfig()
+	{
+		ResolveSetup();
+
+		return Setup.IsValid() && Setup.Rules.IsValid()
+			? Setup.Rules.GetActiveBalanceConfig()
+			: null;
 	}
 
 	static bool CanMutateState() => !Networking.IsActive || Networking.IsHost;

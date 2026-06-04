@@ -44,7 +44,7 @@ public sealed class DroneController : Component
 	// How much the visual model leans into its movement (purely cosmetic)
 	[Property, Range(0, 35)] public float VisualTiltDegrees { get; set; } = 18f;
 	[Property, Range(1f, 20f)] public float VisualTiltSmoothing { get; set; } = 6f;
-	[Property, Range(0f, 6000f)] public float PropellerSpinDegreesPerSecond { get; set; } = 2160f;
+	[Property, Range(0f, 12000f)] public float PropellerSpinDegreesPerSecond { get; set; } = 4320f;
 	[Property, Range(0f, 1f)] public float PropellerIdleSpinFraction { get; set; } = 0.35f;
 	[Property, Range(1f, 2f)] public float PropellerBoostSpinMultiplier { get; set; } = 1.25f;
 	[Property] public Angles VisualRotationOffset { get; set; } = new( 0f, 0f, 0f );

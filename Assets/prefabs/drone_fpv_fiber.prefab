@@ -39,7 +39,7 @@
         "MousePitchSensitivity": 0.06,
         "VisualTiltDegrees": 22,
         "VisualTiltSmoothing": 7,
-        "PropellerSpinDegreesPerSecond": 2700,
+        "PropellerSpinDegreesPerSecond": 5400,
         "PropellerIdleSpinFraction": 0.4,
         "PropellerBoostSpinMultiplier": 1.35,
         "PropellerSound": "sounds/drone_hum.sound",

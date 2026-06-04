@@ -90,6 +90,8 @@ pawn.NetworkSpawn(connection);  // Sets Network.Owner = connection
 - Review `https://sbox.game/release-notes`, relevant `https://sbox.game/news/...` update posts, and `https://sbox.game/api/changes`; record the review date and source update date before changing standing guidance.
 - Promote recurring lessons into `docs/sbox_engine_llm_reference.md`, agents, hooks, or focused audits. Do not copy every note into docs.
 - Verify exact C# symbols through `scripts\agents\sbox_api_lookup.ps1`, official API pages, or existing code before editing gameplay, UI, asset, or editor code.
+- If a fresh release note names a symbol that local `API.json` does not expose yet, keep it as volatile guidance and do not implement against it until the local dump, official API page, or editor/build proof confirms the signature.
+- The 26.06.03 notes added recurring guidance for this project: keep `Connection.Name` for networking/internal identity and `Connection.DisplayName` for UI text; account for physical sound simulation during audio proof; use newly supported S&Box UI CSS features where they replace layout hacks; and treat `Mesh.AddSubMesh` as pending until exact API shape is verified locally.
 - Run `scripts\agents\sbox_release_notes_audit.ps1 -Root . -ShowInfo` or `scripts\agents\run_agent_checks.ps1 -Suite release-notes -ShowInfo` after changing release-note-derived guidance.
 
 ### S&Box Code Search Intake

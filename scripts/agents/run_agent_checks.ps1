@@ -97,6 +97,7 @@ switch ($Suite) {
             @{ Name = "ui_flow_audit.ps1"; Args = $commonArgs },
             @{ Name = "mcp_screenshot_audit.ps1"; Args = $commonArgs },
             @{ Name = "networking_review_audit.ps1"; Args = $commonArgs },
+            @{ Name = "large_component_risk_audit.ps1"; Args = $commonArgs },
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_docs_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
@@ -273,6 +274,7 @@ switch ($Suite) {
     "asset" {
         $scripts = @(
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
+            @{ Name = "drone_propeller_spin_audit.ps1"; Args = $commonArgs },
             @{ Name = "drone_variant_visual_audit.ps1"; Args = $commonArgs },
             @{ Name = "drone_fpv_propeller_texture_audit.ps1"; Args = $commonArgs },
             @{ Name = "fbx_material_slot_audit.ps1"; Args = $commonArgs }
@@ -290,6 +292,7 @@ switch ($Suite) {
             @{ Name = "blender_quality_audit.ps1"; Args = $commonArgs },
             @{ Name = "material_texture_audit.ps1"; Args = $commonArgs },
             @{ Name = "asset_pipeline_audit.ps1"; Args = $commonArgs },
+            @{ Name = "drone_propeller_spin_audit.ps1"; Args = $commonArgs },
             @{ Name = "drone_variant_visual_audit.ps1"; Args = $commonArgs },
             @{ Name = "drone_fpv_propeller_texture_audit.ps1"; Args = $commonArgs },
             @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
@@ -307,6 +310,12 @@ switch ($Suite) {
         )
     }
     "networking" { $scripts = @(@{ Name = "networking_review_audit.ps1"; Args = $commonArgs }) }
+    "readiness" {
+        $scripts = @(
+            @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root, "-ShowFiles") },
+            @{ Name = "large_component_risk_audit.ps1"; Args = $commonArgs }
+        )
+    }
     "gameplay-regression" { $scripts = @(@{ Name = "gameplay_regression_guard.ps1"; Args = $commonArgs }) }
     "docs" {
         $scripts = @(
@@ -357,13 +366,13 @@ switch ($Suite) {
     "editor-first" { $scripts = @(@{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs }) }
     "balance" {
         $scripts = @(
+            @{ Name = "balance_config_audit.ps1"; Args = $commonArgs },
             @{ Name = "m4_fire_rate_audit.ps1"; Args = $commonArgs },
             @{ Name = "balance_tuning_report.ps1"; Args = @("-Root", $Root) }
         )
     }
     "playtest" { $scripts = @(@{ Name = "playtest_checklist.ps1"; Args = @("-Root", $Root, "-ChangeArea", "All") }) }
     "logs" { $scripts = @(@{ Name = "current_log_audit.ps1"; Args = $commonArgs }) }
-    "readiness" { $scripts = @(@{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root, "-ShowFiles") }) }
     "train" {
         $scripts = @(
             @{ Name = "post_task_training_agent.ps1"; Args = @("-Root", $Root, "-ShowFiles", "-WriteReport") },

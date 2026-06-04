@@ -13,12 +13,17 @@ namespace DroneVsPlayers;
 public sealed class StartupCameraLift : Component
 {
 	[Property, Range( 0f, 5000f )] public float LiftDistanceUnits { get; set; } = 2400f;
-	[Property, Range( 0f, 10f )] public float DurationSeconds { get; set; } = 6f;
+	[Property, Range( 0f, 20f )] public float DurationSeconds { get; set; } = 12f;
 	[Property, Range( 0f, 64f )] public float ExternalMoveTolerance { get; set; } = 1f;
+	[Property, Range( -45f, 45f )] public float PitchDownDegrees { get; set; } = 16f;
+	[Property, Range( 0f, 45f )] public float ExternalRotationToleranceDegrees { get; set; } = 1f;
 
 	Vector3 _startPosition;
 	Vector3 _targetPosition;
 	Vector3 _lastAppliedPosition;
+	Rotation _startRotation;
+	Rotation _targetRotation;
+	Rotation _lastAppliedRotation;
 	float _elapsedSeconds;
 	bool _active;
 
@@ -27,8 +32,14 @@ public sealed class StartupCameraLift : Component
 		_startPosition = WorldPosition;
 		_targetPosition = _startPosition + Vector3.Up * LiftDistanceUnits;
 		_lastAppliedPosition = _startPosition;
+		_startRotation = WorldRotation;
+		var targetAngles = _startRotation.Angles();
+		targetAngles.pitch += PitchDownDegrees;
+		_targetRotation = targetAngles.ToRotation();
+		_lastAppliedRotation = _startRotation;
 		_elapsedSeconds = 0f;
-		_active = MathF.Abs( LiftDistanceUnits ) > 0.001f;
+		_active = MathF.Abs( LiftDistanceUnits ) > 0.001f
+			|| MathF.Abs( PitchDownDegrees ) > 0.001f;
 
 		if ( !_active || DurationSeconds <= 0f )
 			FinishAtTarget();
@@ -44,28 +55,37 @@ public sealed class StartupCameraLift : Component
 			_active = false;
 			return;
 		}
+		if ( WorldRotation.Distance( _lastAppliedRotation ) > ExternalRotationToleranceDegrees )
+		{
+			_active = false;
+			return;
+		}
 
 		_elapsedSeconds += Time.Delta;
 		var t = (_elapsedSeconds / MathF.Max( 0.001f, DurationSeconds )).Clamp( 0f, 1f );
-		var smoothed = SmoothStep( t );
+		var smoothed = SmootherStep( t );
 
 		WorldPosition = Vector3.Lerp( _startPosition, _targetPosition, smoothed );
 		_lastAppliedPosition = WorldPosition;
+		WorldRotation = Rotation.Slerp( _startRotation, _targetRotation, smoothed );
+		_lastAppliedRotation = WorldRotation;
 
 		if ( t >= 1f )
 			_active = false;
 	}
 
-	static float SmoothStep( float t )
+	static float SmootherStep( float t )
 	{
 		t = t.Clamp( 0f, 1f );
-		return t * t * ( 3f - 2f * t );
+		return t * t * t * ( t * ( 6f * t - 15f ) + 10f );
 	}
 
 	void FinishAtTarget()
 	{
 		WorldPosition = _targetPosition;
 		_lastAppliedPosition = WorldPosition;
+		WorldRotation = _targetRotation;
+		_lastAppliedRotation = WorldRotation;
 		_active = false;
 	}
 }

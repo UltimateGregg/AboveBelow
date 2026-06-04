@@ -69,8 +69,10 @@ When a script edits `Assets/scenes/main.scene` while the editor is open, check `
 | Team Label Copy Audit | Keep player-facing role labels on Drone Pilots and Hunters while preserving the project title | `scripts/agents/team_label_copy_audit.ps1` |
 | UI Flow Agent | Catch interactive-looking Razor UI without click behavior, missing `BuildHash()`, and per-frame `StateHasChanged()` refreshes | `scripts/agents/ui_flow_audit.ps1` |
 | Networking Review Agent | Surface authority and replication risks | `scripts/agents/networking_review_audit.ps1` |
+| Large Component Risk Audit | Keep broad components from absorbing new responsibilities; currently guards the extracted `GameSetupPrefabResolver` seam | `scripts/agents/large_component_risk_audit.ps1` |
 | Playtest QA Agent | Generate editor and multiplayer checklists | `scripts/agents/playtest_checklist.ps1` |
 | Docs and Roadmap Agent | Check doc presence and drift | `scripts/agents/docs_roadmap_audit.ps1` |
+| Balance Config Audit | Keep runtime tuning centralized in `BalanceConfigResource` and applied through spawned pawn/drone helpers | `scripts/agents/run_agent_checks.ps1 -Suite balance -ShowInfo` |
 | Balance and Tuning Agent | Snapshot balance-related values | `scripts/agents/balance_tuning_report.ps1` |
 | Current Log Audit | Search project and local app log locations for fresh runtime/editor logs | `scripts/agents/current_log_audit.ps1` |
 | S&Box Engine Reference Agent | Verify external S&Box/Source 2 research and guard against obsolete guidance | `scripts/agents/sbox_engine_reference_audit.ps1` |
@@ -247,6 +249,8 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Su
 For AAA-quality or otherwise high-polish assets, use `.agents/sbox/aaa-asset-quality-agent.md` first. The generated brief should include reference requirements, Production Quality Targets, material roles, sockets, scale/orientation notes, and a Visual Review Plan before detailed modeling. The proof chain is brief -> Blender source quality -> material/texture audit -> visual preview/contact sheet -> export/import -> ModelDoc and FBX material-slot validation -> S&Box prefab or editor screenshot.
 
 For drone variants with a distinct visible identity, run `scripts/agents/drone_variant_visual_audit.ps1` before accepting the handoff. It catches the specific drift where a variant prefab or held preview still points at a shared/base body even though the variant now has its own Blender source, VMDL, and material identity.
+
+For drone propeller placement, spin direction, or spin-speed changes, run `scripts/agents/drone_propeller_spin_audit.ps1 -ShowInfo` or `scripts/agents/run_agent_checks.ps1 -Suite asset -ShowInfo`. It validates the code-driven propeller scan, motor naming, GPS pivot hierarchy, and the variant-specific `PropellerSpinDegreesPerSecond` overrides.
 
 Use the texture contact sheet for alpha-cutout assets such as tree foliage cards before accepting a Blender render. The Blender preview confirms shape; the contact sheet and S&Box editor screenshot confirm the material and transparent background behavior.
 

@@ -24,6 +24,21 @@ Add-Line $lines ""
 Add-Line $lines "Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 Add-Line $lines ""
 
+$balanceConfigPath = Join-Path $Root "Code\Game\BalanceConfigResource.cs"
+if (Test-Path -LiteralPath $balanceConfigPath) {
+    Add-Line $lines "## BalanceConfig Defaults"
+    Add-Line $lines ""
+    Add-Line $lines "Authoritative runtime tuning source: `Code/Game/BalanceConfigResource.cs` (`.dvpbalance` resources can override these defaults)."
+    Add-Line $lines ""
+    Add-Line $lines "| Config section | Runtime target |"
+    Add-Line $lines "|---|---|"
+    Add-Line $lines "| Match | `GameRules` round timing, team sizes, and minimum players |"
+    Add-Line $lines "| Assault / Counter-UAV / Heavy | Ground pawn health, movement, primary weapon, and equipment tuning |"
+    Add-Line $lines "| PilotGround | Pilot avatar health, movement, and fallback sidearm tuning |"
+    Add-Line $lines "| GPS / FPV / Fiber FPV | Drone health, movement, jamming, hitscan, and kamikaze tuning |"
+    Add-Line $lines ""
+}
+
 $gameRulesPath = Join-Path $Root "Code\Game\GameRules.cs"
 if (Test-Path -LiteralPath $gameRulesPath) {
     Add-Line $lines "## GameRules Defaults"

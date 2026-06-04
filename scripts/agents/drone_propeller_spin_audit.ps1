@@ -34,6 +34,43 @@ else {
     if ($controllerText -notmatch 'GetPropellerSpinDirection') {
         Add-AgentIssue $issues "Error" "Drone Propellers" "Code/Drone/DroneController.cs" "Propeller spin direction is not derived per motor." "Alternate diagonal motor directions so quad props do not all spin the same way."
     }
+
+    if ($controllerText -notmatch 'Range\(\s*0f\s*,\s*12000f\s*\)\]\s*public\s+float\s+PropellerSpinDegreesPerSecond') {
+        Add-AgentIssue $issues "Error" "Drone Propellers" "Code/Drone/DroneController.cs" "Propeller spin inspector range does not cover the doubled drone speeds." "Raise the PropellerSpinDegreesPerSecond range so all doubled prefab overrides remain editable in the inspector."
+    }
+
+    if ($controllerText -notmatch 'PropellerSpinDegreesPerSecond\s*\{\s*get;\s*set;\s*\}\s*=\s*4320f') {
+        Add-AgentIssue $issues "Error" "Drone Propellers" "Code/Drone/DroneController.cs" "Default propeller spin speed is not doubled to 4320 degrees per second." "Double the shared DroneController default so new or fallback drones inherit the faster propeller motion."
+    }
+}
+
+function Assert-PrefabSpinSpeed {
+    param(
+        [string]$RelativePrefab,
+        [int]$ExpectedDegreesPerSecond
+    )
+
+    $prefabPath = Join-Path $Root $RelativePrefab
+    if (-not (Test-Path -LiteralPath $prefabPath)) {
+        Add-AgentIssue $issues "Error" "Drone Propellers" $RelativePrefab "Drone prefab is missing." "Restore the prefab or update the propeller spin audit intentionally."
+        return
+    }
+
+    $prefabText = Get-Content -LiteralPath $prefabPath -Raw
+    if ($prefabText -notmatch ('"PropellerSpinDegreesPerSecond"\s*:\s*' + $ExpectedDegreesPerSecond + '\b')) {
+        Add-AgentIssue $issues "Error" "Drone Propellers" $RelativePrefab "Propeller spin speed is not doubled to $ExpectedDegreesPerSecond degrees per second." "Double the prefab's DroneController.PropellerSpinDegreesPerSecond value while preserving variant-specific tuning."
+    }
+}
+
+$expectedPrefabSpinSpeeds = [ordered]@{
+    "Assets/prefabs/drone.prefab" = 4320
+    "Assets/prefabs/drone_gps.prefab" = 8640
+    "Assets/prefabs/drone_fpv.prefab" = 5760
+    "Assets/prefabs/drone_fpv_fiber.prefab" = 5400
+}
+
+foreach ($entry in $expectedPrefabSpinSpeeds.GetEnumerator()) {
+    Assert-PrefabSpinSpeed -RelativePrefab $entry.Key -ExpectedDegreesPerSecond $entry.Value
 }
 
 $expectedMotors = @("Propeller_FL", "Propeller_FR", "Propeller_BL", "Propeller_BR")
@@ -107,7 +144,6 @@ if (-not (Test-Path -LiteralPath $gpsPrefabPath)) {
 else {
     try {
         $gpsJson = Get-Content -LiteralPath $gpsPrefabPath -Raw | ConvertFrom-Json
-        $gpsRaw = Get-Content -LiteralPath $gpsPrefabPath -Raw
         $visual = Find-ChildNodeByName -Node $gpsJson.RootObject -Name "Visual"
         if ($null -eq $visual) {
             Add-AgentIssue $issues "Error" "Drone Propellers" $gpsPrefab "GPS prefab is missing the Visual child." "Keep the GPS visual model and propeller pivots under a shared visual frame."
@@ -170,9 +206,6 @@ else {
             }
         }
 
-        if ($gpsRaw -notmatch '"PropellerSpinDegreesPerSecond"\s*:\s*4320') {
-            Add-AgentIssue $issues "Error" "Drone Propellers" $gpsPrefab "GPS propeller spin speed is not doubled to 4320 degrees per second." "Set DroneController.PropellerSpinDegreesPerSecond to 4320 on the GPS prefab."
-        }
     }
     catch {
         Add-AgentIssue $issues "Error" "Drone Propellers" $gpsPrefab "GPS prefab JSON failed to parse." "Fix invalid prefab JSON before relying on propeller placement checks."

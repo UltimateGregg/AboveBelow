@@ -105,7 +105,7 @@
         "PropellerMaxPitch": 1.6,
         "PropellerSound": "sounds/drone_hum.sound",
         "PropellerSoundVolume": 0.4,
-        "PropellerSpinDegreesPerSecond": 2880,
+        "PropellerSpinDegreesPerSecond": 5760,
         "VisualModel": null,
         "VisualTiltDegrees": 24,
         "VisualTiltSmoothing": 8,

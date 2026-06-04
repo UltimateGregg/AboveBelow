@@ -33,13 +33,16 @@ Official docs source repo reviewed on 2026-05-27:
 - `docfx.json` builds `docs/**/*.md` and `docs/**/toc.yml` into the published docs site
 - top-level docs sections include actiongraph, animation, assets, code, editor, exporting, gameplay, networking, physics, rendering, scene, sound, and ui
 
-Official S&Box release notes reviewed on 2026-05-28:
+Official S&Box release notes reviewed on 2026-06-04:
 
 - https://sbox.game/release-notes
+- https://sbox.game/news/update-26-06-03
 - https://sbox.game/news/update-26-05-20
 - https://sbox.game/api/changes
-- latest reviewed release block: `26.05.27` (27 May 2026)
+- latest reviewed release block: `26.06.03` (release-note block dated 2 June 2026; news post dated 3 June 2026)
 - recent API-change highlights include `Mesh.AddMorph`, `MorphDelta`, `Editor.CreateModelFromMeshDialog`, `ResourceWriter.AddExternalReference`, and service organization/package-type helpers
+- `Connection.Name`, `Connection.DisplayName`, and `Sandbox.UI.Panel.BuildHash()` were verified in local `API.json` on 2026-06-04
+- `Mesh.AddSubMesh` was named in the 26.06.03 release notes, but the local `API.json` lookup did not expose the member on 2026-06-04; refresh or verify the exact signature before implementation
 
 Official S&Box Code Search reviewed on 2026-05-30:
 
@@ -111,7 +114,7 @@ The API dump is a local reflection/reference surface, not a replacement for runt
 
 ## Release Notes Intake
 
-As of the 2026-05-28 review, recent official S&Box release notes affect these recurring project workflows:
+As of the 2026-06-04 review, recent official S&Box release notes affect these recurring project workflows:
 
 - Use `HasTag()` on trace results instead of relying on obsolete trace-result `.Tags` access when checking trace tags in hot paths.
 - Platform chat is now a default opt-in/out project feature for existing projects; gameplay-specific chat or command handling should start from the platform chat surface and `IChatEvent` instead of a fully custom chat stack.
@@ -124,6 +127,11 @@ As of the 2026-05-28 review, recent official S&Box release notes affect these re
 - `ResourceWriter.AddExternalReference` can preserve external resource links in generated resources when the exact API shape is verified.
 - VMDL writer now also saves the PHYS block when exporting models, so ModelDoc/model export regressions should check generated physics blocks before assuming missing collision is only a prefab issue.
 - Recent performance notes reinforce allocation discipline in trace/physics hot paths and the preference for engine batching surfaces such as clutter LOD and instanced clutter collision when authoring dense environment content.
+- For player identity, use `Connection.Name` for networking, dedicated hosting, internal identity checks, and logs. Use `Connection.DisplayName` only for player-facing UI text; avoid host-synced display-name caches when each viewer should see their own Steam display-name/nickname/filtering result.
+- Physical sound simulation is now a creator-facing default, with material-aware occlusion/transmission, dynamic reverb, diffraction, and new tuning settings. Sound work now needs editor/playtest checks across walls, doorways, interiors, and relevant physics materials instead of assuming a simple line-of-sight volume drop.
+- UI sounds now target the UI mixer by default when no mixer is set, but gameplay UI sound changes should still verify the intended mixer route so 2D cues do not become world-spatialized.
+- S&Box UI CSS gained support for more modern layout/style features such as `min()`, `max()`, `clamp()`, `currentColor`, `:has()` descendant selectors, `overflow: auto`, logical margin/padding/inset properties, `white-space: pre-wrap`, `word-break: break-word`, viewport variants such as `dvh`/`svh`/`lvh`, and more shorthand parsing. Prefer these supported stylesheet tools over custom Razor/layout workarounds when they solve the layout problem cleanly, while keeping dynamic Razor values covered by `BuildHash()`.
+- `Mesh.AddSubMesh` is a candidate API for multi-material runtime meshes, but do not implement against it from the release note alone. This checkout's local API dump did not expose the member during the 2026-06-04 review.
 
 Release notes are not implementation proof by themselves. For each adopted API, query `scripts/agents/sbox_api_lookup.ps1`, compile the relevant project, and verify through the editor when editor, asset, or runtime behavior changes.
 

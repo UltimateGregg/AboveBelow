@@ -2140,17 +2140,21 @@ if (Test-Path -LiteralPath $sboxReleaseNotesAudit) {
         @'
 # S&Box Engine LLM Reference
 
-Official S&Box release notes reviewed on 2026-05-28:
+Official S&Box release notes reviewed on 2026-06-04:
 
 - https://sbox.game/release-notes
+- https://sbox.game/news/update-26-06-03
 - https://sbox.game/api/changes
-- 26.05.27
+- 26.06.03
 - Mesh.AddMorph
+- Mesh.AddSubMesh
 - MorphDelta
 - CreateModelFromMeshDialog
 - ResourceWriter.AddExternalReference
+- Connection.Name
+- Connection.DisplayName
 
-Use HasTag() on trace results. Route chat through IChatEvent. Custom panel drawing can use IPanelDraw. Voice Mixer owns voice transmission. TerrainStorage.SetResolution() is the terrain resolution workflow. Scene.Trace.Cone and Rigidbody.SleepThreshold are available after API verification. VMDL writer now also saves the PHYS block.
+Use HasTag() on trace results. Route chat through IChatEvent. Custom panel drawing can use IPanelDraw. Voice Mixer owns voice transmission. TerrainStorage.SetResolution() is the terrain resolution workflow. Scene.Trace.Cone and Rigidbody.SleepThreshold are available after API verification. VMDL writer now also saves the PHYS block. Physical sound simulation changes sound proof expectations. UI mixer routing matters for 2D cues. Modern UI CSS features such as clamp() and :has() are available. Mesh.AddSubMesh stays pending when the local API dump does not expose the exact member.
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot "docs\sbox_engine_llm_reference.md") -Encoding UTF8
 
         @'
@@ -2163,6 +2167,8 @@ Review official release notes.
 Sources:
 - https://sbox.game/release-notes
 - https://sbox.game/api/changes
+
+If the local dump does not expose a named symbol, keep it pending.
 
 Evidence:
 - sbox_api_lookup.ps1

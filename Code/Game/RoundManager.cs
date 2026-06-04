@@ -316,6 +316,7 @@ public sealed class RoundManager : Component
 	{
 		if ( !Rules.IsValid() ) return;
 
+		Rules.ApplyBalanceConfig();
 		CountdownSeconds = Rules.CountdownSeconds;
 		RoundLengthSeconds = Rules.RoundTimeSeconds;
 		MinPlayers = Math.Max( 1, Rules.MinPlayersToStart );

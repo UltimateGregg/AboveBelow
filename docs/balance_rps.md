@@ -20,6 +20,14 @@ drone speed/health differences, rifle/shotgun damage, chaff, EMP, frag, and
 kamikaze FPV drones. The main work left is tuning, readable assets, and small
 ability polish where noted below.
 
+## Balance Data Owner
+
+Runtime balance should flow through the central `BalanceConfigResource`
+(`.dvpbalance`) and its built-in defaults. Prefab values are still useful
+editor defaults and snapshots, but spawned soldiers, pilots, drones, weapons,
+jammers, and grenades should receive live tuning from `GameRules.BalanceConfig`
+through `BalanceApplier`.
+
 ## Current Implemented Loadouts
 
 ### Pilot Team
