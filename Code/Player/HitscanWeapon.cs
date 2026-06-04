@@ -348,6 +348,12 @@ public sealed class HitscanWeapon : Component
 			if ( flashObject.IsValid() )
 				MuzzleFlash = flashObject.Components.Get<PointLight>();
 		}
+
+		if ( WeaponVisual.IsValid() )
+		{
+			foreach ( var renderer in WeaponVisual.Components.GetAll<ModelRenderer>( FindMode.EverythingInSelfAndDescendants ) )
+				renderer.RenderType = ModelRenderer.ShadowRenderType.On;
+		}
 	}
 
 	Vector3 GetFireOrigin( GroundPlayerController pc )
