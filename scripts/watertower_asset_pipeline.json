@@ -26,58 +26,10 @@
   "global_scale": 0.0254,
   "axis_forward": "-Y",
   "axis_up": "Z",
-  "physics_shapes": [
-    {
-      "type": "cylinder",
-      "surface_prop": "metal",
-      "collision_tags": "solid",
-      "radius": 8.25,
-      "point0": [0, 0, 14.625],
-      "point1": [0, 0, 20.375]
-    },
-    {
-      "type": "cylinder",
-      "surface_prop": "metal",
-      "collision_tags": "solid",
-      "radius": 7.5,
-      "point0": [0, 0, 20.125],
-      "point1": [0, 0, 22.125]
-    },
-    {
-      "type": "cylinder",
-      "surface_prop": "metal",
-      "collision_tags": "solid",
-      "radius": 9.5,
-      "point0": [0, 0, 13.325],
-      "point1": [0, 0, 14.175]
-    },
-    {
-      "type": "box",
-      "surface_prop": "metal",
-      "collision_tags": "solid",
-      "origin": [-6.375, 6.375, 6.5],
-      "dimensions": [0.9, 0.9, 13]
-    },
-    {
-      "type": "box",
-      "surface_prop": "metal",
-      "collision_tags": "solid",
-      "origin": [6.375, 6.375, 6.5],
-      "dimensions": [0.9, 0.9, 13]
-    },
-    {
-      "type": "box",
-      "surface_prop": "metal",
-      "collision_tags": "solid",
-      "origin": [-6.375, -6.375, 6.5],
-      "dimensions": [0.9, 0.9, 13]
-    },
-    {
-      "type": "box",
-      "surface_prop": "metal",
-      "collision_tags": "solid",
-      "origin": [6.375, -6.375, 6.5],
-      "dimensions": [0.9, 0.9, 13]
-    }
-  ]
+  "collision": {
+    "mode": "render_mesh",
+    "surface_prop": "metal",
+    "collision_tags": "solid"
+  },
+  "_collision_note": "EXACT mesh collision: the pipeline writes a PhysicsMeshFile node (inside PhysicsShapeList) that references the render FBX, so every triangle is solid -- including the ladder (you climb against it; the LadderVolume trigger in WaterTower.prefab still drives the climb). The WaterTower.prefab puts a ModelCollider (Model=watertower.vmdl) on the Visual child so collision rides the EXACT visual transform, immune to the instance's non-uniform scale + yaw. See docs/collision_authoring.md. To make a part HOLLOW (e.g. a climb-through ladder), set collision.mode=collision_mesh + collision.filename=models/<name>_collision.fbx and generate that file with: python scripts/export_collision_mesh.py environment_model.blend/watertower.blend Assets/models/watertower_collision.fbx --exclude-prefix Ladder_"
 }

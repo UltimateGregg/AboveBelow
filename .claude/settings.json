@@ -463,6 +463,115 @@
           "level": "error"
         }
       }
+    },
+    {
+      "id": "sbox-animated-model-check",
+      "name": "S&Box Animated Model Intake Check",
+      "description": "Runs editor-first animated model routing checks when AnimGraph, ModelDoc, animation import, or viewmodel workflow surfaces change",
+      "enabled": true,
+      "trigger": {
+        "type": "file_pattern_change",
+        "patterns": [
+          "AGENTS.md",
+          "docs/automation.md",
+          "docs/sbox_engine_llm_reference.md",
+          "docs/known_sbox_patterns.md",
+          "docs/agent_toolkit.md",
+          ".agents/sbox/animated-model-intake-agent.md",
+          ".agents/sbox/editor-first-workflow-agent.md",
+          ".agents/sbox/modeldoc-agent.md",
+          ".agents/sbox/README.md",
+          "Code/Player/FirstPersonViewmodel.cs",
+          "scripts/agents/animated_model_intake_audit.ps1",
+          "scripts/agents/run_agent_checks.ps1",
+          "scripts/agents/post_task_training_agent.ps1",
+          "scripts/agents/test_full_automation_layer.ps1"
+        ],
+        "events": ["modified", "saved"],
+        "debounce_ms": 1500
+      },
+      "action": {
+        "type": "script",
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          ".\\scripts\\agents\\run_agent_checks.ps1",
+          "-Root",
+          "${WORKSPACE_ROOT}",
+          "-Suite",
+          "animated-model",
+          "-ShowInfo"
+        ],
+        "cwd": "${WORKSPACE_ROOT}",
+        "timeout_seconds": 90,
+        "capture_output": true,
+        "on_success": {
+          "notify": false,
+          "message": "S&Box animated model intake checks passed",
+          "level": "info"
+        },
+        "on_failure": {
+          "notify": true,
+          "message": "S&Box animated model intake check failed",
+          "level": "error"
+        }
+      }
+    },
+    {
+      "id": "sbox-collision-authoring-check",
+      "name": "S&Box Collision Authoring Check",
+      "description": "Runs the mesh-collision methodology checks when prefab colliders, model physics nodes, the collision pipeline/config/tools, or the collision agent change. See docs/collision_authoring.md.",
+      "enabled": true,
+      "trigger": {
+        "type": "file_pattern_change",
+        "patterns": [
+          "Assets/prefabs/**/*.prefab",
+          "Assets/models/**/*.vmdl",
+          "scripts/*_asset_pipeline.json",
+          "scripts/asset_pipeline.py",
+          "scripts/model_collision_scale_audit.py",
+          "scripts/export_collision_mesh.py",
+          "docs/collision_authoring.md",
+          ".agents/sbox/collision-authoring-agent.md",
+          "scripts/agents/collision_authoring_agent.ps1",
+          "scripts/agents/model_collision_scale_audit.ps1",
+          "scripts/agents/run_agent_checks.ps1"
+        ],
+        "events": ["modified", "saved"],
+        "debounce_ms": 1500
+      },
+      "action": {
+        "type": "script",
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          ".\\scripts\\agents\\run_agent_checks.ps1",
+          "-Root",
+          "${WORKSPACE_ROOT}",
+          "-Suite",
+          "collision",
+          "-ShowInfo"
+        ],
+        "cwd": "${WORKSPACE_ROOT}",
+        "timeout_seconds": 180,
+        "capture_output": true,
+        "on_success": {
+          "notify": false,
+          "message": "S&Box collision authoring checks passed",
+          "level": "info"
+        },
+        "on_failure": {
+          "notify": true,
+          "message": "S&Box collision authoring check failed",
+          "level": "error"
+        }
+      }
     }
   ]
 }

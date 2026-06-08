@@ -23,8 +23,8 @@ public static class ArenaTerrainEditorCommands
 	const float ArenaTerrainHeight = 512f;
 	const float RoadCenterX = 416.190948f;
 	const float RoadProtectedHalfWidth = 720f;
-	const float RoadProtectedHalfLength = 5700f;
-	const float RoadProtectedFade = 650f;
+	const float RoadProtectedHalfLength = 10920f;
+	const float RoadProtectedFade = 900f;
 	static readonly Vector3 ArenaTerrainOrigin = new( -ArenaTerrainSize * 0.5f, -ArenaTerrainSize * 0.5f, -8f );
 
 	[ConCmd( "dvp_link_arena_terrain" )]
@@ -335,7 +335,6 @@ public static class ArenaTerrainEditorCommands
 		var protection = 0f;
 
 		protection = MathF.Max( protection, RectProtection( x, y, RoadCenterX, 0f, RoadProtectedHalfWidth, RoadProtectedHalfLength, RoadProtectedFade ) );
-		protection = MathF.Max( protection, BoundaryProtection( x, y ) );
 
 		protection = MathF.Max( protection, RotatedRectProtection( x, y, -1680f, 1520f, 12f, 920f, 860f, 620f ) );
 		protection = MathF.Max( protection, RotatedRectProtection( x, y, -1740f, -1540f, -12f, 920f, 860f, 620f ) );
@@ -345,19 +344,6 @@ public static class ArenaTerrainEditorCommands
 		protection = MathF.Max( protection, RotatedRectProtection( x, y, -2220f, 620f, 30f, 720f, 650f, 520f ) );
 
 		return Math.Clamp( protection, 0f, 1f );
-	}
-
-	static float BoundaryProtection( float x, float y )
-	{
-		var protection = 0f;
-
-		if ( MathF.Abs( y ) <= 5900f )
-			protection = MathF.Max( protection, 1f - SmoothStep( 0f, 450f, MathF.Abs( MathF.Abs( x ) - 5400f ) ) );
-
-		if ( MathF.Abs( x ) <= 5900f )
-			protection = MathF.Max( protection, 1f - SmoothStep( 0f, 450f, MathF.Abs( MathF.Abs( y ) - 5400f ) ) );
-
-		return protection;
 	}
 
 	static float RectProtection( float x, float y, float centerX, float centerY, float halfX, float halfY, float fade )

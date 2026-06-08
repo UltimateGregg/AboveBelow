@@ -66,6 +66,8 @@ $requiredScripts = @(
     "scripts/agents/tree_collision_audit.ps1",
     "scripts/agents/collision_agent_chain_audit.ps1",
     "scripts/agents/collision_chain_report.ps1",
+    "scripts/agents/model_collision_scale_audit.ps1",
+    "scripts/model_collision_scale_audit.py",
     "scripts/agents/current_log_audit.ps1",
     "scripts/agents/feature_readiness_report.ps1",
     "scripts/agents/post_task_training_agent.ps1",
@@ -89,6 +91,7 @@ $requiredScripts = @(
     "scripts/agents/sbox_api_lookup.ps1",
     "scripts/agents/sbox_api_reference_audit.ps1",
     "scripts/agents/sbox_learn_intake_audit.ps1",
+    "scripts/agents/animated_model_intake_audit.ps1",
     "scripts/agents/editor_node_tool_audit.ps1",
     "scripts/agents/editor_first_workflow_audit.ps1",
     "scripts/agents/asset_visual_review.ps1",
@@ -99,6 +102,8 @@ $requiredScripts = @(
 # https://sbox.game/release-notes is protected by the "release-notes" suite and sbox_release_notes_audit.ps1.
 # Code Search audit coverage marker: S&Box Code Search Agent
 # https://sbox.game/codesearch is protected by the "code-search" suite and sbox_code_search_audit.ps1.
+# Animated model import coverage marker: S&Box Animated Model Intake Agent
+# Editor-first AnimGraph and sequence proof is protected by the "animated-model" suite and animated_model_intake_audit.ps1.
 
 foreach ($script in $requiredScripts) {
     if (-not (Test-Path -LiteralPath (Join-Path $Root $script))) {
@@ -114,7 +119,7 @@ if (Test-Path -LiteralPath $runner) {
         Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner does not declare a ValidateSet for suites." "Restore suite validation on the Suite parameter."
     }
 
-    foreach ($suite in @("ui", "prefab-graph", "scene", "terrain", "logs", "readiness", "train", "asset-production", "modeldoc", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain", "api", "sbox-docs", "release-notes", "code-search", "learn", "editor-node-tool", "editor-first")) {
+    foreach ($suite in @("ui", "prefab-graph", "scene", "terrain", "logs", "readiness", "train", "asset-production", "modeldoc", "animated-model", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain", "api", "sbox-docs", "release-notes", "code-search", "learn", "editor-node-tool", "editor-first")) {
         $quotedSuite = '"' + [regex]::Escape($suite) + '"'
         if ($validateSetMatch.Success -and $validateSetMatch.Groups["values"].Value -notmatch $quotedSuite) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner ValidateSet does not expose suite '$suite'." "Add the suite to the Suite parameter ValidateSet."
@@ -221,6 +226,131 @@ if (Test-Path -LiteralPath $gameplayRegressionGuard) {
     $gameplayRegressionText = Get-Content -LiteralPath $gameplayRegressionGuard -Raw
     if ($gameplayRegressionText -notmatch [regex]::Escape("scripts\check_round_reprompt_flow.ps1")) {
         Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/gameplay_regression_guard.ps1" "Gameplay regression suite does not run the round re-prompt guard." "Wire scripts/check_round_reprompt_flow.ps1 into gameplay_regression_guard.ps1."
+    }
+}
+
+$modelCollisionScaleAudit = Join-Path $Root "scripts/agents/model_collision_scale_audit.ps1"
+if (Test-Path -LiteralPath $modelCollisionScaleAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-model-collision-scale-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "scripts\agents") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Assets\models") | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $tempRoot "dronevsplayers.sbproj") | Out-Null
+        Copy-Item -LiteralPath (Join-Path $Root "scripts\agents\agent_common.ps1") -Destination (Join-Path $tempRoot "scripts\agents\agent_common.ps1") -Force
+        Copy-Item -LiteralPath (Join-Path $Root "scripts\model_collision_scale_audit.py") -Destination (Join-Path $tempRoot "scripts\model_collision_scale_audit.py") -Force
+
+        @'
+{
+  "source_blend": "environment_model.blend/bad_sign.blend",
+  "target_fbx": "Assets/models/bad_sign.fbx",
+  "target_vmdl": "Assets/models/bad_sign.vmdl",
+  "audit_render_bounds": { "size": [31, 418, 231] },
+  "physics_shapes": [
+    {
+      "type": "box",
+      "origin": [0, 0, 0],
+      "dimensions": [4.35, 0.18, 2.35],
+      "surface_prop": "wood",
+      "collision_tags": "solid"
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\bad_sign_asset_pipeline.json") -Encoding UTF8
+        @'
+<!-- kv3 encoding:text:version{fixture} format:modeldoc29:version{fixture} -->
+{
+    rootNode =
+    {
+        _class = "RootNode"
+        children =
+        [
+            {
+                _class = "RenderMeshFile"
+                filename = "models/bad_sign.fbx"
+                import_scale = 1.0
+            },
+            {
+                _class = "PhysicsShapeList"
+                children =
+                [
+                    {
+                        _class = "PhysicsShapeBox"
+                        parent_bone = ""
+                        surface_prop = "wood"
+                        collision_tags = "solid"
+                        origin = [ 0.0, 0.0, 0.0 ]
+                        dimensions = [ 4.35, 0.18, 2.35 ]
+                    },
+                ]
+            },
+        ]
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Assets\models\bad_sign.vmdl") -Encoding UTF8
+
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $modelCollisionScaleAudit -ScriptArgs @("-Root", $tempRoot) -Label "primitive collider uses Blender-meter dimensions instead of source-unit mesh bounds" -SourcePath "scripts/agents/model_collision_scale_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/model_collision_scale_audit.ps1" "Collision-scale audit did not fail on a deliberately 100x-small primitive collider fixture." "Compare ModelCollider/physics bounds against ModelRenderer/source mesh bounds so Blender-meter primitive dimensions cannot ship."
+        }
+
+        Remove-Item -LiteralPath (Join-Path $tempRoot "scripts\bad_sign_asset_pipeline.json") -Force
+        Remove-Item -LiteralPath (Join-Path $tempRoot "Assets\models\bad_sign.vmdl") -Force
+
+        @'
+{
+  "source_blend": "environment_model.blend/good_sign.blend",
+  "target_fbx": "Assets/models/good_sign.fbx",
+  "target_vmdl": "Assets/models/good_sign.vmdl",
+  "audit_render_bounds": { "size": [31, 418, 231] },
+  "collision": {
+    "mode": "render_mesh",
+    "surface_prop": "wood",
+    "collision_tags": "solid"
+  }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\good_sign_asset_pipeline.json") -Encoding UTF8
+        @'
+<!-- kv3 encoding:text:version{fixture} format:modeldoc29:version{fixture} -->
+{
+    rootNode =
+    {
+        _class = "RootNode"
+        children =
+        [
+            {
+                _class = "RenderMeshFile"
+                filename = "models/good_sign.fbx"
+                import_scale = 1.0
+            },
+            {
+                _class = "PhysicsShapeList"
+                children =
+                [
+                    {
+                        _class = "PhysicsMeshFile"
+                        name = "collision"
+                        parent_bone = ""
+                        surface_prop = "wood"
+                        collision_tags = "solid"
+                        filename = "models/good_sign.fbx"
+                        import_scale = 1.0
+                    },
+                ]
+            },
+        ]
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot "Assets\models\good_sign.vmdl") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $modelCollisionScaleAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/model_collision_scale_audit.ps1" "Collision-scale audit failed on a render_mesh fixture with matching render and collision mesh bounds." "Avoid false positives for solid props using render_mesh collision."
+        }
+    }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
+        }
     }
 }
 
@@ -954,7 +1084,8 @@ if (Test-Path -LiteralPath $sceneAudit) {
             {
               "Name": "Visual",
               "Components": [
-                { "__type": "Sandbox.ModelRenderer", "Model": "models/watertower.vmdl" }
+                { "__type": "Sandbox.ModelRenderer", "Model": "models/watertower.vmdl" },
+                { "__type": "Sandbox.ModelCollider", "Model": "models/watertower.vmdl", "IsTrigger": false, "Static": true }
               ],
               "Children": []
             }
@@ -1014,9 +1145,9 @@ if (Test-Path -LiteralPath $sceneAudit) {
 }
 '@ | Set-Content -LiteralPath $scenePath -Encoding UTF8
 
-        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sceneAudit -ScriptArgs @("-Root", $tempRoot) -Label "water tower without solid collision children" -SourcePath "scripts/agents/scene_integrity_audit.ps1"
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $sceneAudit -ScriptArgs @("-Root", $tempRoot) -Label "water tower without Visual ModelCollider" -SourcePath "scripts/agents/scene_integrity_audit.ps1"
         if ($fixtureExitCode -eq 0) {
-            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit did not fail on a water tower fixture without solid collision children." "Keep the fixture red/green test aligned with the water tower collision regression."
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/scene_integrity_audit.ps1" "Scene integrity audit did not fail on a water tower fixture without a Visual ModelCollider." "Keep the fixture red/green test aligned with the water tower mesh-collision regression."
         }
 
         @'
@@ -1039,7 +1170,7 @@ if (Test-Path -LiteralPath $sceneAudit) {
           "Name": "WaterTower",
           "Components": [],
           "Children": [
-            { "Name": "Visual", "Rotation": "0,0,0,1", "Components": [ { "__type": "Sandbox.ModelRenderer", "Model": "models/watertower.vmdl" } ], "Children": [] },
+            { "Name": "Visual", "Rotation": "0,0,0,1", "Components": [ { "__type": "Sandbox.ModelRenderer", "Model": "models/watertower.vmdl" }, { "__type": "Sandbox.ModelCollider", "Model": "models/watertower.vmdl", "IsTrigger": false, "Static": true } ], "Children": [] },
             { "Name": "Collision_Tank", "Components": [ { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "660,660,230" } ], "Children": [] },
             { "Name": "Collision_Roof", "Components": [ { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "600,600,80" } ], "Children": [] },
             { "Name": "Collision_Platform", "Components": [ { "__type": "Sandbox.BoxCollider", "IsTrigger": false, "Scale": "760,760,34" } ], "Children": [] },
@@ -1086,7 +1217,8 @@ if (Test-Path -LiteralPath $sceneAudit) {
               "Name": "Visual",
               "Rotation": "0,0,0.131218359,0.991353512",
               "Components": [
-                { "__type": "Sandbox.ModelRenderer", "Model": "models/watertower.vmdl" }
+                { "__type": "Sandbox.ModelRenderer", "Model": "models/watertower.vmdl" },
+                { "__type": "Sandbox.ModelCollider", "Model": "models/watertower.vmdl", "IsTrigger": false, "Static": true }
               ],
               "Children": []
             },
@@ -1184,7 +1316,8 @@ if (Test-Path -LiteralPath $sceneAudit) {
               "Name": "Visual",
               "Rotation": "0,0,0,1",
               "Components": [
-                { "__type": "Sandbox.ModelRenderer", "Model": "models/watertower.vmdl" }
+                { "__type": "Sandbox.ModelRenderer", "Model": "models/watertower.vmdl" },
+                { "__type": "Sandbox.ModelCollider", "Model": "models/watertower.vmdl", "IsTrigger": false, "Static": true }
               ],
               "Children": []
             },
@@ -2272,6 +2405,77 @@ Do not vendor package source.
         & powershell -NoProfile -ExecutionPolicy Bypass -File $sboxCodeSearchAudit -Root $tempRoot | Out-Host
         if ($LASTEXITCODE -ne 0) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/sbox_code_search_audit.ps1" "Code Search audit failed on complete routing fixtures." "Avoid false positives for valid Code Search workflow wiring."
+        }
+    }
+    finally {
+        if ([System.IO.Directory]::Exists($tempRoot)) {
+            [System.IO.Directory]::Delete($tempRoot, $true)
+        }
+    }
+}
+
+$animatedModelAudit = Join-Path $Root "scripts/agents/animated_model_intake_audit.ps1"
+if (Test-Path -LiteralPath $animatedModelAudit) {
+    $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("sbox-animated-model-audit-" + [System.Guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot ".agents\sbox") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "docs") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "scripts\agents") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot ".claude") | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $tempRoot "Code\Player") | Out-Null
+
+        "Animated Model Intake Agent" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\animated-model-intake-agent.md") -Encoding UTF8
+        "Animated Model Intake Agent" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
+        '"animated-model"' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
+        "animated_model_intake_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
+        "AnimatedAssets" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\post_task_training_agent.ps1") -Encoding UTF8
+        '{"hooks":[]}' | Set-Content -LiteralPath (Join-Path $tempRoot ".claude\settings.json") -Encoding UTF8
+
+        $fixtureExitCode = Invoke-AgentExpectedFailureFixture -ScriptPath $animatedModelAudit -ScriptArgs @("-Root", $tempRoot) -Label "incomplete animated model intake routing" -SourcePath "scripts/agents/animated_model_intake_audit.ps1"
+        if ($fixtureExitCode -eq 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/animated_model_intake_audit.ps1" "Animated model audit did not fail on incomplete routing fixtures." "Keep the fixture strict enough to catch missing editor-first docs, hook, suite, self-test, training, and API-symbol guidance."
+        }
+
+        @'
+# Animated Model Intake Agent
+
+## Purpose
+
+Use editor-first-workflow-agent.md for animated Blender/FBX/VMDL imports.
+
+## Editor-First Workflow
+
+- control_plane_status
+- ModelDoc
+- AnimGraph
+- imported clips
+- AnimationGraph
+- SkinnedModelRenderer.Sequence
+- AnimGraphDirectPlayback
+- Parameters.Set
+- 1D blendspace
+- state machine
+- bool triggers
+- FirstPersonViewmodel
+- sbox_api_lookup.ps1
+- animated_model_intake_audit.ps1
+'@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\animated-model-intake-agent.md") -Encoding UTF8
+
+        "Animated Model Intake animated-model-intake-agent.md animated_model_intake_audit.ps1 run_agent_checks.ps1 -Suite animated-model editor-first-workflow-agent.md" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
+        "Animated Model animated-model-intake-agent.md animated_model_intake_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
+        "Animated Model Import AnimGraph ModelDoc editor-first-workflow-agent.md animated-model-intake-agent.md animated_model_intake_audit.ps1 SkinnedModelRenderer.Sequence AnimGraphDirectPlayback Parameters.Set" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\known_sbox_patterns.md") -Encoding UTF8
+        "Animated model import reviewed on 2026-06-06 SkinnedModelRenderer.UseAnimGraph SkinnedModelRenderer.AnimationGraph SkinnedModelRenderer.Sequence SkinnedModelRenderer.PlaybackRate SkinnedModelRenderer.PlayAnimationsInEditorScene AnimationGraph.Load AnimGraphDirectPlayback Parameters.Set sbox_api_lookup.ps1 animated_model_intake_audit.ps1 editor-first-workflow-agent.md" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\sbox_engine_llm_reference.md") -Encoding UTF8
+        "Animated model imports need editor-first AnimGraph playback proof before gameplay wiring. animated-model-intake-agent.md run_agent_checks.ps1 -Suite animated-model" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\automation.md") -Encoding UTF8
+        "S&Box Animated Model Intake Hook sbox-animated-model-check run_agent_checks.ps1 -Suite animated-model animated-model-intake-agent.md editor-first-workflow-agent.md" | Set-Content -LiteralPath (Join-Path $tempRoot "AGENTS.md") -Encoding UTF8
+        '"animated-model" animated_model_intake_audit.ps1' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\run_agent_checks.ps1") -Encoding UTF8
+        'Animated Model Intake Agent "animated-model" animated_model_intake_audit.ps1' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
+        "AnimatedAssets animated_model_intake_audit.ps1 AnimGraph" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\post_task_training_agent.ps1") -Encoding UTF8
+        'UseAnimGraph Parameters.Set SetIk' | Set-Content -LiteralPath (Join-Path $tempRoot "Code\Player\FirstPersonViewmodel.cs") -Encoding UTF8
+        '{"hooks":[{"id":"sbox-animated-model-check","action":{"args":["-Suite","animated-model",".\\scripts\\agents\\animated_model_intake_audit.ps1"]}}]}' | Set-Content -LiteralPath (Join-Path $tempRoot ".claude\settings.json") -Encoding UTF8
+
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $animatedModelAudit -Root $tempRoot | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/animated_model_intake_audit.ps1" "Animated model audit failed on complete routing fixtures." "Avoid false positives for valid editor-first animated model workflow wiring."
         }
     }
     finally {

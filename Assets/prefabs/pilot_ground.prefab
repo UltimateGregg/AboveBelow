@@ -25,12 +25,17 @@
         "SprintSpeed": 260,
         "JumpStrength": 322,
         "FirstPerson": true,
+        "UseLocalFirstPersonViewmodel": true,
         "EyeAngles": "0,0,0",
         "IsSprinting": false,
         "FootstepSound": "sounds/footstep.sound",
         "JumpSound": "sounds/jump_grunt.sound",
         "LandSound": "sounds/land_thud.sound",
         "SlideSound": "sounds/slide_scrape.sound"
+      },
+      {
+        "__type": "DroneVsPlayers.FirstPersonViewmodel",
+        "__guid": "33333333-d800-0000-0000-000000000001"
       },
       {
         "__type": "DroneVsPlayers.Health",
@@ -200,7 +205,7 @@
                 "__guid": "33333333-d000-3600-0000-000000000001",
                 "Flags": 0,
                 "Name": "LeftHandIk",
-                "Position": "14,-8,0",
+                "Position": "16,-5,-2",
                 "Enabled": true,
                 "Components": []
               },
@@ -208,7 +213,7 @@
                 "__guid": "33333333-d000-3700-0000-000000000001",
                 "Flags": 0,
                 "Name": "RightHandIk",
-                "Position": "8,4,0",
+                "Position": "4,4,-2",
                 "Enabled": true,
                 "Components": []
               }
@@ -258,11 +263,11 @@
                 "LaunchSpawnOffset": "60,0,-4",
                 "LeftHandFpOffset": "30,-5,-12",
                 "LeftHandFpRotation": "0,180,0",
-                "LeftHandIkFpOffset": "31,-10,-4",
+                "LeftHandIkFpOffset": "8,-14,2",
                 "LeftHandIkFpRotation": "60,170,0",
                 "RightHandFpOffset": "36,12,-10",
                 "RightHandFpRotation": "0,0,0",
-                "RightHandIkFpOffset": "37,13,-24",
+                "RightHandIkFpOffset": "37,13,-4",
                 "RightHandIkFpRotation": "10,0,-10",
                 "UseVisualRelativeFirstPersonIkTargets": true,
                 "UsePilotBodyHands": true,

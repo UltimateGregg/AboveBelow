@@ -1,0 +1,60 @@
+{
+  "RootObject": {
+    "__guid": "7cfce68d-b5cd-424e-bc45-993a8419c2ce",
+    "Flags": 0,
+    "Name": "Bouneurmaum_Park_Sign",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [],
+    "Children": [
+      {
+        "__guid": "da74e67e-58b5-4766-9b9e-b800dc8f9e92",
+        "Flags": 0,
+        "Name": "Visual",
+        "Position": "0,0,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "7fbc1aa2-ffb8-442b-94c7-945a48cf213d",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/bouneurmaum_park_sign.vmdl",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.ModelCollider",
+            "__guid": "76e082c0-bdd4-412b-85ed-17f0a3b32bb3",
+            "IsTrigger": false,
+            "Model": "models/bouneurmaum_park_sign.vmdl",
+            "Static": true,
+            "Surface": null,
+            "SurfaceVelocity": "0,0,0"
+          }
+        ],
+        "Children": []
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": false,
+  "MenuPath": "Drone vs Players/Environment/Bouneurmaum Park Sign",
+  "MenuIcon": "signpost",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

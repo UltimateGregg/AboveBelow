@@ -235,6 +235,8 @@ Use the existing checks:
 
 For Blender work, verify local config, exported FBX material slots, generated VMDL remaps, prefab renderer state, and a visual editor result before accepting a texture or model fix.
 
+Animated model import reviewed on 2026-06-06: local API lookup exposes `SkinnedModelRenderer.UseAnimGraph`, `SkinnedModelRenderer.AnimationGraph`, `SkinnedModelRenderer.Sequence`, `SkinnedModelRenderer.PlaybackRate`, `SkinnedModelRenderer.PlayAnimationsInEditorScene`, `AnimationGraph.Load`, `AnimGraphDirectPlayback`, and `Parameters.Set`. Use `scripts/agents/sbox_api_lookup.ps1` for exact symbols before adding unfamiliar animation code. In this repo, animated import work should route through `animated-model-intake-agent.md` and `animated_model_intake_audit.ps1`, with editor-first ModelDoc or AnimGraph playback proof before gameplay wiring.
+
 For cosmetic jigglebone work, treat the S&Box Learn jigglebone tutorial as secondary practical context: start from a skinned cosmetic bound to the citizen or human skeleton plus extra jiggle bones, bone-merge it to a body in a simple test scene, author primitive ModelDoc `PhysicsShape` nodes and joints, place joint anchors at the intended pivots, and prove the result in editor play with body motion. This is local bone simulation proof, not world collision proof.
 
 ## Lighting, Postprocessing, And Navigation Research

@@ -2547,6 +2547,14 @@
                     },
                     "Property": "Position",
                     "Value": "211.190948,0,5"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "20c9ee00-3975-4fdc-ad0b-54c9601f3252"
+                    },
+                    "Property": "Scale",
+                    "Value": "0.319999993,437.059845,0.200000003"
                   }
                 ],
                 "MovedObjects": []
@@ -2579,6 +2587,14 @@
                     },
                     "Property": "Position",
                     "Value": "621.190918,0,5"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "20c9ee00-3975-4fdc-ad0b-54c9601f3252"
+                    },
+                    "Property": "Scale",
+                    "Value": "0.319999993,437.059845,0.200000003"
                   }
                 ],
                 "MovedObjects": []
@@ -4054,6 +4070,1350 @@
               "__PrefabIdToInstanceId": {
                 "2be214e4-970b-47ab-a75c-62fe761f1f69": "a051d824-747a-4176-8e71-b7d340b0007a",
                 "84974ca3-20d7-4f15-9851-9187966f2a44": "acd2acb2-54d6-4fcb-bedd-4a37f87de473"
+              }
+            },
+            {
+              "__guid": "d6a78784-485a-473f-9faa-11541ffb457d",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_42"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-10660,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "d6a78784-485a-473f-9faa-11541ffb457d",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "c0e104be-34fe-4c27-b97a-9adafe7cca1a"
+              }
+            },
+            {
+              "__guid": "5a8035f0-803b-487e-9ade-6d412c255177",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_43"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-10400,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "5a8035f0-803b-487e-9ade-6d412c255177",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "74af2ef1-c2dc-49f6-90c6-e545108063ec"
+              }
+            },
+            {
+              "__guid": "eb730bb1-280e-45a6-b7fa-8d8211e1da86",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_44"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-10140,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "eb730bb1-280e-45a6-b7fa-8d8211e1da86",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "583325d4-18f0-4ffd-ba59-cbe0edb10827"
+              }
+            },
+            {
+              "__guid": "e000e703-7e24-4824-940e-24e7ad3f8b36",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_45"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-9880,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "e000e703-7e24-4824-940e-24e7ad3f8b36",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "dee99639-99b2-412f-9365-9798bfc24166"
+              }
+            },
+            {
+              "__guid": "02f415d5-2d8a-41c8-93ca-947eb44fb19e",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_46"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-9620,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "02f415d5-2d8a-41c8-93ca-947eb44fb19e",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "560d9f47-8987-4c9d-84bb-fbc7dc363e1f"
+              }
+            },
+            {
+              "__guid": "a3276140-9382-4be0-ac76-e30e3cad242d",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_47"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-9360,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "a3276140-9382-4be0-ac76-e30e3cad242d",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "0325ec1a-73d9-4d32-bb88-97e15470f3ca"
+              }
+            },
+            {
+              "__guid": "8f49654a-04e5-45f8-a4e1-0e5c4e9795de",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_48"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-9100,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "8f49654a-04e5-45f8-a4e1-0e5c4e9795de",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "28eb7418-768e-439f-8166-84289ec0624b"
+              }
+            },
+            {
+              "__guid": "c49bae66-b9e9-49cc-9d78-7e45171e1d1b",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_49"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-8840,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "c49bae66-b9e9-49cc-9d78-7e45171e1d1b",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "43e78f22-9737-440f-aac4-f27837d467f9"
+              }
+            },
+            {
+              "__guid": "614b66f9-c5a2-4a0f-bc43-823f6524812f",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_50"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-8580,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "614b66f9-c5a2-4a0f-bc43-823f6524812f",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "4e7f77f8-b1d2-4849-a18c-22c1b1a1fc5a"
+              }
+            },
+            {
+              "__guid": "27e555bb-76f2-423c-a4a1-1fb1dbb8cf40",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_51"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-8320,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "27e555bb-76f2-423c-a4a1-1fb1dbb8cf40",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "6fdd6280-1024-47e8-af9a-f64eeb193bec"
+              }
+            },
+            {
+              "__guid": "60796b34-ae4d-4ae5-89e9-b17cfbc2c1e6",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_52"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-8060,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "60796b34-ae4d-4ae5-89e9-b17cfbc2c1e6",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "effa0d2e-4386-4cf7-aa07-2b5fe29c49b8"
+              }
+            },
+            {
+              "__guid": "c47d498d-b29b-4481-9257-ca91c585fe50",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_53"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-7800,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "c47d498d-b29b-4481-9257-ca91c585fe50",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "85367597-f106-4ec7-a7c4-017a9b6e4cf1"
+              }
+            },
+            {
+              "__guid": "c9015546-c5ea-4647-8844-5823b442992e",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_54"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-7540,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "c9015546-c5ea-4647-8844-5823b442992e",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "d173f982-5dcd-47d9-9da7-9d1acfdd7f59"
+              }
+            },
+            {
+              "__guid": "4d863d7d-1fba-470a-9fa3-8eed22a4ab55",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_55"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-7280,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "4d863d7d-1fba-470a-9fa3-8eed22a4ab55",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "3aab01f5-fc0c-46e6-9305-adb6b976dcc9"
+              }
+            },
+            {
+              "__guid": "877101af-212c-44c3-aaea-cf5c208b06a4",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_56"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-7020,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "877101af-212c-44c3-aaea-cf5c208b06a4",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "7fe381e3-fe21-4da4-9f9f-d8b320f6e5eb"
+              }
+            },
+            {
+              "__guid": "787938d7-c32f-4875-8805-dc73fe15af61",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_57"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-6760,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "787938d7-c32f-4875-8805-dc73fe15af61",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "3ae0e341-d9aa-4c3d-b13f-ec08255a9f92"
+              }
+            },
+            {
+              "__guid": "6166f3e6-ae2f-427e-bbfb-cc03d4864a8b",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_58"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-6500,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "6166f3e6-ae2f-427e-bbfb-cc03d4864a8b",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "25c60ba8-f554-4b5b-a2aa-0dfdd9a01894"
+              }
+            },
+            {
+              "__guid": "e7c89f4e-bce1-4827-82dc-2cb9c93628f6",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_59"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-6240,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "e7c89f4e-bce1-4827-82dc-2cb9c93628f6",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "c2252abc-52b8-42f8-ab0e-566721f77906"
+              }
+            },
+            {
+              "__guid": "9e3fb82c-c1e8-403d-8275-f6d68e4bd45d",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_60"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-5980,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "9e3fb82c-c1e8-403d-8275-f6d68e4bd45d",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "4df7c896-a3cf-42dd-a893-19c35f219496"
+              }
+            },
+            {
+              "__guid": "c2f66571-60ac-47a9-9c42-68ed919b0f25",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_61"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-5720,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "c2f66571-60ac-47a9-9c42-68ed919b0f25",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "b44604b6-8905-4c32-9199-15deb0e290a1"
+              }
+            },
+            {
+              "__guid": "f17c5186-1b2b-4d97-9570-92c5d12f6e63",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_62"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,-5460,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "f17c5186-1b2b-4d97-9570-92c5d12f6e63",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "747b05ff-8094-4175-8faf-ed8ded128b8c"
+              }
+            },
+            {
+              "__guid": "65a0ffa3-5880-4931-a221-1e7117dac2d6",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_63"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,5460,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "65a0ffa3-5880-4931-a221-1e7117dac2d6",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "731130bb-d4aa-471a-b7f3-3f4976195fce"
+              }
+            },
+            {
+              "__guid": "09620518-15f3-4603-ad80-f4cd4a3a9d22",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_64"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,5720,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "09620518-15f3-4603-ad80-f4cd4a3a9d22",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "546714f2-ac40-4b6c-bec3-58d294f334bf"
+              }
+            },
+            {
+              "__guid": "ae0b82d4-305d-4b6a-919e-4d30841cc8c0",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_65"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,5980,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "ae0b82d4-305d-4b6a-919e-4d30841cc8c0",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "aeaa00af-b654-4c89-a623-50493d17704e"
+              }
+            },
+            {
+              "__guid": "c38f6450-3a47-4448-a282-08b4ad87e129",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_66"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,6240,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "c38f6450-3a47-4448-a282-08b4ad87e129",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "5d8138b6-f471-4ba6-945e-c76284ce3546"
+              }
+            },
+            {
+              "__guid": "81bafaa1-daf6-4b28-944b-c897f216343c",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_67"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,6500,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "81bafaa1-daf6-4b28-944b-c897f216343c",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "6a1501da-a0c0-499d-ba97-a02cfc7ad91f"
+              }
+            },
+            {
+              "__guid": "29c40f1a-9edf-48ec-84fa-0647d84188d9",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_68"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,6760,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "29c40f1a-9edf-48ec-84fa-0647d84188d9",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "a8f04fcd-99f8-4b61-8d49-6ce562d6a583"
+              }
+            },
+            {
+              "__guid": "1d3ef0e3-6936-441e-9b5b-f2c3f9137781",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_69"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,7020,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "1d3ef0e3-6936-441e-9b5b-f2c3f9137781",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "eda40235-d16c-4c37-a368-b6d49ea7dce9"
+              }
+            },
+            {
+              "__guid": "c4e48d33-dc3a-410a-8702-bf12558e8abf",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_70"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,7280,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "c4e48d33-dc3a-410a-8702-bf12558e8abf",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "fc715212-9f58-44a4-9f83-aa2c122a7ae3"
+              }
+            },
+            {
+              "__guid": "b725a598-770c-4813-9f45-df3c3825aa02",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_71"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,7540,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "b725a598-770c-4813-9f45-df3c3825aa02",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "dd265fc5-44e8-4181-bdd4-7a33da4bc87a"
+              }
+            },
+            {
+              "__guid": "fbeaa7db-5d45-4929-810f-7e2a3da4dc72",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_72"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,7800,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "fbeaa7db-5d45-4929-810f-7e2a3da4dc72",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "513a912c-156a-4a31-82d0-0b46897276e5"
+              }
+            },
+            {
+              "__guid": "789a9c51-242c-4723-a4f9-6aadf2cd09d2",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_73"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,8060,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "789a9c51-242c-4723-a4f9-6aadf2cd09d2",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "d94a711d-d19b-4d93-a5f5-885404bc302b"
+              }
+            },
+            {
+              "__guid": "ff8c702d-5363-47c1-8d4c-aa6b8cce382e",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_74"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,8320,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "ff8c702d-5363-47c1-8d4c-aa6b8cce382e",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "3919be09-fc48-4585-8d7a-544d308c5fc8"
+              }
+            },
+            {
+              "__guid": "187d5db1-e60d-4e67-ae4d-3b4d70bf4bf0",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_75"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,8580,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "187d5db1-e60d-4e67-ae4d-3b4d70bf4bf0",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "5585c6c1-1b0b-4706-a07f-99881791475c"
+              }
+            },
+            {
+              "__guid": "a568f7ad-419a-4044-b68d-94c8e06f98fe",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_76"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,8840,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "a568f7ad-419a-4044-b68d-94c8e06f98fe",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "bace4d51-895a-4cb7-a7b3-5516b37f2e05"
+              }
+            },
+            {
+              "__guid": "f6f66249-fce2-4ff5-b1af-89866362ad53",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_77"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,9100,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "f6f66249-fce2-4ff5-b1af-89866362ad53",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "ec6e7e0d-21b7-48da-8aee-471812825c92"
+              }
+            },
+            {
+              "__guid": "bf49f084-d2f6-415c-8b59-c9ef09f6bad0",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_78"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,9360,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "bf49f084-d2f6-415c-8b59-c9ef09f6bad0",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "72d49f1e-b9c2-44ee-bb66-1dcf8003667c"
+              }
+            },
+            {
+              "__guid": "2cbe0219-8b5f-4c17-a324-8dac1e676d5f",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_79"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,9620,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "2cbe0219-8b5f-4c17-a324-8dac1e676d5f",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "79bd70f3-4d91-45e3-ada1-09e6c480c747"
+              }
+            },
+            {
+              "__guid": "0d65e27a-0a2c-4fe5-95a6-aa177ffadc19",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_80"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,9880,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "0d65e27a-0a2c-4fe5-95a6-aa177ffadc19",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "33250eb9-6b87-4851-9f1a-00a3ebdc6183"
+              }
+            },
+            {
+              "__guid": "4aaacd20-8544-4dca-b056-f6e1a307fa72",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_81"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,10140,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "4aaacd20-8544-4dca-b056-f6e1a307fa72",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "3edf8165-9ac0-4f10-ac23-c81848b767e3"
+              }
+            },
+            {
+              "__guid": "35f213f8-1bdc-4a5e-a804-c2ac58673299",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_82"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,10400,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "35f213f8-1bdc-4a5e-a804-c2ac58673299",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "7f8a3a5c-84fb-4e38-b7e6-e0b12b1df45a"
+              }
+            },
+            {
+              "__guid": "b94c8b7c-035f-495e-ab6d-c73df9e4be47",
+              "__version": 2,
+              "__Prefab": "prefabs/environment/road_lane_dash.prefab",
+              "__PrefabInstancePatch": {
+                "AddedObjects": [],
+                "RemovedObjects": [],
+                "PropertyOverrides": [
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Name",
+                    "Value": "RoadDash_83"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "2be214e4-970b-47ab-a75c-62fe761f1f69"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,10660,2"
+                  }
+                ],
+                "MovedObjects": []
+              },
+              "__PrefabIdToInstanceId": {
+                "2be214e4-970b-47ab-a75c-62fe761f1f69": "b94c8b7c-035f-495e-ab6d-c73df9e4be47",
+                "84974ca3-20d7-4f15-9851-9187966f2a44": "5a686570-1b53-45ee-93a0-c639bec2b1f7"
               }
             },
             {
@@ -33957,27 +35317,10 @@
                 "2e57ef8d-2f4d-48d3-ad5b-1f6237525c61": "3842e078-0650-44ac-980d-104161aa7efe",
                 "6f6ad6f2-3a84-4c75-91ea-6a3a15e47a2b": "62839da6-d1ed-4854-8920-ee65b1e740fe",
                 "983f183e-b10e-4ea0-96c6-4fe7665226b1": "e5b6e04d-87fa-492c-ab58-c4a0cc613377",
-                "18cf0e71-357a-4bbe-82f2-742800adf9e2": "e37b45a5-65a8-4604-9381-df34d7650fda",
-                "ab1be574-651b-40db-a966-ac6356d64030": "321f67b3-fae7-4e2a-a20f-7a2e9448370b",
-                "73205efa-d7ed-42b7-b0b5-82c273ca9dd6": "ccf4e45d-70a9-4780-8d27-3361fa9d28f1",
-                "80429d58-132f-4875-9668-c40a66770561": "529570f4-d6b5-4080-9daf-6abfe91f326c",
-                "1db94f95-2583-4d6d-ad8f-19512fba1224": "e548ba8d-9b72-4eed-a65d-cbfaaaa3b48a",
-                "b9050bc6-c72e-480d-84f0-7d5f2aa2a617": "9fce2bc4-78a0-46c6-a4fa-d383a0a7b7a7",
-                "d34c61ad-16c7-4b70-a200-9478f1c1dad3": "8082b5f8-28ca-4aaf-a074-5706526edd92",
-                "0b4bfb32-93c4-4434-bc61-2eb7f2c840fa": "1a8371f4-c415-4724-99d8-77cbe83b4cd2",
-                "296f337c-ae6a-4291-aa46-e0bf3eecc04e": "d61add36-c968-4c67-bd2b-ccc460f24aaf",
-                "fa0eb7e5-96d6-4768-a76f-8755e19bc52d": "952bd550-b83d-4dbe-bf6a-95bcc2319a55",
-                "2267abb7-4a92-4c27-bd14-e6e28ab385ca": "3e9b995e-221b-49dc-9b05-f43b7d632d4d",
-                "81eb4222-a9b5-4114-9ea1-e196dd11d65c": "6d4d32aa-70f5-41a7-82c2-d349216811f2",
-                "093d4e87-6907-4879-9e77-1ff629ead8ca": "d740d8d5-86bf-4445-8413-2315c545948b",
-                "3fe3a1dc-38a1-49b2-b88a-a2c7ba0ad811": "54287292-58d7-497c-8b75-ffb51847c81e",
                 "69b48611-286b-49b0-8305-5967db050c6d": "74f7b6a1-3e53-4ff2-a259-4caa5e27f92a",
                 "73bdd042-42a0-449e-b79d-fb64d6ee1216": "86473e89-8426-4cb8-a8d9-cce02d93d3c4",
                 "0d24440f-50c0-44cf-a204-5ec9b696c061": "daa6bc3a-0788-4572-af17-fdb2b7013764",
-                "8c9a1b2c-3d4e-5f6a-7b8c-9d0e1f2a3b4c": "34fa3e8d-c7ed-40d1-8978-959a3b440268",
-                "5a6b7c8d-9e0f-1a2b-3c4d-5e6f7a8b9c0d": "89d65449-2a7c-48ad-9497-978e1019e839",
-                "9e1f2a3b-4c5d-6e7f-8a9b-0c1d2e3f4a5b": "9f97c3b4-5d4c-4ac8-a91e-03e5184703ea",
-                "6b7c8d9e-0f1a-2b3c-4d5e-6f7a8b9c0d1e": "524b15f9-0763-4960-a683-0c5101e0bf83"
+                "7f3e9c21-4b8a-4d6e-9f12-1a2b3c4d5e6f": "dcf78a9a-0584-4e1c-8fd3-be52b9c9ed15"
               }
             },
             {
@@ -56170,65 +57513,6 @@
       }
     },
     {
-      "__guid": "476300bf-2f82-4bbe-a1da-283ef870c95e",
-      "__version": 2,
-      "__Prefab": "prefabs/environment/stock/beech_hedge_96x128_corner.prefab",
-      "__PrefabInstancePatch": {
-        "AddedObjects": [],
-        "RemovedObjects": [],
-        "PropertyOverrides": [
-          {
-            "Target": {
-              "Type": "GameObject",
-              "IdValue": "7e49d1de-72c0-069c-446e-5a6105fc81cf"
-            },
-            "Property": "Position",
-            "Value": "1494.97864,-2373.86768,13.0512943"
-          },
-          {
-            "Target": {
-              "Type": "GameObject",
-              "IdValue": "7e49d1de-72c0-069c-446e-5a6105fc81cf"
-            },
-            "Property": "Rotation",
-            "Value": "-0.0113652349,0.00602436066,0.883478105,0.468295842"
-          }
-        ],
-        "MovedObjects": []
-      },
-      "__PrefabIdToInstanceId": {
-        "7e49d1de-72c0-069c-446e-5a6105fc81cf": "476300bf-2f82-4bbe-a1da-283ef870c95e",
-        "63d91128-a45c-47c6-d1dd-76d66e159e84": "b1bdc461-248a-4989-ba97-36dc0a560b6d",
-        "427c960d-f792-b02c-2e5a-c0b074362bf8": "576e2658-9cf2-40f8-9805-ff3ca47e9dd6",
-        "bdd799de-e9eb-a822-19bf-6027a462540f": "e91ef783-2fa2-4179-8b55-852024be1c81",
-        "0ab7d509-af08-f594-7519-131a9eef4900": "4cabf822-0e0b-4e4b-8ab2-b9be1c353647"
-      }
-    },
-    {
-      "__guid": "bae109c1-44a6-449c-941d-8c7b67329f80",
-      "__version": 2,
-      "__Prefab": "prefabs/environment/stock/beech_bush_regular_medium_b.prefab",
-      "__PrefabInstancePatch": {
-        "AddedObjects": [],
-        "RemovedObjects": [],
-        "PropertyOverrides": [
-          {
-            "Target": {
-              "Type": "GameObject",
-              "IdValue": "6c10dd75-177a-13e8-2b3d-9a2b785db912"
-            },
-            "Property": "Position",
-            "Value": "1064.43726,-2956.53809,1.60306835"
-          }
-        ],
-        "MovedObjects": []
-      },
-      "__PrefabIdToInstanceId": {
-        "6c10dd75-177a-13e8-2b3d-9a2b785db912": "bae109c1-44a6-449c-941d-8c7b67329f80",
-        "25a49d44-282b-d516-847a-c5a3aac46587": "3dd3efd2-67b1-4c6b-b722-bf8891c9128d"
-      }
-    },
-    {
       "__guid": "1f95b5ed-b62a-45b4-bf01-df6836445d8a",
       "__version": 2,
       "__Prefab": "prefabs/environment/stock/fence_panel_large.prefab",
@@ -56416,8 +57700,112 @@
       "__version": 2,
       "__Prefab": "prefabs/environment/stock/tree_oak_big_a.prefab",
       "__PrefabInstancePatch": {
-        "AddedObjects": [],
-        "RemovedObjects": [],
+        "AddedObjects": [
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "01e266f6-914a-455e-98bd-a01394609fec"
+            },
+            "Parent": {
+              "Type": "GameObject",
+              "IdValue": "6efb59ff-6050-6536-21c3-49718f9bc257"
+            },
+            "PreviousElement": {
+              "Type": "Component",
+              "IdValue": "08b59642-a2d3-4a15-3ad7-8a07b25f6f53"
+            },
+            "ContainerProperty": "Components",
+            "IsContainerArray": true,
+            "Data": {
+              "__type": "Sandbox.ModelRenderer",
+              "__guid": "01e266f6-914a-455e-98bd-a01394609fec",
+              "__enabled": true,
+              "Flags": 0,
+              "BodyGroups": 18446744073709551615,
+              "CreateAttachments": false,
+              "LodOverride": null,
+              "MaterialGroup": null,
+              "MaterialOverride": null,
+              "Materials": null,
+              "Model": "models/sbox_props/trees/oak/tree_oak_big_a.vmdl",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "RenderOptions": {
+                "GameLayer": true,
+                "OverlayLayer": false,
+                "BloomLayer": false,
+                "AfterUILayer": false
+              },
+              "RenderType": "On",
+              "Tint": "1,1,1,1"
+            }
+          },
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "23156e91-5307-45a0-95db-5d9868058841"
+            },
+            "Parent": {
+              "Type": "GameObject",
+              "IdValue": "6efb59ff-6050-6536-21c3-49718f9bc257"
+            },
+            "PreviousElement": {
+              "Type": "Component",
+              "IdValue": "01e266f6-914a-455e-98bd-a01394609fec"
+            },
+            "ContainerProperty": "Components",
+            "IsContainerArray": true,
+            "Data": {
+              "__type": "Sandbox.ModelCollider",
+              "__guid": "23156e91-5307-45a0-95db-5d9868058841",
+              "__enabled": true,
+              "Flags": 0,
+              "ColliderFlags": 0,
+              "Elasticity": null,
+              "Friction": null,
+              "IsTrigger": false,
+              "Model": "models/sbox_props/trees/oak/tree_oak_big_a.vmdl",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "OnObjectTriggerEnter": null,
+              "OnObjectTriggerExit": null,
+              "OnTriggerEnter": null,
+              "OnTriggerExit": null,
+              "RollingResistance": null,
+              "Static": true,
+              "Surface": null,
+              "SurfaceVelocity": "0,0,0"
+            }
+          }
+        ],
+        "RemovedObjects": [
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "c67c1268-3c72-6acc-89cf-a79498e92bc9"
+            }
+          },
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "ecafb6a1-af89-7ae0-f024-d05cb9400dd3"
+            }
+          },
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "d5469b2e-97c1-2e14-2399-8a34ed94ec68"
+            }
+          }
+        ],
         "PropertyOverrides": [
           {
             "Target": {
@@ -56425,7 +57813,15 @@
               "IdValue": "6efb59ff-6050-6536-21c3-49718f9bc257"
             },
             "Property": "Position",
-            "Value": "-1826.67761,-1492.62524,75.9680099"
+            "Value": "-1884.95422,-1440.3927,75.9680099"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "08b59642-a2d3-4a15-3ad7-8a07b25f6f53"
+            },
+            "Property": "IsStatic",
+            "Value": true
           }
         ],
         "MovedObjects": []
@@ -56534,6 +57930,518 @@
         "fa7ac396-3766-5775-18ed-be4e737e59bd": "8b3612ba-54fa-4d28-b01c-cf280ed66f7c",
         "456d0708-9349-4900-306b-5864c6a790ed": "fa206ae2-7a87-49d2-a5b4-b5600d462537"
       }
+    },
+    {
+      "__guid": "371f8aad-d150-4692-b20e-806cd22faa2e",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "bouneurmaum_park_sign",
+      "Position": "-956.627197,2291.97485,-10.8956137",
+      "Rotation": "0.0054735546,0.0035412421,-0.83958143,0.543194652",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.Prop",
+          "__guid": "47f23bd3-bad4-4fe4-baa8-1c6a66ab2ecb",
+          "__enabled": true,
+          "Flags": 0,
+          "BodyGroups": 18446744073709551615,
+          "Health": 0,
+          "IsStatic": false,
+          "MaterialGroup": null,
+          "Model": "models/bouneurmaum_park_sign.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "OnPropBreak": null,
+          "OnPropTakeDamage": null,
+          "StartAsleep": false,
+          "Tint": "1,1,1,1"
+        },
+        {
+          "__type": "Sandbox.ModelRenderer",
+          "__guid": "a6103312-486a-49b7-bd70-3f8aae854846",
+          "__enabled": true,
+          "Flags": 0,
+          "BodyGroups": 18446744073709551615,
+          "CreateAttachments": false,
+          "LodOverride": null,
+          "MaterialGroup": null,
+          "MaterialOverride": null,
+          "Materials": null,
+          "Model": "models/bouneurmaum_park_sign.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "RenderOptions": {
+            "GameLayer": true,
+            "OverlayLayer": false,
+            "BloomLayer": false,
+            "AfterUILayer": false
+          },
+          "RenderType": "On",
+          "Tint": "1,1,1,1"
+        },
+        {
+          "__type": "Sandbox.ModelCollider",
+          "__guid": "494ac523-e241-46f2-ad91-c79e552c69c9",
+          "__enabled": true,
+          "Flags": 0,
+          "ColliderFlags": 0,
+          "Elasticity": null,
+          "Friction": null,
+          "IsTrigger": false,
+          "Model": "models/bouneurmaum_park_sign.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "OnObjectTriggerEnter": null,
+          "OnObjectTriggerExit": null,
+          "OnTriggerEnter": null,
+          "OnTriggerExit": null,
+          "RollingResistance": null,
+          "Static": false,
+          "Surface": null,
+          "SurfaceVelocity": "0,0,0"
+        },
+        {
+          "__type": "Sandbox.Rigidbody",
+          "__guid": "8c5a3ee3-bc3b-44c9-97ca-b6e65edb1de9",
+          "__enabled": true,
+          "Flags": 0,
+          "AngularDamping": 0,
+          "EnableImpactDamage": true,
+          "EnhancedCcd": false,
+          "Gravity": true,
+          "GravityScale": 1,
+          "ImpactDamage": 0,
+          "LinearDamping": 0,
+          "Locking": {
+            "X": false,
+            "Y": false,
+            "Z": false,
+            "Pitch": false,
+            "Yaw": false,
+            "Roll": false
+          },
+          "MassCenterOverride": "0,0,0",
+          "MassOverride": 0,
+          "MinImpactDamageSpeed": 500,
+          "MotionEnabled": true,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "OverrideMassCenter": false,
+          "RigidbodyFlags": 0,
+          "SleepThreshold": 2,
+          "StartAsleep": false
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "667d92e9-66c3-4561-ad97-afd8b203a6c0",
+      "__version": 2,
+      "__Prefab": "prefabs/environment/campstove.prefab",
+      "__PrefabInstancePatch": {
+        "AddedObjects": [],
+        "RemovedObjects": [],
+        "PropertyOverrides": [
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "c72afa67-14e4-4373-94ce-bd9956f4ca4b"
+            },
+            "Property": "Position",
+            "Value": "2189.08911,-2562.92773,118.703522"
+          },
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "c72afa67-14e4-4373-94ce-bd9956f4ca4b"
+            },
+            "Property": "Rotation",
+            "Value": "0.00510295108,-0.00418720162,-0.77301687,-0.634351075"
+          },
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "00de9c66-490e-4572-acf1-4507bd9872e3"
+            },
+            "Property": "Position",
+            "Value": "0.000258348417,0.000257237814,-0.750901222"
+          }
+        ],
+        "MovedObjects": []
+      },
+      "__PrefabIdToInstanceId": {
+        "c72afa67-14e4-4373-94ce-bd9956f4ca4b": "667d92e9-66c3-4561-ad97-afd8b203a6c0",
+        "2eed56fd-2035-4549-81d9-2eac3715d880": "29105825-4796-4399-b5d6-4757b4b18973",
+        "00de9c66-490e-4572-acf1-4507bd9872e3": "cd7d93e5-a8fd-4931-8dfd-a32fbe2e48e3",
+        "74441f78-de06-4ce6-a04f-045b762da5cb": "4482e358-c3bf-4eb7-95ec-c332e2e87fc2",
+        "c123d510-00d5-4e2b-84f8-e5d9fa898e00": "7b62fe7c-8215-447d-b624-58e54a98a8bd"
+      }
+    },
+    {
+      "__guid": "0a8e25f7-baee-49ad-a052-0c199f96f401",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "__tmp_cabin_check",
+      "Position": "0,0,0",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.ModelCollider",
+          "__guid": "d0a17380-b6e9-4bd6-a99d-5a6c803227b3",
+          "__enabled": true,
+          "Flags": 0,
+          "ColliderFlags": 0,
+          "Elasticity": null,
+          "Friction": null,
+          "IsTrigger": false,
+          "Model": "models/log_cabin.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "OnObjectTriggerEnter": null,
+          "OnObjectTriggerExit": null,
+          "OnTriggerEnter": null,
+          "OnTriggerExit": null,
+          "RollingResistance": null,
+          "Static": false,
+          "Surface": null,
+          "SurfaceVelocity": "0,0,0"
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "92778ff6-e094-4961-ba85-82a63df0ea50",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "__tmp_door_check",
+      "Position": "0,0,0",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.ModelCollider",
+          "__guid": "0493fb75-4149-4d4d-a937-6e15494b088a",
+          "__enabled": true,
+          "Flags": 0,
+          "ColliderFlags": 0,
+          "Elasticity": null,
+          "Friction": null,
+          "IsTrigger": false,
+          "Model": "models/log_cabin_door.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "OnObjectTriggerEnter": null,
+          "OnObjectTriggerExit": null,
+          "OnTriggerEnter": null,
+          "OnTriggerExit": null,
+          "RollingResistance": null,
+          "Static": false,
+          "Surface": null,
+          "SurfaceVelocity": "0,0,0"
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "33b0670e-1aa4-4e9f-99de-9a69e6f25442",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "beech_hedge_40x128 (2)",
+      "Position": "841.991211,-2670.64209,9.83700562",
+      "Rotation": "-0.707106769,0,0.707106769,0",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.Prop",
+          "__guid": "8073bcd0-de13-4f2d-8ab8-3ad015515a3c",
+          "__enabled": true,
+          "Flags": 0,
+          "BodyGroups": 18446744073709551615,
+          "Health": 0,
+          "IsStatic": false,
+          "MaterialGroup": null,
+          "Model": "models/sbox_props/shrubs/beech/beech_hedge_40x128.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "OnPropBreak": null,
+          "OnPropTakeDamage": null,
+          "StartAsleep": false,
+          "Tint": "1,1,1,1"
+        },
+        {
+          "__type": "Sandbox.ModelRenderer",
+          "__guid": "7cae7c7f-bc94-4afa-9618-00186700349f",
+          "__enabled": true,
+          "Flags": 0,
+          "BodyGroups": 18446744073709551615,
+          "CreateAttachments": false,
+          "LodOverride": null,
+          "MaterialGroup": null,
+          "MaterialOverride": null,
+          "Materials": null,
+          "Model": "models/sbox_props/shrubs/beech/beech_hedge_40x128.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "RenderOptions": {
+            "GameLayer": true,
+            "OverlayLayer": false,
+            "BloomLayer": false,
+            "AfterUILayer": false
+          },
+          "RenderType": "On",
+          "Tint": "1,1,1,1"
+        },
+        {
+          "__type": "Sandbox.ModelCollider",
+          "__guid": "5c1a97fa-2d4b-41b5-8bf6-68f928519633",
+          "__enabled": true,
+          "Flags": 0,
+          "ColliderFlags": 0,
+          "Elasticity": null,
+          "Friction": null,
+          "IsTrigger": false,
+          "Model": "models/sbox_props/shrubs/beech/beech_hedge_40x128.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "OnObjectTriggerEnter": null,
+          "OnObjectTriggerExit": null,
+          "OnTriggerEnter": null,
+          "OnTriggerExit": null,
+          "RollingResistance": null,
+          "Static": false,
+          "Surface": null,
+          "SurfaceVelocity": "0,0,0"
+        },
+        {
+          "__type": "Sandbox.Rigidbody",
+          "__guid": "572b1fdd-ad48-4aba-a909-296a885cba15",
+          "__enabled": true,
+          "Flags": 0,
+          "AngularDamping": 0,
+          "EnableImpactDamage": true,
+          "EnhancedCcd": false,
+          "Gravity": true,
+          "GravityScale": 1,
+          "ImpactDamage": 0,
+          "LinearDamping": 0,
+          "Locking": {
+            "X": false,
+            "Y": false,
+            "Z": false,
+            "Pitch": false,
+            "Yaw": false,
+            "Roll": false
+          },
+          "MassCenterOverride": "0,0,0",
+          "MassOverride": 0,
+          "MinImpactDamageSpeed": 500,
+          "MotionEnabled": true,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "OverrideMassCenter": false,
+          "RigidbodyFlags": 0,
+          "SleepThreshold": 2,
+          "StartAsleep": false
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "69b284d2-80bc-49cb-b9eb-b7c0ca8a4c06",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "beech_hedge_40x128 (1)",
+      "Position": "840.930847,-2797.03516,11.9649658",
+      "Rotation": "-0.707106769,0,0.707106769,0",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.Prop",
+          "__guid": "afbc68bf-f773-4975-aed9-ac7887bc0538",
+          "__enabled": true,
+          "Flags": 0,
+          "BodyGroups": 18446744073709551615,
+          "Health": 0,
+          "IsStatic": false,
+          "MaterialGroup": null,
+          "Model": "models/sbox_props/shrubs/beech/beech_hedge_40x128.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "OnPropBreak": null,
+          "OnPropTakeDamage": null,
+          "StartAsleep": false,
+          "Tint": "1,1,1,1"
+        },
+        {
+          "__type": "Sandbox.ModelRenderer",
+          "__guid": "bafd490d-eb1d-49c5-bf10-4b31ed72f814",
+          "__enabled": true,
+          "Flags": 0,
+          "BodyGroups": 18446744073709551615,
+          "CreateAttachments": false,
+          "LodOverride": null,
+          "MaterialGroup": null,
+          "MaterialOverride": null,
+          "Materials": null,
+          "Model": "models/sbox_props/shrubs/beech/beech_hedge_40x128.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "RenderOptions": {
+            "GameLayer": true,
+            "OverlayLayer": false,
+            "BloomLayer": false,
+            "AfterUILayer": false
+          },
+          "RenderType": "On",
+          "Tint": "1,1,1,1"
+        },
+        {
+          "__type": "Sandbox.ModelCollider",
+          "__guid": "281a417b-9460-4ceb-aae7-fef7891303b8",
+          "__enabled": true,
+          "Flags": 0,
+          "ColliderFlags": 0,
+          "Elasticity": null,
+          "Friction": null,
+          "IsTrigger": false,
+          "Model": "models/sbox_props/shrubs/beech/beech_hedge_40x128.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "OnObjectTriggerEnter": null,
+          "OnObjectTriggerExit": null,
+          "OnTriggerEnter": null,
+          "OnTriggerExit": null,
+          "RollingResistance": null,
+          "Static": false,
+          "Surface": null,
+          "SurfaceVelocity": "0,0,0"
+        },
+        {
+          "__type": "Sandbox.Rigidbody",
+          "__guid": "04778860-609a-439f-a43d-803ef1d69eb6",
+          "__enabled": true,
+          "Flags": 0,
+          "AngularDamping": 0,
+          "EnableImpactDamage": true,
+          "EnhancedCcd": false,
+          "Gravity": true,
+          "GravityScale": 1,
+          "ImpactDamage": 0,
+          "LinearDamping": 0,
+          "Locking": {
+            "X": false,
+            "Y": false,
+            "Z": false,
+            "Pitch": false,
+            "Yaw": false,
+            "Roll": false
+          },
+          "MassCenterOverride": "0,0,0",
+          "MassOverride": 0,
+          "MinImpactDamageSpeed": 500,
+          "MotionEnabled": true,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "OverrideMassCenter": false,
+          "RigidbodyFlags": 0,
+          "SleepThreshold": 2,
+          "StartAsleep": false
+        }
+      ],
+      "Children": []
     }
   ],
   "SceneProperties": {
@@ -56559,14 +58467,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.SelectionSetsSystem": {
-        "Data": {
-          "SelectionSets": []
-        }
-      },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
           "$blob": "bc4a7200-e8e3-4984-83cc-61ae2cbf3a3c"
+        }
+      },
+      "Sandbox.SelectionSetsSystem": {
+        "Data": {
+          "SelectionSets": []
         }
       }
     }

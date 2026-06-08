@@ -405,12 +405,13 @@ public sealed class GroundPlayerController : Component
 			ResolvePrefabReferences();
 		if ( !Body.IsValid() ) return;
 
-		var hideBodyHands = handsOnly && UseLocalFirstPersonViewmodel && !ShouldShowPilotBodyHands();
+		var showPilotBodyHands = handsOnly && ShouldShowPilotBodyHands();
+		var hideBodyHands = handsOnly && UseLocalFirstPersonViewmodel && !showPilotBodyHands;
 		foreach ( var renderer in Body.Components.GetAll<SkinnedModelRenderer>( FindMode.EverythingInSelfAndDescendants ) )
 		{
 			renderer.RenderType = ModelRenderer.ShadowRenderType.On;
 			renderer.SetBodyGroup( "Head", handsOnly ? CitizenHeadHidden : CitizenBodyGroupVisible );
-			renderer.SetBodyGroup( "Chest", handsOnly ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
+			renderer.SetBodyGroup( "Chest", handsOnly && !showPilotBodyHands ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
 			renderer.SetBodyGroup( "Legs", handsOnly ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
 			renderer.SetBodyGroup( "Hands", hideBodyHands ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
 			renderer.SetBodyGroup( "Feet", handsOnly ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );

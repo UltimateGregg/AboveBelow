@@ -1,0 +1,37 @@
+{
+  "source_blend": "environment_model.blend/log_cabin.blend",
+  "target_fbx": "Assets/models/log_cabin.fbx",
+  "target_vmdl": "Assets/models/log_cabin.vmdl",
+  "model_resource_path": "models/log_cabin.vmdl",
+  "combine_meshes": true,
+  "combined_object_name": "LogCabinMesh",
+  "material_remap": {
+    "M_LogCabin_Logs": "materials/shotgun_wood.vmat",
+    "M_LogCabin_Floor": "materials/environment/house_small_interior_wood.vmat",
+    "M_LogCabin_Stone": "materials/arena/concrete_wall.vmat",
+    "M_LogCabin_Roof": "materials/environment/house_small_roof.vmat",
+    "M_LogCabin_Gable": "materials/environment/house_small_siding.vmat",
+    "M_LogCabin_Trim": "materials/shotgun_wood.vmat",
+    "M_LogCabin_Glass": "materials/environment/house_small_glass.vmat"
+  },
+  "vmdl_material_source_suffix": "",
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
+  "verify_fbx": true,
+  "required_object": [
+    "LogCabinMesh"
+  ],
+  "object_type": [
+    "EMPTY",
+    "MESH"
+  ],
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z",
+  "collision": {
+    "mode": "render_mesh",
+    "surface_prop": "wood",
+    "collision_tags": "solid"
+  },
+  "_collision_note": "EXACT mesh collision: pipeline writes a PhysicsMeshFile (inside PhysicsShapeList) referencing the render FBX, so floor/walls are solid and the door + window openings are real holes. LogCabin.prefab puts a ModelCollider (Model=log_cabin.vmdl, Static=true) on the Visual child so collision rides the exact visual transform. The swinging door is a SEPARATE model (log_cabin_door.vmdl) so it can rotate independently. See docs/collision_authoring.md."
+}

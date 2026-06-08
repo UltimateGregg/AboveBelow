@@ -132,6 +132,45 @@ Key conventions:
 
 If you swap the arms model, keep the mesh extending in the +X direction with origin near the wrists; adjust offsets only if the new mesh's `bounds.x` minimum is meaningfully different from `~4`.
 
+## Collision authoring (mesh-based) — the default for props/buildings
+
+Give a model **exact 1:1 collision** that can't drift: bake a triangle mesh into
+the `.vmdl` and reference it with a `ModelCollider`. Full guide:
+[`docs/collision_authoring.md`](docs/collision_authoring.md). The `WaterTower`
+asset is the reference example.
+
+Two parts:
+1. **Model** — add a `collision` block to the asset's
+   `scripts/<name>_asset_pipeline.json`; the pipeline writes a `PhysicsMeshFile`
+   node for you:
+   ```json
+   "collision": { "mode": "render_mesh", "surface_prop": "metal", "collision_tags": "solid" }
+   ```
+   `mode`: `render_mesh` (default for solid non-deforming props) · `collision_mesh` (separate
+   FBX to make a part hollow — generate it with `scripts/export_collision_mesh.py
+   <blend> <out.fbx> --exclude-prefix Ladder_`) · `primitives` (documented
+   exception only; dimensions come from exported source-unit mesh bounds, not
+   Blender meter guesses) · `none`.
+2. **Prefab** — one `ModelCollider` (`Model` = the `.vmdl`, `Static = true`) on the
+   **same GameObject as the `ModelRenderer`** (the `Visual` child). It rides the
+   exact visual transform, so it stays aligned under non-uniform instance scale +
+   rotation. Don't add per-part `Collision_*` body boxes — the `ModelCollider`
+   replaces them. Trigger volumes (ladders, zones) stay separate children.
+   Place solid props through their prefab with this static `ModelCollider`, never
+   by dragging the raw `.vmdl`, because raw model placement can create a dynamic
+   Prop that falls on play.
+
+**The gotcha:** `PhysicsMeshFile`/`PhysicsHullFile` MUST be nested inside a
+`PhysicsShapeList`. Directly under `RootNode` the compiler **silently ignores it**
+(zero collision, no error). The pipeline nests it correctly; the collision agent
+audits for it. Verify with `ModelCollider.LocalBounds` (must be non-zero and
+approximately match `ModelRenderer.LocalBounds`), the in-editor gizmo, and a play
+test where the prefab renders, stays put, and collides. Run
+`scripts/agents/model_collision_scale_audit.ps1 -ShowInfo` for generated assets.
+Why this beats hand-placed boxes: those are authored in the wrong space and shear
+under the instance's non-uniform scale — exactly why the water tower failed
+repeatedly before this.
+
 ## Collider visualisation (`CollisionDebugViewer`)
 
 Sits on the GameManager in `main.scene` as a `Component.ExecuteInEditor`. When `AlwaysDraw = true`, it walks every `BoxCollider` / `SphereCollider` / `CapsuleCollider` in the scene each frame and draws a wireframe via `Gizmo.Draw.LineBBox` / `LineSphere` / `Line`. Toggle the component on/off in the inspector when chasing "what invisible wall is blocking me here?" bugs.
@@ -199,6 +238,106 @@ Notable quirks (also in `~/.claude/projects/.../memory/tooling_sbox_mcp.md`):
 - `editor_take_screenshot` errors with "RenderToPixmap method not available" — fall back to rendering a preview in Blender.
 - `scene_open` on a `.prefab` errors "Ambiguous match" if a prefab editor session is open alongside `main.scene`. Re-open `Assets/scenes/main.scene` first.
 - Avoid `editor_save_scene` while in play-mode or while a prefab editor session is the active tab — s&box has saved an `untitled.scene` next to main.scene at least once. Always `scene_open Assets/scenes/main.scene` first if unsure.
+
+## Agent Infrastructure & Editor-First Workflow
+
+This project uses an **editor-first** development philosophy: use the live S&Box editor and its MCP (Model Context Protocol) server as the primary authoring surface, especially for scene, prefab, component, asset, and sound work. Only fall back to hand-editing JSON when the editor surface is unavailable.
+
+### Core Principle: Inspect → Mutate → Save → Verify
+
+1. **Inspect** the live scene/prefab with `editor_scene_info`, `scene_get_hierarchy`, `scene_find_objects`, `component_list`, `component_get`
+2. **Mutate** through editor commands: `scene_create_object`, `component_set`, `asset_*`, `sound_*` (prefer these over hand-editing JSON)
+3. **Save** through the editor with `editor_save_scene` (only when you know the editor wasn't pre-dirty and edits are agent-owned)
+4. **Verify** both live editor state and saved files; take proof screenshots with `editor_take_screenshot` when behavior changed
+
+### Startup Checks
+
+Before any editor-capable task:
+
+1. Confirm S&Box editor is the intended surface for the work
+2. Check live control-plane status: call `control_plane_status` MCP tool or query JSON-RPC directly:
+   ```powershell
+   $body = '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+   Invoke-WebRequest -Uri 'http://localhost:29015/mcp' -Method POST -Body $body -ContentType 'application/json' -UseBasicParsing -TimeoutSec 5
+   ```
+3. If the native MCP is unavailable, record it explicitly and use the safest file/script fallback — don't pretend work was editor-native
+4. Track `hasUnsavedChanges` from `control_plane_status` / `editor_scene_info`. If the editor was already dirty before your change, do not call `editor_save_scene` or reload commands unless explicitly approved — that would force a user-facing save prompt
+
+### Agent Routing
+
+**For different task types, use the corresponding agent** (listed in `.agents/sbox/`):
+
+| Need | Agent | Evidence Command |
+|------|-------|------------------|
+| **Editor-capable work (scenes, prefabs, assets, sound)** | `editor-first-workflow-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite editor-first -ShowInfo` |
+| **Final sanity pass after code changes** | `pre-handoff-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite quick` |
+| **Build compile and editor/runtime log review** | `build-log-sentinel.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/build_log_sentinel.ps1` |
+| **Gameplay regression (drone control, slots, HUD)** | `gameplay-systems-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/gameplay_regression_guard.ps1` |
+| **Prefab structure, wiring, scene integrity** | `prefab-wiring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_wiring_audit.ps1` |
+| **Collision/visual alignment, building/prop review** | `collision-authoring-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite collision -ShowInfo` |
+| **Collision-heavy multi-agent work** | `collision-chain-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite collision-chain -ShowInfo` |
+| **Blender/asset quality review** | `asset-pipeline-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1` |
+| **AAA-quality Blender assets** | `aaa-asset-quality-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/aaa_asset_quality_audit.ps1 -ShowInfo` |
+| **ModelDoc/VMDL validation** | `modeldoc-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/modeldoc_audit.ps1 -ShowInfo` |
+| **Prefab visual quality** | `prefab-visual-quality-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/prefab_visual_quality_audit.ps1` |
+| **UI/Razor refresh behavior** | `ui-flow-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/ui_flow_audit.ps1 -FailOnWarning` |
+| **Sound wiring and preview** | `sound-control-plane-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite sound -ShowInfo` |
+| **S&Box API/engine research** | `sbox-engine-reference-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_api_lookup.ps1 -Root . -Type Sandbox.GameObject -Member NetworkSpawn` |
+| **Official S&Box docs intake** | `sbox-docs-source-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_docs_source_audit.ps1 -Refresh -ShowInfo` |
+| **S&Box Learn tutorial intake** | `sbox-learn-intake-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_learn_intake_audit.ps1 -ShowInfo` |
+| **Post-task training & improvement** | `post-task-training-agent.md` | Type `train` to trigger; runs `scripts/agents/run_agent_checks.ps1 -Suite train` |
+
+Full routing table: see `.agents/sbox/README.md` (40+ agents listed with commands).
+
+### Automated Hooks
+
+Nine hooks in `.claude/settings.json` validate and prevent regressions:
+
+1. **`blend-auto-export`** — Triggers asset pipeline on any `.blend` save
+2. **`drone-control-regression-check`** — Validates drone input/pilot/HUD on file changes
+3. **`sbox-editor-first-workflow-check`** — Routes editor-first work validation
+4. **`sbox-blue-line-check`** — Prevents blockout line strips in playable level
+5. **`sbox-engine-reference-check`** — Guards stale API/engine guidance
+6. **`sbox-docs-source-check`** — Ensures docs sources stay current
+7. **`sbox-learn-intake-check`** — Validates Learn tutorial lessons
+8. **`sbox-release-notes-check`** — Routes release/API-change sweeps
+9. **`sbox-code-search-check`** — Validates public package adoption
+
+Hooks emit success/failure notifications. Check the output to confirm validation passed.
+
+### Key Reference Files
+
+| File | Purpose |
+|------|---------|
+| `.claude/settings.json` | 9 automated hooks and their triggers |
+| `.agents/sbox/README.md` | Master routing table (40+ agents with commands) |
+| `.agents/sbox/editor-first-workflow-agent.md` | Default entry point for editor-capable work |
+| `docs/editor_control_plane.md` | MCP endpoint, tool domains, editor control flow |
+| `docs/agent_toolkit.md` | Comprehensive agent listing and quick-start |
+| `AGENTS.md` | Project rules, post-task training workflow, agent discipline |
+| `scripts/agents/run_agent_checks.ps1` | Master audit harness; use `-Suite` to select checks |
+
+### Post-Task Training
+
+**When a task is complete**, type just the word `train` to trigger the post-task training workflow. This:
+
+1. Runs `scripts/agents/run_agent_checks.ps1 -Suite train`
+2. Audits the recent goal, changed files, documentation, hooks, agents, subagents, pipelines, and workflows
+3. Auto-applies durable improvements to `.agents/` files, hooks, audit scripts, and documentation
+4. Outputs a summary of what changed and what still needs human/editor verification
+
+**Example:** After finishing a collision-heavy task, training might detect a new collision pattern and add a focused audit to prevent future regressions.
+
+### When Editor-First Does NOT Apply
+
+- Pure C# refactors (no need to open editor)
+- Documentation-only work
+- Adding new audit scripts or agent guides
+- Investigating code without changing scenes/prefabs
+
+Still use the editor for **final runtime proof** when behavior changed (e.g., take a screenshot or test in play mode).
+
+---
 
 ## Building Architecture (Multi-Level Design)
 

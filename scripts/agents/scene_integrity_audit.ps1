@@ -404,23 +404,18 @@ function Test-WaterTowerSolidCollisionAuthoringText {
         return
     }
 
-    $requiredSolidColliders = @(
-        "Collision_Tank",
-        "Collision_Roof",
-        "Collision_Platform",
-        "Collision_Leg_NorthWest",
-        "Collision_Leg_NorthEast",
-        "Collision_Leg_SouthWest",
-        "Collision_Leg_SouthEast"
-    )
-
-    $solidColliderTypePattern = 'Sandbox\.(?:BoxCollider|CapsuleCollider|HullCollider)'
-    foreach ($colliderName in $requiredSolidColliders) {
-        $pattern = '"Name"\s*:\s*"' + [regex]::Escape($colliderName) + '"[\s\S]{0,2500}?"__type"\s*:\s*"' + $solidColliderTypePattern + '"[\s\S]{0,1000}?"IsTrigger"\s*:\s*false'
-        if ($Text -notmatch $pattern) {
-            Add-AgentIssue $issues "Error" "Water Tower Collision" $Path "$Context water tower is missing solid collider child '$colliderName'." "Keep tank, roof, platform, and leg collision as non-trigger collider children so the prop blocks soldiers and drones without closing the open base."
+    $visualModelColliderMatches = [regex]::Matches($Text, '"Name"\s*:\s*"WaterTower"[\s\S]{0,70000}?"Name"\s*:\s*"Visual"[\s\S]{0,7000}?"__type"\s*:\s*"Sandbox\.ModelCollider"(?<component>[\s\S]{0,2500}?)\}')
+    foreach ($match in $visualModelColliderMatches) {
+        $component = $match.Groups["component"].Value
+        $hasWaterTowerModel = $component -match '"Model"\s*:\s*"models/watertower\.vmdl"'
+        $isSolid = $component -match '"IsTrigger"\s*:\s*false'
+        $isStatic = $component -match '"Static"\s*:\s*true'
+        if ($hasWaterTowerModel -and $isSolid -and $isStatic) {
+            return
         }
     }
+
+    Add-AgentIssue $issues "Error" "Water Tower Collision" $Path "$Context water tower Visual is missing a static non-trigger ModelCollider using models/watertower.vmdl." "Body collision is mesh-backed now: keep a ModelCollider on the Visual child, and keep Collision_Ladder as the separate trigger volume."
 }
 
 function Test-WaterTowerOpenBaseCollisionText {

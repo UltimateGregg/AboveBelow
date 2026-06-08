@@ -58,13 +58,13 @@
 				children =
 				[
 					{
-						_class = "PhysicsShapeBox"
+						_class = "PhysicsMeshFile"
+						name = "collision"
 						parent_bone = ""
 						surface_prop = "wood"
 						collision_tags = "solid"
-						origin = [ 0.0, 0.0, 0.0 ]
-						angles = [ 0.0, 0.0, 0.0 ]
-						dimensions = [ 2.4384, 0.0889, 0.01905 ]
+						filename = "models/plank_1x4.fbx"
+						import_scale = 1.0
 					},
 				]
 			},

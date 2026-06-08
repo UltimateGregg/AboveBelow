@@ -55,14 +55,15 @@ When a script edits `Assets/scenes/main.scene` while the editor is open, check `
 | Scene Integrity Audit | Validate main scene managers, spawns, and collider patterns | `scripts/agents/scene_integrity_audit.ps1` |
 | Terrain Floor Audit | Keep `ArenaFloor` backed by native `Sandbox.Terrain` and a source-controlled `.terrain` asset | `scripts/agents/run_agent_checks.ps1 -Suite terrain -ShowInfo` |
 | Editor-Native Cover Agent | Review S&Box-editor primitive cover, spacing, material, and preserved deletions | `scripts/agents/sandbag_cover_audit.ps1`; `scripts/agents/burnt_vehicle_block_audit.ps1` |
-| Collision Authoring Agent | Validate `Collision_*`, building-root coverage, ladder triggers, visual/collider alignment, and water-tower collision coverage | `scripts/agents/collision_authoring_agent.ps1` |
+| Collision Authoring Agent | Validate `Collision_*`, building-root coverage, ladder triggers, visual/collider alignment, render/collision bounds scale, and water-tower collision coverage | `scripts/agents/run_agent_checks.ps1 -Suite collision -ShowInfo`; `scripts/agents/model_collision_scale_audit.ps1 -ShowInfo` |
 | Collision Agent Chain | Coordinate Codex explorer, implementer, verifier, and critic roles for collision-heavy work | `scripts/agents/collision_chain_report.ps1` |
 | Collision Explorer Agent | Read-only collision discovery before edits | `.agents/sbox/collision-explorer-agent.md` |
 | Collision Implementer Agent | Scoped collision edits after a contract is defined | `.agents/sbox/collision-implementer-agent.md` |
 | Collision Verifier Agent | Evidence collection and runtime-gap reporting | `.agents/sbox/collision-verifier-agent.md` |
 | Collision Critic Agent | Findings-first critique and rework routing | `.agents/sbox/collision-critic-agent.md` |
-| Asset Pipeline Agent | Validate `.blend` configs, targets, and material remaps | `scripts/agents/asset_pipeline_audit.ps1` |
+| Asset Pipeline Agent | Validate `.blend` configs, targets, material remaps, and generated model collision scale | `scripts/agents/asset_pipeline_audit.ps1`; `scripts/agents/model_collision_scale_audit.ps1 -ShowInfo` |
 | ModelDoc Agent | Validate `.vmdl` source meshes, material targets, and config drift | `scripts/agents/modeldoc_audit.ps1` |
+| Animated Model Intake | Prove imported clips in editor ModelDoc or AnimGraph tooling before sequence, parameter, blendspace, or state-machine wiring | `.agents/sbox/animated-model-intake-agent.md`; `.agents/sbox/editor-first-workflow-agent.md`; `scripts/agents/run_agent_checks.ps1 -Suite animated-model -ShowInfo`; `scripts/agents/animated_model_intake_audit.ps1 -ShowInfo` |
 | Jigglebone Cosmetic Agent | Review skinned cosmetic bone merge, ModelDoc physics shapes, joint anchors, and editor motion proof | `scripts/agents/run_agent_checks.ps1 -Suite modeldoc` plus editor playtest |
 | AAA Asset Quality Agent | Coordinate reference, Production Quality Targets, material roles, visual proof, and S&Box import validation for high-polish Blender assets | `scripts/agents/aaa_asset_quality_audit.ps1` |
 | Sound Control Plane Agent | Validate SoundEvent wrappers, attached playback, and editor-native sound workflows | `scripts/agents/run_agent_checks.ps1 -Suite sound` |
@@ -205,6 +206,7 @@ For prop collision specifically, also run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite collision -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/model_collision_scale_audit.ps1 -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite collision-chain -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/collision_chain_report.ps1 -ShowInfo
 ```
@@ -241,12 +243,15 @@ powershell -ExecutionPolicy Bypass -File scripts/agents/material_texture_audit.p
 powershell -ExecutionPolicy Bypass -File scripts/agents/asset_visual_review.ps1 -Blend weapons_model.blend/assault_rifle_m4_realistic.blend
 python scripts/texture_contact_sheet.py --config scripts/terrain_assets_asset_pipeline.json --out screenshots/asset_previews/terrain_assets_texture_sheet.png
 powershell -ExecutionPolicy Bypass -File scripts/agents/asset_pipeline_audit.ps1
+powershell -ExecutionPolicy Bypass -File scripts/agents/model_collision_scale_audit.ps1 -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/drone_variant_visual_audit.ps1 -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/modeldoc_audit.ps1 -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production
 ```
 
 For AAA-quality or otherwise high-polish assets, use `.agents/sbox/aaa-asset-quality-agent.md` first. The generated brief should include reference requirements, Production Quality Targets, material roles, sockets, scale/orientation notes, and a Visual Review Plan before detailed modeling. The proof chain is brief -> Blender source quality -> material/texture audit -> visual preview/contact sheet -> export/import -> ModelDoc and FBX material-slot validation -> S&Box prefab or editor screenshot.
+
+For animated model imports, use `.agents/sbox/animated-model-intake-agent.md` with `.agents/sbox/editor-first-workflow-agent.md`. Blender export, FBX generation, and VMDL generation are not enough; open the VMDL or AnimGraph surface in the editor, confirm imported clips by name, play them, then choose `SkinnedModelRenderer.Sequence`, `Parameters.Set`, `AnimGraphDirectPlayback`, a 1D blendspace, or a state machine based on the runtime behavior.
 
 For drone variants with a distinct visible identity, run `scripts/agents/drone_variant_visual_audit.ps1` before accepting the handoff. It catches the specific drift where a variant prefab or held preview still points at a shared/base body even though the variant now has its own Blender source, VMDL, and material identity.
 

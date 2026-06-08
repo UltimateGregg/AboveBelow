@@ -30,13 +30,9 @@
   "global_scale": 1.0,
   "axis_forward": "-Y",
   "axis_up": "Z",
-  "physics_shapes": [
-    {
-      "type": "box",
-      "surface_prop": "wood",
-      "collision_tags": "solid",
-      "origin": [0, 0, 0],
-      "dimensions": [2.4384, 0.0889, 0.01905]
-    }
-  ]
+  "collision": {
+    "mode": "render_mesh",
+    "surface_prop": "wood",
+    "collision_tags": "solid"
+  }
 }

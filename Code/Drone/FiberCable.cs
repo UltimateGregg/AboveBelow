@@ -6,11 +6,20 @@ using System.Linq;
 namespace DroneVsPlayers;
 
 /// <summary>
-/// Visual-only tether between a fiber-optic FPV drone and its pilot. The fiber
-/// is modeled as a thin trail of points laid on the ground as the drone flies,
-/// emulating real-world fiber-optic FPV drones that unspool fiber from the
-/// drone and pilot, leaving it on the terrain behind them. The cable goes:
-///   pilot position -> pilot's walked trail -> drone's laid trail -> drone
+/// Tether between a fiber-optic FPV drone and its pilot. Two parts:
+///
+/// 1. The <b>spooled trail</b> — a thin <see cref="LineRenderer"/> of points laid
+///    on the ground as the drone flies (downward traces), emulating real-world
+///    fiber-optic FPV drones that unspool fiber and leave it on the terrain. The
+///    grounded run goes: pilot -> pilot's walked trail -> drone's laid trail ->
+///    the current ground-contact point behind the drone.
+///
+/// 2. The <b>airborne span</b> — a real <see cref="VerletRope"/> from that
+///    ground-contact point up to the drone. This is the part actually in the air,
+///    so it sags and physically collides with the world (e.g. drapes over a tree
+///    trunk instead of clipping through it). It is created at runtime as a child
+///    of the drone (resolve-or-create), so destroying the drone takes it with it
+///    while <see cref="DetachFromLiveEndpoints"/> freezes the grounded trail.
 ///
 /// Visual styling is enforced here so prefab/editor defaults cannot make the
 /// cable inherit the bright blue LineRenderer color.
@@ -62,6 +71,41 @@ public sealed class FiberCable : Component
 	/// </summary>
 	[Property] public float MaxDropDistance { get; set; } = 2000f;
 
+	/// <summary>
+	/// Verlet-simulated rope for the airborne span (ground-contact point -> drone).
+	/// Auto-created at runtime if unset. This is the part that collides with the
+	/// world, so it drapes over obstacles instead of clipping through them.
+	/// </summary>
+	[Property] public VerletRope AirSpan { get; set; }
+
+	/// <summary>LineRenderer the air-span rope draws into. Auto-created with AirSpan.</summary>
+	[Property] public LineRenderer AirSpanLine { get; set; }
+
+	/// <summary>Ground-side attachment point the air-span rope hangs from. Auto-created.</summary>
+	[Property] public GameObject AirSpanAnchor { get; set; }
+
+	/// <summary>
+	/// How much longer than the straight drone-to-ground distance the airborne rope
+	/// is. >1 gives slack so it can sag and route around obstacles; near 1 keeps it
+	/// taut. Recomputed each frame from the live distance.
+	/// </summary>
+	[Property, Range( 1f, 2.5f )] public float AirSpanSlack { get; set; } = 1.15f;
+
+	/// <summary>
+	/// Segment count for the airborne rope. Higher = smoother + more accurate
+	/// collision, but more expensive. 16 is a good middle ground.
+	/// </summary>
+	[Property, Range( 2, 64 )] public int AirSpanSegments { get; set; } = 16;
+
+	/// <summary>Collision radius of the airborne rope against world geometry.</summary>
+	[Property, Range( 0.1f, 5f )] public float AirSpanRadius { get; set; } = 1f;
+
+	/// <summary>
+	/// Local offset (relative to the drone) where the airborne rope exits the body.
+	/// Sits just below the hull so the rope's first node clears the drone collider.
+	/// </summary>
+	[Property] public Vector3 AirSpanLocalOrigin { get; set; } = new( 0f, 0f, -1f );
+
 	readonly List<Vector3> _droneTrail = new();
 	readonly List<Vector3> _pilotTrail = new();
 	readonly List<Vector3> _renderPoints = new();
@@ -75,6 +119,8 @@ public sealed class FiberCable : Component
 	{
 		ResolveRefs();
 		ApplyLineStyle();
+		EnsureAirSpan();
+		SetAirSpanEnabled( false );
 		_droneTrail.Clear();
 		_pilotTrail.Clear();
 		_hasLastDroneTrailPoint = false;
@@ -85,6 +131,8 @@ public sealed class FiberCable : Component
 	protected override void OnUpdate()
 	{
 		ResolveRefs();
+		if ( !AirSpan.IsValid() )
+			EnsureAirSpan();
 		if ( !Line.IsValid() ) return;
 		ApplyLineStyle();
 		if ( _detachedFromLiveEndpoints )
@@ -94,6 +142,7 @@ public sealed class FiberCable : Component
 		if ( !pilotPawn.IsValid() )
 		{
 			Line.Enabled = false;
+			SetAirSpanEnabled( false );
 			return;
 		}
 
@@ -121,11 +170,14 @@ public sealed class FiberCable : Component
 			AddRenderPoint( _pilotTrail[i] );
 		for ( int i = 0; i < _droneTrail.Count; i++ )
 			AddRenderPoint( _droneTrail[i] );
+		// The grounded trail stops at the ground-contact point. The span from here
+		// up to the drone is the airborne VerletRope, not a straight line.
 		AddRenderPoint( droneLeadPoint );
-		AddRenderPoint( dronePos );
 
 		Line.UseVectorPoints = true;
 		Line.VectorPoints = _renderPoints;
+
+		UpdateAirSpan( dronePos, droneLeadPoint );
 	}
 
 	/// <summary>
@@ -140,6 +192,7 @@ public sealed class FiberCable : Component
 
 		var frozenPoints = BuildGroundedRenderPoints();
 		_detachedFromLiveEndpoints = true;
+		SetAirSpanEnabled( false );
 
 		if ( frozenPoints.Count < 2 )
 		{
@@ -309,6 +362,76 @@ public sealed class FiberCable : Component
 		// Fallback: project to a sensible "below the drone" point if there's
 		// no surface (e.g. drone is over an open void).
 		return new Vector3( from.x, from.y, from.z - MaxDropDistance );
+	}
+
+	/// <summary>
+	/// Resolve-or-create the airborne VerletRope, its LineRenderer, and the ground
+	/// anchor it hangs from. All are children of the drone so they die with it.
+	/// </summary>
+	void EnsureAirSpan()
+	{
+		if ( !AirSpanAnchor.IsValid() )
+		{
+			AirSpanAnchor = new GameObject( true, "Fiber Air Anchor" ) { NetworkMode = NetworkMode.Never };
+			AirSpanAnchor.SetParent( GameObject );
+			AirSpanAnchor.LocalPosition = Vector3.Zero;
+		}
+
+		if ( !AirSpan.IsValid() )
+		{
+			var spanObject = new GameObject( true, "Fiber Air Span" ) { NetworkMode = NetworkMode.Never };
+			spanObject.SetParent( GameObject );
+			spanObject.LocalPosition = AirSpanLocalOrigin;
+			spanObject.LocalRotation = Rotation.Identity;
+
+			AirSpanLine = spanObject.Components.Create<LineRenderer>();
+			AirSpan = spanObject.Components.Create<VerletRope>();
+		}
+
+		if ( AirSpan.IsValid() )
+		{
+			AirSpan.Attachment = AirSpanAnchor;
+			AirSpan.LinkedRenderer = AirSpanLine;
+			AirSpan.SegmentCount = AirSpanSegments;
+			AirSpan.Radius = AirSpanRadius;
+		}
+
+		if ( AirSpanLine.IsValid() )
+		{
+			if ( Line.IsValid() )
+				AirSpanLine.Width = Line.Width;
+			ApplyLineStyle( AirSpanLine, CableColor );
+		}
+	}
+
+	/// <summary>
+	/// Pin the airborne rope's ground end to the live contact point and stretch its
+	/// length to the current drone distance (plus slack) so it sags realistically.
+	/// </summary>
+	void UpdateAirSpan( Vector3 dronePos, Vector3 groundContact )
+	{
+		if ( !AirSpan.IsValid() || !AirSpanAnchor.IsValid() )
+			return;
+
+		AirSpanAnchor.WorldPosition = groundContact;
+
+		var straight = dronePos.Distance( groundContact );
+		AirSpan.LengthOverride = MathF.Max( 1f, straight * MathF.Max( 1f, AirSpanSlack ) );
+		AirSpan.SegmentCount = AirSpanSegments;
+		AirSpan.Radius = AirSpanRadius;
+
+		SetAirSpanEnabled( true );
+
+		if ( AirSpanLine.IsValid() )
+			ApplyLineStyle( AirSpanLine, CableColor );
+	}
+
+	void SetAirSpanEnabled( bool enabled )
+	{
+		if ( AirSpan.IsValid() )
+			AirSpan.Enabled = enabled;
+		if ( AirSpanLine.IsValid() )
+			AirSpanLine.Enabled = enabled;
 	}
 
 	void ResolveRefs()

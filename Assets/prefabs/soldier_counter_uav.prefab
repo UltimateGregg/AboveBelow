@@ -25,12 +25,17 @@
         "SprintSpeed": 320,
         "JumpStrength": 322,
         "FirstPerson": true,
+        "UseLocalFirstPersonViewmodel": true,
         "EyeAngles": "0,0,0",
         "IsSprinting": false,
         "FootstepSound": "sounds/footstep.sound",
         "JumpSound": "sounds/jump_grunt.sound",
         "LandSound": "sounds/land_thud.sound",
         "SlideSound": "sounds/slide_scrape.sound"
+      },
+      {
+        "__type": "DroneVsPlayers.FirstPersonViewmodel",
+        "__guid": "33333333-b600-0000-0000-000000000001"
       },
       {
         "__type": "DroneVsPlayers.Health",

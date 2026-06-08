@@ -37,21 +37,9 @@
   "global_scale": 1.0,
   "axis_forward": "-Y",
   "axis_up": "Z",
-  "physics_shapes": [
-    {
-      "type": "box",
-      "surface_prop": "metal",
-      "collision_tags": "solid",
-      "origin": [
-        0,
-        0,
-        34
-      ],
-      "dimensions": [
-        252,
-        112,
-        68
-      ]
-    }
-  ]
+  "collision": {
+    "mode": "render_mesh",
+    "surface_prop": "metal",
+    "collision_tags": "solid"
+  }
 }

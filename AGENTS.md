@@ -154,6 +154,8 @@ For assets that need custom settings (material remaps, scale overrides), create 
 
 **Terrain assets material rule:** `terrain_assets` is a strict multi-material foliage asset. Its config must keep raw FBX material source names with `"vmdl_material_source_suffix": ""`, `"vmdl_use_global_default": false`, and `"strict_vmdl_material_sources": true`. Do not fix this model with scene `MaterialOverride` or `Materials.indexed`; that can collapse bark and foliage cards to one material. After export, run `.\scripts\agents\fbx_material_slot_audit.ps1 -Config .\scripts\terrain_assets_asset_pipeline.json` or the `modeldoc` suite.
 
+**Animated model import rule:** animated Blender/FBX/VMDL work starts with `.agents/sbox/animated-model-intake-agent.md` and `.agents/sbox/editor-first-workflow-agent.md`. Confirm editor/MCP availability, open the VMDL or AnimGraph surface in S&Box, verify imported clips by name, and play them before wiring gameplay. Use `SkinnedModelRenderer.Sequence` for simple direct playback, AnimGraph parameters/state machines/1D blendspaces for locomotion, and `Parameters.Set` or `AnimGraphDirectPlayback` for one-shot actions. Run `.\scripts\agents\run_agent_checks.ps1 -Suite animated-model -ShowInfo` after animated-model workflow changes.
+
 **No manual script execution needed.** The asset pipeline runs automatically on every `.blend` save, for any asset.
 
 #### Disabling the Hook
@@ -199,6 +201,15 @@ Use this hook to keep official S&Box patch-note and API-change lessons dated, so
 **Action:** Runs `.\scripts\agents\run_agent_checks.ps1 -Suite code-search -ShowInfo`.
 
 Use this hook to keep public package examples from `https://sbox.game/codesearch` available as a pattern-discovery resource while still requiring official docs, API lookup, local code, or editor proof before implementation.
+
+## S&Box Animated Model Intake Hook
+
+**Hook ID:** `sbox-animated-model-check`
+**Configuration File:** `./.claude/settings.json`
+**Trigger:** Changes to animated-model docs, AnimGraph or ModelDoc workflow routing, `animated_model_intake_audit.ps1`, suite wiring, training wiring, or first-person animation-owner guidance.
+**Action:** Runs `.\scripts\agents\run_agent_checks.ps1 -Suite animated-model -ShowInfo`.
+
+Use this hook to keep animated asset imports editor-first: export is not enough until imported clips are visible and playable in S&Box ModelDoc or AnimGraph tooling, then wired through `animated-model-intake-agent.md` guidance.
 
 ## Editor-First Workflow Hook
 

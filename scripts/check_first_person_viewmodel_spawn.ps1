@@ -182,6 +182,30 @@ function Assert-PilotMp7HeldScale {
     }
 }
 
+function Assert-LocalFirstPersonViewmodelEnabled {
+    param([string]$RelativePath)
+
+    $raw = Read-Text $RelativePath
+    if ([string]::IsNullOrWhiteSpace($raw)) {
+        return
+    }
+
+    if ($raw -notmatch '"__type"\s*:\s*"DroneVsPlayers\.GroundPlayerController"') {
+        Add-Error "$RelativePath root object must include GroundPlayerController."
+    }
+    elseif ($raw -notmatch '"__type"\s*:\s*"DroneVsPlayers\.GroundPlayerController"[\s\S]*?"UseLocalFirstPersonViewmodel"\s*:\s*true') {
+        Add-Error "$RelativePath GroundPlayerController must set UseLocalFirstPersonViewmodel true."
+    }
+
+    $viewmodelCount = [regex]::Matches($raw, '"__type"\s*:\s*"DroneVsPlayers\.FirstPersonViewmodel"').Count
+    if ($viewmodelCount -eq 0) {
+        Add-Error "$RelativePath root object must include FirstPersonViewmodel."
+    }
+    elseif ($viewmodelCount -gt 1) {
+        Add-Error "$RelativePath root object must not include duplicate FirstPersonViewmodel components."
+    }
+}
+
 function Assert-M4ModelDocScale {
     $relativePath = "Assets\models\weapons\assault_rifle_m4.vmdl"
     $raw = Read-Text $relativePath
@@ -400,8 +424,8 @@ foreach ($viewmodelContainerPrefab in @(
 Require-Pattern $controller 'UseLocalFirstPersonViewmodel' "GroundPlayerController must expose the local first-person viewmodel toggle."
 Require-Pattern $controller 'LocalFirstPersonViewmodelActive' "GroundPlayerController must track active local first-person viewmodel state."
 Require-Pattern $controller 'EnsureLocalFirstPersonViewmodel' "GroundPlayerController must create the local viewmodel component."
-Require-Pattern $controller 'hideBodyHands\s*=\s*handsOnly\s*&&\s*UseLocalFirstPersonViewmodel\s*&&\s*!\s*ShouldShowPilotBodyHands\(\)' "Local body hands must stay hidden for first-person viewmodels except the pilot drone deployer human-hands path."
-Require-Pattern $controller 'ShouldShowPilotBodyHands' "GroundPlayerController must keep the pilot deployer's body-hand exception explicit."
+Require-Pattern $controller 'showPilotBodyHands\s*=\s*handsOnly\s*&&\s*ShouldShowPilotBodyHands\(\)' "GroundPlayerController must keep the pilot deployer's body-hand exception explicit."
+Require-Pattern $controller 'hideBodyHands\s*=\s*handsOnly\s*&&\s*UseLocalFirstPersonViewmodel\s*&&\s*!showPilotBodyHands' "Local body hands must stay hidden for first-person viewmodels except the pilot drone deployer human-hands path."
 Require-Pattern $deployer 'hideForFirstPersonViewmodel' "DroneDeployer must keep updating hidden first-person hand visuals for copied viewmodel fallback."
 Require-Pattern $deployer 'WeaponPose\.SetVisibility\(\s*LeftHandVisual\s*,\s*!hideForFirstPersonViewmodel' "DroneDeployer left-hand visual should hide renderers but keep transforms updating for fallback copies."
 
@@ -418,6 +442,14 @@ foreach ($entry in @(
 Assert-M4HandguardGripAnchor "Assets\prefabs\soldier_assault.prefab"
 Assert-M4HandguardGripAnchor "Assets\prefabs\soldier.prefab"
 Assert-PilotMp7HeldScale
+foreach ($firstPersonPrefab in @(
+    "Assets\prefabs\soldier_assault.prefab",
+    "Assets\prefabs\soldier_counter_uav.prefab",
+    "Assets\prefabs\soldier_heavy.prefab",
+    "Assets\prefabs\pilot_ground.prefab"
+)) {
+    Assert-LocalFirstPersonViewmodelEnabled $firstPersonPrefab
+}
 Assert-M4ModelDocScale
 Assert-M4AssetPipelineScale
 

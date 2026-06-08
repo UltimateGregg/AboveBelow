@@ -41,12 +41,12 @@ public sealed class DroneDeployer : Component
 
 	[Property] public Vector3 LeftHandFpOffset { get; set; } = new( 30f, -18f, -12f );
 	[Property] public Angles LeftHandFpRotation { get; set; } = new( 0f, 0f, 0f );
-	[Property] public Vector3 LeftHandIkFpOffset { get; set; } = new( -1.5f, 7f, 11f );
+	[Property] public Vector3 LeftHandIkFpOffset { get; set; } = new( 8f, -14f, 2f );
 	[Property] public Angles LeftHandIkFpRotation { get; set; } = new( 60f, -10f, 0f );
 	[Property] public Vector3 RightHandFpOffset { get; set; } = new( 36f, -5f, -20f );
 	[Property] public Angles RightHandFpRotation { get; set; } = new( 0f, 0f, 0f );
 	[Property] public Angles GpsHeldDroneFpRotationOffset { get; set; } = new( 0f, -90f, 0f );
-	[Property] public Vector3 RightHandIkFpOffset { get; set; } = new( 0f, 0f, -13f );
+	[Property] public Vector3 RightHandIkFpOffset { get; set; } = new( 37f, 13f, -4f );
 	[Property] public Angles RightHandIkFpRotation { get; set; } = new( 10f, 0f, 170f );
 	[Property] public Vector3 RightHandControllerIkFpOffset { get; set; } = new( -1.5f, -5f, 1f );
 	[Property] public Angles RightHandControllerIkFpRotation { get; set; } = new( 0f, 0f, 0f );

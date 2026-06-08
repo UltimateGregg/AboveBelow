@@ -137,6 +137,13 @@ $qualityTargets
 
 $($profile.scale_note)
 
+## Placement and Collision
+
+- Solid prop collision default: `collision.mode = render_mesh` with a static `ModelCollider` on the prefab's renderer object.
+- Primitive collision exception reason: TBD. If primitives are used, dimensions must come from exported source-unit mesh bounds.
+- Placement rule: place the prefab (`$prefabText`), not the raw `.vmdl`, so the instance keeps the static collider contract and does not fall on play.
+- Runtime proof plan: place the prefab in `main.scene` or a throwaway test scene, enter play, confirm it renders, stays put, and collides, then record `ModelCollider.LocalBounds` approximately matching `ModelRenderer.LocalBounds`.
+
 ## Sockets and Attachments
 
 - TBD

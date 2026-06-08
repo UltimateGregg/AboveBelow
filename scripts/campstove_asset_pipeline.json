@@ -1,0 +1,37 @@
+{
+  "source_blend": "environment_model.blend/campstove.blend",
+  "target_fbx": "Assets/models/campstove.fbx",
+  "target_vmdl": "Assets/models/campstove.vmdl",
+  "model_resource_path": "models/campstove.vmdl",
+  "root_object": "CampStove_Root",
+  "combine_meshes": true,
+  "combined_object_name": "CampStoveMesh",
+  "material_remap": {
+    "Enamel_Green": "materials/environment/campstove_enamel_green.vmat",
+    "Steel_Burner": "materials/environment/campstove_steel_burner.vmat",
+    "Steel_Grate": "materials/environment/campstove_steel_grate.vmat",
+    "Steel_Polished": "materials/environment/campstove_steel_polished.vmat",
+    "Red_Enamel": "materials/environment/campstove_red_enamel.vmat",
+    "Black_Plastic": "materials/environment/campstove_black_plastic.vmat"
+  },
+  "vmdl_material_source_suffix": "",
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
+  "verify_fbx": true,
+  "required_object": [
+    "CampStoveMesh"
+  ],
+  "object_type": [
+    "EMPTY",
+    "MESH"
+  ],
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z",
+  "collision": {
+    "mode": "render_mesh",
+    "surface_prop": "metal",
+    "collision_tags": "solid"
+  },
+  "_collision_note": "EXACT mesh collision (water-tower technique, NOT its geometry): render_mesh mode makes the pipeline write a PhysicsMeshFile node nested inside a PhysicsShapeList in campstove.vmdl, so every triangle is solid. CampStove.prefab carries a ModelCollider (Model=campstove.vmdl, Static=true) on the Visual child so collision rides the exact visual transform. No ladder volume / no tower-shaped boxes. See docs/collision_authoring.md."
+}

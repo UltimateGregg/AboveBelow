@@ -83,13 +83,13 @@
 				children =
 				[
 					{
-						_class = "PhysicsShapeBox"
+						_class = "PhysicsMeshFile"
+						name = "collision"
 						parent_bone = ""
 						surface_prop = "metal"
 						collision_tags = "solid"
-						origin = [ 0.0, 0.0, 34.0 ]
-						angles = [ 0.0, 0.0, 0.0 ]
-						dimensions = [ 252.0, 112.0, 68.0 ]
+						filename = "models/burnt_car_wreck.fbx"
+						import_scale = 1.0
 					},
 				]
 			},

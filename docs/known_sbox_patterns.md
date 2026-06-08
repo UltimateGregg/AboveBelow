@@ -393,6 +393,19 @@ Body.Gravity = false;  // Custom hover physics
 - Playtest in the editor with an animation or body parameter moving the citizen or human. Unattached jiggle bones can fall away during play, and bad anchors show up as pivot drift or stretching.
 - Route future work through `.agents\sbox\jigglebone-cosmetic-agent.md`, then run `scripts\agents\run_agent_checks.ps1 -Suite modeldoc` and `-Suite asset-production` before final editor proof.
 
+### Animated Model Import
+
+**Pattern:** Animated Blender/FBX/VMDL assets need editor-first playback proof before gameplay wiring. A generated VMDL proves the model document exists; it does not prove imported clips are visible to S&Box, playable in AnimGraph tooling, or connected to the owning component.
+
+**Workflow:**
+- Start with `.agents\sbox\editor-first-workflow-agent.md`, check the live editor control plane, and inspect ModelDoc or AnimGraph tooling before static file edits when the editor is available.
+- Open the generated VMDL or AnimGraph surface and play each imported clip by name. Record the clip names checked in the handoff.
+- Use `SkinnedModelRenderer.Sequence` with `UseAnimGraph` disabled for simple direct sequence playback.
+- Use AnimGraph parameters, `Parameters.Set`, a state machine, or a 1D blendspace for locomotion and stateful character animation.
+- Use `AnimGraphDirectPlayback` or `Parameters.Set` bool triggers for one-shot actions such as attack, reload, deploy, death, or hit reactions.
+- For first-person animation, inspect `FirstPersonViewmodel` first; it already owns stock animation drivers, custom visual copies, `Parameters.Set`, and hand IK.
+- Route future work through `.agents\sbox\animated-model-intake-agent.md`, then run `scripts\agents\animated_model_intake_audit.ps1 -ShowInfo` or `scripts\agents\run_agent_checks.ps1 -Suite animated-model -ShowInfo`.
+
 ## Event & Callback Quirks
 
 ### Memory Leaks from Event Subscriptions
@@ -585,6 +598,17 @@ public void TakeDamage(DamageInfo info)
 - For live editor scenes, set the override on the currently loaded object with the bridge and then save only after confirming no runtime transform drift is being persisted.
 - Check the live component with `component_get` and expect `MaterialOverride` to show as `Material:<name>` when the override is loaded.
 
+### Metallic Materials Render Black Without Reflections
+
+**Pattern:** A `complex.shader` material with `g_flMetalness` at or near `1.0` is a *pure* metal with no diffuse albedo, so it shows **only** environment reflections. In scene areas without reflection-probe / strong ambient-specular coverage (open terrain, plateaus), those surfaces render solid black while dielectric materials (metalness 0) right next to them light normally. This is the usual cause of "the silver/steel parts of my prop are black in-game."
+
+**Workflow:**
+- Keep prop "metal" materials at **partial** metalness, not `1.0`. Every working metal in this project does: `materials/arena/metal_pad.vmat` 0.30, `materials/environment/watertower_roof.vmat` 0.25, `materials/environment/watertower_tank.vmat` 0.65. Partial metalness retains enough dielectric diffuse to catch sun/ambient light and stay visible everywhere.
+- Suggested ranges by look: matte cast iron / painted metal `0.25–0.40` (roughness `0.6–0.8`); galvanized / brushed steel `0.45–0.55` (roughness `0.5–0.6`); polished metal `0.6–0.7` (roughness `0.25–0.35`). Reserve `>0.8` only for surfaces with guaranteed reflection-probe coverage.
+- The scalar form (`TextureColor` + `g_flMetalness`/`g_flRoughness`, no normal/rough/AO textures) is fine for flat-color props — `metal_pad` and `watertower_roof` use exactly that. The black comes from the metalness value, not the missing maps.
+- After editing a `.vmat`, delete its compiled `Assets/.../<name>.vmat_c` to force a clean recompile; the editor regenerates it on viewport focus.
+- Campstove fix (2026-06): steel grate/burner/tank were authored at metalness `1.0` and rendered black on the plateau; dropped to `0.50`/`0.35`/`0.65` to match the project convention.
+
 ### Editor-Native Cover Props
 
 **Pattern:** Small tactical cover made from S&Box editor primitives should stay scene-native when the user asks for a fast map prop and explicitly avoids Blender.
@@ -725,7 +749,7 @@ public void TakeDamage(DamageInfo info)
 **Pattern:** Scene-authored composed props should become prefab instances once their visual, solid collision, trigger, and helper children settle into a reusable contract. The prefab owns the child graph; the scene instance owns only placement.
 
 **Workflow:**
-- `Assets/prefabs/environment/WaterTower.prefab` owns the tower visual, solid tank/platform/leg/brace collision, ladder trigger, `LadderVolume`, and `SelectedHierarchyColliderViewer`.
+- `Assets/prefabs/environment/WaterTower.prefab` owns the tower visual, static `ModelCollider` mesh collision on the `Visual` child, ladder trigger, `LadderVolume`, and `SelectedHierarchyColliderViewer`.
 - `Assets/prefabs/environment/burnt_car_wreck.prefab` owns the destroyed pickup's 60 primitive child pieces. `CenterLane_DestroyedPickup_North` should be a scene prefab instance that overrides the root name and transform, not a hand-expanded scene group.
 - `Assets/prefabs/environment/house_large_playable.prefab`, `Assets/prefabs/environment/house_small_playable.prefab`, and `Assets/prefabs/environment/house_small_collision_playable.prefab` own the playable house visual, solid collision, ladder, and `Zone_*` helper child contracts. `House_Large_01`, `House_Large_02`, `House_Small_01`, `House_Small_02`, `House_Small_03`, and `House_Small_04` should be scene prefab instances that override placement and any per-placement `Model_Visual` offset/scale instead of hand-expanded scene groups.
 - `Assets/prefabs/environment/road_sandbag_cover_mid.prefab` owns the 18 solid sandbag bodies for the road cover. `RoadSandbagCover_Mid` should be a scene prefab instance after the spacing and height checks pass.
@@ -802,13 +826,13 @@ public void TakeDamage(DamageInfo info)
 
 ### Authored Prop Collision Alignment
 
-**Pattern:** A prop can look correctly rotated while its collision still uses an older transform if the visible `Visual` child is rotated locally and sibling `Collision_*` children remain unrotated. The water tower reproduced this: the rendered mesh had the new yaw, but tank/platform/leg collision still lived under the parent root's old yaw.
+**Pattern:** A prop can look correctly rotated while helper volumes still use an older transform if the visible `Visual` child is rotated locally and sibling trigger/helper children remain unrotated. The water tower originally reproduced this with hand-authored tank/platform/leg collision; the current contract uses a `ModelCollider` on `Visual` for body collision and keeps only trigger/helper volumes as siblings.
 
 **Workflow:**
-- Keep visible mesh, solid collision, ladder triggers, and helper volumes under a shared prop root.
-- Rotate or move the prop root for scene placement. Do not rotate the `Visual` child to orient a prop that has sibling `Collision_*` children.
+- Keep visible mesh collision, ladder triggers, and helper volumes under a shared prop root.
+- Rotate or move the prop root for scene placement. Do not rotate the `Visual` child to orient a prop that has sibling trigger/helper children.
 - For buildings, evaluate collision on the house/building root, not just the selected `Model_Visual` child. `Model_Visual` can remain renderer-only when sibling `Collision_*` children under the root provide the floors, walls, roof, stairs, and cover collision.
-- For open-base props like the water tower, do not fill empty visual space with broad frame wall colliders. Keep tank/platform/legs solid, keep ladder volumes as triggers, and only add narrow brace collision when it matches visible geometry.
+- For open-base props like the water tower, do not fill empty visual space with broad frame wall colliders. Use mesh collision through `ModelCollider` for the visible body and keep ladder volumes as triggers.
 - For climbable props, keep ladder volumes as trigger colliders with `LadderVolume`; keep physical blockers as non-trigger `BoxCollider` children.
 - Scene-placed environment Blender models should not silently remain non-solid. If a local model from `environment_model.blend` is placed directly in `main.scene`, add a direct `BoxCollider`, a `Collision_*` child, or sibling `Collision_*` helpers under the same prop root. Use narrow trunk blockers for trees and low body blockers for rocks instead of broad leaf or scenery volumes.
 - After Save As or MCP scene edits, verify both saved JSON and the live editor hierarchy. The editor can keep a stale in-memory scene even after the file is patched.

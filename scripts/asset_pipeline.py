@@ -292,6 +292,73 @@ def write_physics_shape_list(physics_shapes: list[dict[str, Any]] | None) -> str
 """.rstrip()
 
 
+def write_physics_mesh_list(
+    collision_filename: str,
+    surface_prop: str = "default",
+    collision_tags: str = "solid",
+    import_scale: float = 1.0,
+) -> str:
+    # EXACT mesh collision. The PhysicsMeshFile node MUST be a child of a
+    # PhysicsShapeList -- placed directly under RootNode the model compiler
+    # SILENTLY ignores it (no error, zero collision). See docs/collision_authoring.md.
+    return f"""
+\t\t\t{{
+\t\t\t\t_class = "PhysicsShapeList"
+\t\t\t\tchildren =
+\t\t\t\t[
+\t\t\t\t\t{{
+\t\t\t\t\t\t_class = "PhysicsMeshFile"
+\t\t\t\t\t\tname = "collision"
+\t\t\t\t\t\tparent_bone = ""
+\t\t\t\t\t\tsurface_prop = "{modeldoc_string(surface_prop)}"
+\t\t\t\t\t\tcollision_tags = "{modeldoc_string(collision_tags)}"
+\t\t\t\t\t\tfilename = "{collision_filename}"
+\t\t\t\t\t\timport_scale = {modeldoc_number(import_scale)}
+\t\t\t\t\t}},
+\t\t\t\t]
+\t\t\t}},
+""".rstrip()
+
+
+def resolve_physics_block(
+    collision: Any,
+    fbx_resource_path: str,
+    physics_shapes: list[dict[str, Any]] | None,
+) -> str:
+    """Decide the vmdl physics block from a `collision` config dict.
+
+    Modes (see docs/collision_authoring.md):
+      - "render_mesh"   : exact mesh collision from the model's own render FBX
+                          (everything solid). The default and right answer for
+                          most props.
+      - "collision_mesh": exact mesh collision from a separate FBX (use this to
+                          make a part hollow, e.g. a climb-through ladder); set
+                          "filename" to that FBX resource path.
+      - "primitives"    : hand-authored PhysicsShape* primitives ("shapes" here
+                          or the legacy top-level "physics_shapes").
+      - "none"          : no collision baked into the model.
+    With no `collision` block, falls back to legacy `physics_shapes` primitives.
+    """
+    if isinstance(collision, dict):
+        mode = str(collision.get("mode", "render_mesh")).lower()
+        surface_prop = collision.get("surface_prop", "default")
+        collision_tags = collision.get("collision_tags", "solid")
+        import_scale = float(collision.get("import_scale", 1.0))
+        if mode in ("none", "off", ""):
+            return ""
+        if mode in ("primitives", "shapes"):
+            return write_physics_shape_list(collision.get("shapes") or physics_shapes)
+        if mode in ("render_mesh", "mesh", "model"):
+            return write_physics_mesh_list(fbx_resource_path, surface_prop, collision_tags, import_scale)
+        if mode in ("collision_mesh", "mesh_file"):
+            filename = collision.get("filename")
+            if not filename:
+                raise ValueError('collision mode "collision_mesh" requires a "filename" (resource path of the collision FBX)')
+            return write_physics_mesh_list(str(filename), surface_prop, collision_tags, import_scale)
+        raise ValueError(f'Unknown collision mode "{mode}" (use render_mesh | collision_mesh | primitives | none)')
+    return write_physics_shape_list(physics_shapes)
+
+
 def write_vmdl(
     path: Path,
     fbx_resource_path: str,
@@ -301,6 +368,7 @@ def write_vmdl(
     global_default_material: str = "materials/default.vmat",
     import_scale: float = 1.0,
     physics_shapes: list[dict[str, Any]] | None = None,
+    collision: Any = None,
 ) -> None:
     remaps = material_remaps or {}
     import_scale_text = str(float(import_scale))
@@ -316,7 +384,7 @@ def write_vmdl(
 """.rstrip()
         )
     remap_text = "\n".join(remap_blocks)
-    physics_shape_text = write_physics_shape_list(physics_shapes)
+    physics_shape_text = resolve_physics_block(collision, fbx_resource_path, physics_shapes)
 
     path.write_text(
         f"""<!-- kv3 encoding:text:version{{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d}} format:modeldoc29:version{{3cec427c-1b0e-4d48-a90a-0436f33a6041}} -->
@@ -688,6 +756,7 @@ def update_vmdl(args: argparse.Namespace, root: Path, fbx_resource_path: str) ->
         args.vmdl_global_default_material,
         args.vmdl_import_scale,
         getattr(args, "physics_shapes", None),
+        getattr(args, "collision", None),
     )
     print(f"Updated model document: {target_vmdl}")
 

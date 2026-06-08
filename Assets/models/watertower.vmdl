@@ -73,67 +73,13 @@
 				children =
 				[
 					{
-						_class = "PhysicsShapeCylinder"
+						_class = "PhysicsMeshFile"
+						name = "collision"
 						parent_bone = ""
 						surface_prop = "metal"
 						collision_tags = "solid"
-						radius = 8.25
-						point0 = [ 0.0, 0.0, 14.625 ]
-						point1 = [ 0.0, 0.0, 20.375 ]
-					},
-					{
-						_class = "PhysicsShapeCylinder"
-						parent_bone = ""
-						surface_prop = "metal"
-						collision_tags = "solid"
-						radius = 7.5
-						point0 = [ 0.0, 0.0, 20.125 ]
-						point1 = [ 0.0, 0.0, 22.125 ]
-					},
-					{
-						_class = "PhysicsShapeCylinder"
-						parent_bone = ""
-						surface_prop = "metal"
-						collision_tags = "solid"
-						radius = 9.5
-						point0 = [ 0.0, 0.0, 13.325 ]
-						point1 = [ 0.0, 0.0, 14.175 ]
-					},
-					{
-						_class = "PhysicsShapeBox"
-						parent_bone = ""
-						surface_prop = "metal"
-						collision_tags = "solid"
-						origin = [ -6.375, 6.375, 6.5 ]
-						angles = [ 0.0, 0.0, 0.0 ]
-						dimensions = [ 0.9, 0.9, 13.0 ]
-					},
-					{
-						_class = "PhysicsShapeBox"
-						parent_bone = ""
-						surface_prop = "metal"
-						collision_tags = "solid"
-						origin = [ 6.375, 6.375, 6.5 ]
-						angles = [ 0.0, 0.0, 0.0 ]
-						dimensions = [ 0.9, 0.9, 13.0 ]
-					},
-					{
-						_class = "PhysicsShapeBox"
-						parent_bone = ""
-						surface_prop = "metal"
-						collision_tags = "solid"
-						origin = [ -6.375, -6.375, 6.5 ]
-						angles = [ 0.0, 0.0, 0.0 ]
-						dimensions = [ 0.9, 0.9, 13.0 ]
-					},
-					{
-						_class = "PhysicsShapeBox"
-						parent_bone = ""
-						surface_prop = "metal"
-						collision_tags = "solid"
-						origin = [ 6.375, -6.375, 6.5 ]
-						angles = [ 0.0, 0.0, 0.0 ]
-						dimensions = [ 0.9, 0.9, 13.0 ]
+						filename = "models/watertower.fbx"
+						import_scale = 1.0
 					},
 				]
 			},

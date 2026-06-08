@@ -500,26 +500,29 @@ function Test-WaterTowerCollisionContract {
         return
     }
 
-    $required = @(
-        "Collision_Tank",
-        "Collision_Roof",
-        "Collision_Platform",
-        "Collision_Leg_NorthWest",
-        "Collision_Leg_NorthEast",
-        "Collision_Leg_SouthWest",
-        "Collision_Leg_SouthEast",
-        "Collision_Ladder"
-    )
+    # New methodology: body collision is a single ModelCollider (mesh) on the
+    # Visual child -- NOT per-part Collision_* boxes. See docs/collision_authoring.md.
+    if (-not (Test-ObjectHasCollisionCoverage -Object $Object)) {
+        Add-AgentIssue $issues "Error" "Water Tower Collision" $Path "$ObjectPath has no collider coverage." "Put a ModelCollider (Model=models/watertower.vmdl, Static=true) on the Visual child. See docs/collision_authoring.md."
+    }
 
     $children = @(Get-ObjectChildren -Object $Object)
-    foreach ($requiredName in $required) {
-        $child = @($children | Where-Object {
-            (Get-JsonPropertyValue -Object $_ -Name "Name") -eq $requiredName
-        }) | Select-Object -First 1
 
-        if ($null -eq $child) {
-            Add-AgentIssue $issues "Error" "Water Tower Collision" $Path "$ObjectPath is missing '$requiredName'." "Keep the water tower tank, roof, platform, legs, and ladder collision authored as children of the WaterTower root."
-        }
+    # Ladder climb volume must still exist as a trigger BoxCollider + LadderVolume.
+    $ladder = @($children | Where-Object {
+        (Get-JsonPropertyValue -Object $_ -Name "Name") -eq "Collision_Ladder"
+    }) | Select-Object -First 1
+    if ($null -eq $ladder) {
+        Add-AgentIssue $issues "Warning" "Water Tower Collision" $Path "$ObjectPath is missing 'Collision_Ladder'." "Keep the ladder climb volume (trigger BoxCollider + DroneVsPlayers.LadderVolume)."
+    }
+
+    # Guard against regressing to hand-placed per-part body boxes.
+    $bodyBoxes = @($children | Where-Object {
+        $n = Get-JsonPropertyValue -Object $_ -Name "Name"
+        $n -and $n -match "^Collision_(Tank|Roof|Platform|Leg|Bracing|Frame)"
+    })
+    if ($bodyBoxes.Count -gt 0) {
+        Add-AgentIssue $issues "Warning" "Water Tower Collision" $Path "$ObjectPath has $($bodyBoxes.Count) per-part body collider child(ren) (e.g. Collision_Tank/Leg)." "Body collision is a ModelCollider mesh now; remove per-part body boxes. See docs/collision_authoring.md."
     }
 }
 
@@ -656,6 +659,38 @@ function Test-CollisionFile {
     }
 }
 
+function Test-VmdlMeshCollisionNesting {
+    param([string]$Root)
+
+    $modelsDir = Join-Path $Root "Assets\models"
+    if (-not (Test-Path -LiteralPath $modelsDir)) {
+        return
+    }
+
+    foreach ($vmdl in Get-ChildItem -LiteralPath $modelsDir -Recurse -File -Filter "*.vmdl" -ErrorAction SilentlyContinue) {
+        $text = Get-Content -LiteralPath $vmdl.FullName -Raw
+        if ($text -notmatch "PhysicsMeshFile|PhysicsHullFile") {
+            continue
+        }
+
+        $relative = ConvertTo-AgentRelativePath -Path $vmdl.FullName -Root $Root
+        $script:scannedFileCount++
+
+        $indices = @()
+        $mi = $text.IndexOf("PhysicsMeshFile"); if ($mi -ge 0) { $indices += $mi }
+        $hi = $text.IndexOf("PhysicsHullFile"); if ($hi -ge 0) { $indices += $hi }
+        $fileIndex = ($indices | Measure-Object -Minimum).Minimum
+        $shapeListIndex = $text.IndexOf("PhysicsShapeList")
+
+        if ($shapeListIndex -lt 0 -or $shapeListIndex -gt $fileIndex) {
+            Add-AgentIssue $issues "Error" "Model Collision" $relative "vmdl has a PhysicsMeshFile/PhysicsHullFile that is not nested inside a PhysicsShapeList." "Wrap file-physics nodes in PhysicsShapeList -- otherwise the model compiler SILENTLY ignores them (zero collision, no error). See docs/collision_authoring.md."
+        }
+        else {
+            Add-AgentIssue $issues "Info" "Model Collision" $relative "vmdl uses mesh collision (PhysicsMeshFile inside PhysicsShapeList)." "Mesh collision; pair with a ModelCollider on the renderer object."
+        }
+    }
+}
+
 Write-AgentSection "Collision Authoring Agent"
 Write-Host "Root: $Root"
 $environmentBlenderCollisionModels = Get-EnvironmentBlenderCollisionModels -Root $Root
@@ -669,6 +704,7 @@ else {
     foreach ($file in $files) {
         Test-CollisionFile -File $file
     }
+    Test-VmdlMeshCollisionNesting -Root $Root
 }
 
 Add-AgentIssue $issues "Info" "Collision Authoring" "" "Scanned $scannedFileCount scene/prefab file(s), $collisionObjectCount Collision_* object(s), and $buildingObjectCount building object(s)."

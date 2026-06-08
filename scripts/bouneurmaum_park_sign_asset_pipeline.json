@@ -1,0 +1,39 @@
+{
+  "source_blend": "environment_model.blend/bouneurmaum_park_sign.blend",
+  "root_object": "BouneurmaumParkSignRoot",
+  "target_fbx": "Assets/models/bouneurmaum_park_sign.fbx",
+  "target_vmdl": "Assets/models/bouneurmaum_park_sign.vmdl",
+  "model_resource_path": "models/bouneurmaum_park_sign.vmdl",
+  "prefab": "Assets/prefabs/environment/bouneurmaum_park_sign.prefab",
+  "visual_object": "Visual",
+  "visual_scale": "1,1,1",
+  "visual_tint": "1,1,1,1",
+  "clear_visual_children": false,
+  "verify_fbx": true,
+  "required_object": [
+    "BouneurmaumParkSignMesh"
+  ],
+  "object_type": [
+    "EMPTY",
+    "MESH"
+  ],
+  "combine_meshes": true,
+  "combined_object_name": "BouneurmaumParkSignMesh",
+  "material_remap": {
+    "BouneurmaumSignCream": "materials/environment/bouneurmaum_sign_cream.vmat",
+    "BouneurmaumSignDarkBrown": "materials/environment/bouneurmaum_sign_dark_brown.vmat",
+    "BouneurmaumSignWoodFace": "materials/environment/bouneurmaum_sign_wood_face.vmat"
+  },
+  "vmdl_material_source_suffix": "",
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
+  "allow_default_color_texture": false,
+  "global_scale": 1.0,
+  "axis_forward": "-Y",
+  "axis_up": "Z",
+  "collision": {
+    "mode": "render_mesh",
+    "surface_prop": "wood",
+    "collision_tags": "solid"
+  }
+}

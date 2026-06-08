@@ -317,7 +317,7 @@ public sealed class HitscanWeapon : Component
 	internal bool ApplySelectionVisualState()
 	{
 		var selected = IsSelected;
-		var visible = selected;
+		var visible = selected && !FirstPersonViewmodel.ShouldHideWorldHeldItem( this, selected );
 		WeaponPose.SetVisibility( GameObject, visible );
 		WeaponPose.ApplyHandPose( this, visible, HoldType, Handedness, LeftHandIkTarget, RightHandIkTarget );
 		if ( !selected )
@@ -347,12 +347,6 @@ public sealed class HitscanWeapon : Component
 			var flashObject = MuzzleSocket.Children.FirstOrDefault( x => x.Name == "MuzzleFlash" );
 			if ( flashObject.IsValid() )
 				MuzzleFlash = flashObject.Components.Get<PointLight>();
-		}
-
-		if ( WeaponVisual.IsValid() )
-		{
-			foreach ( var renderer in WeaponVisual.Components.GetAll<ModelRenderer>( FindMode.EverythingInSelfAndDescendants ) )
-				renderer.RenderType = ModelRenderer.ShadowRenderType.On;
 		}
 	}
 

@@ -140,6 +140,16 @@ $areaRules = @(
         Training = "If an asset roundtrip or quality target failed, make the brief, reference requirements, config, ModelDoc, material-slot, and visual-review path reproducible before accepting the asset."
     },
     [pscustomobject]@{
+        Name = "AnimatedAssets"
+        Patterns = @("*.blend", "*.blend.blend", "*_model.blend/*", "Assets/models/*.fbx", "Assets/models/*.vmdl", "Code/Player/FirstPersonViewmodel.cs", ".agents/sbox/animated-model-intake-agent.md", "scripts/agents/animated_model_intake_audit.ps1", "docs/known_sbox_patterns.md", "docs/sbox_engine_llm_reference.md", "docs/automation.md")
+        Checks = @(
+            "scripts/agents/run_agent_checks.ps1 -Suite animated-model -ShowInfo",
+            "scripts/agents/run_agent_checks.ps1 -Suite modeldoc -ShowInfo",
+            "scripts/agents/run_agent_checks.ps1 -Suite asset-production -ShowInfo"
+        )
+        Training = "Animated model imports should stay editor-first: prove clips in ModelDoc or AnimGraph tooling, then document the chosen Sequence, Parameters.Set, AnimGraphDirectPlayback, 1D blendspace, or state-machine path and protect it with animated_model_intake_audit.ps1."
+    },
+    [pscustomobject]@{
         Name = "Tooling"
         Patterns = @(".agents/*", ".codex/*", ".claude/*", "scripts/agents/*", "docs/agent_toolkit.md", "AGENTS.md")
         Checks = @(

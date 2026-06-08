@@ -94,6 +94,12 @@ The `.blend` save hook remains export-focused. Production quality gates are run 
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite asset-production
 ```
 
+Animated model imports need an extra editor-first proof step. The auto-export hook can produce FBX, VMDL, and prefab files, but it does not prove imported clips appear in ModelDoc or AnimGraph tooling, and it is not animation playback proof. Route animated assets through `animated-model-intake-agent.md`, open the VMDL or AnimGraph surface in the editor, play the clips, then run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite animated-model -ShowInfo
+```
+
 ## Documentation Hook: S&Box Engine/API Reference Check
 
 **Hook ID:** `sbox-engine-reference-check`
