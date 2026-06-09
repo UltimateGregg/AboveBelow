@@ -303,11 +303,11 @@ Before any editor-capable task:
 | **S&Box Learn tutorial intake** | `sbox-learn-intake-agent.md` | `powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_learn_intake_audit.ps1 -ShowInfo` |
 | **Post-task training & improvement** | `post-task-training-agent.md` | Type `train` to trigger; runs `scripts/agents/run_agent_checks.ps1 -Suite train` |
 
-Full routing table: see `.agents/sbox/README.md` (40+ agents listed with commands).
+Full routing table: see `.agents/sbox/README.md` (38 agents listed with commands).
 
 ### Automated Hooks
 
-Nine hooks in `.claude/settings.json` validate and prevent regressions:
+Eleven hooks in `.claude/settings.json` validate and prevent regressions:
 
 1. **`blend-auto-export`** — Triggers asset pipeline on any `.blend` save
 2. **`drone-control-regression-check`** — Validates drone input/pilot/HUD on file changes
@@ -318,6 +318,8 @@ Nine hooks in `.claude/settings.json` validate and prevent regressions:
 7. **`sbox-learn-intake-check`** — Validates Learn tutorial lessons
 8. **`sbox-release-notes-check`** — Routes release/API-change sweeps
 9. **`sbox-code-search-check`** — Validates public package adoption
+10. **`sbox-animated-model-check`** — Validates animated-model intake work
+11. **`sbox-collision-authoring-check`** — Routes collision authoring validation
 
 Hooks emit success/failure notifications. Check the output to confirm validation passed.
 
@@ -325,8 +327,8 @@ Hooks emit success/failure notifications. Check the output to confirm validation
 
 | File | Purpose |
 |------|---------|
-| `.claude/settings.json` | 9 automated hooks and their triggers |
-| `.agents/sbox/README.md` | Master routing table (40+ agents with commands) |
+| `.claude/settings.json` | 11 automated hooks and their triggers |
+| `.agents/sbox/README.md` | Master routing table (38 agents with commands) |
 | `.agents/sbox/editor-first-workflow-agent.md` | Default entry point for editor-capable work |
 | `docs/editor_control_plane.md` | MCP endpoint, tool domains, editor control flow |
 | `docs/agent_toolkit.md` | Comprehensive agent listing and quick-start |

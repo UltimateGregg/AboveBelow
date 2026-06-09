@@ -317,7 +317,7 @@ If all tests pass:
 4. Monitor server logs for issues
 
 If issues found:
-1. Check TEST_AND_IMPROVEMENTS.md for known issues
+1. Check docs/history/TEST_AND_IMPROVEMENTS.md for known issues
 2. Apply recommended fixes
 3. Re-run testing
 4. Document new issues found
