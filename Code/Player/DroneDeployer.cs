@@ -51,7 +51,6 @@ public sealed class DroneDeployer : Component
 	[Property] public Vector3 RightHandControllerIkFpOffset { get; set; } = new( -1.5f, -5f, 1f );
 	[Property] public Angles RightHandControllerIkFpRotation { get; set; } = new( 0f, 0f, 0f );
 	[Property] public bool UseVisualRelativeFirstPersonIkTargets { get; set; } = true;
-	[Property] public bool UsePilotBodyHands { get; set; } = true;
 
 	[Property] public Vector3 LeftHandTpLocalPos { get; set; } = new( 20f, 0f, 47f );
 	[Property] public Angles LeftHandTpLocalAngles { get; set; } = new( 0f, 0f, 0f );

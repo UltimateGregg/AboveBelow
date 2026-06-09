@@ -405,32 +405,21 @@ public sealed class GroundPlayerController : Component
 			ResolvePrefabReferences();
 		if ( !Body.IsValid() ) return;
 
-		var showPilotBodyHands = handsOnly && ShouldShowPilotBodyHands();
-		var hideBodyHands = handsOnly && UseLocalFirstPersonViewmodel && !showPilotBodyHands;
+		// In first person the local player's held items — weapons, grenades, and
+		// the pilot's drone controller — are drawn by FirstPersonViewmodel's stock
+		// arms, so the Citizen body and its hands are hidden when that viewmodel is
+		// active. (Remote players and third-person still see the full body and its
+		// Citizen hands gripping the held item via DroneDeployer.UpdateCitizenHands.)
+		var hideBodyHands = handsOnly && UseLocalFirstPersonViewmodel;
 		foreach ( var renderer in Body.Components.GetAll<SkinnedModelRenderer>( FindMode.EverythingInSelfAndDescendants ) )
 		{
 			renderer.RenderType = ModelRenderer.ShadowRenderType.On;
 			renderer.SetBodyGroup( "Head", handsOnly ? CitizenHeadHidden : CitizenBodyGroupVisible );
-			renderer.SetBodyGroup( "Chest", handsOnly && !showPilotBodyHands ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
+			renderer.SetBodyGroup( "Chest", handsOnly ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
 			renderer.SetBodyGroup( "Legs", handsOnly ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
 			renderer.SetBodyGroup( "Hands", hideBodyHands ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
 			renderer.SetBodyGroup( "Feet", handsOnly ? CitizenBodyGroupHidden : CitizenBodyGroupVisible );
 		}
-	}
-
-	bool ShouldShowPilotBodyHands()
-	{
-		var remote = Components.Get<RemoteController>();
-		if ( remote.IsValid() && remote.DroneViewActive )
-			return false;
-
-		foreach ( var deployer in Components.GetAll<DroneDeployer>( FindMode.EverythingInSelfAndDescendants ) )
-		{
-			if ( deployer.IsValid() && deployer.IsSelected && deployer.UsePilotBodyHands )
-				return true;
-		}
-
-		return false;
 	}
 
 	void EnsureLocalFirstPersonViewmodel()

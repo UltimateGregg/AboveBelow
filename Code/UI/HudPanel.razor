@@ -1062,7 +1062,7 @@
             return new LoadoutSlot(
                 1,
                 string.IsNullOrWhiteSpace( definition?.PrimaryLabel ) ? "Drone Jammer" : definition.PrimaryLabel,
-                $"{jammer.MaxRange / 1000f:0.0}k range / cone",
+                $"{jammer.MaxRange / 1000f:0.0}k range / {jammer.BatteryChargeFraction * 100f:0}% battery",
                 "LMB"
             );
         }
@@ -1401,6 +1401,15 @@
 
     int CurrentWeaponBloomBucket => Math.Clamp( (int)MathF.Ceiling( CurrentWeaponBloom * 2f ), 0, 8 );
 
+    int JammerBatteryBucket
+    {
+        get
+        {
+            var jammer = LocalSoldierComponent<DroneJammerGun>();
+            return jammer.IsValid() ? Math.Clamp( (int)MathF.Ceiling( jammer.BatteryChargeFraction * 20f ), 0, 20 ) : -1;
+        }
+    }
+
     bool LocalDroneViewActive
     {
         get
@@ -1632,7 +1641,8 @@
                     rifleAmmoWeapon.IsValid() ? rifleAmmoWeapon.AmmoReserve : -1,
                     shotgunAmmoWeapon.IsValid() ? shotgunAmmoWeapon.AmmoInMagazine : -1,
                     shotgunAmmoWeapon.IsValid() ? shotgunAmmoWeapon.AmmoReserve : -1,
-                    CurrentWeaponBloomBucket
+                    CurrentWeaponBloomBucket,
+                    JammerBatteryBucket
                 ),
                 LocalOptionsState.UiScalePercent,
                 (int)(LocalOptionsState.LookSensitivity * 100f),

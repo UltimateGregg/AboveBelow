@@ -21,7 +21,7 @@
 
 							{
 								from = "M_LogCabinDoor_Wood"
-								to = "materials/shotgun_wood.vmat"
+								to = "materials/environment/log_cabin_plank.vmat"
 							},
 						]
 						use_global_default = false

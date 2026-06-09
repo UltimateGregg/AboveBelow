@@ -73,9 +73,12 @@ Test-RequiredText -Path "Assets/prefabs/effects/jammer_beam.prefab" `
         '"__type"\s*:\s*"Sandbox\.ParticleEffect"',
         '"__type"\s*:\s*"Sandbox\.ParticleConeEmitter"',
         '"__type"\s*:\s*"Sandbox\.ParticleSpriteRenderer"',
-        '"PrimaryTexturePath"\s*:\s*"textures/beams/beam_noise05\.vtex"'
+        '"PrimaryTexturePath"\s*:\s*"textures/beams/beam_noise05\.vtex"',
+        '"Tint"\s*:\s*"1,1,1,0\.[0-9]+"',
+        '"Additive"\s*:\s*false',
+        '"LocalSpace"\s*:\s*1'
     ) `
-    -Recommendation "Create a reusable wavy jammer cone prefab and keep DroneJammerGun visuals prefab-backed with a procedural particle fallback."
+    -Recommendation "Keep the reusable jammer cone prefab faint white, non-additive, local-space, and prefab-backed with a procedural particle fallback."
 
 Test-RequiredText -Path "Assets/prefabs/effects/detached_fiber_cable.prefab" `
     -Area "Transient Combat Prefab" `
@@ -154,9 +157,15 @@ Test-RequiredText -Path "Code/Player/DroneJammerGun.cs" `
         'prefabs/effects/jammer_beam\.prefab',
         'GameObject\.GetPrefab',
         'Components\.Get<JammerConeVisual>',
-        'Configure\( origin, forward, MaxRange, ConeHalfAngle, BeamVisualColor, true \)'
+        'Configure\( origin, forward, MaxRange, ConeHalfAngle, BeamVisualColor, true \)',
+        'BatteryDrainSeconds',
+        'BatteryRechargeSeconds',
+        'BatteryChargeFraction',
+        'UpdateBatteryCharge',
+        'Time\.Delta\s*/\s*MathF\.Max\( 0\.1f, BatteryDrainSeconds \)',
+        'Time\.Delta\s*/\s*MathF\.Max\( 0\.1f, BatteryRechargeSeconds \)'
     ) `
-    -Recommendation "Spawn jammer cone visuals from the reusable prefab first, with the existing code-built fallback for resilience."
+    -Recommendation "Spawn jammer cone visuals from the reusable prefab first, gate firing through a 4-second battery, and recharge when not firing."
 
 Test-RequiredText -Path "Code/Player/JammerConeVisual.cs" `
     -Area "Transient Combat Code" `
@@ -166,11 +175,24 @@ Test-RequiredText -Path "Code/Player/JammerConeVisual.cs" `
         'ParticleSpriteRenderer',
         'textures/beams/beam_noise05\.vtex',
         'EmitConeParticles',
+        'Color\( 1f, 1f, 1f',
+        'Additive = false',
+        'LocalSpace = 1f',
+        'MaxSteadyParticles',
         '\.Emit\( position, Time\.Delta \)',
         'Texture\.Load',
         'Sprite\.FromTexture'
     ) `
-    -Recommendation "Keep the jammer cone visual as a reusable typed particle component with stock wavy texture fallbacks."
+    -Recommendation "Keep the jammer cone visual as a reusable faint white typed particle component with steady local-space emission and stock wavy texture fallbacks."
+
+Test-RequiredText -Path "Code/UI/HudPanel.razor" `
+    -Area "Transient Combat UI" `
+    -Patterns @(
+        'BatteryChargeFraction',
+        'battery',
+        'JammerBatteryBucket'
+    ) `
+    -Recommendation "Surface jammer battery charge in the existing loadout HUD and include a quantized battery bucket in BuildHash."
 
 Test-RequiredText -Path "Code/Drone/FiberCable.cs" `
     -Area "Transient Combat Code" `

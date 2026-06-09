@@ -134,6 +134,22 @@ If you swap the arms model, keep the mesh extending in the +X direction with ori
 
 ## Collision authoring (mesh-based) — the default for props/buildings
 
+> **STANDING RULE — collision + physics are part of "making a model," always.**
+> Whenever you create or export *any* model (prop, building, weapon, door, decor —
+> anything that becomes a `.vmdl`), you own its collision and physics by default.
+> Do not wait to be asked and do not hand it back "visual only." Every new model
+> ships with: (1) a `collision` block in its `scripts/<name>_asset_pipeline.json`
+> (`render_mesh` for solid non-deforming props; `collision_mesh`/`primitives` only
+> for the documented exceptions), and (2) a prefab whose Visual carries a
+> `ModelCollider` (`Static = true` for things that never move; `Static = false` for
+> script/physics-driven movers like doors). Verify `ModelCollider.LocalBounds` is
+> non-zero and matches the renderer before calling the model done. The only time
+> you skip collision is when the user explicitly says the model is decoration with
+> no collision — and you call that out in your summary. If a model is genuinely a
+> physics body (it moves, falls, or is pushed), give it the matching `Rigidbody` /
+> joint setup too; a static keyframed mover (door) needs a non-static collider, not
+> a `Rigidbody`.
+
 Give a model **exact 1:1 collision** that can't drift: bake a triangle mesh into
 the `.vmdl` and reference it with a `ModelCollider`. Full guide:
 [`docs/collision_authoring.md`](docs/collision_authoring.md). The `WaterTower`
@@ -514,3 +530,4 @@ For each new building:
 - Don't change `AGENTS.md` content without flagging it — that's the legacy source of truth.
 - Don't mix recoil into `EyeAngles` — that's the aim source. Use `_recoilOffset` for camera display only (see `GroundPlayerController.AddRecoil`).
 - Don't subscribe to `Health.OnDamaged` / `OnKilled` from a `Component` without storing the handler reference if you ever need to unsubscribe (`KillFeedTracker` and `HudPanel` both manage this — copy their pattern).
+- Don't ship a new/exported model "visual only." Collision + physics are part of making a model — see the **STANDING RULE** under [Collision authoring](#collision-authoring-mesh-based--the-default-for-propsbuildings). Skip collision only when the user explicitly says it's decoration, and flag it in your summary.

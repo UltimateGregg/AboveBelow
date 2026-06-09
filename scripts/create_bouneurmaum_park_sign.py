@@ -230,7 +230,7 @@ def create_prism(
     faces: list[list[int]] = [list(range(n)), list(reversed(range(n, n * 2)))]
     for i in range(n):
         j = (i + 1) % n
-        faces.append([i, j, j + n, i + n])
+        faces.append([i, i + n, j + n, j])
 
     mesh = bpy.data.meshes.new(f"{name}Mesh")
     mesh.from_pydata(vertices, [], faces)

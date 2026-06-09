@@ -6,13 +6,13 @@
   "combine_meshes": true,
   "combined_object_name": "LogCabinMesh",
   "material_remap": {
-    "M_LogCabin_Logs": "materials/shotgun_wood.vmat",
-    "M_LogCabin_Floor": "materials/environment/house_small_interior_wood.vmat",
-    "M_LogCabin_Stone": "materials/arena/concrete_wall.vmat",
-    "M_LogCabin_Roof": "materials/environment/house_small_roof.vmat",
-    "M_LogCabin_Gable": "materials/environment/house_small_siding.vmat",
-    "M_LogCabin_Trim": "materials/shotgun_wood.vmat",
-    "M_LogCabin_Glass": "materials/environment/house_small_glass.vmat"
+    "M_LogCabin_Logs": "materials/environment/log_cabin_logs.vmat",
+    "M_LogCabin_Floor": "materials/environment/log_cabin_floor.vmat",
+    "M_LogCabin_Stone": "materials/environment/log_cabin_stone.vmat",
+    "M_LogCabin_Roof": "materials/environment/log_cabin_shingle.vmat",
+    "M_LogCabin_Gable": "materials/environment/log_cabin_plank.vmat",
+    "M_LogCabin_Trim": "materials/environment/log_cabin_logs.vmat",
+    "M_LogCabin_Glass": "materials/environment/log_cabin_glass.vmat"
   },
   "vmdl_material_source_suffix": "",
   "vmdl_use_global_default": false,

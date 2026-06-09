@@ -9,13 +9,16 @@ Thumbs.db
 
 # Local agent/editor state
 .codex-tmp/
+.codex-remote-attachments/
 .superpowers/
 .tmp/
 .tmpbuild/
 .sbox/
 **/.sbox/
 .claude/settings.local.json
+.claude/scheduled_tasks.lock
 .mcp.json
+scripts/_preview/
 
 # Generated or bulky local artifacts
 api schema.json

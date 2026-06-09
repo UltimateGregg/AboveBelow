@@ -49,7 +49,7 @@ Pilots also have a ground avatar:
 | Soldier | Current Prefab | Current Role | Key Existing Values |
 |---------|----------------|--------------|---------------------|
 | Assault | `Assets/prefabs/soldier_assault.prefab` | Rifle generalist with quick anti-drone cover | 100 HP, rifle 18 damage every 0.08 s, chaff 600 radius / 3 s jam |
-| Counter-UAV | `Assets/prefabs/soldier_counter_uav.prefab` | Directional anti-RF specialist | 100 HP, jammer 4000 range / 12 degree cone, frag 320 radius / 130 damage |
+| Counter-UAV | `Assets/prefabs/soldier_counter_uav.prefab` | Directional anti-RF specialist | 100 HP, jammer 4000 range / 12 degree cone / 4 s battery, frag 320 radius / 130 damage |
 | Heavy | `Assets/prefabs/soldier_heavy.prefab` | Tanky close-range area denial | 150 HP, shotgun 8 x 9 damage, EMP 1100 radius / 6 s jam, slower movement |
 
 ## Core Counter Triangle
@@ -195,7 +195,8 @@ Use existing systems:
 Recommended next tuning:
 - Jammer should be narrow and readable: 12 degree cone is a good start.
 - Keep range high enough to contest GPS: 4000 is a reasonable first value.
-- Add strong beam/cone VFX before adding damage. The drone pilot needs to understand why control dropped.
+- Keep the jammer cone readable but not blinding; use a faint white cone and battery gating before adding damage.
+- Battery should deplete after about 4 seconds of continuous fire and recharge after release so Counter-UAV cannot hold permanent sky denial.
 - Do not make the jammer damage Fiber; that would remove Fiber's main purpose.
 
 Asset direction:

@@ -26,14 +26,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Analyzer Include="../../sbox-public/game/bin/managed/Sandbox.CodeUpgrader.dll"/>
-		<Analyzer Include="../../sbox-public/game/bin/managed/Sandbox.Generator.dll"/>
-		<Reference Include="../../sbox-public/game/bin/managed/Sandbox.System.dll"/>
-		<Reference Include="../../sbox-public/game/bin/managed/Sandbox.Engine.dll"/>
-		<Reference Include="../../sbox-public/game/bin/managed/Sandbox.Filesystem.dll"/>
-		<Reference Include="../../sbox-public/game/bin/managed/Sandbox.Reflection.dll"/>
-		<Reference Include="../../sbox-public/game/bin/managed/Sandbox.Mounting.dll"/>
-		<Reference Include="../../sbox-public/game/bin/managed/Microsoft.AspNetCore.Components.dll"/>
+		<Analyzer Include="../../sbox-public/game/bin/managed/Sandbox.CodeUpgrader.dll"/> 
+		<Analyzer Include="../../sbox-public/game/bin/managed/Sandbox.Generator.dll"/> 
+		<Reference Include="../../sbox-public/game/bin/managed/Sandbox.System.dll"/> 
+		<Reference Include="../../sbox-public/game/bin/managed/Sandbox.Engine.dll"/> 
+		<Reference Include="../../sbox-public/game/bin/managed/Sandbox.Filesystem.dll"/> 
+		<Reference Include="../../sbox-public/game/bin/managed/Sandbox.Reflection.dll"/> 
+		<Reference Include="../../sbox-public/game/bin/managed/Sandbox.Mounting.dll"/> 
+		<Reference Include="../../sbox-public/game/bin/managed/Microsoft.AspNetCore.Components.dll"/> 
 	</ItemGroup>
 
 	<ItemGroup>

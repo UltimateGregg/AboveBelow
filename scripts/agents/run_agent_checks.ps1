@@ -284,6 +284,7 @@ switch ($Suite) {
             @{ Name = "drone_propeller_spin_audit.ps1"; Args = $commonArgs },
             @{ Name = "drone_variant_visual_audit.ps1"; Args = $commonArgs },
             @{ Name = "drone_fpv_propeller_texture_audit.ps1"; Args = $commonArgs },
+            @{ Name = "park_sign_normals_audit.ps1"; Args = $commonArgs },
             @{ Name = "fbx_material_slot_audit.ps1"; Args = $commonArgs }
         )
     }
@@ -305,6 +306,7 @@ switch ($Suite) {
             @{ Name = "drone_propeller_spin_audit.ps1"; Args = $commonArgs },
             @{ Name = "drone_variant_visual_audit.ps1"; Args = $commonArgs },
             @{ Name = "drone_fpv_propeller_texture_audit.ps1"; Args = $commonArgs },
+            @{ Name = "park_sign_normals_audit.ps1"; Args = $commonArgs },
             @{ Name = "modeldoc_audit.ps1"; Args = $commonArgs },
             @{ Name = "model_collision_scale_audit.ps1"; Args = $commonArgs },
             @{ Name = "animated_model_intake_audit.ps1"; Args = $commonArgs },

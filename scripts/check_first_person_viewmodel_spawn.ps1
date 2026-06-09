@@ -342,6 +342,14 @@ Require-Pattern $viewmodel 'Parameters\.Set\s*\(' "Stock viewmodels must receive
 Require-Pattern $viewmodel 'FindSelectedHeldItem' "FirstPersonViewmodel must choose the currently selected held item."
 Require-Pattern $viewmodel 'HasVisibleViewmodel\s*\(' "World-held items must only be hidden after the spawned viewmodel has visible renderers."
 Require-Pattern $viewmodel 'GetStaticArmsAnchor' "Static fallback arms must anchor to hand targets/held visuals instead of the player-root/feet."
+# Custom weapon visuals must ride the stock animation skeleton so they cannot lag
+# a frame behind the bone-merged arms when the camera turns (the "detached gun"
+# bug). They are parented onto a stock weapon bone instead of being repositioned
+# each frame from stale Update-time bone transforms.
+Require-Pattern $viewmodel 'CreateBoneObjects\s*=\s*true' "FirstPersonViewmodel must spawn stock weapon bone objects so the visible custom weapon can be parented to the grip bone (keeps the gun glued to the bone-merged hands while turning)."
+Require-Pattern $viewmodel 'GetBoneObject\s*\(' "FirstPersonViewmodel must resolve the stock weapon grip bone GameObject to attach the visible custom weapon."
+Require-Pattern $viewmodel 'SetParent\s*\(\s*boneObject\s*,\s*true\s*\)' "FirstPersonViewmodel must parent the visible custom weapon onto the stock grip bone (keepWorldPosition) so it stays in sync with the hands instead of being repositioned from stale Update-time bone transforms."
+Require-Pattern $viewmodel '_customVisualBoneAttached' "FirstPersonViewmodel must latch the custom-visual bone attachment so it stops per-frame world repositioning once glued to the stock skeleton."
 
 foreach ($missingPath in @(
     'models/weapons/v_m4a1',
@@ -424,8 +432,10 @@ foreach ($viewmodelContainerPrefab in @(
 Require-Pattern $controller 'UseLocalFirstPersonViewmodel' "GroundPlayerController must expose the local first-person viewmodel toggle."
 Require-Pattern $controller 'LocalFirstPersonViewmodelActive' "GroundPlayerController must track active local first-person viewmodel state."
 Require-Pattern $controller 'EnsureLocalFirstPersonViewmodel' "GroundPlayerController must create the local viewmodel component."
-Require-Pattern $controller 'showPilotBodyHands\s*=\s*handsOnly\s*&&\s*ShouldShowPilotBodyHands\(\)' "GroundPlayerController must keep the pilot deployer's body-hand exception explicit."
-Require-Pattern $controller 'hideBodyHands\s*=\s*handsOnly\s*&&\s*UseLocalFirstPersonViewmodel\s*&&\s*!showPilotBodyHands' "Local body hands must stay hidden for first-person viewmodels except the pilot drone deployer human-hands path."
+if ($controller -match 'ShouldShowPilotBodyHands') {
+    Add-Error "GroundPlayerController must not keep the rejected ShouldShowPilotBodyHands citizen-body-hands exception; the pilot deployer now uses the stock first-person viewmodel arms."
+}
+Require-Pattern $controller 'hideBodyHands\s*=\s*handsOnly\s*&&\s*UseLocalFirstPersonViewmodel\b' "Local Citizen body hands must stay hidden in first person whenever the local viewmodel arms are active (weapons, grenades, and the pilot deployer)."
 Require-Pattern $deployer 'hideForFirstPersonViewmodel' "DroneDeployer must keep updating hidden first-person hand visuals for copied viewmodel fallback."
 Require-Pattern $deployer 'WeaponPose\.SetVisibility\(\s*LeftHandVisual\s*,\s*!hideForFirstPersonViewmodel' "DroneDeployer left-hand visual should hide renderers but keep transforms updating for fallback copies."
 

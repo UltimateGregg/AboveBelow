@@ -54,6 +54,12 @@ public sealed class FirstPersonViewmodel : Component
 	[Property] public Angles CustomJammerViewmodelRotation { get; set; } = new( 0f, 0f, 0f );
 	[Property] public Vector3 CustomJammerViewmodelScale { get; set; } = new( 1f, 1f, 1f );
 	[Property, Range( 1f, 60f )] public float StaticArmFollowRate { get; set; } = 28f;
+	/// <summary>
+	/// Eye-relative anchor (forward, right, up) for the pilot deployer's stock
+	/// first-person arms. The arms originate here near the camera and the hands
+	/// IK out to the controller (left) and held drone (right) grip targets.
+	/// </summary>
+	[Property] public Vector3 DeployerArmsEyeOffset { get; set; } = new( 0f, 0f, -6f );
 
 	GameObject _root;
 	GameObject _weaponObject;
@@ -64,6 +70,9 @@ public sealed class FirstPersonViewmodel : Component
 	string _activeKey = "";
 	ViewmodelRenderMode _renderMode = ViewmodelRenderMode.StaticFallback;
 	bool _wasReloading;
+	bool _customVisualBoneAttached;
+	int _customVisualPoseFrames;
+	Vector3 _customVisualScale = Vector3.One;
 	TimeSince _timeSinceLastAttack = 10f;
 
 	readonly List<StaticVisual> _staticVisuals = new();
@@ -107,6 +116,8 @@ public sealed class FirstPersonViewmodel : Component
 		public Vector3 CustomViewmodelOffset;
 		public Angles CustomViewmodelRotation;
 		public Vector3 CustomViewmodelScale;
+		public bool UseEyeArmsAnchor;
+		public Vector3 ArmsEyeOffset;
 	}
 
 	public bool IsViewmodelActive => _root.IsValid() && _root.Enabled && HasVisibleViewmodel();
@@ -115,16 +126,9 @@ public sealed class FirstPersonViewmodel : Component
 	{
 		if ( owner is null || !selected || owner.IsProxy )
 			return false;
-		if ( UsesPilotHumanBodyHands( owner ) )
-			return false;
 
 		var pc = owner.Components.GetInAncestors<GroundPlayerController>();
 		return pc.IsValid() && pc.UseLocalFirstPersonViewmodel && pc.LocalFirstPersonViewmodelActive;
-	}
-
-	public static bool UsesPilotHumanBodyHands( Component owner )
-	{
-		return owner is DroneDeployer deployer && deployer.UsePilotBodyHands;
 	}
 
 	protected override void OnUpdate()
@@ -239,6 +243,11 @@ public sealed class FirstPersonViewmodel : Component
 
 		_weaponRenderer.Model = weaponModel;
 		_weaponRenderer.UseAnimGraph = true;
+		// Spawn per-bone GameObjects so the visible custom model can be parented
+		// to the stock weapon's grip bone and ride the exact same skeleton the
+		// bone-merged arms use — that is what keeps the gun glued to the hands
+		// while turning instead of lagging a frame behind them.
+		_weaponRenderer.CreateBoneObjects = true;
 		_weaponRenderer.Parameters.Set( "b_deploy_skip", true );
 		_weaponRenderer.Parameters.Set( "skeleton", 0 );
 		_weaponRenderer.Parameters.Set( "b_twohanded", item.TwoHanded );
@@ -555,34 +564,103 @@ public sealed class FirstPersonViewmodel : Component
 
 		HideStockAnimationDriver();
 
-		if ( TryGetOneHandCustomVisualPose( item, out var oneHandPosition, out var oneHandRotation ) )
+		// Once attached, the custom visual is a child of the stock weapon's grip
+		// bone, so the engine moves it in lockstep with the bone-merged arms. We
+		// only keep the scale pinned (in case the bone carries a non-unit scale)
+		// and never touch its world position/rotation again — that is what stops
+		// the gun drifting away from the hands during fast camera turns.
+		if ( _customVisualBoneAttached )
 		{
-			_customVisualRoot.WorldPosition = oneHandPosition;
-			_customVisualRoot.WorldRotation = oneHandRotation;
-			_customVisualRoot.WorldScale = item.CustomViewmodelScale;
+			_customVisualRoot.WorldScale = _customVisualScale;
 			SetCustomVisualRenderType( ModelRenderer.ShadowRenderType.On );
 			return;
 		}
 
-		if ( !TryGetCustomAnimatedVisualAnchor( item, out var anchor ) )
+		if ( !TryComputeCustomVisualWorldPose( item, out var position, out var rotation, out var scale ) )
 		{
 			SetCustomVisualRenderType( ModelRenderer.ShadowRenderType.Off );
 			return;
 		}
 
-		var rot = anchor.Rotation * item.CustomViewmodelRotation.ToRotation();
-		var position = TryGetCustomHandAnchoredPose( item, rot, item.CustomViewmodelScale, out var handAnchoredPosition )
+		_customVisualScale = scale;
+		_customVisualRoot.WorldPosition = position;
+		_customVisualRoot.WorldRotation = rotation;
+		_customVisualRoot.WorldScale = scale;
+		SetCustomVisualRenderType( ModelRenderer.ShadowRenderType.On );
+
+		// Let the stock idle settle for a couple of frames, then lock the visible
+		// custom weapon onto the stock skeleton's grip bone for good.
+		_customVisualPoseFrames++;
+		if ( _customVisualPoseFrames >= 2 )
+			TryAttachCustomVisualToStockSkeleton();
+	}
+
+	/// <summary>
+	/// Solves the world pose the visible custom weapon should sit at relative to
+	/// the hidden stock animation driver's hand/weapon bones. Used to seed the
+	/// pose before the visual is parented onto the stock grip bone.
+	/// </summary>
+	bool TryComputeCustomVisualWorldPose( HeldItem item, out Vector3 position, out Rotation rotation, out Vector3 scale )
+	{
+		position = default;
+		rotation = Rotation.Identity;
+		scale = item.CustomViewmodelScale;
+
+		if ( TryGetOneHandCustomVisualPose( item, out var oneHandPosition, out var oneHandRotation ) )
+		{
+			position = oneHandPosition;
+			rotation = oneHandRotation;
+			return true;
+		}
+
+		if ( !TryGetCustomAnimatedVisualAnchor( item, out var anchor ) )
+			return false;
+
+		rotation = anchor.Rotation * item.CustomViewmodelRotation.ToRotation();
+		var basePosition = TryGetCustomHandAnchoredPose( item, rotation, item.CustomViewmodelScale, out var handAnchoredPosition )
 			? handAnchoredPosition
 			: anchor.Position;
 		var offset = item.CustomViewmodelOffset;
-		_customVisualRoot.WorldPosition = position
-			+ rot.Forward * offset.x
-			+ rot.Right * offset.y
-			+ rot.Up * offset.z;
-		_customVisualRoot.WorldRotation = rot;
-		_customVisualRoot.WorldScale = item.CustomViewmodelScale;
+		position = basePosition
+			+ rotation.Forward * offset.x
+			+ rotation.Right * offset.y
+			+ rotation.Up * offset.z;
+		return true;
+	}
 
-		SetCustomVisualRenderType( ModelRenderer.ShadowRenderType.On );
+	/// <summary>
+	/// Parents the visible custom weapon onto the stock animation driver's grip
+	/// bone so it can never desync from the bone-merged arms. Falls back silently
+	/// (keeps per-frame positioning) if the bone GameObjects are not ready yet.
+	/// </summary>
+	void TryAttachCustomVisualToStockSkeleton()
+	{
+		if ( _customVisualBoneAttached || !_customVisualRoot.IsValid() )
+			return;
+
+		var boneObject = FindStockWeaponBoneObject();
+		if ( !boneObject.IsValid() )
+			return;
+
+		// keepWorldPosition: true preserves the pose we just solved, then the
+		// custom visual follows the bone from here on.
+		_customVisualRoot.SetParent( boneObject, true );
+		_customVisualBoneAttached = true;
+	}
+
+	GameObject FindStockWeaponBoneObject()
+	{
+		if ( !_weaponRenderer.IsValid() )
+			return null;
+
+		foreach ( var boneName in new[] { "weapon", "v_weapon", "hold", "hold_R", "hand_R", "ValveBiped.Bip01_R_Hand", "right_hand" } )
+		{
+			var bone = _weaponRenderer.GetBoneObject( boneName );
+			if ( bone.IsValid() )
+				return bone;
+		}
+
+		return null;
 	}
 
 	bool TryGetOneHandCustomVisualPose( HeldItem item, out Vector3 position, out Rotation rotation )
@@ -758,6 +836,24 @@ public sealed class FirstPersonViewmodel : Component
 
 	void GetStaticArmsAnchor( HeldItem item, out Vector3 position, out Rotation rotation )
 	{
+		// Pilot deployer: anchor the arms near the camera so the forearms read as
+		// proper first-person arms rising into view, and let the hands IK out to
+		// the controller/drone grip targets instead of floating at their midpoint.
+		if ( item.UseEyeArmsAnchor )
+		{
+			var pc = Components.Get<GroundPlayerController>();
+			if ( pc.IsValid() && pc.Eye.IsValid() )
+			{
+				var eyeRot = pc.Eye.WorldRotation;
+				position = pc.Eye.WorldPosition
+					+ eyeRot.Forward * item.ArmsEyeOffset.x
+					+ eyeRot.Right * item.ArmsEyeOffset.y
+					+ eyeRot.Up * item.ArmsEyeOffset.z;
+				rotation = eyeRot;
+				return;
+			}
+		}
+
 		var hasLeft = item.LeftHandTarget.IsValid();
 		var hasRight = item.RightHandTarget.IsValid();
 
@@ -846,12 +942,14 @@ public sealed class FirstPersonViewmodel : Component
 		{
 			if ( !deployer.IsValid() || !deployer.IsSelected || IsDroneViewActive() )
 				continue;
-			if ( UsesPilotHumanBodyHands( deployer ) )
-				continue;
 
 			var pilot = deployer.Components.GetInAncestors<PilotSoldier>();
 			var chosenDrone = pilot.IsValid() ? pilot.ChosenDrone : DroneType.Fpv;
 
+			// The pilot holds two different objects in two different hands, so it
+			// uses the stock first-person arms with per-hand IK (left hand grips
+			// the controller, right hand grips the held drone) rather than the
+			// bone-merged single-weapon grip the hunters use.
 			item = new HeldItem
 			{
 				Owner = deployer,
@@ -862,6 +960,8 @@ public sealed class FirstPersonViewmodel : Component
 				Key = $"deployer:{deployer.GameObject.Id}:{chosenDrone}:{deployer.DroneInFlight}",
 				RenderMode = ViewmodelRenderMode.StaticFallback,
 				TwoHanded = true,
+				UseEyeArmsAnchor = true,
+				ArmsEyeOffset = DeployerArmsEyeOffset,
 				AttackPressed = Input.Pressed( "Attack1" ),
 				AttackDown = Input.Down( "Attack1" ),
 				MoveInput = moveInput
@@ -1034,6 +1134,9 @@ public sealed class FirstPersonViewmodel : Component
 		_activeKey = "";
 		_renderMode = ViewmodelRenderMode.StaticFallback;
 		_wasReloading = false;
+		_customVisualBoneAttached = false;
+		_customVisualPoseFrames = 0;
+		_customVisualScale = Vector3.One;
 
 		if ( _root.IsValid() )
 			_root.Destroy();

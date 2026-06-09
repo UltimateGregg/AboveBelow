@@ -1,0 +1,15 @@
+"Layer0"
+{
+	"shader"		"shaders/complex.shader"
+	"F_TRANSLUCENT"		"1"
+	"TextureColor"		"materials/environment/log_cabin_glass_color.png"
+	"g_flOpacityScale"		"0.350000"
+	"g_flModelTintAmount"		"0.000000"
+	"g_vColorTint"		"[1.000000 1.000000 1.000000 1.000000]"
+	"g_flMetalness"		"0.000000"
+	"g_flRoughness"		"0.080000"
+	"g_bFogEnabled"		"1"
+	"g_vTexCoordScale"		"[1.000 1.000]"
+	"g_vTexCoordOffset"		"[0.000 0.000]"
+	"g_vTexCoordScrollSpeed"		"[0.000 0.000]"
+}

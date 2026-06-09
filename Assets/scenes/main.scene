@@ -92,7 +92,7 @@
               "IdValue": "b799661b-1f8c-ae49-73ac-3ee716cf2341"
             },
             "Property": "Rotation",
-            "Value": "-0.0244152583,0.0953006744,0.238653526,0.966108739"
+            "Value": "-0.0244152602,0.0953006744,0.238653541,0.966108739"
           }
         ],
         "MovedObjects": []
@@ -2698,6 +2698,30 @@
                     },
                     "Property": "Name",
                     "Value": "RoadSandbagCover_Mid"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "16d631f1-5da5-4168-a7e5-71df56a28e5e"
+                    },
+                    "Property": "Position",
+                    "Value": "354.711456,233.000046,38.6192894"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "ae304c4c-9b7a-4ec1-b408-424c18c4a521"
+                    },
+                    "Property": "Position",
+                    "Value": "416.190948,236,43.2608719"
+                  },
+                  {
+                    "Target": {
+                      "Type": "GameObject",
+                      "IdValue": "08bb4a52-350d-40f1-a860-05222939ce8a"
+                    },
+                    "Property": "Position",
+                    "Value": "472.190948,233,45.4235916"
                   }
                 ],
                 "MovedObjects": []
@@ -35213,63 +35237,6 @@
               }
             },
             {
-              "__guid": "0eb7b49b-4cf0-443a-802b-ced34ce7964d",
-              "__version": 2,
-              "__Prefab": "prefabs/environment/plateau_east_north_terrain.prefab",
-              "__PrefabInstancePatch": {
-                "AddedObjects": [],
-                "RemovedObjects": [],
-                "PropertyOverrides": [
-                  {
-                    "Target": {
-                      "Type": "GameObject",
-                      "IdValue": "e9707072-e16d-00db-4732-78c03faed256"
-                    },
-                    "Property": "Name",
-                    "Value": "Plateau_EastNorth"
-                  },
-                  {
-                    "Target": {
-                      "Type": "GameObject",
-                      "IdValue": "e9707072-e16d-00db-4732-78c03faed256"
-                    },
-                    "Property": "Position",
-                    "Value": "1780,1450,0"
-                  },
-                  {
-                    "Target": {
-                      "Type": "GameObject",
-                      "IdValue": "e9707072-e16d-00db-4732-78c03faed256"
-                    },
-                    "Property": "Rotation",
-                    "Value": "0,0,0.707106769,0.707106769"
-                  }
-                ],
-                "MovedObjects": []
-              },
-              "__PrefabIdToInstanceId": {
-                "e9707072-e16d-00db-4732-78c03faed256": "0eb7b49b-4cf0-443a-802b-ced34ce7964d",
-                "4556f476-dd50-8275-eaae-40d04d2996c4": "8d35c659-1556-4f61-b5f8-9d6521d3e2ec",
-                "99485c41-0a2b-c297-33ae-2ce9d3299751": "2a4f3173-e8f3-41d1-b0b9-714c099f867d",
-                "d48bd0d5-5c4d-0cb9-1f74-b42a1e7394cf": "5a7f17d3-b039-4241-9053-6410da7e7032",
-                "55822dfc-91f5-9f42-e1a9-0b683f26dda9": "03cc698a-b704-4f1a-ad3b-2131046ccb52",
-                "2fd7c56a-d591-3b42-4f51-059bb76fbb0b": "153cea49-1700-45af-82aa-fdb6af87579b",
-                "5cd847a7-e8c9-e53c-5832-9eaa12731202": "03982d55-62b8-4146-962f-ffec9a24d813",
-                "9291e2f2-f517-158e-0c02-c040865c4cde": "56e51e8f-94af-4a7a-9919-926021f2671a",
-                "ff462994-de78-81a5-819c-039607eac75a": "587bb55e-3abf-4c83-b0c9-9bd47fe45d61",
-                "d9521ea3-8922-58e9-60e4-d29287af0fa8": "9f50fbe7-1ec7-43cf-b286-66c45147ef87",
-                "4d3e65b5-1055-b9a6-2fcc-22a41e2e3cd9": "f3d8ae34-e9c0-4e51-ae35-af3f7764aa06",
-                "0e471a77-14c0-2c80-57c1-0d6a4c8c2657": "284a1ee0-a675-4a33-b7d5-2b92a55ff325",
-                "7dca45fe-31e0-80ce-07e2-9a879598df1f": "766e611e-fa42-4536-8dc2-5806916a9748",
-                "d955a9e2-2008-66a5-1c92-df2a04fe84b5": "a151dbc4-b185-4cdb-849b-7f9f7c3a7c25",
-                "ca8c4d77-524b-108c-37ab-1bd5824b14d2": "d5fa1923-795d-4a6c-b349-c0016b641a5a",
-                "cebded8a-8d57-1c2c-ba00-f9fbee146d2d": "28193751-ba54-4cbe-a7ad-6c4843a54e9f",
-                "2a162d44-8326-12bc-aba2-869ea74902e0": "324eaecc-15e8-480a-9faf-55c13df9a8b5",
-                "9c28732c-e5aa-da16-20e0-86458b76c619": "177d7dbb-4fa3-44f8-b65a-83991e8daf74",
-                "77f7fb97-8068-9aab-2459-79dff0429aee": "e908638d-11e0-4483-93c0-d24258e4d9aa"
-              }
-            },
-            {
               "__guid": "b1404203-f88d-4980-8c61-41c25ee6e528",
               "__version": 2,
               "__Prefab": "prefabs/environment/WaterTower.prefab",
@@ -57631,7 +57598,7 @@
               "IdValue": "73ae5dab-dafe-05de-006b-5d28d4890f47"
             },
             "Property": "Position",
-            "Value": "-886.010376,-3215.57544,34.8339348"
+            "Value": "-877.77533,-3218.07007,23.2838955"
           },
           {
             "Target": {
@@ -57639,7 +57606,7 @@
               "IdValue": "73ae5dab-dafe-05de-006b-5d28d4890f47"
             },
             "Property": "Rotation",
-            "Value": "0.0147813996,0.0464780033,-0.0398414582,0.998014987"
+            "Value": "-0.0058443537,-0.00164892734,0.731249094,0.682083488"
           },
           {
             "Target": {
@@ -58102,94 +58069,6 @@
       }
     },
     {
-      "__guid": "0a8e25f7-baee-49ad-a052-0c199f96f401",
-      "__version": 2,
-      "Flags": 0,
-      "Name": "__tmp_cabin_check",
-      "Position": "0,0,0",
-      "Rotation": "0,0,0,1",
-      "Scale": "1,1,1",
-      "Tags": "",
-      "Enabled": true,
-      "NetworkMode": 2,
-      "NetworkFlags": 0,
-      "NetworkOrphaned": 0,
-      "NetworkTransmit": true,
-      "OwnerTransfer": 1,
-      "Components": [
-        {
-          "__type": "Sandbox.ModelCollider",
-          "__guid": "d0a17380-b6e9-4bd6-a99d-5a6c803227b3",
-          "__enabled": true,
-          "Flags": 0,
-          "ColliderFlags": 0,
-          "Elasticity": null,
-          "Friction": null,
-          "IsTrigger": false,
-          "Model": "models/log_cabin.vmdl",
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "OnObjectTriggerEnter": null,
-          "OnObjectTriggerExit": null,
-          "OnTriggerEnter": null,
-          "OnTriggerExit": null,
-          "RollingResistance": null,
-          "Static": false,
-          "Surface": null,
-          "SurfaceVelocity": "0,0,0"
-        }
-      ],
-      "Children": []
-    },
-    {
-      "__guid": "92778ff6-e094-4961-ba85-82a63df0ea50",
-      "__version": 2,
-      "Flags": 0,
-      "Name": "__tmp_door_check",
-      "Position": "0,0,0",
-      "Rotation": "0,0,0,1",
-      "Scale": "1,1,1",
-      "Tags": "",
-      "Enabled": true,
-      "NetworkMode": 2,
-      "NetworkFlags": 0,
-      "NetworkOrphaned": 0,
-      "NetworkTransmit": true,
-      "OwnerTransfer": 1,
-      "Components": [
-        {
-          "__type": "Sandbox.ModelCollider",
-          "__guid": "0493fb75-4149-4d4d-a937-6e15494b088a",
-          "__enabled": true,
-          "Flags": 0,
-          "ColliderFlags": 0,
-          "Elasticity": null,
-          "Friction": null,
-          "IsTrigger": false,
-          "Model": "models/log_cabin_door.vmdl",
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "OnObjectTriggerEnter": null,
-          "OnObjectTriggerExit": null,
-          "OnTriggerEnter": null,
-          "OnTriggerExit": null,
-          "RollingResistance": null,
-          "Static": false,
-          "Surface": null,
-          "SurfaceVelocity": "0,0,0"
-        }
-      ],
-      "Children": []
-    },
-    {
       "__guid": "33b0670e-1aa4-4e9f-99de-9a69e6f25442",
       "__version": 2,
       "Flags": 0,
@@ -58442,6 +58321,88 @@
         }
       ],
       "Children": []
+    },
+    {
+      "__guid": "df9c9338-e295-48bb-a7ac-b2070e0f9fee",
+      "__version": 2,
+      "__Prefab": "prefabs/environment/logcabin.prefab",
+      "__PrefabInstancePatch": {
+        "AddedObjects": [],
+        "RemovedObjects": [
+          {
+            "Id": {
+              "Type": "GameObject",
+              "IdValue": "b1c2d3e4-0001-4a01-9c01-aa0000000002"
+            }
+          },
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "b1c2d3e4-0001-4a01-9c01-aa0000000003"
+            }
+          },
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "b1c2d3e4-0001-4a01-9c01-aa0000000004"
+            }
+          },
+          {
+            "Id": {
+              "Type": "GameObject",
+              "IdValue": "b1c2d3e4-0001-4a01-9c01-aa0000000005"
+            }
+          },
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "b1c2d3e4-0001-4a01-9c01-aa0000000006"
+            }
+          },
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "b1c2d3e4-0001-4a01-9c01-aa0000000007"
+            }
+          },
+          {
+            "Id": {
+              "Type": "Component",
+              "IdValue": "b1c2d3e4-0001-4a01-9c01-aa0000000008"
+            }
+          }
+        ],
+        "PropertyOverrides": [
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "b1c2d3e4-0001-4a01-9c01-aa0000000001"
+            },
+            "Property": "Position",
+            "Value": "3707.43604,-3898.71045,179.344345"
+          },
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "b1c2d3e4-0001-4a01-9c01-aa0000000001"
+            },
+            "Property": "Rotation",
+            "Value": "-0,0,1,-4.37113883E-08"
+          }
+        ],
+        "MovedObjects": []
+      },
+      "__PrefabIdToInstanceId": {
+        "b1c2d3e4-0001-4a01-9c01-aa0000000001": "df9c9338-e295-48bb-a7ac-b2070e0f9fee",
+        "b1c2d3e4-0001-4a01-9c01-aa0000000010": "56b73b81-2fcb-4ef8-aff7-2477880c5666",
+        "b1c2d3e4-0001-4a01-9c01-aa0000000002": "44fee244-708e-4237-b0e0-df6c8a68b9b1",
+        "b1c2d3e4-0001-4a01-9c01-aa0000000003": "1298e12e-f23e-41f3-9847-3ce5cbd09cdf",
+        "b1c2d3e4-0001-4a01-9c01-aa0000000004": "d3c676e6-52bd-4551-9383-c3db9a30cdc2",
+        "b1c2d3e4-0001-4a01-9c01-aa0000000005": "f0d03449-48ad-4bc9-b89a-c1fed036dae2",
+        "b1c2d3e4-0001-4a01-9c01-aa0000000006": "6787d239-c783-483f-9c30-b95cfe3772a9",
+        "b1c2d3e4-0001-4a01-9c01-aa0000000007": "3d6c37bb-6736-4907-a81b-883e590bdd5a",
+        "b1c2d3e4-0001-4a01-9c01-aa0000000008": "ec944a06-c2f1-439b-8372-36ca8d71bc03"
+      }
     }
   ],
   "SceneProperties": {

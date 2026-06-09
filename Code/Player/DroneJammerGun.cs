@@ -31,7 +31,10 @@ public sealed class DroneJammerGun : Component
 	[Property] public GameObject RightHandIkTarget { get; set; }
 	[Property] public SoundEvent LoopSound { get; set; }
 	[Property] public bool ShowBeamVisual { get; set; } = true;
-	[Property] public Color BeamVisualColor { get; set; } = new( 0.16f, 0.88f, 1f, 0.72f );
+	[Property] public Color BeamVisualColor { get; set; } = new( 1f, 1f, 1f, 0.36f );
+	[Property, Range( 0.5f, 12f )] public float BatteryDrainSeconds { get; set; } = 4f;
+	[Property, Range( 0.5f, 20f )] public float BatteryRechargeSeconds { get; set; } = 6f;
+	[Property, Range( 0f, 5f )] public float BatteryRechargeDelay { get; set; } = 0.75f;
 
 	[Property] public Vector3 FirstPersonOffset { get; set; } = new( 30f, 8f, -5f );
 	[Property] public Angles FirstPersonRotationOffset { get; set; } = new( 0f, 0f, 0f );
@@ -47,12 +50,15 @@ public sealed class DroneJammerGun : Component
 	[Property] public int Slot { get; set; } = SoldierLoadout.PrimarySlot;
 
 	TimeSince _timeSincePulse = 10f;
+	TimeSince _timeSinceBatteryUse = 999f;
 	SoundHandle _loop;
 	GameObject _beamObject;
 	JammerConeVisual _beamVisual;
 
 	public bool IsSelected => WeaponPose.IsSlotSelected( this, Slot );
 	public bool IsActive { get; private set; }
+	public float BatteryChargeFraction { get; private set; } = 1f;
+	public bool BatteryDepleted => BatteryChargeFraction <= 0.001f;
 
 	protected override void OnStart()
 	{
@@ -87,13 +93,15 @@ public sealed class DroneJammerGun : Component
 		// Holstered? force-stop the loop and bail before reading input.
 		if ( !IsSelected || LocalOptionsState.ConsumesGameplayInput )
 		{
+			UpdateBatteryCharge( false );
 			IsActive = false;
 			UpdateLoopSound( false );
 			HideBeamVisual();
 			return;
 		}
 
-		var holding = Input.Down( "Attack1" );
+		var wantsToJam = Input.Down( "Attack1" );
+		var holding = UpdateBatteryCharge( wantsToJam );
 		IsActive = holding;
 		UpdateLoopSound( holding );
 		UpdateBeamVisual( holding );
@@ -175,6 +183,29 @@ public sealed class DroneJammerGun : Component
 			return;
 
 		_beamVisual.Configure( origin, forward, MaxRange, ConeHalfAngle, BeamVisualColor, true );
+	}
+
+	bool UpdateBatteryCharge( bool wantsToJam )
+	{
+		BatteryChargeFraction = BatteryChargeFraction.Clamp( 0f, 1f );
+
+		if ( wantsToJam && BatteryChargeFraction > 0f )
+		{
+			BatteryChargeFraction = MathF.Max(
+				0f,
+				BatteryChargeFraction - Time.Delta / MathF.Max( 0.1f, BatteryDrainSeconds ) );
+			_timeSinceBatteryUse = 0f;
+			return !BatteryDepleted;
+		}
+
+		if ( !wantsToJam && _timeSinceBatteryUse >= BatteryRechargeDelay && BatteryChargeFraction < 1f )
+		{
+			BatteryChargeFraction = MathF.Min(
+				1f,
+				BatteryChargeFraction + Time.Delta / MathF.Max( 0.1f, BatteryRechargeSeconds ) );
+		}
+
+		return false;
 	}
 
 	void HideBeamVisual()

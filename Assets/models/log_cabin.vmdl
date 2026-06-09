@@ -16,37 +16,37 @@
 
 							{
 								from = "M_LogCabin_Floor"
-								to = "materials/environment/house_small_interior_wood.vmat"
+								to = "materials/environment/log_cabin_floor.vmat"
 							},
 
 							{
 								from = "M_LogCabin_Gable"
-								to = "materials/environment/house_small_siding.vmat"
+								to = "materials/environment/log_cabin_plank.vmat"
 							},
 
 							{
 								from = "M_LogCabin_Glass"
-								to = "materials/environment/house_small_glass.vmat"
+								to = "materials/environment/log_cabin_glass.vmat"
 							},
 
 							{
 								from = "M_LogCabin_Logs"
-								to = "materials/shotgun_wood.vmat"
+								to = "materials/environment/log_cabin_logs.vmat"
 							},
 
 							{
 								from = "M_LogCabin_Roof"
-								to = "materials/environment/house_small_roof.vmat"
+								to = "materials/environment/log_cabin_shingle.vmat"
 							},
 
 							{
 								from = "M_LogCabin_Stone"
-								to = "materials/arena/concrete_wall.vmat"
+								to = "materials/environment/log_cabin_stone.vmat"
 							},
 
 							{
 								from = "M_LogCabin_Trim"
-								to = "materials/shotgun_wood.vmat"
+								to = "materials/environment/log_cabin_logs.vmat"
 							},
 						]
 						use_global_default = false

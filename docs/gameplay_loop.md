@@ -127,9 +127,11 @@ On impact OR after CrashTimeout (5 s default):
 
 ```
 Counter-UAV soldier holds Drone Jammer Gun:
+- Battery drains while firing, depleting after about 4 seconds of continuous use
 - Every TickInterval (0.1 s), cone-cast forward
 - For each JammingReceiver inside the cone (LOS-checked):
   - ApplyJam(sourceId, Strength=1, Duration=0.3 s)
+- Battery recharges over time after the trigger is released
 - The receiver decays sources by Time.Now and re-publishes IsJammed
 
 Soldier throws Chaff or EMP:
@@ -190,6 +192,7 @@ Player A shoots Player B for N damage:
 | Round end screen | 5 s | `GameRules.RoundEndScreenSeconds` |
 | Pilot crash timeout | 5 s | `GameRules.DroneCrashTimeout` / `PilotLink.CrashTimeout` |
 | Drone Jammer Gun pulse | 0.3 s, every 0.1 s | `DroneJammerGun.PulseDuration`, `TickInterval` |
+| Drone Jammer Gun battery | 4 s drain, 6 s recharge | `DroneJammerGun.BatteryDrainSeconds`, `BatteryRechargeSeconds` |
 | Assault rifle reload | 1.65 s, 30-round magazine | `HitscanWeapon.ReloadSeconds`, `MagazineSize` |
 | Chaff jam | 3 s in 600 unit radius | `GameRules.ChaffRadius`, `ChaffJamSeconds` |
 | EMP jam | 6 s in 1100 unit radius | `GameRules.EmpRadius`, `EmpJamSeconds` |

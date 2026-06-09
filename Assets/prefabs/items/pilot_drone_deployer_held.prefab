@@ -50,7 +50,6 @@
         "RightHandIkFpOffset": "37,13,-4",
         "RightHandIkFpRotation": "10,0,-10",
         "UseVisualRelativeFirstPersonIkTargets": true,
-        "UsePilotBodyHands": true,
         "LeftHandTpLocalPos": "20,0,47",
         "LeftHandTpLocalAngles": "0,0,0",
         "RightHandTpLocalPos": "22,14,49",

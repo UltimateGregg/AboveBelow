@@ -6,7 +6,7 @@
   "combine_meshes": true,
   "combined_object_name": "LogCabinDoorMesh",
   "material_remap": {
-    "M_LogCabinDoor_Wood": "materials/shotgun_wood.vmat",
+    "M_LogCabinDoor_Wood": "materials/environment/log_cabin_plank.vmat",
     "M_LogCabinDoor_Knob": "materials/environment/house_small_metal.vmat"
   },
   "vmdl_material_source_suffix": "",

@@ -101,7 +101,7 @@ public static class RoundFlowDebugCommands
 			deployer.DroneInFlight = false;
 			deployer.LaunchReadyAt = 0f;
 			deployer.ApplySelectionVisualState();
-			Log.Info( $"[RoundProbe] Pilot deployer uses stock S&Box body hands for first-person IK: bodyHands={deployer.UsePilotBodyHands}, holdType={deployer.PilotHandHoldType}." );
+			Log.Info( $"[RoundProbe] Pilot deployer uses stock S&Box first-person viewmodel arms with per-hand grip IK (third-person hold type={deployer.PilotHandHoldType})." );
 		}
 
 		Log.Info( $"[RoundProbe] Pilot deployer visual proof active: local pilot is holding the {selectedType} drone under the right hand and RC controller at the left hand." );

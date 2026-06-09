@@ -134,7 +134,7 @@ function Assert-TruthyJsonOption {
     }
 }
 
-function Assert-DeployerUsesPilotBodyHands {
+function Assert-DeployerUsesStockViewmodelArms {
     param([string]$RelativePath)
 
     $raw = Read-Text $RelativePath
@@ -142,8 +142,10 @@ function Assert-DeployerUsesPilotBodyHands {
         return
     }
 
-    if ($raw -notmatch '"__type"\s*:\s*"DroneVsPlayers\.DroneDeployer"[\s\S]*?"UsePilotBodyHands"\s*:\s*true') {
-        Add-Error "$RelativePath DroneDeployer must set UsePilotBodyHands true so the pilot deployer uses Citizen body hands instead of the static fallback arms path."
+    # The rejected citizen-body-hands path is gone: the pilot deployer now shares
+    # the stock first-person viewmodel arms (with per-hand grip IK) in first person.
+    if ($raw -match '"UsePilotBodyHands"') {
+        Add-Error "$RelativePath must not serialize the removed UsePilotBodyHands flag; the pilot deployer uses the stock first-person viewmodel arms in first person."
     }
 }
 
@@ -178,20 +180,32 @@ Require-Pattern $viewmodel 'IsSameOrDescendant\(' `
     "FirstPersonViewmodel static copies must skip renderers under hidden held-item visual roots."
 Require-Pattern $viewmodel 'Key\s*=\s*\$"deployer:\{deployer\.GameObject\.Id\}:\{chosenDrone\}:\{deployer\.DroneInFlight\}"' `
     "DroneDeployer viewmodel keys must include the selected drone type and launch state so the copied visual rebuilds when those states change."
-Require-Pattern $viewmodel 'UsesPilotHumanBodyHands' `
-    "Pilot drone deployer first-person visuals should use the pilot-only human-body hand path instead of sharing hunter weapon/grenade viewmodel arms."
-Require-Pattern $viewmodel 'owner\s+is\s+DroneDeployer' `
-    "FirstPersonViewmodel must not hide the pilot deployer's world-held controller/drone visuals while pilot human hands are posing them."
-Require-Pattern $viewmodel 'UsesPilotHumanBodyHands\(\s*deployer\s*\)[\s\S]{0,200}continue' `
-    "FirstPersonViewmodel must skip spawning local static arms for the pilot deployer so the body hands can grip the controller and held drone."
-Require-Pattern $controller 'showPilotBodyHands\s*=\s*handsOnly\s*&&\s*ShouldShowPilotBodyHands\(\)' `
-    "GroundPlayerController must detect the pilot deployer body-hand path before applying first-person bodygroups."
-Require-Pattern $controller '"Chest",\s*handsOnly\s*&&\s*!showPilotBodyHands\s*\?\s*CitizenBodyGroupHidden\s*:\s*CitizenBodyGroupVisible' `
-    "GroundPlayerController must keep the Citizen Chest bodygroup visible for the pilot deployer because the forearms live there."
+# Pilot deployer first-person hands: the rejected citizen-body-hands path is gone.
+# The deployer now uses the shared stock first-person viewmodel arms (static
+# fallback) with per-hand IK so the left hand grips the controller and the right
+# hand grips the held drone, while third-person/remote still use Citizen hands.
+if ($viewmodel -match 'UsesPilotHumanBodyHands') {
+    Add-Error "FirstPersonViewmodel must not keep the rejected UsesPilotHumanBodyHands citizen-body-hands path; the pilot deployer uses the stock first-person viewmodel arms."
+}
+Require-Pattern $viewmodel 'RenderMode\s*=\s*ViewmodelRenderMode\.StaticFallback' `
+    "Pilot deployer first-person visuals must use the stock first-person arms static-fallback path so the hands match the hunter weapon viewmodel arms."
+Require-Pattern $viewmodel 'UseEyeArmsAnchor\s*=\s*true' `
+    "Pilot deployer must anchor the stock first-person arms near the camera (eye anchor) so the forearms read as first-person arms while the hands IK to the controller/drone grips."
+Require-Pattern $viewmodel 'LeftHandTarget\s*=\s*deployer\.LeftHandIkTarget' `
+    "Pilot deployer must drive the stock left arm IK from the controller-side grip target."
+Require-Pattern $viewmodel 'RightHandTarget\s*=\s*deployer\.RightHandIkTarget' `
+    "Pilot deployer must drive the stock right arm IK from the held-drone-side grip target."
+if ($controller -match 'ShouldShowPilotBodyHands') {
+    Add-Error "GroundPlayerController must not keep the rejected ShouldShowPilotBodyHands citizen-body-hands exception; first-person body hands are hidden whenever the local viewmodel arms are active."
+}
+Require-Pattern $controller 'hideBodyHands\s*=\s*handsOnly\s*&&\s*UseLocalFirstPersonViewmodel\b' `
+    "GroundPlayerController must hide the Citizen body hands in first person whenever the local viewmodel arms are active (weapons, grenades, and the pilot deployer)."
+Require-Pattern $controller '"Chest",\s*handsOnly\s*\?\s*CitizenBodyGroupHidden\s*:\s*CitizenBodyGroupVisible' `
+    "GroundPlayerController must hide the Citizen Chest bodygroup in first person now that the pilot deployer uses stock viewmodel arms instead of body forearms."
 Require-Pattern $controller '"Hands",\s*hideBodyHands\s*\?\s*CitizenBodyGroupHidden\s*:\s*CitizenBodyGroupVisible' `
-    "GroundPlayerController must still hide body hands when local viewmodel arms are active for weapons and grenades."
-Assert-DeployerUsesPilotBodyHands "Assets\prefabs\pilot_ground.prefab"
-Assert-DeployerUsesPilotBodyHands "Assets\prefabs\items\pilot_drone_deployer_held.prefab"
+    "GroundPlayerController must still hide body hands when local viewmodel arms are active for weapons, grenades, and the pilot deployer."
+Assert-DeployerUsesStockViewmodelArms "Assets\prefabs\pilot_ground.prefab"
+Assert-DeployerUsesStockViewmodelArms "Assets\prefabs\items\pilot_drone_deployer_held.prefab"
 Assert-DeployerFirstPersonIkOffsets "Assets\prefabs\pilot_ground.prefab"
 Assert-DeployerFirstPersonIkOffsets "Assets\prefabs\items\pilot_drone_deployer_held.prefab"
 

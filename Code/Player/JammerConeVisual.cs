@@ -25,15 +25,16 @@ public sealed class JammerConeVisual : Component
 	};
 
 	[Property] public string PrimaryTexturePath { get; set; } = DefaultTexturePath;
-	[Property, Range( 16, 256 )] public int MaxParticles { get; set; } = 96;
-	[Property, Range( 0.1f, 1.5f )] public float ParticleLifetime { get; set; } = 0.45f;
-	[Property, Range( 10f, 500f )] public float ParticlesPerSecond { get; set; } = 240f;
-	[Property, Range( 0.001f, 0.08f )] public float ParticleScalePerRange { get; set; } = 0.024f;
-	[Property, Range( 8f, 256f )] public float MinParticleScale { get; set; } = 58f;
-	[Property, Range( 16f, 384f )] public float MaxParticleScale { get; set; } = 170f;
+	[Property, Range( 16, 256 )] public int MaxParticles { get; set; } = 160;
+	[Property, Range( 8, 220 )] public int MaxSteadyParticles { get; set; } = 88;
+	[Property, Range( 0.1f, 1.5f )] public float ParticleLifetime { get; set; } = 0.24f;
+	[Property, Range( 10f, 500f )] public float ParticlesPerSecond { get; set; } = 280f;
+	[Property, Range( 0.001f, 0.08f )] public float ParticleScalePerRange { get; set; } = 0.0075f;
+	[Property, Range( 8f, 256f )] public float MinParticleScale { get; set; } = 18f;
+	[Property, Range( 16f, 384f )] public float MaxParticleScale { get; set; } = 46f;
 	[Property, Range( 0f, 64f )] public float DepthFeather { get; set; } = 28f;
-	[Property, Range( 0.1f, 8f )] public float Brightness { get; set; } = 3.4f;
-	[Property, Range( 0.05f, 1f )] public float AlphaMultiplier { get; set; } = 0.68f;
+	[Property, Range( 0.1f, 8f )] public float Brightness { get; set; } = 0.8f;
+	[Property, Range( 0.02f, 1f )] public float AlphaMultiplier { get; set; } = 0.28f;
 
 	ParticleEffect _effect;
 	ParticleConeEmitter _emitter;
@@ -45,7 +46,7 @@ public sealed class JammerConeVisual : Component
 	float _range;
 	float _halfAngle;
 	float _emitAccumulator;
-	Color _activeColor;
+	Color _activeColor = new Color( 1f, 1f, 1f, 0.1f );
 	bool _active;
 
 	protected override void OnStart()
@@ -73,11 +74,12 @@ public sealed class JammerConeVisual : Component
 		_halfAngle = halfAngle.Clamp( 1f, 45f );
 
 		var particleScale = (range * ParticleScalePerRange).Clamp( MinParticleScale, MaxParticleScale );
-		_activeColor = new Color( color.r, color.g, color.b, (color.a * AlphaMultiplier).Clamp( 0.12f, 0.72f ) );
+		var alpha = (color.a * AlphaMultiplier).Clamp( 0.025f, 0.18f );
+		_activeColor = new Color( 1f, 1f, 1f, alpha );
 		_active = true;
 
 		_effect.Enabled = true;
-		_effect.MaxParticles = Math.Max( 1, MaxParticles );
+		_effect.MaxParticles = Math.Max( MaxSteadyParticles, MaxParticles );
 		_effect.Lifetime = Math.Max( 0.05f, ParticleLifetime );
 		_effect.ApplyColor = true;
 		_effect.ApplyAlpha = true;
@@ -88,7 +90,7 @@ public sealed class JammerConeVisual : Component
 		_effect.Scale = particleScale;
 		_effect.StartVelocity = 0f;
 		_effect.Damping = 0.75f;
-		_effect.LocalSpace = 0f;
+		_effect.LocalSpace = 1f;
 		_effect.Collision = false;
 
 		// Keep an authored cone emitter on the prefab, but emit manually below so
@@ -112,18 +114,18 @@ public sealed class JammerConeVisual : Component
 		_emitter.CenterBiasVelocity = 0f;
 
 		_renderer.Enabled = true;
-		_renderer.Additive = true;
+		_renderer.Additive = false;
 		_renderer.Lighting = false;
 		_renderer.Shadows = false;
 		_renderer.Opaque = false;
 		_renderer.DepthFeather = DepthFeather;
-		_renderer.FogStrength = 0.2f;
+		_renderer.FogStrength = 0.05f;
 		_renderer.Scale = 1f;
 		_renderer.SortMode = ParticleSpriteRenderer.ParticleSortMode.ByDistance;
 		_renderer.Alignment = ParticleSpriteRenderer.BillboardAlignment.LookAtCamera;
 
 		EnsureTexture();
-		EmitConeParticles( immediate: _effect.ParticleCount == 0 );
+		EmitConeParticles();
 	}
 
 	public void Hide()
@@ -156,17 +158,15 @@ public sealed class JammerConeVisual : Component
 		EmitConeParticles();
 	}
 
-	void EmitConeParticles( bool immediate = false )
+	void EmitConeParticles()
 	{
-		if ( !_effect.IsValid() || _effect.ParticleCount >= _effect.MaxParticles || _range <= 0f )
+		if ( !_effect.IsValid() || _effect.ParticleCount >= MaxSteadyParticles || _range <= 0f )
 			return;
 
 		var wanted = Math.Max( 1f, ParticlesPerSecond ) * Time.Delta;
-		if ( immediate )
-			wanted += MathF.Min( 18f, Math.Max( 6f, ParticlesPerSecond * 0.08f ) );
-
 		_emitAccumulator += wanted;
-		var count = Math.Min( (int)_emitAccumulator, _effect.MaxParticles - _effect.ParticleCount );
+		var available = Math.Min( _effect.MaxParticles, Math.Max( 1, MaxSteadyParticles ) ) - _effect.ParticleCount;
+		var count = Math.Min( (int)_emitAccumulator, available );
 		if ( count <= 0 )
 			return;
 
@@ -182,19 +182,19 @@ public sealed class JammerConeVisual : Component
 			var radius = MathF.Max( 4f, distance * tan );
 			var angle = Random.Shared.Float( 0f, MathF.PI * 2f );
 			var radialT = MathF.Sqrt( Random.Shared.Float( 0.03f, 1f ) );
-			var wave = MathF.Sin( time * 9f + distance * 0.018f + angle * 2.5f ) * radius * 0.16f;
-			var lateral = _right * (MathF.Cos( angle ) * radius * radialT + wave)
-				+ _up * (MathF.Sin( angle ) * radius * radialT);
-			var position = WorldPosition + _forward * distance + lateral;
+			var wave = MathF.Sin( time * 9f + distance * 0.018f + angle * 2.5f ) * radius * 0.11f;
+			var position = Vector3.Forward * distance
+				+ Vector3.Right * (MathF.Cos( angle ) * radius * radialT + wave)
+				+ Vector3.Up * (MathF.Sin( angle ) * radius * radialT);
 			var particle = _effect.Emit( position, Time.Delta );
 
 			particle.Color = _activeColor;
 			particle.Alpha = _activeColor.a;
-			var scale = Random.Shared.Float( 0.72f, 1.18f );
+			var scale = Random.Shared.Float( 0.78f, 1.08f );
 			particle.Size = new Vector3( scale, scale, scale );
-			particle.Velocity = _forward * Random.Shared.Float( 24f, 92f )
-				+ _right * Random.Shared.Float( -18f, 18f )
-				+ _up * Random.Shared.Float( -10f, 24f );
+			particle.Velocity = Vector3.Forward * Random.Shared.Float( 10f, 32f )
+				+ Vector3.Right * Random.Shared.Float( -5f, 5f )
+				+ Vector3.Up * Random.Shared.Float( -3f, 7f );
 			particle.Angles = new Angles( 0f, 0f, Random.Shared.Float( 0f, 360f ) );
 		}
 	}
