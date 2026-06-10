@@ -25,5 +25,11 @@
   },
   "global_scale": 1.0,
   "axis_forward": "-Z",
-  "axis_up": "Y"
+  "axis_up": "Y",
+  "collision": {
+    "mode": "render_mesh",
+    "surface_prop": "wood",
+    "collision_tags": "solid"
+  },
+  "_collision_note": "EXACT mesh collision (see docs/collision_authoring.md): replaces the legacy 38 hand-placed trunk/branch-whorl boxes. The whorl boxes deliberately included foliage thickness, i.e. the canopy blocks movement and fire - render_mesh keeps that intent by making bark AND needle cards solid. The prefab carries a ModelCollider (Static=true) on the same GameObject as the ModelRenderer."
 }

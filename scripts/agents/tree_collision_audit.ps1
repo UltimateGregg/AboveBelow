@@ -476,6 +476,47 @@ function Test-TreeObject {
     }
 
     $script:treeCount++
+
+    # Current standard: EXACT mesh collision. A static, non-trigger
+    # Sandbox.ModelCollider on the same GameObject as the renderer, whose
+    # Model matches the render model, satisfies the contract (the vmdl
+    # carries a PhysicsMeshFile baked by the asset pipeline's collision
+    # block). terrain_pine_broad / terrain_pine_windswept use this. The
+    # legacy trunk+branch BoxCollider contract below remains valid for
+    # terrain_pine, which has no source .blend to re-export from.
+    foreach ($component in @(Get-ObjectComponents -Object $Object)) {
+        # PS 5.1 ConvertFrom-Json strips "__type" (JavaScriptSerializer treats
+        # it as type metadata), so detect ModelCollider by shape as well:
+        # Model + IsTrigger + Static and no RenderType (which renderers have).
+        $componentType = [string](Get-JsonPropertyValue -Object $component -Name "__type")
+        $hasModelColliderShape = $null -ne (Get-JsonPropertyValue -Object $component -Name "Model") -and
+            $null -ne (Get-JsonPropertyValue -Object $component -Name "IsTrigger") -and
+            $null -ne (Get-JsonPropertyValue -Object $component -Name "Static") -and
+            $null -eq (Get-JsonPropertyValue -Object $component -Name "RenderType")
+        if ($componentType -ne "Sandbox.ModelCollider" -and -not $hasModelColliderShape) {
+            continue
+        }
+        $componentEnabled = Get-JsonPropertyValue -Object $component -Name "__enabled"
+        if ($componentEnabled -is [bool] -and -not $componentEnabled) {
+            continue
+        }
+        $componentTrigger = Get-JsonPropertyValue -Object $component -Name "IsTrigger"
+        if ($componentTrigger -is [bool] -and $componentTrigger) {
+            continue
+        }
+        $componentStatic = Get-JsonPropertyValue -Object $component -Name "Static"
+        if (-not ($componentStatic -is [bool] -and $componentStatic)) {
+            continue
+        }
+        $componentModel = [string](Get-JsonPropertyValue -Object $component -Name "Model")
+        if (-not $componentModel.Equals($model, [System.StringComparison]::OrdinalIgnoreCase)) {
+            continue
+        }
+
+        $script:blockingTreeCount++
+        return $true
+    }
+
     $ok = $true
 
     $rootColliders = @()
@@ -486,7 +527,7 @@ function Test-TreeObject {
     }
     if ($rootColliders.Count -gt 0) {
         $rootTypes = @($rootColliders | ForEach-Object { [string](Get-JsonPropertyValue -Object $_ -Name "__type") }) -join ", "
-        Add-AgentIssue $issues "Error" "Tree Collision" $Path "$ObjectPath still has root collider component(s): $rootTypes." "Remove the old single-collider pine coverage; use Collision_Trunk plus separate Collision_Branch_* BoxCollider children."
+        Add-AgentIssue $issues "Error" "Tree Collision" $Path "$ObjectPath still has root collider component(s): $rootTypes." "Use a static ModelCollider matching the render model (mesh-collision contract), or the legacy Collision_Trunk plus Collision_Branch_* BoxCollider children."
         $ok = $false
     }
 

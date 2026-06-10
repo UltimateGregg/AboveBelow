@@ -31,166 +31,31 @@
             "Model": "models/house_rural.vmdl",
             "RenderType": "On",
             "Tint": "1,1,1,1"
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9012",
-        "Flags": 0,
-        "Name": "Collision_Foundation",
-        "Position": "0,0,130",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
+          },
           {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f901234",
-            "Center": "0,0,0",
-            "Scale": "680,680,260",
+            "__type": "Sandbox.ModelCollider",
+            "__guid": "ca5f501b-1d10-4b24-9711-30bf14a7b816",
+            "__enabled": true,
+            "Flags": 0,
+            "ColliderFlags": 0,
+            "Elasticity": null,
+            "Friction": null,
+            "IsTrigger": false,
+            "Model": "models/house_rural.vmdl",
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "OnObjectTriggerEnter": null,
+            "OnObjectTriggerExit": null,
+            "OnTriggerEnter": null,
+            "OnTriggerExit": null,
+            "RollingResistance": null,
             "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "f7a8b9ca-d1e2-3f4a-5b6c-7d8e9f012345",
-        "Flags": 0,
-        "Name": "Collision_Ground_Floor",
-        "Position": "0,0,0",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "a7b8c9da-e2f3-4a5b-6c7d-8e9f01234567",
-            "Center": "0,0,200",
-            "Scale": "600,600,400",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "a8b9cada-e3f4-5b6c-7d8e-9f012345678a",
-        "Flags": 0,
-        "Name": "Collision_Loft",
-        "Position": "0,0,300",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "b8c9daea-f4a5-6b7c-8d9e-f0123456789ab",
-            "Center": "0,0,0",
-            "Scale": "600,600,40",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "b9cada5b-f5a6-7b8d-9e0f-1023456789abc",
-        "Flags": 0,
-        "Name": "Collision_Roof",
-        "Position": "0,0,620",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "cadadb6c-f6a7-8b9d-ef10-2345678901bcd",
-            "Center": "0,0,0",
-            "Scale": "640,640,80",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "cadadc7d-f7a8-9bae-f011-3456789012cde",
-        "Flags": 0,
-        "Name": "Collision_Walls_North",
-        "Position": "0,350,300",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "dadaed8e-f8a9-acbf-012a-456789ab01def",
-            "Center": "0,0,0",
-            "Scale": "600,40,700",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "dadaee9f-f9aa-bdd0-123b-56789abc12ef0",
-        "Flags": 0,
-        "Name": "Collision_Walls_South",
-        "Position": "0,-350,300",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "eaeaff10-fabb-cee1-234c-6789bcd23fg01",
-            "Center": "0,0,0",
-            "Scale": "600,40,700",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "ebebf021-fbac-dff2-345d-789cde34gh12",
-        "Flags": 0,
-        "Name": "Collision_Walls_East",
-        "Position": "350,0,300",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "fcfcg132-gcbd-eg03-456e-89adef45hi23",
-            "Center": "0,0,0",
-            "Scale": "40,600,700",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "fdfdh143-hcde-fh04-567f-9abceg56ij34",
-        "Flags": 0,
-        "Name": "Collision_Walls_West",
-        "Position": "-350,0,300",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "gegei154-idef-gi05-678g-0bcdfh67jk45",
-            "Center": "0,0,0",
-            "Scale": "40,600,700",
-            "Static": true,
-            "IsTrigger": false
+            "Surface": null,
+            "SurfaceVelocity": "0,0,0"
           }
         ],
         "Children": []
@@ -221,166 +86,6 @@
             "TopExitLocalOffset": "0,0,150",
             "TopExitTriggerDistance": 28,
             "BottomExitTriggerDistance": 8
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "ikiki198-mgih-km09-abck-4fghjlqj9aop89",
-        "Flags": 0,
-        "Name": "Railing_NW_Corner",
-        "Position": "-310,310,630",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "lljkj209-nhji-ln10-bcda-5ghijkmrk0bpq0a",
-            "Center": "0,0,0",
-            "Scale": "20,20,60",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "mmlkk310-oijk-mo11-cdef-6hijklnms1cqr1b",
-        "Flags": 0,
-        "Name": "Railing_NE_Corner",
-        "Position": "310,310,630",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "nnml421-pjkl-np12-defg-7ijklmnt2drsh2c",
-            "Center": "0,0,0",
-            "Scale": "20,20,60",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "oonm532-qklm-oq13-efgh-8jklmnou3esti3d",
-        "Flags": 0,
-        "Name": "Railing_SW_Corner",
-        "Position": "-310,-310,630",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "ppon643-rlmn-pr14-fghi-9klmnopv4futj4e",
-            "Center": "0,0,0",
-            "Scale": "20,20,60",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "ppoo754-smnon-qs15-ghij-0lmnoqpw5gvuk5f",
-        "Flags": 0,
-        "Name": "Railing_SE_Corner",
-        "Position": "310,-310,630",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "qqpp865-tnoop-rt16-hij0-1mnoprqx6hwvl6g",
-            "Center": "0,0,0",
-            "Scale": "20,20,60",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "rqqr976-uoopp-su17-ij1k-2nopqsry7ixwm7h",
-        "Flags": 0,
-        "Name": "Railing_Loft_North",
-        "Position": "0,320,330",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "srrs087-vppqq-tv18-jk2l-3opqrstz8jxyn8i",
-            "Center": "0,0,0",
-            "Scale": "600,20,60",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "tsss198-wqqrr-uw19-kl3m-4pqrstuaa9kyzp9j",
-        "Flags": 0,
-        "Name": "Railing_Loft_South",
-        "Position": "0,-320,330",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "uttt209-xrrss-vx20-lm4n-5qrstuvaab0lzaqk",
-            "Center": "0,0,0",
-            "Scale": "600,20,60",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "vuuu310-ysstt-wy21-mn5o-6rstuvwbbc1marl",
-        "Flags": 0,
-        "Name": "Railing_Loft_East",
-        "Position": "320,0,330",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "wvvv421-zstuu-xz22-no6p-7stuvwxccd2nbsm",
-            "Center": "0,0,0",
-            "Scale": "20,600,60",
-            "Static": true,
-            "IsTrigger": false
-          }
-        ],
-        "Children": []
-      },
-      {
-        "__guid": "xwww532-atuuv-yaa23-op7q-8tuvwxyded3octn",
-        "Flags": 0,
-        "Name": "Railing_Loft_West",
-        "Position": "-320,0,330",
-        "Rotation": "0,0,0,1",
-        "Scale": "1,1,1",
-        "Enabled": true,
-        "Components": [
-          {
-            "__type": "Sandbox.BoxCollider",
-            "__guid": "yxxx643-buvvw-zbb24-pq8r-9uvwxyzeef4pduo",
-            "Center": "0,0,0",
-            "Scale": "20,600,60",
-            "Static": true,
-            "IsTrigger": false
           }
         ],
         "Children": []

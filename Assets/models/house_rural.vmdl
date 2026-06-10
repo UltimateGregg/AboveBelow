@@ -77,6 +77,22 @@
 					},
 				]
 			},
+
+			{
+				_class = "PhysicsShapeList"
+				children =
+				[
+					{
+						_class = "PhysicsMeshFile"
+						name = "collision"
+						parent_bone = ""
+						surface_prop = "wood"
+						collision_tags = "solid"
+						filename = "models/house_rural.fbx"
+						import_scale = 1.0
+					},
+				]
+			},
 		]
 		model_archetype = ""
 		primary_associated_entity = ""

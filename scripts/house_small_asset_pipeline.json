@@ -29,5 +29,11 @@
   ],
   "global_scale": 0.0254,
   "axis_forward": "-Y",
-  "axis_up": "Z"
+  "axis_up": "Z",
+  "collision": {
+    "mode": "render_mesh",
+    "surface_prop": "wood",
+    "collision_tags": "solid"
+  },
+  "_collision_note": "EXACT mesh collision (see watertower config + docs/collision_authoring.md): the pipeline writes a PhysicsMeshFile inside PhysicsShapeList referencing the render FBX, so floors, walls, loft, and roof are all solid with open doorways/windows. House_Small.prefab carries a ModelCollider (Model=house_small.vmdl, Static=true) on the Model_Visual child; the legacy hand-placed Collision_* boxes were removed. Ladder climbs still come from the LadderVolume triggers."
 }

@@ -388,29 +388,32 @@ Blender File Structure:
 └── Window_Frame_*     (door/window openings)
 ```
 
-**Critical**: Each *walkable surface* must be a separate object for collision assignment. Visual-only geometry can share objects.
+Separate objects per walkable surface are still nice for editing clarity, but no longer required for collision — the exported mesh IS the collision (see below). Visual-only geometry can share objects freely.
 
 ### Collision & Gameplay Zones in Prefabs
 
-Prefab structure mirrors Blender but adds collision and trigger volumes:
+Buildings use **exact mesh collision** like every other prop (see the standing rule
+under [Collision authoring](#collision-authoring-mesh-based--the-default-for-propsbuildings)):
+the pipeline bakes a `PhysicsMeshFile` (inside `PhysicsShapeList`) into the
+building's `.vmdl` via the `collision` block in its
+`scripts/<name>_asset_pipeline.json`, and the prefab puts **one `ModelCollider`
+(`Model` = the vmdl, `Static: true`) on the same GameObject as the
+`ModelRenderer`**. Floors, walls, roofs, and stairs are all solid with exact
+doorway/window openings — no per-part boxes to author or drift.
 
 ```json
 House_Large (root)
-├── Model_Visual (ModelRenderer → house_large.vmdl)
-├── Collision_Floor_Ground (BoxCollider, solid)
-├── Collision_Floor_Basement (BoxCollider, solid)
-├── Collision_Floor_Loft (BoxCollider, solid)
-├── Collision_Roof (BoxCollider, solid)
-├── Collision_Wall_* (BoxCollider, solid)
-├── Ladder_To_Loft (LadderVolume + trigger)
-├── Ladder_To_Roof (LadderVolume + trigger)
+├── Model_Visual (ModelRenderer → house_large.vmdl, ModelCollider → house_large.vmdl)
+├── Ladder_To_Loft (LadderVolume + trigger BoxCollider)
+├── Ladder_To_Roof (LadderVolume + trigger BoxCollider)
 └── Zone_* (trigger-only BoxColliders for gameplay logic)
 ```
 
 **Collision Rules**:
-- All floor/wall collision: `Static: true`, `IsTrigger: false`
+- Solid collision: ONE `ModelCollider` on the visual GameObject (`Static: true`, `IsTrigger: false`)
 - All ladder volumes: `Static: true` (for trigger), `IsTrigger: true`
 - All zones (Foyer, LivingArea, Basement, etc.): `IsTrigger: true` (detect player presence, not physical barrier)
+- Hand-placed `Collision_*` BoxColliders are the **legacy** pattern (removed from House_Small/Large/house_rural in June 2026). The only remaining legacy holdout is `terrain_pine.prefab`, which has no source `.blend` to re-export from.
 
 ### LadderVolume Configuration
 
@@ -464,8 +467,8 @@ Available arena materials:
 - Check material_remap paths match actual .vmat files in `Assets/materials/arena/`
 
 **Collision alignment** (critical for gameplay):
-- Use CollisionDebugViewer (`GameManager` in `main.scene`, set `AlwaysDraw = true`)
-- Visually verify: floor colliders match floor tops, wall colliders match wall bounds
+- Verify `ModelCollider.LocalBounds` is non-zero and ≈ matches `ModelRenderer.LocalBounds`
+- Use CollisionDebugViewer (`GameManager` in `main.scene`, set `AlwaysDraw = true`) for the trigger volumes
 - Test in-game: walk on all surfaces, climb ladders, verify no clipping
 
 ### Debugging Building Issues
@@ -476,9 +479,9 @@ Available arena materials:
 - Confirm material_remap points to existing .vmat files (run pipeline if error)
 
 **Players fall through floors**:
-- Enable CollisionDebugViewer to see wireframe boxes
-- Check Collision_Floor_* boxes: `Scale` and `Center` must cover entire walkable area
-- Verify no gaps between collision boxes
+- Check the prefab's `ModelCollider.LocalBounds` — zero bounds means the vmdl has no physics mesh
+- Open the vmdl: `PhysicsMeshFile` MUST be nested inside `PhysicsShapeList` (directly under RootNode it is silently ignored)
+- Confirm the asset's pipeline config has a `"collision"` block and the pipeline was re-run after adding it
 
 **Can't climb ladder**:
 - Ladder position must match visual ladder geometry in model
