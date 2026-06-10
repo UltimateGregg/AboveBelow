@@ -30,20 +30,22 @@ function Require-Match {
 }
 
 $shotgun = Read-ProjectFile "Code/Player/ShotgunWeapon.cs"
+# Shared ammo/reload/fire flow lives in the WeaponBase parent class.
+$shotgun += "`n" + (Read-ProjectFile "Code/Player/WeaponBase.cs")
 $hud = Read-ProjectFile "Code/UI/HudPanel.razor"
 $viewmodel = Read-ProjectFile "Code/Player/FirstPersonViewmodel.cs"
 foreach ($partial in Get-ChildItem -Path (Join-Path $Root "Code/Player/FirstPersonViewmodel.*.cs") -ErrorAction SilentlyContinue) {
     $viewmodel += "`n" + (Get-Content -LiteralPath $partial.FullName -Raw)
 }
 
-Require-Match "ShotgunWeapon should declare a 6-shell magazine." `
-    $shotgun "\[Property\]\s+public\s+int\s+MagazineSize\s*\{\s*get;\s*set;\s*\}\s*=\s*6\s*;"
+Require-Match "ShotgunWeapon should default to a 6-shell magazine (ctor default for the shared WeaponBase property)." `
+    $shotgun "MagazineSize\s*=\s*6\s*;"
 
-Require-Match "ShotgunWeapon should declare reserve ammo." `
-    $shotgun "\[Property\]\s+public\s+int\s+StartingReserveAmmo\s*\{\s*get;\s*set;\s*\}\s*=\s*24\s*;"
+Require-Match "ShotgunWeapon should default reserve ammo to 24 (ctor default for the shared WeaponBase property)." `
+    $shotgun "StartingReserveAmmo\s*=\s*24\s*;"
 
-Require-Match "ShotgunWeapon should declare reload timing." `
-    $shotgun "\[Property\]\s+public\s+float\s+ReloadSeconds\s*\{\s*get;\s*set;\s*\}\s*=\s*2\.4f\s*;"
+Require-Match "ShotgunWeapon should default reload timing to 2.4s (ctor default for the shared WeaponBase property)." `
+    $shotgun "ReloadSeconds\s*=\s*2\.4f\s*;"
 
 foreach ($name in @("AmmoInMagazine", "AmmoReserve", "IsReloading", "ReloadFinishTime")) {
     Require-Match "ShotgunWeapon should sync $name." `

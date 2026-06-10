@@ -270,6 +270,10 @@ foreach ($partial in Get-ChildItem -Path (Join-Path $Root "Code\Player\FirstPers
 $controller = Read-Text "Code\Player\GroundPlayerController.cs"
 $hitscan = Read-Text "Code\Player\HitscanWeapon.cs"
 $shotgun = Read-Text "Code\Player\ShotgunWeapon.cs"
+# Shared selection/pose flow (ShouldHideWorldHeldItem etc.) lives in WeaponBase.
+$weaponBase = Read-Text "Code\Player\WeaponBase.cs"
+$hitscan += "`n" + $weaponBase
+$shotgun += "`n" + $weaponBase
 $jammer = Read-Text "Code\Player\DroneJammerGun.cs"
 $grenade = Read-Text "Code\Equipment\ThrowableGrenade.cs"
 $deployer = Read-Text "Code\Player\DroneDeployer.cs"

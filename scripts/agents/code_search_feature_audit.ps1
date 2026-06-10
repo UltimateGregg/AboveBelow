@@ -43,6 +43,10 @@ function Assert-Pattern {
 
 $hitscan = Get-Text "Code/Player/HitscanWeapon.cs"
 $shotgun = Get-Text "Code/Player/ShotgunWeapon.cs"
+# Shared ammo/spread/bloom surface lives in the WeaponBase parent class.
+$weaponBase = Get-Text "Code/Player/WeaponBase.cs"
+$hitscan += "`n" + $weaponBase
+$shotgun += "`n" + $weaponBase
 $controller = Get-Text "Code/Player/GroundPlayerController.cs"
 $tracer = Get-Text "Code/Player/BallisticTracerRenderer.cs"
 $grenade = Get-Text "Code/Equipment/ThrowableGrenade.cs"

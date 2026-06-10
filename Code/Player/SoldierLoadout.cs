@@ -86,10 +86,7 @@ public sealed class SoldierLoadout : Component
 
 	void ApplyHeldItemVisibility()
 	{
-		foreach ( var weapon in Components.GetAll<HitscanWeapon>( FindMode.EverythingInSelfAndDescendants ) )
-			weapon.ApplySelectionVisualState();
-
-		foreach ( var weapon in Components.GetAll<ShotgunWeapon>( FindMode.EverythingInSelfAndDescendants ) )
+		foreach ( var weapon in Components.GetAll<WeaponBase>( FindMode.EverythingInSelfAndDescendants ) )
 			weapon.ApplySelectionVisualState();
 
 		foreach ( var weapon in Components.GetAll<DroneJammerGun>( FindMode.EverythingInSelfAndDescendants ) )

@@ -24,21 +24,21 @@ if (-not (Test-Path -LiteralPath $codeRoot)) {
 
 $files = @(Get-ChildItem -LiteralPath $codeRoot -Recurse -File -Include "*.cs", "*.razor" -ErrorAction SilentlyContinue)
 
-$hitscanWeaponPath = Join-Path $codeRoot "Player\HitscanWeapon.cs"
+$hitscanWeaponPath = Join-Path $codeRoot "Player\WeaponBase.cs"
 if (Test-Path -LiteralPath $hitscanWeaponPath) {
     $hitscanText = Get-Content -LiteralPath $hitscanWeaponPath -Raw
     $hitscanRelative = ConvertTo-AgentRelativePath -Path $hitscanWeaponPath -Root $Root
     $requestFireMatch = [regex]::Match($hitscanText, '(?s)\[Rpc\.(?<kind>Broadcast|Host)\]\s*\r?\n\s*void\s+RequestFire\s*\((?<args>[^\)]*)\)')
 
     if (-not $requestFireMatch.Success) {
-        Add-AgentIssue $issues "Error" "RPC Authority" $hitscanRelative "HitscanWeapon.RequestFire is not an explicit host RPC." "Keep hitscan target resolution in a [Rpc.Host] method that receives only the requested origin and aim direction."
+        Add-AgentIssue $issues "Error" "RPC Authority" $hitscanRelative "WeaponBase.RequestFire is not an explicit host RPC." "Keep hitscan target resolution in a [Rpc.Host] method that receives only the requested origin and aim direction."
     }
     elseif ($requestFireMatch.Groups["kind"].Value -ne "Host") {
-        Add-AgentIssue $issues "Error" "RPC Authority" $hitscanRelative "HitscanWeapon.RequestFire uses [Rpc.$($requestFireMatch.Groups["kind"].Value)] instead of [Rpc.Host]." "Move the fire request to [Rpc.Host] so the host owns cooldown, ammo, trace, and damage resolution."
+        Add-AgentIssue $issues "Error" "RPC Authority" $hitscanRelative "WeaponBase.RequestFire uses [Rpc.$($requestFireMatch.Groups["kind"].Value)] instead of [Rpc.Host]." "Move the fire request to [Rpc.Host] so the host owns cooldown, ammo, trace, and damage resolution."
     }
 
     if ($requestFireMatch.Success -and $requestFireMatch.Groups["args"].Value -match "TraceResult|GameObject|Health") {
-        Add-AgentIssue $issues "Error" "RPC Authority" $hitscanRelative "HitscanWeapon.RequestFire accepts resolved hit data." "Send intent data such as origin and direction only; the host should run Scene.Trace and choose the hit."
+        Add-AgentIssue $issues "Error" "RPC Authority" $hitscanRelative "WeaponBase.RequestFire accepts resolved hit data." "Send intent data such as origin and direction only; the host should run Scene.Trace and choose the hit."
     }
 }
 

@@ -9,210 +9,97 @@ namespace DroneVsPlayers;
 /// Simple hitscan rifle. Mount on the soldier prefab. The drone is a
 /// flying target so the gun is the soldiers' primary tool. Damage is
 /// authoritative on the host via a host fire request and Health.RequestDamage.
+/// Shared ammo/reload/pose flow lives in WeaponBase.
 /// </summary>
 [Title( "Hitscan Weapon" )]
 [Category( "Drone vs Players/Player" )]
 [Icon( "my_location" )]
-public sealed class HitscanWeapon : Component
+public sealed class HitscanWeapon : WeaponBase
 {
-	[Property] public string WeaponDisplayName { get; set; } = "Rifle";
 	[Property] public float Damage { get; set; } = 18f;
-	[Property] public float MaxRange { get; set; } = 8000f;
-	[Property] public float FireInterval { get; set; } = 0.12f;
-	[Property] public float RecoilDegrees { get; set; } = 0.4f;
 	[Property, Range( 0f, 20f )] public float HipSpreadDegrees { get; set; } = 0f;
 	[Property, Range( 0f, 20f )] public float AdsSpreadDegrees { get; set; } = 0f;
-	[Property, Range( 0f, 8f )] public float SpreadImpulseDegrees { get; set; } = 0.45f;
-	[Property, Range( 0f, 10f )] public float MaxDynamicSpreadDegrees { get; set; } = 3.5f;
-	[Property, Range( 0.05f, 2f )] public float SpreadRecoverySeconds { get; set; } = 0.45f;
 	[Property, Range( 0f, 1f )] public float AdsDynamicSpreadScale { get; set; } = 0.45f;
-	[Property] public int MagazineSize { get; set; } = 30;
-	[Property] public int StartingReserveAmmo { get; set; } = 120;
-	[Property] public float ReloadSeconds { get; set; } = 1.65f;
 
-	[Property] public GameObject MuzzleSocket { get; set; }
-	[Property] public GameObject WeaponVisual { get; set; }
-	[Property] public GameObject LeftHandIkTarget { get; set; }
-	[Property] public GameObject RightHandIkTarget { get; set; }
-	[Property] public GameObject TracerPrefab { get; set; }
 	[Property] public PointLight MuzzleFlash { get; set; }
-	[Property] public SoundEvent FireSound { get; set; }
 	[Property] public SoundEvent FireSoundFirstPerson { get; set; }
-	[Property] public SoundEvent ReloadSound { get; set; }
 	[Property] public SoundEvent MagDropSound { get; set; }
 	[Property] public SoundEvent MagInsertSound { get; set; }
 	[Property] public SoundEvent BoltRackSound { get; set; }
-	[Property] public SoundEvent EmptyClickSound { get; set; }
 	[Property] public float MuzzleFlashSeconds { get; set; } = 0.045f;
 
-	[Property] public Vector3 FirstPersonOffset { get; set; } = new( 34f, 9f, -12f );
-	[Property] public Angles FirstPersonRotationOffset { get; set; } = new( 0f, 0f, 0f );
-	[Property] public Vector3 AdsOffset { get; set; } = new( 24f, 0f, -5f );
-	[Property] public Angles AdsRotationOffset { get; set; } = new( 0f, 0f, 0f );
-	[Property, Range( 30f, 90f )] public float AdsFovDegrees { get; set; } = 55f;
-	[Property] public Vector3 ThirdPersonLocalPosition { get; set; } = new( 20f, 15f, 55f );
-	[Property] public Angles ThirdPersonLocalAngles { get; set; } = new( 0f, 0f, 0f );
-	[Property] public CitizenAnimationHelper.HoldTypes HoldType { get; set; } = CitizenAnimationHelper.HoldTypes.Rifle;
-	[Property] public CitizenAnimationHelper.Hand Handedness { get; set; } = CitizenAnimationHelper.Hand.Both;
-
-	/// <summary>Loadout slot this weapon occupies. SoldierLoadout maps Slot1 input to slot 1.</summary>
-	[Property] public int Slot { get; set; } = SoldierLoadout.PrimarySlot;
-
-	[Sync] public int AmmoInMagazine { get; set; }
-	[Sync] public int AmmoReserve { get; set; }
-	[Sync] public bool IsReloading { get; set; }
-	[Sync] public float ReloadFinishTime { get; set; }
-
-	TimeSince _timeSinceFire = 10f;
 	TimeSince _timeSinceMuzzleFlash = 10f;
-	float _dynamicSpreadDegrees;
 
-	// Reload step scheduling. Reset to false on BeginReload, flipped to true as
-	// each step's elapsed time is reached during OnUpdate.
-	TimeSince _timeSinceReloadStart = 10f;
+	// Reload step scheduling. Reset to false on reload start, flipped to true
+	// as each step's elapsed time is reached during OnUpdate.
 	bool _playedMagDrop, _playedMagInsert, _playedBoltRack;
 
-	public bool IsSelected => WeaponPose.IsSlotSelected( this, Slot );
-	public bool IsReady => IsSelected && !IsReloading && AmmoInMagazine > 0 && CooldownRemaining <= 0f;
-	public float CooldownRemaining => MathF.Max( 0f, FireInterval - _timeSinceFire );
-	public float CooldownReadyFraction => FireInterval <= 0f
-		? 1f
-		: (1f - CooldownRemaining / FireInterval).Clamp( 0f, 1f );
-	public float ReloadRemaining => IsReloading ? MathF.Max( 0f, ReloadFinishTime - Time.Now ) : 0f;
-	public float ReloadReadyFraction => !IsReloading || ReloadSeconds <= 0f
-		? 1f
-		: (1f - ReloadRemaining / ReloadSeconds).Clamp( 0f, 1f );
-	public float ReadyFraction => IsReloading ? ReloadReadyFraction : CooldownReadyFraction;
-	public float CurrentAimBloom => _dynamicSpreadDegrees;
-	public string AmmoDisplay => IsReloading
-		? $"RELOAD {ReloadRemaining:0.0}s"
-		: $"{AmmoInMagazine}/{AmmoReserve}";
-
-	protected override void OnStart()
+	public HitscanWeapon()
 	{
-		ResolvePrefabReferences();
-		if ( CanMutateState() )
-			ResetAmmo();
-		SetMuzzleFlashVisible( false );
-		ApplySelectionVisualState();
+		// Per-weapon defaults for the shared WeaponBase properties. Assigned
+		// here (not as base initializers) so sparse prefab JSON deserializes
+		// onto rifle values.
+		WeaponDisplayName = "Rifle";
+		MaxRange = 8000f;
+		FireInterval = 0.12f;
+		RecoilDegrees = 0.4f;
+		SpreadImpulseDegrees = 0.45f;
+		MaxDynamicSpreadDegrees = 3.5f;
+		SpreadRecoverySeconds = 0.45f;
+		MagazineSize = 30;
+		StartingReserveAmmo = 120;
+		ReloadSeconds = 1.65f;
+		AdsOffset = new( 24f, 0f, -5f );
+		AdsFovDegrees = 55f;
+		HoldType = CitizenAnimationHelper.HoldTypes.Rifle;
 	}
 
-	protected override void OnUpdate()
+	// Automatic: fires while the trigger is held.
+	protected override bool FireInputActive => Input.Down( "Attack1" );
+
+	protected override void ApplyFireRecoil( GroundPlayerController pc )
 	{
-		ResolvePrefabReferences();
-		CompleteReloadIfReady();
+		// Camera-only recoil kick. RecoilDegrees up + small random yaw drift.
+		pc.AddRecoil( RecoilDegrees, Random.Shared.Float( -RecoilDegrees * 0.3f, RecoilDegrees * 0.3f ) );
+		pc.AddShotNoise(
+			RecoilDegrees * 0.18f,
+			Random.Shared.Float( -RecoilDegrees * 0.12f, RecoilDegrees * 0.12f ),
+			Random.Shared.Float( -RecoilDegrees * 0.35f, RecoilDegrees * 0.35f ) );
+	}
+
+	protected override void OnWeaponStart()
+	{
+		SetMuzzleFlashVisible( false );
+	}
+
+	protected override void OnWeaponUpdate()
+	{
 		UpdateReloadStepSounds();
 		UpdateMuzzleFlash();
-		UpdateWeaponPose();
-		UpdateDynamicSpread();
-
-		if ( IsProxy ) return;
-		if ( !IsSelected ) return;
-		if ( LocalOptionsState.ConsumesGameplayInput ) return;
-
-		// Empty-mag click — local-only audio feedback on a fresh press when
-		// the magazine is dry. Forces the player to release+repress to retry
-		// (which then triggers the auto-reload via RequestFire path).
-		if ( Input.Pressed( "Attack1" ) && AmmoInMagazine == 0 && !IsReloading && EmptyClickSound is not null )
-			SoundPlayback.PlayAttached( EmptyClickSound, GameObject, WorldPosition );
-
-		if ( Input.Down( "Attack1" ) && _timeSinceFire >= FireInterval && AmmoInMagazine > 0 )
-		{
-			var pc = Components.GetInAncestors<GroundPlayerController>();
-			if ( pc.IsValid() )
-			{
-				RequestFire( GetFireOrigin( pc ), pc.EyeAngles.ToRotation().Forward );
-				// Camera-only recoil kick. RecoilDegrees up + small random yaw drift.
-				pc.AddRecoil( RecoilDegrees, Random.Shared.Float( -RecoilDegrees * 0.3f, RecoilDegrees * 0.3f ) );
-				pc.AddShotNoise(
-					RecoilDegrees * 0.18f,
-					Random.Shared.Float( -RecoilDegrees * 0.12f, RecoilDegrees * 0.12f ),
-					Random.Shared.Float( -RecoilDegrees * 0.35f, RecoilDegrees * 0.35f ) );
-				AddClientPredictedSpreadImpulse();
-				_timeSinceFire = 0f;
-			}
-		}
-		else if ( Input.Down( "Attack1" ) && _timeSinceFire >= FireInterval && AmmoInMagazine == 0 && !IsReloading )
-		{
-			// Trigger auto-reload via the same server path when held with empty mag.
-			RequestReload();
-			_timeSinceFire = 0f;
-		}
-
-		if ( Input.Pressed( "Reload" ) )
-		{
-			RequestReload();
-		}
 	}
 
-	void ResetAmmo()
+	protected override void OnDeselected()
 	{
-		AmmoInMagazine = Math.Max( 1, MagazineSize );
-		AmmoReserve = Math.Max( 0, StartingReserveAmmo );
-		IsReloading = false;
-		ReloadFinishTime = 0f;
+		SetMuzzleFlashVisible( false );
 	}
 
-	void CompleteReloadIfReady()
+	protected override void OnReloadStartFx()
 	{
-		if ( !CanMutateState() ) return;
-		if ( !IsReloading ) return;
-		if ( Time.Now < ReloadFinishTime ) return;
-
-		var needed = Math.Max( 0, MagazineSize - AmmoInMagazine );
-		var loaded = Math.Min( needed, AmmoReserve );
-		AmmoInMagazine += loaded;
-		AmmoReserve -= loaded;
-		IsReloading = false;
-		ReloadFinishTime = 0f;
-	}
-
-	void UpdateDynamicSpread()
-	{
-		if ( _dynamicSpreadDegrees <= 0f )
-			return;
-
-		var recoverySeconds = MathF.Max( 0.05f, SpreadRecoverySeconds );
-		var decay = 1f - MathF.Exp( -Time.Delta / recoverySeconds );
-		_dynamicSpreadDegrees = MathX.Lerp( _dynamicSpreadDegrees, 0f, decay );
-		if ( _dynamicSpreadDegrees < 0.01f )
-			_dynamicSpreadDegrees = 0f;
-	}
-
-	void AddSpreadImpulse()
-	{
-		_dynamicSpreadDegrees = MathF.Min(
-			MathF.Max( 0f, MaxDynamicSpreadDegrees ),
-			_dynamicSpreadDegrees + MathF.Max( 0f, SpreadImpulseDegrees ) );
-	}
-
-	void AddClientPredictedSpreadImpulse()
-	{
-		if ( !Networking.IsActive || Networking.IsHost )
-			return;
-
-		AddSpreadImpulse();
-	}
-
-	void BeginReload()
-	{
-		if ( IsReloading ) return;
-		if ( AmmoReserve <= 0 ) return;
-		if ( AmmoInMagazine >= MagazineSize ) return;
-
-		IsReloading = true;
-		ReloadFinishTime = Time.Now + MathF.Max( 0.05f, ReloadSeconds );
-		PlayReloadFx( WorldPosition );
-		BroadcastReloadStart();
-	}
-
-	[Rpc.Broadcast]
-	void BroadcastReloadStart()
-	{
-		_timeSinceReloadStart = 0f;
 		_playedMagDrop = false;
 		_playedMagInsert = false;
 		_playedBoltRack = false;
+	}
+
+	protected override void ResolvePrefabReferences()
+	{
+		base.ResolvePrefabReferences();
+
+		if ( !MuzzleFlash.IsValid() && MuzzleSocket.IsValid() )
+		{
+			var flashObject = MuzzleSocket.Children.FirstOrDefault( x => x.Name == "MuzzleFlash" );
+			if ( flashObject.IsValid() )
+				MuzzleFlash = flashObject.Components.Get<PointLight>();
+		}
 	}
 
 	/// <summary>
@@ -246,41 +133,6 @@ public sealed class HitscanWeapon : Component
 		}
 	}
 
-	[Rpc.Broadcast]
-	void RequestReload()
-	{
-		if ( !CanMutateState() ) return;
-
-		CompleteReloadIfReady();
-		BeginReload();
-	}
-
-	[Rpc.Host]
-	void RequestFire( Vector3 requestedOrigin, Vector3 aimDirection )
-	{
-		if ( !CanMutateState() ) return;
-
-		CompleteReloadIfReady();
-
-		if ( !IsSelected ) return;
-		if ( IsReloading ) return;
-		if ( _timeSinceFire < FireInterval ) return;
-
-		if ( AmmoInMagazine <= 0 )
-		{
-			BeginReload();
-			return;
-		}
-
-		Fire( requestedOrigin, aimDirection );
-		AmmoInMagazine = Math.Max( 0, AmmoInMagazine - 1 );
-		AddSpreadImpulse();
-		_timeSinceFire = 0f;
-
-		if ( AmmoInMagazine <= 0 )
-			BeginReload();
-	}
-
 	void UpdateMuzzleFlash()
 	{
 		if ( MuzzleFlash.IsValid() && MuzzleFlash.Enabled && _timeSinceMuzzleFlash >= MuzzleFlashSeconds )
@@ -293,79 +145,7 @@ public sealed class HitscanWeapon : Component
 			MuzzleFlash.Enabled = visible;
 	}
 
-	void UpdateWeaponPose()
-	{
-		if ( !ApplySelectionVisualState() ) return;
-
-		// Request ADS from the controller while right-click is held (only
-		// when this weapon is selected — grenade's Attack2 throw is gated
-		// by its own IsSelected check).
-		if ( !IsProxy )
-		{
-			var pc = Components.GetInAncestors<GroundPlayerController>();
-			if ( pc.IsValid() )
-				pc.SetAdsTarget( !LocalOptionsState.ConsumesGameplayInput && Input.Down( "Attack2" ), AdsFovDegrees );
-		}
-
-		WeaponPose.UpdateViewmodel(
-			this, IsProxy,
-			FirstPersonOffset, FirstPersonRotationOffset,
-			AdsOffset, AdsRotationOffset,
-			ThirdPersonLocalPosition, ThirdPersonLocalAngles );
-	}
-
-	internal bool ApplySelectionVisualState()
-	{
-		var selected = IsSelected;
-		var visible = selected && !FirstPersonViewmodel.ShouldHideWorldHeldItem( this, selected );
-		WeaponPose.SetVisibility( GameObject, visible );
-		WeaponPose.ApplyHandPose( this, visible, HoldType, Handedness, LeftHandIkTarget, RightHandIkTarget );
-		if ( !selected )
-			SetMuzzleFlashVisible( false );
-
-		return selected;
-	}
-
-	static bool CanMutateState() => !Networking.IsActive || Networking.IsHost;
-
-	void ResolvePrefabReferences()
-	{
-		if ( !MuzzleSocket.IsValid() )
-			MuzzleSocket = GameObject.Children.FirstOrDefault( x => x.Name == "MuzzleSocket" );
-
-		if ( !WeaponVisual.IsValid() )
-			WeaponVisual = GameObject.Children.FirstOrDefault( x => x.Name == "WeaponVisual" );
-
-		if ( !LeftHandIkTarget.IsValid() )
-			LeftHandIkTarget = GameObject.Children.FirstOrDefault( x => x.Name == "LeftHandIk" );
-
-		if ( !RightHandIkTarget.IsValid() )
-			RightHandIkTarget = GameObject.Children.FirstOrDefault( x => x.Name == "RightHandIk" );
-
-		if ( !MuzzleFlash.IsValid() && MuzzleSocket.IsValid() )
-		{
-			var flashObject = MuzzleSocket.Children.FirstOrDefault( x => x.Name == "MuzzleFlash" );
-			if ( flashObject.IsValid() )
-				MuzzleFlash = flashObject.Components.Get<PointLight>();
-		}
-	}
-
-	Vector3 GetFireOrigin( GroundPlayerController pc )
-	{
-		return MuzzleSocket.IsValid() ? MuzzleSocket.WorldPosition : pc.Eye?.WorldPosition ?? WorldPosition;
-	}
-
-	Vector3 ValidateFireOrigin( GroundPlayerController pc, Vector3 requestedOrigin )
-	{
-		var fallback = GetFireOrigin( pc );
-		var eye = pc.Eye?.WorldPosition ?? pc.WorldPosition;
-
-		return requestedOrigin.Distance( eye ) <= 140f
-			? requestedOrigin
-			: fallback;
-	}
-
-	void Fire( Vector3 requestedOrigin, Vector3 aimDirection )
+	protected override void Fire( Vector3 requestedOrigin, Vector3 aimDirection )
 	{
 		var pc = Components.GetInAncestors<GroundPlayerController>();
 		if ( !pc.IsValid() ) return;
@@ -424,23 +204,6 @@ public sealed class HitscanWeapon : Component
 		return MathF.Max( 0f, baseSpread + _dynamicSpreadDegrees * dynamicScale );
 	}
 
-	[Rpc.Broadcast]
-	void BroadcastImpact( Vector3 position, int surfaceKindInt )
-	{
-		ImpactEffects.Spawn( position, (ImpactEffects.SurfaceKind)surfaceKindInt );
-	}
-
-	[Rpc.Broadcast]
-	void BroadcastImpactFromTrace( Vector3 position, string surfaceName )
-	{
-		var kind = ImpactEffects.SurfaceKind.Default;
-		var n = surfaceName?.ToLowerInvariant() ?? "";
-		if ( n.Contains( "metal" ) || n.Contains( "steel" ) || n.Contains( "alum" ) ) kind = ImpactEffects.SurfaceKind.Metal;
-		else if ( n.Contains( "wood" ) ) kind = ImpactEffects.SurfaceKind.Wood;
-		else if ( n.Contains( "concrete" ) || n.Contains( "stone" ) || n.Contains( "brick" ) ) kind = ImpactEffects.SurfaceKind.Concrete;
-		ImpactEffects.Spawn( position, kind );
-	}
-
 	/// <summary>
 	/// Play a whip-by sound at the closest point on the bullet's flight path
 	/// to the local player, if it passes near them without hitting them.
@@ -474,13 +237,6 @@ public sealed class HitscanWeapon : Component
 		// fades to 0 at 50 units. Add to the local player's suppression.
 		var suppressionAmount = MathX.Lerp( 0.45f, 0.10f, dist / 50f );
 		localPlayer.AddSuppression( suppressionAmount );
-	}
-
-	static Health FindHealth( GameObject go )
-	{
-		if ( go is null ) return null;
-		var h = go.Components.Get<Health>();
-		return h.IsValid() ? h : go.Components.GetInAncestors<Health>();
 	}
 
 	[Rpc.Broadcast]
@@ -520,12 +276,5 @@ public sealed class HitscanWeapon : Component
 		{
 			BallisticTracerRenderer.Spawn( Scene, from, to );
 		}
-	}
-
-	[Rpc.Broadcast]
-	void PlayReloadFx( Vector3 from )
-	{
-		if ( ReloadSound is not null )
-			SoundPlayback.PlayAttached( ReloadSound, GameObject, from );
 	}
 }
