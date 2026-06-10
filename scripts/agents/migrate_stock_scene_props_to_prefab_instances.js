@@ -26,6 +26,10 @@ const templates = [
     model: "models/sbox_props/shrubs/beech/beech_hedge_96x128_corner.vmdl",
   },
   {
+    path: "Assets/prefabs/environment/stock/beech_hedge_40x128.prefab",
+    model: "models/sbox_props/shrubs/beech/beech_hedge_40x128.vmdl",
+  },
+  {
     path: "Assets/prefabs/environment/stock/fence_panel_large.prefab",
     model: "models/props/temporary_fencing/fence_panel_large.vmdl",
   },
@@ -52,6 +56,12 @@ const templates = [
   {
     path: "Assets/prefabs/environment/stock/street_bin_rubbish.prefab",
     model: "models/sbox_props/bin/street_bin_rubbish.vmdl",
+  },
+  {
+    // Custom-authored prop (not stock, not synced): the scene placement collapses
+    // onto the hand-authored static prefab at this path.
+    path: "Assets/prefabs/environment/bouneurmaum_park_sign.prefab",
+    model: "models/bouneurmaum_park_sign.vmdl",
   },
 ];
 
@@ -222,8 +232,23 @@ function migrateArray(objects, modelToTemplate, prefabByPath, stats) {
   }
 }
 
+function serializeScene(scene, originalText) {
+  // Preserve the on-disk formatting so the rewrite only touches migrated nodes:
+  // keep ulong values JSON.parse mangles, the file's EOL style, and its
+  // trailing-newline behaviour.
+  let serialized = JSON.stringify(scene, null, 2).replace(/\b18446744073709552000\b/g, "18446744073709551615");
+  if (originalText.endsWith("\n")) {
+    serialized += "\n";
+  }
+  if (originalText.includes("\r\n")) {
+    serialized = serialized.replace(/\n/g, "\r\n");
+  }
+  return serialized;
+}
+
 const scenePath = path.join(root, "Assets/scenes/main.scene");
-const scene = JSON.parse(fs.readFileSync(scenePath, "utf8"));
+const sceneText = fs.readFileSync(scenePath, "utf8");
+const scene = JSON.parse(sceneText);
 const modelToTemplate = new Map(templates.map((template) => [template.model, template]));
 const prefabByPath = new Map();
 
@@ -235,7 +260,7 @@ const stats = { migrated: 0, byPrefab: new Map() };
 migrateArray(scene.GameObjects || [], modelToTemplate, prefabByPath, stats);
 
 if (!dryRun && stats.migrated > 0) {
-  fs.writeFileSync(scenePath, `${JSON.stringify(scene, null, 2)}\n`);
+  fs.writeFileSync(scenePath, serializeScene(scene, sceneText));
 }
 
 const action = dryRun ? "Would migrate" : "Migrated";

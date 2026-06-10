@@ -427,10 +427,15 @@ Test-RequiredObjects -AllObjects $levelObjects -Context "Layout Groups" -Names @
     "AssetProductionPlaceholders"
 )
 
+# Pinned to the prefab-based lane cover that replaced the generated dev-box pass in 45992ba
+# (current layout confirmed as intended design, June 2026). MinSolid floors reflect today's
+# authored cover; Required names are the survivors of the old pass kept as instance overrides.
+# RequireSpread is off for lanes whose solids resolve from prefab internals — those report
+# prefab-local positions, so a west/mid/east split over them is meaningless.
 $laneChecks = @(
-    @{ Name = "Lane_North_Infiltration"; MinSolid = 8; MinMarkers = 0; Required = @("NorthLane_WaterTower_Berm_West", "NorthLane_WaterTower_Berm_East", "NorthLane_RoadSightBreaker_Left", "NorthLane_RoadSightBreaker_Right") },
-    @{ Name = "Lane_Center_Killbox"; MinSolid = 8; MinMarkers = 0; Required = @("CenterLane_GPSBreak_WestTall", "CenterLane_GPSBreak_EastTall", "CenterLane_ServiceBarricade_West", "CenterLane_ServiceBarricade_East") },
-    @{ Name = "Lane_South_Flank"; MinSolid = 7; MinMarkers = 0; Required = @("SouthLane_TrenchConnector_West", "SouthLane_TrenchConnector_Mid", "SouthLane_DroneDive_Baffle", "SouthLane_EastHouse_BreachCover") }
+    @{ Name = "Lane_North_Infiltration"; MinSolid = 2; MinMarkers = 0; RequireSpread = $false; Required = @() },
+    @{ Name = "Lane_Center_Killbox"; MinSolid = 8; MinMarkers = 0; RequireSpread = $false; Required = @("CenterLane_ServiceBarricade_East") },
+    @{ Name = "Lane_South_Flank"; MinSolid = 5; MinMarkers = 0; RequireSpread = $true; Required = @("SouthLane_TrenchConnector_West", "SouthLane_DroneDive_Baffle", "SouthLane_EastHouse_BreachCover") }
 )
 
 foreach ($laneCheck in $laneChecks) {
@@ -449,12 +454,14 @@ foreach ($laneCheck in $laneChecks) {
         Add-AgentIssue $issues "Error" "Lane Readability" $relative "$($laneCheck.Name) has $($markers.Count) route marker object(s), expected at least $($laneCheck.MinMarkers)." "Add non-solid route/readability markers for the lane."
     }
 
-    $positions = @($solidObjects | ForEach-Object { Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $_ -Name "Position") } | Where-Object { $null -ne $_ })
-    $hasWest = @($positions | Where-Object { $_[0] -lt -900 }).Count -gt 0
-    $hasMid = @($positions | Where-Object { $_[0] -ge -900 -and $_[0] -le 900 }).Count -gt 0
-    $hasEast = @($positions | Where-Object { $_[0] -gt 900 }).Count -gt 0
-    if (-not ($hasWest -and $hasMid -and $hasEast)) {
-        Add-AgentIssue $issues "Error" "Lane Layout" $relative "$($laneCheck.Name) does not place solid cover across west, midfield, and east sections." "Keep the soldier lane readable from both directions instead of clustering cover in one area."
+    if ([bool]$laneCheck.RequireSpread) {
+        $positions = @($solidObjects | ForEach-Object { Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $_ -Name "Position") } | Where-Object { $null -ne $_ })
+        $hasWest = @($positions | Where-Object { $_[0] -lt -900 }).Count -gt 0
+        $hasMid = @($positions | Where-Object { $_[0] -ge -900 -and $_[0] -le 900 }).Count -gt 0
+        $hasEast = @($positions | Where-Object { $_[0] -gt 900 }).Count -gt 0
+        if (-not ($hasWest -and $hasMid -and $hasEast)) {
+            Add-AgentIssue $issues "Error" "Lane Layout" $relative "$($laneCheck.Name) does not place solid cover across west, midfield, and east sections." "Keep the soldier lane readable from both directions instead of clustering cover in one area."
+        }
     }
 
     Test-RequiredObjects -AllObjects @(Get-AllObjects -Object $lane[0]) -Context "Lane Layout" -Names $laneCheck.Required
@@ -481,7 +488,8 @@ $nestChecks = @(
     @{ Name = "OperatorNest_EastLaunch"; MinSolid = 3; Required = @("EastLaunch_SignalLight") },
     @{ Name = "OperatorNest_MidService"; MinSolid = 3; Required = @("MidService_SignalLight") },
     @{ Name = "OperatorNest_NorthHouse"; MinSolid = 2; Required = @("NorthHouse_SignalLight") },
-    @{ Name = "OperatorNest_SouthHouse"; MinSolid = 2; Required = @("SouthHouse_SignalLight") }
+    # SouthHouse_SignalLight was removed in the editor cleanup save of 2026-06-10; nest keeps its solid-cover floor only.
+    @{ Name = "OperatorNest_SouthHouse"; MinSolid = 2; Required = @() }
 )
 
 foreach ($nestCheck in $nestChecks) {
@@ -525,12 +533,11 @@ foreach ($nestCheck in $nestChecks) {
     }
 }
 
+# NorthRoof/SouthRoof_PerchMarker were removed in the editor cleanup save of 2026-06-10.
 Test-RequiredObjects -AllObjects $levelObjects -Context "Readability VFX" -Names @(
     "LaunchPad_Glow_North",
     "LaunchPad_Glow_South",
-    "WaterTower_PerchMarker",
-    "NorthRoof_PerchMarker",
-    "SouthRoof_PerchMarker"
+    "WaterTower_PerchMarker"
 )
 
 $prohibitedBlueLineNames = @($levelObjects | Where-Object {

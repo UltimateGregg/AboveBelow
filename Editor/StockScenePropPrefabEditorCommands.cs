@@ -23,13 +23,16 @@ public static class StockScenePropPrefabEditorCommands
 		new( "beech_bush_medium_wall", "prefabs/environment/stock/beech_bush_medium_wall.prefab" ),
 		new( "beech_bush_regular_medium_b", "prefabs/environment/stock/beech_bush_regular_medium_b.prefab" ),
 		new( "beech_hedge_96x128_corner", "prefabs/environment/stock/beech_hedge_96x128_corner.prefab" ),
+		new( "beech_hedge_40x128", "prefabs/environment/stock/beech_hedge_40x128.prefab" ),
 		new( "fence_panel_large", "prefabs/environment/stock/fence_panel_large.prefab" ),
 		new( "fence_panel_large_bent", "prefabs/environment/stock/fence_panel_large_bent.prefab" ),
 		new( "bench_table_01", "prefabs/environment/stock/bench_table_01.prefab" ),
 		new( "old_bench", "prefabs/environment/stock/old_bench.prefab" ),
 		new( "iron_fence_128", "prefabs/environment/stock/iron_fence_128.prefab" ),
 		new( "tree_oak_big_a", "prefabs/environment/stock/tree_oak_big_a.prefab" ),
-		new( "street_bin_rubbish", "prefabs/environment/stock/street_bin_rubbish.prefab" )
+		new( "street_bin_rubbish", "prefabs/environment/stock/street_bin_rubbish.prefab" ),
+		// Custom-authored prop (not stock): collapses onto its hand-authored static prefab.
+		new( "bouneurmaum_park_sign", "prefabs/environment/bouneurmaum_park_sign.prefab" )
 	};
 
 	[ConCmd( "dvp_preview_stock_scene_prop_prefab_migration" )]

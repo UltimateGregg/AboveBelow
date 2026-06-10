@@ -40,6 +40,16 @@ const templates = [
     minImpactDamageSpeed: 500,
   },
   {
+    path: "Assets/prefabs/environment/stock/beech_hedge_40x128.prefab",
+    rootName: "BeechHedge40x128",
+    model: "models/sbox_props/shrubs/beech/beech_hedge_40x128.vmdl",
+    kind: "prop",
+    health: 0,
+    mass: 0,
+    impactDamage: 0,
+    minImpactDamageSpeed: 500,
+  },
+  {
     path: "Assets/prefabs/environment/stock/fence_panel_large.prefab",
     rootName: "FencePanelLarge",
     model: "models/props/temporary_fencing/fence_panel_large.vmdl",
