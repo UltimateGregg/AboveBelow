@@ -1,0 +1,81 @@
+@using Sandbox
+@using Sandbox.UI
+@using System
+@using DroneVsPlayers
+@namespace DroneVsPlayers
+@inherits Panel
+
+@* Escape options overlay: UI scale, look sensitivity, leave/quit actions. *@
+
+<root class="options-overlay">
+    @if ( Hud.IsValid() )
+    {
+        <div class="options-panel">
+            <div class="options-header">
+                <div class="options-title">Options</div>
+                <div class="options-subtitle">Local settings</div>
+            </div>
+
+            <div class="options-list">
+                <div class="option-row">
+                    <div class="option-copy">
+                        <div class="option-name">UI Scale</div>
+                        <div class="option-value">@UiScaleDisplay</div>
+                    </div>
+                    <div class="scale-control">
+                        <div class="option-button small" onclick=@(() => Hud.ClickMenuOption(Hud.DecreaseUiScale))>-</div>
+                        <div class="scale-track">
+                            <div class="scale-fill" style="width: @UiScaleFillWidth"></div>
+                        </div>
+                        <div class="option-button small" onclick=@(() => Hud.ClickMenuOption(Hud.IncreaseUiScale))>+</div>
+                    </div>
+                </div>
+
+                <div class="option-row">
+                    <div class="option-copy">
+                        <div class="option-name">Look Sensitivity</div>
+                        <div class="option-value">@LookSensitivityDisplay</div>
+                    </div>
+                    <div class="stepper-control">
+                        <div class="option-button small" onclick=@(() => Hud.ClickMenuOption(Hud.DecreaseLookSensitivity))>-</div>
+                        <div class="option-button small" onclick=@(() => Hud.ClickMenuOption(Hud.IncreaseLookSensitivity))>+</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="options-actions">
+                <div class="option-button primary" onclick=@(() => Hud.ClickMenuOption(Hud.ResumeOptions))>Resume</div>
+                <div class="option-button" onclick=@(() => Hud.ClickMenuOption(Hud.ResetUiScale))>Reset UI</div>
+                <div class="option-button danger" onclick=@(() => Hud.ClickMenuOption(Hud.LeaveMatch))>Leave Match</div>
+                <div class="option-button quiet" onclick=@(() => Hud.ClickMenuOption(Hud.QuitGame))>Quit</div>
+            </div>
+        </div>
+    }
+</root>
+
+@code
+{
+    public HudPanel Hud { get; set; }
+
+    string UiScaleDisplay => $"{LocalOptionsState.UiScalePercent}%";
+
+    string UiScaleFillWidth
+    {
+        get
+        {
+            var range = LocalOptionsState.MaxUiScale - LocalOptionsState.MinUiScale;
+            var t = range <= 0f ? 1f : (LocalOptionsState.UiScale - LocalOptionsState.MinUiScale) / range;
+            return $"{Math.Clamp( t, 0f, 1f ) * 100f:0}%";
+        }
+    }
+
+    string LookSensitivityDisplay => $"{LocalOptionsState.LookSensitivity:0.00}";
+
+    protected override int BuildHash()
+    {
+        if ( !Hud.IsValid() ) return 0;
+        return HashCode.Combine(
+            LocalOptionsState.UiScalePercent,
+            (int)(LocalOptionsState.LookSensitivity * 100f) );
+    }
+}

@@ -43,9 +43,12 @@ function Reject-Match {
 }
 
 $hud = Read-ProjectFile "Code/UI/HudPanel.razor"
+foreach ($childPanel in Get-ChildItem -Path (Join-Path $Root "Code/UI/Hud/*.razor") -ErrorAction SilentlyContinue) {
+    $hud += "`n" + (Get-Content -LiteralPath $childPanel.FullName -Raw)
+}
 
 Require-Match "HudPanel should render the sprint meter inside the existing reticle stack." `
-    $hud "<div\s+class=""reticle-stack"">[\s\S]{0,2400}ShowSprintMeter[\s\S]{0,500}sprint-meter"
+    $hud "<(?:div|root)\s+class=""reticle-stack"">[\s\S]{0,2400}ShowSprintMeter[\s\S]{0,500}sprint-meter"
 
 Require-Match "HudPanel should use a sprint meter class so cooldown/recovery can be styled." `
     $hud "class=""sprint-meter\s+@SprintMeterClass"""

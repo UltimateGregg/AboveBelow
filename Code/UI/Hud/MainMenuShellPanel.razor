@@ -1,0 +1,56 @@
+@using Sandbox
+@using Sandbox.UI
+@using System
+@using DroneVsPlayers
+@namespace DroneVsPlayers
+@inherits Panel
+
+@* Main menu shell: title + PLAY / OPTIONS / QUIT, with the play-transition scanline. *@
+
+<root class="@(Hud?.MainMenuShellClass)">
+    @if ( Hud.IsValid() )
+    {
+        <div class="main-menu-title">
+            <span class="main-menu-title-text">ABOVE / BELOW</span>
+        </div>
+        <div class="role-panel main-menu-panel">
+            <div class="loadout-section main-menu-actions">
+                <div class="section-title">Main Menu</div>
+                <div class="choices main-menu-choices">
+                    <div class="choice pilot main-menu-play" onclick=@(() => Hud.ClickMenuOption(Hud.StartMainMenuPlayTransition))>
+                        <span class="label">PLAY</span>
+                        <span class="desc">Choose team and loadout</span>
+                    </div>
+                    <div class="main-menu-secondary">
+                        <div class="choice soldier" onclick=@(() => Hud.ClickMenuOption(Hud.OpenMainMenuOptions))>
+                            <span class="label">OPTIONS</span>
+                            <span class="desc">Local settings</span>
+                        </div>
+                        <div class="choice" onclick=@(() => Hud.ClickMenuOption(Hud.QuitGame))>
+                            <span class="label">QUIT</span>
+                            <span class="desc">Close the game</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @if ( Hud.PlayTransitionActive )
+        {
+            <div class="main-menu-scanline"></div>
+        }
+    }
+</root>
+
+@code
+{
+    public HudPanel Hud { get; set; }
+
+    protected override int BuildHash()
+    {
+        if ( !Hud.IsValid() ) return 0;
+        return HashCode.Combine(
+            Hud.MainMenuShellClass,
+            Hud.PlayTransitionActive,
+            Hud.MainMenuTransitionHashTick );
+    }
+}

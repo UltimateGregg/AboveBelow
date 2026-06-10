@@ -33,6 +33,9 @@ $shotgun = Read-ProjectFile "Code/Player/ShotgunWeapon.cs"
 # Shared ammo/reload/fire flow lives in the WeaponBase parent class.
 $shotgun += "`n" + (Read-ProjectFile "Code/Player/WeaponBase.cs")
 $hud = Read-ProjectFile "Code/UI/HudPanel.razor"
+foreach ($childPanel in Get-ChildItem -Path (Join-Path $Root "Code/UI/Hud/*.razor") -ErrorAction SilentlyContinue) {
+    $hud += "`n" + (Get-Content -LiteralPath $childPanel.FullName -Raw)
+}
 $viewmodel = Read-ProjectFile "Code/Player/FirstPersonViewmodel.cs"
 foreach ($partial in Get-ChildItem -Path (Join-Path $Root "Code/Player/FirstPersonViewmodel.*.cs") -ErrorAction SilentlyContinue) {
     $viewmodel += "`n" + (Get-Content -LiteralPath $partial.FullName -Raw)

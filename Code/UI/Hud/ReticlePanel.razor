@@ -1,0 +1,177 @@
+@using Sandbox
+@using Sandbox.UI
+@using System
+@using System.Collections.Generic
+@using DroneVsPlayers
+@namespace DroneVsPlayers
+@inherits Panel
+
+@*
+   Center reticle stack: crosshair, hitmarker, drone-action + world prompts,
+   sprint meter, damage-direction arcs. Owns the HUD's 15 Hz animation hash
+   tick, so combat feedback animates here without rebuilding the whole HUD.
+*@
+
+<root class="reticle-stack">
+    @if ( Hud.IsValid() )
+    {
+        <div class="crosshair @CrosshairClass">
+            <div class="tick top"></div>
+            <div class="tick bottom"></div>
+            <div class="tick left"></div>
+            <div class="tick right"></div>
+            <div class="dot"></div>
+        </div>
+        <div class="hitmarker @HitmarkerClass"></div>
+
+        @if ( Hud.ShowDroneActionPrompt )
+        {
+            @InteractionPromptRenderer.Render( $"drone-action-prompt {DroneActionPromptClass}", "LMB", Hud.DroneActionLabel )
+        }
+
+        @if ( Hud.CurrentWorldPrompt.IsValid() )
+        {
+            @InteractionPromptRenderer.Render( WorldPromptClass, Hud.CurrentWorldPrompt.InputGlyph, Hud.CurrentWorldPrompt.DisplayText )
+        }
+
+        @if ( ShowSprintMeter )
+        {
+            <div class="sprint-meter @SprintMeterClass">
+                <div class="sprint-fill" style="width: @SprintMeterPercent%"></div>
+            </div>
+        }
+
+        @foreach ( var arc in DamageArcs )
+        {
+            <div class="damage-arc" style="transform: rotate(@(arc.AngleDeg.ToString("0"))deg); opacity: @arc.Opacity.ToString("0.00")">
+                <div class="damage-arc-ring"></div>
+            </div>
+        }
+    }
+</root>
+
+@code
+{
+    public HudPanel Hud { get; set; }
+
+    string CrosshairClass
+    {
+        get
+        {
+            var classes = new List<string>
+            {
+                Hud.LocalRole == PlayerRole.Pilot ? "pilot" : "soldier"
+            };
+
+            if ( Time.Now - Hud._lastHitTime < 0.10f ) classes.Add( "firing" );
+            if ( Hud.SuppressionOpacity > 0.08f ) classes.Add( "suppressed" );
+            var weaponBloomBucket = Hud.CurrentWeaponBloomBucket;
+            if ( weaponBloomBucket > 0 ) classes.Add( $"weapon-bloom-{weaponBloomBucket}" );
+            return string.Join( " ", classes );
+        }
+    }
+
+    string HitmarkerClass
+    {
+        get
+        {
+            if ( Time.Now - Hud._lastKillTime < 0.30f ) return "active kill";
+            if ( Time.Now - Hud._lastHitTime < 0.18f ) return "active";
+            return "";
+        }
+    }
+
+    string DroneActionPromptClass
+    {
+        get
+        {
+            var classes = new List<string> { Hud.DroneVariantClass };
+            if ( !RemoteController.AreLocalDroneWeaponsReady( Hud.Scene ) )
+                classes.Add( "arming" );
+
+            return string.Join( " ", classes );
+        }
+    }
+
+    string WorldPromptClass
+    {
+        get
+        {
+            var prompt = Hud.CurrentWorldPrompt;
+            var extra = prompt.IsValid() && !string.IsNullOrWhiteSpace( prompt.PromptClass )
+                ? $" {prompt.PromptClass.Trim()}"
+                : "";
+            return $"world-action-prompt{extra}";
+        }
+    }
+
+    bool ShowSprintMeter
+    {
+        get
+        {
+            var g = Hud.LocalGroundController;
+            if ( !Hud.ShowReticle || !g.IsValid() || Hud.LocalDroneViewActive )
+                return false;
+
+            return g.IsSprinting || g.IsSprintLocked || g.Stamina < 0.995f;
+        }
+    }
+
+    int SprintMeterPercent
+    {
+        get
+        {
+            var g = Hud.LocalGroundController;
+            if ( !g.IsValid() ) return 100;
+            return (int)(g.Stamina.Clamp( 0f, 1f ) * 100f);
+        }
+    }
+
+    string SprintMeterClass
+    {
+        get
+        {
+            var g = Hud.LocalGroundController;
+            if ( !g.IsValid() ) return "";
+            if ( g.IsSprintLocked && g.Stamina <= 0.01f ) return "locked";
+            if ( g.Stamina < 0.995f && !g.IsSprinting ) return "recovering";
+            return "ready";
+        }
+    }
+
+    IReadOnlyList<HudPanel.DamageArc> DamageArcs
+    {
+        get
+        {
+            var arcs = new List<HudPanel.DamageArc>();
+            var source = Hud._damageArcs;
+            for ( int i = source.Count - 1; i >= 0; i-- )
+            {
+                var a = source[i];
+                var age = Time.Now - a.CreatedAt;
+                if ( age > 2f )
+                {
+                    source.RemoveAt( i );
+                    continue;
+                }
+                a.Opacity = MathX.Lerp( 0.9f, 0f, age / 2f );
+                arcs.Add( a );
+            }
+            return arcs;
+        }
+    }
+
+    protected override int BuildHash()
+    {
+        if ( !Hud.IsValid() ) return 0;
+        return HashCode.Combine(
+            // Animate hitmarker/crosshair/arcs at ~15 Hz while the reticle exists.
+            (int)(Time.Now * 15f),
+            Hud.LocalRole,
+            HashCode.Combine( Hud.ShowDroneActionPrompt, Hud.DroneActionLabel, DroneActionPromptClass ),
+            HashCode.Combine( Hud.CurrentWorldPrompt.IsValid() ? Hud.CurrentWorldPrompt.StableHash : 0, WorldPromptClass ),
+            HashCode.Combine( ShowSprintMeter, SprintMeterPercent, SprintMeterClass ),
+            Hud.CurrentWeaponBloomBucket
+        );
+    }
+}

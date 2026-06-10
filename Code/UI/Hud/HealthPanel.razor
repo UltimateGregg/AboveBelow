@@ -1,0 +1,49 @@
+@using Sandbox
+@using Sandbox.UI
+@using System
+@using DroneVsPlayers
+@namespace DroneVsPlayers
+@inherits Panel
+
+@* Bottom-left role label + HP bar/text. Parent gates on a valid local Health. *@
+
+<root class="bottom-left">
+    @if ( Hud.IsValid() )
+    {
+        <div class="role @Hud.LocalRole.ToString().ToLower()">@(Hud.LocalRole == PlayerRole.Pilot ? "DRONE PILOTS" : Hud.LocalRole == PlayerRole.Soldier ? "HUNTERS" : "SPECTATOR")</div>
+        <div class="hp-bar">
+            <div class="hp-fill" style="width: @HpFraction%"></div>
+        </div>
+        <div class="hp-text">@HpText</div>
+    }
+</root>
+
+@code
+{
+    public HudPanel Hud { get; set; }
+
+    int HpFraction
+    {
+        get
+        {
+            var health = Hud.LocalHealth;
+            if ( health is null ) return 0;
+            return (int)(health.CurrentHealth / MathF.Max( 1, health.MaxHealth ) * 100f);
+        }
+    }
+
+    string HpText
+    {
+        get
+        {
+            var health = Hud.LocalHealth;
+            return health is null ? "" : $"{health.CurrentHealth:0} / {health.MaxHealth:0}";
+        }
+    }
+
+    protected override int BuildHash()
+    {
+        if ( !Hud.IsValid() ) return 0;
+        return HashCode.Combine( Hud.LocalRole, HpFraction, HpText );
+    }
+}

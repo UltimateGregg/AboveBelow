@@ -1,0 +1,210 @@
+@using Sandbox
+@using Sandbox.UI
+@using System
+@using DroneVsPlayers
+@namespace DroneVsPlayers
+@inherits Panel
+
+@* Loadout slot list (weapon/equipment per role). Parent gates on ShowLoadoutHud. *@
+
+<root class="loadout-hud @(Hud?.LocalRole.ToString().ToLower())">
+    @if ( Hud.IsValid() )
+    {
+        <div class="loadout-title">@LoadoutTitle</div>
+        <div class="loadout-slots">
+            @foreach ( var slot in LoadoutSlots )
+            {
+                <div class="@LoadoutSlotClass(slot)">
+                    <div class="slot-main-row">
+                        <div class="slot-key">@slot.Number</div>
+                        <div class="slot-copy">
+                            <div class="slot-name">@slot.Name</div>
+                            <div class="slot-detail">@slot.Detail</div>
+                        </div>
+                        <div class="slot-action">@slot.Action</div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</root>
+
+@code
+{
+    public HudPanel Hud { get; set; }
+
+    sealed class LoadoutSlot
+    {
+        public LoadoutSlot( int number, string name, string detail, string action, bool disabled = false )
+        {
+            Number = number;
+            Name = name;
+            Detail = detail;
+            Action = action;
+            Disabled = disabled;
+        }
+
+        public int Number { get; }
+        public string Name { get; }
+        public string Detail { get; }
+        public string Action { get; }
+        public bool Disabled { get; }
+    }
+
+    LoadoutSlot[] LoadoutSlots => Hud.LocalRole switch
+    {
+        PlayerRole.Pilot => PilotLoadoutSlots(),
+        PlayerRole.Soldier => SoldierLoadoutSlots(),
+        _ => Array.Empty<LoadoutSlot>(),
+    };
+
+    string LoadoutTitle => Hud.LocalRole switch
+    {
+        PlayerRole.Pilot => $"{Hud.LocalDroneName} Loadout",
+        PlayerRole.Soldier => $"{Hud.LocalSoldierName} Loadout",
+        _ => "",
+    };
+
+    LoadoutSlot[] SoldierLoadoutSlots()
+    {
+        return new[]
+        {
+            SoldierPrimarySlot(),
+            SoldierEquipmentSlot(),
+        };
+    }
+
+    LoadoutSlot SoldierPrimarySlot()
+    {
+        var rifle = Hud.LocalSoldierComponent<HitscanWeapon>();
+        if ( rifle.IsValid() )
+        {
+            var definition = Hud.SoldierDefinition( Hud.LocalSoldierClass );
+            return new LoadoutSlot(
+                1,
+                string.IsNullOrWhiteSpace( definition?.PrimaryLabel ) ? "Assault Rifle" : definition.PrimaryLabel,
+                $"{rifle.Damage:0} dmg / {rifle.MagazineSize} mag",
+                "LMB"
+            );
+        }
+
+        var shotgun = Hud.LocalSoldierComponent<ShotgunWeapon>();
+        if ( shotgun.IsValid() )
+        {
+            var definition = Hud.SoldierDefinition( Hud.LocalSoldierClass );
+            return new LoadoutSlot(
+                1,
+                string.IsNullOrWhiteSpace( definition?.PrimaryLabel ) ? "Shotgun" : definition.PrimaryLabel,
+                $"{shotgun.PelletCount} pellets / {shotgun.MaxRange / 1000f:0.0}k range",
+                "LMB"
+            );
+        }
+
+        var jammer = Hud.LocalSoldierComponent<DroneJammerGun>();
+        if ( jammer.IsValid() )
+        {
+            var definition = Hud.SoldierDefinition( Hud.LocalSoldierClass );
+            return new LoadoutSlot(
+                1,
+                string.IsNullOrWhiteSpace( definition?.PrimaryLabel ) ? "Drone Jammer" : definition.PrimaryLabel,
+                $"{jammer.MaxRange / 1000f:0.0}k range / {jammer.BatteryChargeFraction * 100f:0}% battery",
+                "LMB"
+            );
+        }
+
+        return DisabledSlot( 1, "Primary", "No weapon found", "LMB" );
+    }
+
+    LoadoutSlot SoldierEquipmentSlot()
+    {
+        var grenade = Hud.LocalSoldierComponent<ThrowableGrenade>();
+        if ( !grenade.IsValid() )
+            return DisabledSlot( 2, "Equipment", "No equipment found", "LMB" );
+
+        var definition = Hud.SoldierDefinition( Hud.LocalSoldierClass );
+        return new LoadoutSlot(
+            2,
+            string.IsNullOrWhiteSpace( definition?.EquipmentLabel ) ? GrenadeName( grenade ) : definition.EquipmentLabel,
+            GrenadeDetail( grenade ),
+            "LMB"
+        );
+    }
+
+    LoadoutSlot[] PilotLoadoutSlots()
+    {
+        var remote = Hud.LocalRemoteController;
+        if ( remote.IsValid() && remote.DroneViewActive )
+            return Array.Empty<LoadoutSlot>();
+
+        return PilotGroundLoadoutSlots();
+    }
+
+    LoadoutSlot[] PilotGroundLoadoutSlots()
+    {
+        var deployer = Hud.LocalSoldierComponent<DroneDeployer>();
+        var definition = Hud.DroneDefinition( Hud.LocalDroneType );
+        var primary = deployer.IsValid()
+            ? new LoadoutSlot(
+                1,
+                string.IsNullOrWhiteSpace( definition?.PrimaryLabel ) ? Hud.LocalDroneName : definition.PrimaryLabel,
+                deployer.DroneInFlight ? "Drone airborne" : "Deploy drone",
+                deployer.DroneInFlight ? "F" : "LMB"
+            )
+            : DisabledSlot( 1, "Drone", "No deployer found", "LMB" );
+
+        var backup = Hud.LocalSoldierComponent<HitscanWeapon>();
+        var secondary = backup.IsValid()
+            ? new LoadoutSlot(
+                2,
+                backup.WeaponDisplayName,
+                $"{backup.Damage:0} dmg / {backup.MagazineSize} mag",
+                "LMB"
+            )
+            : DisabledSlot( 2, "Sidearm", "No backup weapon found", "LMB" );
+
+        return new[] { primary, secondary };
+    }
+
+    static string GrenadeName( ThrowableGrenade grenade ) => grenade switch
+    {
+        ChaffGrenade => "Chaff Grenade",
+        FragGrenade => "Frag Grenade",
+        EmpGrenade => "EMP Grenade",
+        _ => "Equipment",
+    };
+
+    static string GrenadeDetail( ThrowableGrenade grenade ) => grenade switch
+    {
+        ChaffGrenade chaff => $"{chaff.Radius:0} radius / {chaff.JamDuration:0}s jam",
+        FragGrenade frag => $"{frag.Damage:0} dmg / {frag.Radius:0} radius",
+        EmpGrenade emp => $"{emp.Radius:0} radius / {emp.JamDuration:0}s jam",
+        _ => "Throwable equipment",
+    };
+
+    static LoadoutSlot DisabledSlot( int number, string name, string detail, string action )
+    {
+        return new LoadoutSlot( number, name, detail, action, true );
+    }
+
+    string LoadoutSlotClass( LoadoutSlot slot )
+    {
+        var className = "loadout-slot";
+        if ( slot.Number == Hud.SelectedLoadoutSlot )
+            className += " selected";
+        if ( slot.Disabled )
+            className += " disabled";
+
+        return className;
+    }
+
+    protected override int BuildHash()
+    {
+        if ( !Hud.IsValid() ) return 0;
+        var hash = HashCode.Combine(
+            Hud.LocalRole, Hud.SelectedLoadoutSlot, LoadoutTitle,
+            Hud.LoadoutPreviewHash, Hud.JammerBatteryBucket );
+        foreach ( var slot in LoadoutSlots )
+            hash = HashCode.Combine( hash, slot.Number, slot.Name, slot.Detail, slot.Action, slot.Disabled );
+        return hash;
+    }
+}

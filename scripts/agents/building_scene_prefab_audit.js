@@ -4,14 +4,19 @@ const fs = require("fs");
 const path = require("path");
 
 const templates = [
+  // Visual houses use EXACT mesh collision: one static ModelCollider on
+  // Model_Visual (PhysicsMeshFile baked into the vmdl by the asset pipeline)
+  // plus the ladder/zone trigger children. The legacy hand-placed solid
+  // Collision_* boxes were removed in the June 2026 collision migration.
   {
     prefab: "Assets/prefabs/environment/house_large_playable.prefab",
     scenePrefab: "prefabs/environment/house_large_playable.prefab",
     rootName: "HouseLargePlayable",
     sceneNames: ["House_Large_01", "House_Large_02"],
     model: "models/house_large.vmdl",
-    childCount: 55,
-    minColliderCount: 54,
+    requiresMeshCollider: true,
+    childCount: 9,
+    minColliderCount: 9,
     minZoneCount: 6,
   },
   {
@@ -20,8 +25,9 @@ const templates = [
     rootName: "HouseSmallPlayable",
     sceneNames: ["House_Small_02", "House_Small_03"],
     model: "models/house_small.vmdl",
-    childCount: 40,
-    minColliderCount: 39,
+    requiresMeshCollider: true,
+    childCount: 8,
+    minColliderCount: 8,
     minZoneCount: 5,
   },
   {
@@ -187,6 +193,18 @@ for (const template of templates) {
     }
   } else if (modelVisual || renderer) {
     errors.push(`${template.prefab} should be collision-only and must not carry a Model_Visual child.`);
+  }
+
+  if (template.requiresMeshCollider) {
+    const meshCollider = (modelVisual?.Components || []).find(
+      (component) => componentType(component) === "Sandbox.ModelCollider"
+        && component.Model === template.model
+        && component.Static === true
+        && component.IsTrigger !== true,
+    );
+    if (!meshCollider) {
+      errors.push(`${template.prefab} Model_Visual should carry a static non-trigger ModelCollider for ${template.model} (exact mesh collision).`);
+    }
   }
 
   const colliderCount = countComponents(rootObject, (component) => componentType(component).endsWith("Collider"));

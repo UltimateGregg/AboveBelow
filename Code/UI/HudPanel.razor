@@ -11,133 +11,34 @@
    In-game HUD. Attach this PanelComponent to a GameObject in main.scene
    (typically the same GameManager object) so it renders for every client.
 
+   The HUD is composed of child razor panels under Code/UI/Hud/. HudPanel owns
+   all state, input handling, scene-lookup caching (HudPanel.Cache.cs), and
+   Health event subscriptions; the children are pure presenters that read
+   state through their Hud parameter and own their slice of BuildHash, so an
+   idle section stops rebuilding without dragging the whole HUD with it.
+
    Shows:
-     - top center: round state and countdown timer
-     - top right: score (Pilot wins / Soldier wins) + kill feed
-     - center: crosshair, hitmarker flash, damage direction arcs
-     - bottom left: local health bar (only for your own pawn)
-     - bottom center: role indicator
+     - top center: round state and countdown timer (RoundStatePanel)
+     - top right: score + kill feed (KillFeedPanel)
+     - center: crosshair, hitmarker, prompts, damage arcs (ReticlePanel)
+     - bottom left: local health bar (HealthPanel)
+     - loadout + ammo readouts (LoadoutPanel + AmmoHudRenderer)
      - Tab: full scoreboard overlay
-     - Escape: local options overlay
-     - low HP: vignette
+     - Escape: local options overlay (OptionsOverlayPanel)
+     - main menu + role picker (MainMenuShellPanel / RolePickerPanel)
+     - low HP: vignette; jam/suppression/sun-glare/eliminated alerts
 *@
 
 <root>
     <div class="hud @VignetteClass">
         @if ( ShowMainMenuShell )
         {
-            <div class="@MainMenuShellClass">
-                <div class="main-menu-title">
-                    <span class="main-menu-title-text">ABOVE / BELOW</span>
-                </div>
-                <div class="role-panel main-menu-panel">
-                    <div class="loadout-section main-menu-actions">
-                        <div class="section-title">Main Menu</div>
-                        <div class="choices main-menu-choices">
-                            <div class="choice pilot main-menu-play" onclick=@(() => ClickMenuOption(StartMainMenuPlayTransition))>
-                                <span class="label">PLAY</span>
-                                <span class="desc">Choose team and loadout</span>
-                            </div>
-                            <div class="main-menu-secondary">
-                                <div class="choice soldier" onclick=@(() => ClickMenuOption(OpenMainMenuOptions))>
-                                    <span class="label">OPTIONS</span>
-                                    <span class="desc">Local settings</span>
-                                </div>
-                                <div class="choice" onclick=@(() => ClickMenuOption(QuitGame))>
-                                    <span class="label">QUIT</span>
-                                    <span class="desc">Close the game</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @if ( PlayTransitionActive )
-                {
-                    <div class="main-menu-scanline"></div>
-                }
-            </div>
+            <MainMenuShellPanel Hud=@this />
         }
 
         @if ( ShowRolePicker )
         {
-            <div class="@RolePickerShellClass">
-                <div class="role-panel">
-                    <div class="title">@RolePickerTitle</div>
-
-                    @if ( SelectedLoadoutTeam == PlayerRole.Spectator )
-                    {
-                        <div class="team-choices">
-                            <div class="@TeamChoiceClass(PlayerRole.Pilot)" onclick=@(() => ClickMenuOption(SelectPilotTeam))>
-                                <span class="label">DRONE PILOTS</span>
-                                <span class="desc">Fly drones as drone pilots</span>
-                            </div>
-                            <div class="@TeamChoiceClass(PlayerRole.Soldier)" onclick=@(() => ClickMenuOption(SelectSoldierTeam))>
-                                <span class="label">HUNTERS</span>
-                                <span class="desc">Fight as hunters</span>
-                            </div>
-                        </div>
-
-                        <div class="choice back" onclick=@(() => ClickMenuOption(BackToMainMenu))>
-                            <span class="label">GO BACK</span>
-                            <span class="desc">Return to main menu</span>
-                        </div>
-                    }
-
-                    @if ( SelectedLoadoutTeam == PlayerRole.Pilot )
-                    {
-                        <div class="loadout-section">
-                            <div class="choices">
-                                <div class="choice pilot" onclick=@(() => ClickMenuOption(SelectGpsDrone))>
-                                    <span class="label">@DroneChoiceLabel(DroneType.Gps)</span>
-                                    <span class="desc">@DroneChoiceDescription(DroneType.Gps)</span>
-                                    <span class="meta">@DroneChoiceMeta(DroneType.Gps)</span>
-                                </div>
-                                <div class="choice pilot" onclick=@(() => ClickMenuOption(SelectFpvDrone))>
-                                    <span class="label">@DroneChoiceLabel(DroneType.Fpv)</span>
-                                    <span class="desc">@DroneChoiceDescription(DroneType.Fpv)</span>
-                                    <span class="meta">@DroneChoiceMeta(DroneType.Fpv)</span>
-                                </div>
-                                <div class="choice pilot" onclick=@(() => ClickMenuOption(SelectFiberFpvDrone))>
-                                    <span class="label">@DroneChoiceLabel(DroneType.FiberOpticFpv)</span>
-                                    <span class="desc">@DroneChoiceDescription(DroneType.FiberOpticFpv)</span>
-                                    <span class="meta">@DroneChoiceMeta(DroneType.FiberOpticFpv)</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="choice back" onclick=@(() => ClickMenuOption(ClearLoadoutTeam))>
-                            <span class="label">GO BACK</span>
-                            <span class="desc">Choose a different team</span>
-                        </div>
-                    }
-
-                    @if ( SelectedLoadoutTeam == PlayerRole.Soldier )
-                    {
-                        <div class="loadout-section">
-                            <div class="choices">
-                                <div class="choice soldier" onclick=@(() => ClickMenuOption(SelectAssaultSoldier))>
-                                    <span class="label">@SoldierChoiceLabel(SoldierClass.Assault)</span>
-                                    <span class="desc">@SoldierChoiceDescription(SoldierClass.Assault)</span>
-                                    <span class="meta">@SoldierChoiceMeta(SoldierClass.Assault)</span>
-                                </div>
-                                <div class="choice soldier" onclick=@(() => ClickMenuOption(SelectCounterUavSoldier))>
-                                    <span class="label">@SoldierChoiceLabel(SoldierClass.CounterUav)</span>
-                                    <span class="desc">@SoldierChoiceDescription(SoldierClass.CounterUav)</span>
-                                    <span class="meta">@SoldierChoiceMeta(SoldierClass.CounterUav)</span>
-                                </div>
-                                <div class="choice soldier" onclick=@(() => ClickMenuOption(SelectHeavySoldier))>
-                                    <span class="label">@SoldierChoiceLabel(SoldierClass.Heavy)</span>
-                                    <span class="desc">@SoldierChoiceDescription(SoldierClass.Heavy)</span>
-                                    <span class="meta">@SoldierChoiceMeta(SoldierClass.Heavy)</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="choice back" onclick=@(() => ClickMenuOption(ClearLoadoutTeam))>
-                            <span class="label">GO BACK</span>
-                            <span class="desc">Choose a different team</span>
-                        </div>
-                    }
-                </div>
-            </div>
+            <RolePickerPanel Hud=@this />
         }
 
         @if ( !GameplayUiBlocked && ShowJamWarning )
@@ -173,112 +74,28 @@
 
         @if ( ShowDroneLcdOverlay )
         {
-            <div class="drone-lcd-overlay @DroneVariantClass">
-                <div class="lcd-glass"></div>
-                <div class="lcd-scanlines"></div>
-                <div class="lcd-corner top-left"></div>
-                <div class="lcd-corner top-right"></div>
-                <div class="lcd-corner bottom-left"></div>
-                <div class="lcd-corner bottom-right"></div>
-                <div class="lcd-label">@DroneLcdVariantLabel</div>
-            </div>
+            <DroneLcdOverlayPanel Hud=@this />
         }
 
         @if ( ShowDroneOpticOverlay )
         {
-            <div class="drone-optic-overlay @DroneVariantClass">
-                <div class="optic-ring outer"></div>
-                <div class="optic-ring inner"></div>
-                <div class="optic-line horizontal"></div>
-                <div class="optic-line vertical"></div>
-                <div class="optic-label">ZOOM @DroneOpticZoomLabel</div>
-            </div>
+            <DroneOpticOverlayPanel Hud=@this />
         }
 
         @if ( ShowReticle )
         {
-            <div class="reticle-stack">
-                <div class="crosshair @CrosshairClass">
-                    <div class="tick top"></div>
-                    <div class="tick bottom"></div>
-                    <div class="tick left"></div>
-                    <div class="tick right"></div>
-                    <div class="dot"></div>
-                </div>
-                <div class="hitmarker @HitmarkerClass"></div>
-
-                @if ( ShowDroneActionPrompt )
-                {
-                    @InteractionPromptRenderer.Render( $"drone-action-prompt {DroneActionPromptClass}", "LMB", DroneActionLabel )
-                }
-
-                @if ( CurrentWorldPrompt.IsValid() )
-                {
-                    @InteractionPromptRenderer.Render( WorldPromptClass, CurrentWorldPrompt.InputGlyph, CurrentWorldPrompt.DisplayText )
-                }
-
-                @if ( ShowSprintMeter )
-                {
-                    <div class="sprint-meter @SprintMeterClass">
-                        <div class="sprint-fill" style="width: @SprintMeterPercent%"></div>
-                    </div>
-                }
-
-                @foreach ( var arc in DamageArcs )
-                {
-                    <div class="damage-arc" style="transform: rotate(@(arc.AngleDeg.ToString("0"))deg); opacity: @arc.Opacity.ToString("0.00")">
-                        <div class="damage-arc-ring"></div>
-                    </div>
-                }
-            </div>
+            <ReticlePanel Hud=@this />
         }
 
         @if ( !GameplayUiBlocked )
         {
-            <div class="top-center">
-                @if ( Round is not null && (Round.State == RoundState.Countdown || Round.State == RoundState.Active) && LocalRole != PlayerRole.Spectator )
-                {
-                    <div class="round-header">Round @(PilotWins + SoldierWins + 1) / You are <span class="role-tag @LocalRole.ToString().ToLower()">@(LocalRole == PlayerRole.Pilot ? "DRONE PILOTS" : "HUNTERS")</span></div>
-                }
-                <div class="state">@RoundLine</div>
-                @if ( ShowTimer )
-                {
-                    <div class="timer">@TimerLine</div>
-                }
-            </div>
-
-            <div class="top-right">
-                <div class="score">
-                    <span class="pilot">@PilotWins</span>
-                    <span class="sep">vs</span>
-                    <span class="soldier">@SoldierWins</span>
-                </div>
-
-                @if ( KillFeedEntries.Count > 0 )
-                {
-                    <div class="kill-feed">
-                        @foreach ( var e in KillFeedEntries )
-                        {
-                            <div class="@KillFeedEntryClass(e)">
-                                <span class="attacker">@e.AttackerName</span>
-                                <span class="weapon">[@e.WeaponName]</span>
-                                <span class="victim">@e.VictimName</span>
-                            </div>
-                        }
-                    </div>
-                }
-            </div>
+            <RoundStatePanel Hud=@this />
+            <KillFeedPanel Hud=@this />
         }
 
         @if ( !GameplayUiBlocked && LocalHealth is not null )
         {
-            <div class="bottom-left">
-                <div class="role @LocalRole.ToString().ToLower()">@(LocalRole == PlayerRole.Pilot ? "DRONE PILOTS" : LocalRole == PlayerRole.Soldier ? "HUNTERS" : "SPECTATOR")</div>
-                <div class="hp-bar">
-                    <div class="hp-fill" style="width: @HpFraction%"></div>
-                </div>
-                <div class="hp-text">@HpText</div>
-            </div>
+            <HealthPanel Hud=@this />
         }
 
         @if ( ShowAmmoHud )
@@ -288,54 +105,12 @@
 
         @if ( ShowLoadoutHud )
         {
-            <div class="loadout-hud @LocalRole.ToString().ToLower()">
-                <div class="loadout-title">@LoadoutTitle</div>
-                <div class="loadout-slots">
-                    @foreach ( var slot in LoadoutSlots )
-                    {
-                        <div class="@LoadoutSlotClass(slot)">
-                            <div class="slot-main-row">
-                                <div class="slot-key">@slot.Number</div>
-                                <div class="slot-copy">
-                                    <div class="slot-name">@slot.Name</div>
-                                    <div class="slot-detail">@slot.Detail</div>
-                                </div>
-                                <div class="slot-action">@slot.Action</div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
+            <LoadoutPanel Hud=@this />
         }
 
         @if ( !GameplayUiBlocked && LocalRole == PlayerRole.Pilot )
         {
-            <div class="pilot-controls">
-                <div class="control-row">
-                    <span class="key">WASD</span>
-                    <span>Move</span>
-                </div>
-                <div class="control-row">
-                    <span class="key">Space</span>
-                    <span>Ascend</span>
-                </div>
-                <div class="control-row">
-                    <span class="key">Ctrl</span>
-                    <span>Descend</span>
-                </div>
-                <div class="control-row">
-                    <span class="key">Shift</span>
-                    <span>Boost</span>
-                </div>
-                <div class="control-row emphasized">
-                    <span class="key">F</span>
-                    <span>Toggle drone control</span>
-                </div>
-                <div class="control-row">
-                    <span class="key">X</span>
-                    <span>@DroneCameraModeLabel</span>
-                </div>
-            </div>
+            <PilotControlsPanel Hud=@this />
         }
 
         @if ( !GameplayUiBlocked && ShowScoreboard )
@@ -345,66 +120,25 @@
 
         @if ( OptionsMenuOpen )
         {
-            <div class="options-overlay">
-                <div class="options-panel">
-                    <div class="options-header">
-                        <div class="options-title">Options</div>
-                        <div class="options-subtitle">Local settings</div>
-                    </div>
-
-                    <div class="options-list">
-                        <div class="option-row">
-                            <div class="option-copy">
-                                <div class="option-name">UI Scale</div>
-                                <div class="option-value">@UiScaleDisplay</div>
-                            </div>
-                            <div class="scale-control">
-                                <div class="option-button small" onclick=@(() => ClickMenuOption(DecreaseUiScale))>-</div>
-                                <div class="scale-track">
-                                    <div class="scale-fill" style="width: @UiScaleFillWidth"></div>
-                                </div>
-                                <div class="option-button small" onclick=@(() => ClickMenuOption(IncreaseUiScale))>+</div>
-                            </div>
-                        </div>
-
-                        <div class="option-row">
-                            <div class="option-copy">
-                                <div class="option-name">Look Sensitivity</div>
-                                <div class="option-value">@LookSensitivityDisplay</div>
-                            </div>
-                            <div class="stepper-control">
-                                <div class="option-button small" onclick=@(() => ClickMenuOption(DecreaseLookSensitivity))>-</div>
-                                <div class="option-button small" onclick=@(() => ClickMenuOption(IncreaseLookSensitivity))>+</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="options-actions">
-                        <div class="option-button primary" onclick=@(() => ClickMenuOption(ResumeOptions))>Resume</div>
-                        <div class="option-button" onclick=@(() => ClickMenuOption(ResetUiScale))>Reset UI</div>
-                        <div class="option-button danger" onclick=@(() => ClickMenuOption(LeaveMatch))>Leave Match</div>
-                        <div class="option-button quiet" onclick=@(() => ClickMenuOption(QuitGame))>Quit</div>
-                    </div>
-                </div>
-            </div>
+            <OptionsOverlayPanel Hud=@this />
         }
     </div>
 </root>
 
 @code
 {
-    RoundManager Round => EnsureValid( ref _round );
-    GameSetup Setup => EnsureValid( ref _setup );
-    GameStats Stats => EnsureValid( ref _stats );
-    KillFeedTracker KillFeed => EnsureValid( ref _killFeed );
+    internal RoundManager Round => EnsureValid( ref _round );
+    internal GameSetup Setup => EnsureValid( ref _setup );
+    internal GameStats Stats => EnsureValid( ref _stats );
+    internal KillFeedTracker KillFeed => EnsureValid( ref _killFeed );
 
     const string MenuClickSoundPath = "sounds/ui_menu_click.sound";
     const float MainMenuPlayTransitionSeconds = 0.5f;
     const float RolePickerEnterTransitionSeconds = 0.34f;
     const float MainMenuTransitionInactiveTime = -1000f;
 
-    PlayerRole SelectedLoadoutTeam { get; set; } = PlayerRole.Spectator;
-    int SelectedLoadoutSlot { get; set; } = 1;
+    internal PlayerRole SelectedLoadoutTeam { get; set; } = PlayerRole.Spectator;
+    internal int SelectedLoadoutSlot { get; set; } = 1;
     int ObservedSelectionGeneration { get; set; } = -1;
     bool MainMenuOpen { get; set; } = true;
     float _mainMenuPlayTransitionStartedAt = MainMenuTransitionInactiveTime;
@@ -413,28 +147,28 @@
     bool NeedsRoleChoice => Setup?.NeedsLocalRoleChoice() ?? false;
     bool ShowMainMenu => MainMenuOpen && NeedsRoleChoice;
     float MainMenuPlayTransitionElapsed => Time.Now - _mainMenuPlayTransitionStartedAt;
-    bool PlayTransitionActive => NeedsRoleChoice
+    internal bool PlayTransitionActive => NeedsRoleChoice
         && _mainMenuPlayTransitionStartedAt > 0f
         && MainMenuPlayTransitionElapsed < MainMenuPlayTransitionSeconds;
-    bool RolePickerTransitionActive => NeedsRoleChoice
+    internal bool RolePickerTransitionActive => NeedsRoleChoice
         && !MainMenuOpen
         && _mainMenuPlayTransitionStartedAt > 0f
         && MainMenuPlayTransitionElapsed >= MainMenuPlayTransitionSeconds
         && MainMenuPlayTransitionElapsed < MainMenuPlayTransitionSeconds + RolePickerEnterTransitionSeconds;
     bool ShowMainMenuShell => NeedsRoleChoice && (MainMenuOpen || PlayTransitionActive);
     bool ShowRolePicker => NeedsRoleChoice && !MainMenuOpen && !PlayTransitionActive;
-    bool GameplayUiBlocked => ShowMainMenuShell || ShowRolePicker;
-    string MainMenuShellClass => PlayTransitionActive
+    internal bool GameplayUiBlocked => ShowMainMenuShell || ShowRolePicker;
+    internal string MainMenuShellClass => PlayTransitionActive
         ? "role-select main-menu-startup play-transition-exit"
         : "role-select main-menu-startup";
-    string RolePickerShellClass => RolePickerTransitionActive
+    internal string RolePickerShellClass => RolePickerTransitionActive
         ? "role-select play-transition-enter"
         : "role-select";
-    int MainMenuTransitionHashTick => PlayTransitionActive || RolePickerTransitionActive
+    internal int MainMenuTransitionHashTick => PlayTransitionActive || RolePickerTransitionActive
         ? (int)(MainMenuPlayTransitionElapsed * 30f)
         : -1;
     bool ShowLoadoutHud => !GameplayUiBlocked && !LocalDroneViewActive && LocalRole is PlayerRole.Pilot or PlayerRole.Soldier;
-    bool ShowReticle => !GameplayUiBlocked && LocalRole is PlayerRole.Pilot or PlayerRole.Soldier;
+    internal bool ShowReticle => !GameplayUiBlocked && LocalRole is PlayerRole.Pilot or PlayerRole.Soldier;
     bool ShowDroneLcdOverlay => !GameplayUiBlocked
         && LocalDroneViewActive
         && LocalDroneCamera.IsValid()
@@ -442,26 +176,13 @@
     bool ShowDroneOpticOverlay => ShowDroneLcdOverlay
         && LocalDroneCamera.IsValid()
         && LocalDroneCamera.IsOpticZoomActive;
-    bool ShowDroneActionPrompt => ShowReticle && LocalDroneViewActive && LocalDroneWeapon.IsValid();
+    internal bool ShowDroneActionPrompt => ShowReticle && LocalDroneViewActive && LocalDroneWeapon.IsValid();
     bool ShowScoreboard { get; set; }
 
-    string UiScaleDisplay => $"{LocalOptionsState.UiScalePercent}%";
-    string UiScaleFillWidth
-    {
-        get
-        {
-            var range = LocalOptionsState.MaxUiScale - LocalOptionsState.MinUiScale;
-            var t = range <= 0f ? 1f : (LocalOptionsState.UiScale - LocalOptionsState.MinUiScale) / range;
-            return $"{Math.Clamp( t, 0f, 1f ) * 100f:0}%";
-        }
-    }
-
-    string LookSensitivityDisplay => $"{LocalOptionsState.LookSensitivity:0.00}";
-
-    // ---- Hitmarker + damage feedback state ----
-    float _lastHitTime = -10f;
-    float _lastKillTime = -10f;
-    readonly List<DamageArc> _damageArcs = new();
+    // ---- Hitmarker + damage feedback state (read by ReticlePanel) ----
+    internal float _lastHitTime = -10f;
+    internal float _lastKillTime = -10f;
+    internal readonly List<DamageArc> _damageArcs = new();
     readonly Dictionary<Health, HealthEventHandlers> _healthHandlers = new();
 
     // ---- ELIMINATED popup + round transition state ----
@@ -472,7 +193,7 @@
     float _roundEndShownAt = -10f;       // when the win overlay should fade in
 
     /// <summary>Per-frame snapshot of damage indicators, age-faded.</summary>
-    sealed class DamageArc
+    internal sealed class DamageArc
     {
         public float CreatedAt;
         public float AngleDeg;        // 0 = front, +90 = right
@@ -483,54 +204,6 @@
     {
         public Action<DamageInfo> Damaged { get; init; }
         public Action<DamageInfo> Killed { get; init; }
-    }
-
-    record struct KillFeedRow( string AttackerName, string WeaponName, string VictimName, bool LocalIsAttacker, bool LocalIsVictim );
-
-    IReadOnlyList<KillFeedRow> KillFeedEntries
-    {
-        get
-        {
-            var feed = KillFeed;
-            if ( feed is null ) return Array.Empty<KillFeedRow>();
-            return feed.Entries
-                .Select( e => new KillFeedRow( e.AttackerName, e.WeaponName, e.VictimName, e.LocalIsAttacker, e.LocalIsVictim ) )
-                .ToList();
-        }
-    }
-
-    string KillFeedEntryClass( KillFeedRow e )
-    {
-        if ( e.LocalIsAttacker ) return "kill-feed-entry local-attacker";
-        if ( e.LocalIsVictim ) return "kill-feed-entry local-victim";
-        return "kill-feed-entry";
-    }
-
-    string CrosshairClass
-    {
-        get
-        {
-            var classes = new List<string>
-            {
-                LocalRole == PlayerRole.Pilot ? "pilot" : "soldier"
-            };
-
-            if ( Time.Now - _lastHitTime < 0.10f ) classes.Add( "firing" );
-            if ( SuppressionOpacity > 0.08f ) classes.Add( "suppressed" );
-            var weaponBloomBucket = CurrentWeaponBloomBucket;
-            if ( weaponBloomBucket > 0 ) classes.Add( $"weapon-bloom-{weaponBloomBucket}" );
-            return string.Join( " ", classes );
-        }
-    }
-
-    string HitmarkerClass
-    {
-        get
-        {
-            if ( Time.Now - _lastKillTime < 0.30f ) return "active kill";
-            if ( Time.Now - _lastHitTime < 0.18f ) return "active";
-            return "";
-        }
     }
 
     string VignetteClass
@@ -544,7 +217,7 @@
         }
     }
 
-    float SuppressionOpacity
+    internal float SuppressionOpacity
     {
         get
         {
@@ -583,27 +256,6 @@
         1 => "winner-soldier",
         _ => "",
     };
-
-    IReadOnlyList<DamageArc> DamageArcs
-    {
-        get
-        {
-            var arcs = new List<DamageArc>();
-            for ( int i = _damageArcs.Count - 1; i >= 0; i-- )
-            {
-                var a = _damageArcs[i];
-                var age = Time.Now - a.CreatedAt;
-                if ( age > 2f )
-                {
-                    _damageArcs.RemoveAt( i );
-                    continue;
-                }
-                a.Opacity = MathX.Lerp( 0.9f, 0f, age / 2f );
-                arcs.Add( a );
-            }
-            return arcs;
-        }
-    }
 
     protected override void OnUpdate()
     {
@@ -705,7 +357,7 @@
             LocalOptionsState.ToggleOpen();
     }
 
-    void ClickMenuOption( Action action )
+    internal void ClickMenuOption( Action action )
     {
         PlayMenuClickSound();
         action?.Invoke();
@@ -724,7 +376,7 @@
         _mainMenuPlayTransitionStartedAt = MainMenuTransitionInactiveTime;
     }
 
-    void StartMainMenuPlayTransition()
+    internal void StartMainMenuPlayTransition()
     {
         if ( PlayTransitionActive )
             return;
@@ -741,88 +393,88 @@
         _mainMenuPlayTransitionStartedAt = Time.Now;
     }
 
-    void OpenMainMenuOptions()
+    internal void OpenMainMenuOptions()
     {
         LocalOptionsState.SetOpen( true );
     }
 
-    void SelectPilotTeam()
+    internal void SelectPilotTeam()
     {
         SelectLoadoutTeam( PlayerRole.Pilot );
     }
 
-    void SelectSoldierTeam()
+    internal void SelectSoldierTeam()
     {
         SelectLoadoutTeam( PlayerRole.Soldier );
     }
 
-    void SelectGpsDrone()
+    internal void SelectGpsDrone()
     {
         Setup?.SelectLocalDrone( DroneType.Gps );
     }
 
-    void SelectFpvDrone()
+    internal void SelectFpvDrone()
     {
         Setup?.SelectLocalDrone( DroneType.Fpv );
     }
 
-    void SelectFiberFpvDrone()
+    internal void SelectFiberFpvDrone()
     {
         Setup?.SelectLocalDrone( DroneType.FiberOpticFpv );
     }
 
-    void SelectAssaultSoldier()
+    internal void SelectAssaultSoldier()
     {
         Setup?.SelectLocalSoldier( SoldierClass.Assault );
     }
 
-    void SelectCounterUavSoldier()
+    internal void SelectCounterUavSoldier()
     {
         Setup?.SelectLocalSoldier( SoldierClass.CounterUav );
     }
 
-    void SelectHeavySoldier()
+    internal void SelectHeavySoldier()
     {
         Setup?.SelectLocalSoldier( SoldierClass.Heavy );
     }
 
-    void ResumeOptions()
+    internal void ResumeOptions()
     {
         LocalOptionsState.SetOpen( false );
     }
 
-    void IncreaseUiScale()
+    internal void IncreaseUiScale()
     {
         LocalOptionsState.AdjustUiScale( LocalOptionsState.UiScaleStep );
     }
 
-    void DecreaseUiScale()
+    internal void DecreaseUiScale()
     {
         LocalOptionsState.AdjustUiScale( -LocalOptionsState.UiScaleStep );
     }
 
-    void ResetUiScale()
+    internal void ResetUiScale()
     {
         LocalOptionsState.ResetUiScale();
     }
 
-    void IncreaseLookSensitivity()
+    internal void IncreaseLookSensitivity()
     {
         LocalOptionsState.AdjustLookSensitivity( LocalOptionsState.LookSensitivityStep );
     }
 
-    void DecreaseLookSensitivity()
+    internal void DecreaseLookSensitivity()
     {
         LocalOptionsState.AdjustLookSensitivity( -LocalOptionsState.LookSensitivityStep );
     }
 
-    void LeaveMatch()
+    internal void LeaveMatch()
     {
         LocalOptionsState.SetOpen( false );
         Game.Disconnect();
     }
 
-    void QuitGame()
+    internal void QuitGame()
     {
         LocalOptionsState.SetOpen( false );
         Game.Close();
@@ -913,7 +565,7 @@
     Vector3 LocalCameraForward =>
         _sceneCamera.IsValid() ? _sceneCamera.WorldRotation.Forward : Vector3.Forward;
 
-    RemoteController LocalRemoteController => _localRemote;
+    internal RemoteController LocalRemoteController => _localRemote;
 
     float SunGlareOpacity
     {
@@ -938,55 +590,26 @@
         SelectedLoadoutTeam = team;
     }
 
-    void BackToMainMenu()
+    internal void BackToMainMenu()
     {
         MainMenuOpen = true;
         _mainMenuPlayTransitionStartedAt = MainMenuTransitionInactiveTime;
         ClearLoadoutTeam();
     }
 
-    void ClearLoadoutTeam()
+    internal void ClearLoadoutTeam()
     {
         SelectedLoadoutTeam = PlayerRole.Spectator;
         SelectedLoadoutSlot = 1;
     }
 
-    string RolePickerTitle => SelectedLoadoutTeam switch
-    {
-        PlayerRole.Pilot => "Drone Pilot Loadout",
-        PlayerRole.Soldier => "Hunters Loadout",
-        _ => "Select team",
-    };
-
-    string TeamChoiceClass( PlayerRole team )
-    {
-        var className = team == PlayerRole.Pilot ? "team-choice pilot" : "team-choice soldier";
-        return SelectedLoadoutTeam == team ? $"{className} selected" : className;
-    }
-
-    LoadoutDefinitionResource SoldierDefinition( SoldierClass cls ) =>
+    internal LoadoutDefinitionResource SoldierDefinition( SoldierClass cls ) =>
         Setup?.GetSoldierLoadoutDefinition( cls ) ?? LoadoutCatalog.FindSoldier( null, cls );
 
-    LoadoutDefinitionResource DroneDefinition( DroneType type ) =>
+    internal LoadoutDefinitionResource DroneDefinition( DroneType type ) =>
         Setup?.GetDroneLoadoutDefinition( type ) ?? LoadoutCatalog.FindDrone( null, type );
 
-    string SoldierChoiceLabel( SoldierClass cls ) => SoldierDefinition( cls )?.DisplayName?.ToUpperInvariant() ?? SoldierClassName( cls ).ToUpperInvariant();
-    string SoldierChoiceDescription( SoldierClass cls ) => SoldierDefinition( cls )?.ShortDescription ?? "";
-    string SoldierChoiceMeta( SoldierClass cls )
-    {
-        var definition = SoldierDefinition( cls );
-        return definition is null ? "" : $"{definition.PrimaryLabel} / {definition.EquipmentLabel}";
-    }
-
-    string DroneChoiceLabel( DroneType type ) => DroneDefinition( type )?.DisplayName?.ToUpperInvariant() ?? DroneVariantName( type ).ToUpperInvariant();
-    string DroneChoiceDescription( DroneType type ) => DroneDefinition( type )?.ShortDescription ?? "";
-    string DroneChoiceMeta( DroneType type )
-    {
-        var definition = DroneDefinition( type );
-        return definition is null ? "" : definition.EquipmentDetail;
-    }
-
-    int LoadoutPreviewHash => HashCode.Combine(
+    internal int LoadoutPreviewHash => HashCode.Combine(
         SoldierDefinition( SoldierClass.Assault )?.StableHash ?? 0,
         SoldierDefinition( SoldierClass.CounterUav )?.StableHash ?? 0,
         SoldierDefinition( SoldierClass.Heavy )?.StableHash ?? 0,
@@ -994,121 +617,7 @@
         DroneDefinition( DroneType.Fpv )?.StableHash ?? 0,
         DroneDefinition( DroneType.FiberOpticFpv )?.StableHash ?? 0 );
 
-    LoadoutSlot[] LoadoutSlots => LocalRole switch
-    {
-        PlayerRole.Pilot => PilotLoadoutSlots(),
-        PlayerRole.Soldier => SoldierLoadoutSlots(),
-        _ => Array.Empty<LoadoutSlot>(),
-    };
-
-    string LoadoutTitle => LocalRole switch
-    {
-        PlayerRole.Pilot => $"{LocalDroneName} Loadout",
-        PlayerRole.Soldier => $"{LocalSoldierName} Loadout",
-        _ => "",
-    };
-
-    LoadoutSlot[] SoldierLoadoutSlots()
-    {
-        return new[]
-        {
-            SoldierPrimarySlot(),
-            SoldierEquipmentSlot(),
-        };
-    }
-
-    LoadoutSlot SoldierPrimarySlot()
-    {
-        var rifle = LocalSoldierComponent<HitscanWeapon>();
-        if ( rifle.IsValid() )
-        {
-            var definition = SoldierDefinition( LocalSoldierClass );
-            return new LoadoutSlot(
-                1,
-                string.IsNullOrWhiteSpace( definition?.PrimaryLabel ) ? "Assault Rifle" : definition.PrimaryLabel,
-                $"{rifle.Damage:0} dmg / {rifle.MagazineSize} mag",
-                "LMB"
-            );
-        }
-
-        var shotgun = LocalSoldierComponent<ShotgunWeapon>();
-        if ( shotgun.IsValid() )
-        {
-            var definition = SoldierDefinition( LocalSoldierClass );
-            return new LoadoutSlot(
-                1,
-                string.IsNullOrWhiteSpace( definition?.PrimaryLabel ) ? "Shotgun" : definition.PrimaryLabel,
-                $"{shotgun.PelletCount} pellets / {shotgun.MaxRange / 1000f:0.0}k range",
-                "LMB"
-            );
-        }
-
-        var jammer = LocalSoldierComponent<DroneJammerGun>();
-        if ( jammer.IsValid() )
-        {
-            var definition = SoldierDefinition( LocalSoldierClass );
-            return new LoadoutSlot(
-                1,
-                string.IsNullOrWhiteSpace( definition?.PrimaryLabel ) ? "Drone Jammer" : definition.PrimaryLabel,
-                $"{jammer.MaxRange / 1000f:0.0}k range / {jammer.BatteryChargeFraction * 100f:0}% battery",
-                "LMB"
-            );
-        }
-
-        return DisabledSlot( 1, "Primary", "No weapon found", "LMB" );
-    }
-
-    LoadoutSlot SoldierEquipmentSlot()
-    {
-        var grenade = LocalSoldierComponent<ThrowableGrenade>();
-        if ( !grenade.IsValid() )
-            return DisabledSlot( 2, "Equipment", "No equipment found", "LMB" );
-
-        var definition = SoldierDefinition( LocalSoldierClass );
-        return new LoadoutSlot(
-            2,
-            string.IsNullOrWhiteSpace( definition?.EquipmentLabel ) ? GrenadeName( grenade ) : definition.EquipmentLabel,
-            GrenadeDetail( grenade ),
-            "LMB"
-        );
-    }
-
-    LoadoutSlot[] PilotLoadoutSlots()
-    {
-        var remote = LocalRemoteController;
-        if ( remote.IsValid() && remote.DroneViewActive )
-            return Array.Empty<LoadoutSlot>();
-
-        return PilotGroundLoadoutSlots();
-    }
-
-    LoadoutSlot[] PilotGroundLoadoutSlots()
-    {
-        var deployer = LocalSoldierComponent<DroneDeployer>();
-        var definition = DroneDefinition( LocalDroneType );
-        var primary = deployer.IsValid()
-            ? new LoadoutSlot(
-                1,
-                string.IsNullOrWhiteSpace( definition?.PrimaryLabel ) ? LocalDroneName : definition.PrimaryLabel,
-                deployer.DroneInFlight ? "Drone airborne" : "Deploy drone",
-                deployer.DroneInFlight ? "F" : "LMB"
-            )
-            : DisabledSlot( 1, "Drone", "No deployer found", "LMB" );
-
-        var backup = LocalSoldierComponent<HitscanWeapon>();
-        var secondary = backup.IsValid()
-            ? new LoadoutSlot(
-                2,
-                backup.WeaponDisplayName,
-                $"{backup.Damage:0} dmg / {backup.MagazineSize} mag",
-                "LMB"
-            )
-            : DisabledSlot( 2, "Sidearm", "No backup weapon found", "LMB" );
-
-        return new[] { primary, secondary };
-    }
-
-    T LocalSoldierComponent<T>() where T : Component
+    internal T LocalSoldierComponent<T>() where T : Component
     {
         var ground = LocalGroundController;
         return ground.IsValid()
@@ -1116,29 +625,17 @@
             : null;
     }
 
-    GroundPlayerController LocalGroundController => _localGround;
+    internal GroundPlayerController LocalGroundController => _localGround;
 
-    PilotSoldier LocalPilotSoldier => _localPilot;
+    internal PilotSoldier LocalPilotSoldier => _localPilot;
 
-    DroneController LocalDroneController => _localDrone;
+    internal DroneController LocalDroneController => _localDrone;
 
-    DroneWeapon LocalDroneWeapon => _localDroneWeapon;
+    internal DroneWeapon LocalDroneWeapon => _localDroneWeapon;
 
-    WorldInteractionPrompt CurrentWorldPrompt => _worldPrompt;
+    internal WorldInteractionPrompt CurrentWorldPrompt => _worldPrompt;
 
-    string WorldPromptClass
-    {
-        get
-        {
-            var prompt = CurrentWorldPrompt;
-            var extra = prompt.IsValid() && !string.IsNullOrWhiteSpace( prompt.PromptClass )
-                ? $" {prompt.PromptClass.Trim()}"
-                : "";
-            return $"world-action-prompt{extra}";
-        }
-    }
-
-    string DroneActionLabel
+    internal string DroneActionLabel
     {
         get
         {
@@ -1159,19 +656,7 @@
         }
     }
 
-    string DroneActionPromptClass
-    {
-        get
-        {
-            var classes = new List<string> { DroneVariantClass };
-            if ( !RemoteController.AreLocalDroneWeaponsReady( Scene ) )
-                classes.Add( "arming" );
-
-            return string.Join( " ", classes );
-        }
-    }
-
-    string DroneLcdVariantLabel => LocalDroneBase.IsValid()
+    internal string DroneLcdVariantLabel => LocalDroneBase.IsValid()
         ? LocalDroneBase.Type switch
         {
             DroneType.Gps => "GPS CAMERA",
@@ -1181,7 +666,7 @@
         }
         : "DRONE CAMERA";
 
-    string DroneVariantClass => LocalDroneBase.IsValid()
+    internal string DroneVariantClass => LocalDroneBase.IsValid()
         ? LocalDroneBase.Type switch
         {
             DroneType.Gps => "gps",
@@ -1191,7 +676,7 @@
         }
         : "drone";
 
-    SoldierClass LocalSoldierClass
+    internal SoldierClass LocalSoldierClass
     {
         get
         {
@@ -1200,11 +685,11 @@
         }
     }
 
-    string DroneOpticZoomLabel => LocalDroneCamera.IsValid()
+    internal string DroneOpticZoomLabel => LocalDroneCamera.IsValid()
         ? $"{LocalDroneCamera.OpticZoomFovDegrees:0} FOV"
         : "";
 
-    DroneType LocalDroneType
+    internal DroneType LocalDroneType
     {
         get
         {
@@ -1216,7 +701,7 @@
         }
     }
 
-    string LocalSoldierName
+    internal string LocalSoldierName
     {
         get
         {
@@ -1227,7 +712,7 @@
         }
     }
 
-    string LocalDroneName
+    internal string LocalDroneName
     {
         get
         {
@@ -1238,7 +723,7 @@
         }
     }
 
-    static string SoldierClassName( SoldierClass cls ) => cls switch
+    internal static string SoldierClassName( SoldierClass cls ) => cls switch
     {
         SoldierClass.Assault => "Assault",
         SoldierClass.CounterUav => "Counter-UAV",
@@ -1246,45 +731,13 @@
         _ => "Hunter",
     };
 
-    static string DroneVariantName( DroneType type ) => type switch
+    internal static string DroneVariantName( DroneType type ) => type switch
     {
         DroneType.Gps => "GPS Drone",
         DroneType.Fpv => "FPV Drone",
         DroneType.FiberOpticFpv => "Fiber FPV",
         _ => "Drone",
     };
-
-    static string GrenadeName( ThrowableGrenade grenade ) => grenade switch
-    {
-        ChaffGrenade => "Chaff Grenade",
-        FragGrenade => "Frag Grenade",
-        EmpGrenade => "EMP Grenade",
-        _ => "Equipment",
-    };
-
-    static string GrenadeDetail( ThrowableGrenade grenade ) => grenade switch
-    {
-        ChaffGrenade chaff => $"{chaff.Radius:0} radius / {chaff.JamDuration:0}s jam",
-        FragGrenade frag => $"{frag.Damage:0} dmg / {frag.Radius:0} radius",
-        EmpGrenade emp => $"{emp.Radius:0} radius / {emp.JamDuration:0}s jam",
-        _ => "Throwable equipment",
-    };
-
-    static LoadoutSlot DisabledSlot( int number, string name, string detail, string action )
-    {
-        return new LoadoutSlot( number, name, detail, action, true );
-    }
-
-    string LoadoutSlotClass( LoadoutSlot slot )
-    {
-        var className = "loadout-slot";
-        if ( slot.Number == SelectedLoadoutSlot )
-            className += " selected";
-        if ( slot.Disabled )
-            className += " disabled";
-
-        return className;
-    }
 
     HitscanWeapon CurrentRifleAmmoWeapon => _activeRifle;
 
@@ -1336,9 +789,9 @@
         }
     }
 
-    int CurrentWeaponBloomBucket => Math.Clamp( (int)MathF.Ceiling( CurrentWeaponBloom * 2f ), 0, 8 );
+    internal int CurrentWeaponBloomBucket => Math.Clamp( (int)MathF.Ceiling( CurrentWeaponBloom * 2f ), 0, 8 );
 
-    int JammerBatteryBucket
+    internal int JammerBatteryBucket
     {
         get
         {
@@ -1347,7 +800,7 @@
         }
     }
 
-    bool LocalDroneViewActive
+    internal bool LocalDroneViewActive
     {
         get
         {
@@ -1364,11 +817,11 @@
         && LocalDroneBase.IsValid()
         && LocalDroneBase.JamSusceptibility > 0.01f;
 
-    DroneBase LocalDroneBase => _localDroneBase;
+    internal DroneBase LocalDroneBase => _localDroneBase;
 
-    Health LocalHealth => _localHealth;
+    internal Health LocalHealth => _localHealth;
 
-    PlayerRole LocalRole
+    internal PlayerRole LocalRole
     {
         get
         {
@@ -1380,83 +833,10 @@
         }
     }
 
-    DroneCamera LocalDroneCamera => _localDroneCamera;
+    internal DroneCamera LocalDroneCamera => _localDroneCamera;
 
-    string DroneCameraModeLabel =>
-        LocalDroneCamera.IsValid() && LocalDroneCamera.IsFirstPersonActive
-            ? "Camera: First person"
-            : "Camera: Third person";
-
-    int PilotWins => Round?.PilotWins ?? 0;
-    int SoldierWins => Round?.SoldierWins ?? 0;
-
-    string RoundLine => Round?.State switch
-    {
-        RoundState.WaitingForPlayers => "Waiting for players",
-        RoundState.Countdown => "Get ready",
-        RoundState.Active => LocalRole == PlayerRole.Pilot ? "Find the hunters." : "Take down drone pilots.",
-        RoundState.Ended => "Round over",
-        _ => "",
-    };
-
-    bool ShowTimer => Round?.State is RoundState.Countdown or RoundState.Active or RoundState.Ended;
-
-    string TimerLine
-    {
-        get
-        {
-            if ( Round is null ) return "";
-            var remaining = Math.Max( 0, Round.StateSecondsRemaining );
-            var mins = remaining / 60;
-            var secs = remaining % 60;
-            return $"{mins:0}:{secs:00}";
-        }
-    }
-
-    int HpFraction
-    {
-        get
-        {
-            if ( LocalHealth is null ) return 0;
-            return (int)(LocalHealth.CurrentHealth / MathF.Max( 1, LocalHealth.MaxHealth ) * 100f);
-        }
-    }
-
-    string HpText => LocalHealth is null ? "" : $"{LocalHealth.CurrentHealth:0} / {LocalHealth.MaxHealth:0}";
-
-    bool ShowSprintMeter
-    {
-        get
-        {
-            var g = LocalGroundController;
-            if ( !ShowReticle || !g.IsValid() || LocalDroneViewActive )
-                return false;
-
-            return g.IsSprinting || g.IsSprintLocked || g.Stamina < 0.995f;
-        }
-    }
-
-    int SprintMeterPercent
-    {
-        get
-        {
-            var g = LocalGroundController;
-            if ( !g.IsValid() ) return 100;
-            return (int)(g.Stamina.Clamp( 0f, 1f ) * 100f);
-        }
-    }
-
-    string SprintMeterClass
-    {
-        get
-        {
-            var g = LocalGroundController;
-            if ( !g.IsValid() ) return "";
-            if ( g.IsSprintLocked && g.Stamina <= 0.01f ) return "locked";
-            if ( g.Stamina < 0.995f && !g.IsSprinting ) return "recovering";
-            return "ready";
-        }
-    }
+    internal int PilotWins => Round?.PilotWins ?? 0;
+    internal int SoldierWins => Round?.SoldierWins ?? 0;
 
     IReadOnlyList<ScoreboardRow> ScoreboardRows
     {
@@ -1470,90 +850,44 @@
         }
     }
 
-    sealed class LoadoutSlot
+    int ScoreboardRowsHash
     {
-        public LoadoutSlot( int number, string name, string detail, string action, bool disabled = false )
+        get
         {
-            Number = number;
-            Name = name;
-            Detail = detail;
-            Action = action;
-            Disabled = disabled;
+            if ( !ShowScoreboard ) return 0;
+            var hash = 17;
+            foreach ( var row in ScoreboardRows )
+                hash = HashCode.Combine( hash, row.Name, row.Kills, row.Deaths, row.Score );
+            return hash;
         }
-
-        public int Number { get; }
-        public string Name { get; }
-        public string Detail { get; }
-        public string Action { get; }
-        public bool Disabled { get; }
     }
 
     /// <summary>
-    /// Re-render gate: panel rebuilds whenever any of these inputs change.
-    /// Includes time-quantized fields for hitmarker / damage arc animations.
+    /// Re-render gate for the parent shell only: section visibility gates,
+    /// the alert overlays the parent still renders inline, and the ammo
+    /// readout. Each child panel owns the hash for its own slice, so an
+    /// idle HUD no longer rebuilds at the reticle's animation tick rate.
     /// </summary>
     protected override int BuildHash()
     {
-        var rifleAmmoWeapon = CurrentRifleAmmoWeapon;
-        var shotgunAmmoWeapon = CurrentShotgunAmmoWeapon;
-
         return HashCode.Combine(
             HashCode.Combine(
-                Round?.State, PilotWins, SoldierWins,
-                LocalRole, HpFraction, ShowTimer, TimerLine, ShowRolePicker
+                ShowMainMenuShell, ShowRolePicker, GameplayUiBlocked,
+                OptionsMenuOpen, ShowScoreboard, ShowReticle,
+                ShowLoadoutHud, ShowAmmoHud
             ),
             HashCode.Combine(
-                HashCode.Combine(
-                    LocalDroneCamera.IsValid() && LocalDroneCamera.IsFirstPersonActive,
-                    LocalDroneViewActive,
-                    ShowDroneLcdOverlay,
-                    ShowDroneOpticOverlay,
-                    ShowDroneActionPrompt,
-                    DroneActionLabel,
-                    DroneLcdVariantLabel,
-                    DroneOpticZoomLabel
-                ),
-                ShowJamWarning,
-                SelectedLoadoutTeam,
-                ObservedSelectionGeneration,
-                ShowScoreboard,
-                HashCode.Combine(
-                    VignetteClass,
-                    ShowSprintMeter,
-                    SprintMeterPercent,
-                    CurrentWorldPrompt.IsValid() ? CurrentWorldPrompt.StableHash : 0
-                ),
-                Round?.LastWinnerInt ?? -1,
-                HashCode.Combine(
-                    RoundEndVisible,
-                    (int)(SunGlareOpacity * 100f),
-                    OptionsMenuOpen,
-                    ShowMainMenu,
-                    ShowMainMenuShell,
-                    PlayTransitionActive,
-                    RolePickerTransitionActive,
-                    MainMenuTransitionHashTick
-                )
+                LocalRole, LocalHealth is not null, VignetteClass,
+                ShowDroneLcdOverlay, ShowDroneOpticOverlay, ShowJamWarning
             ),
             HashCode.Combine(
-                HashCode.Combine( ShowLoadoutHud, SelectedLoadoutSlot, LoadoutPreviewHash, ShowAmmoHud ),
-                HashCode.Combine( ShowDroneActionPrompt, DroneActionLabel, DroneLcdVariantLabel, WorldPromptClass ),
-                HashCode.Combine(
-                    rifleAmmoWeapon.IsValid() ? rifleAmmoWeapon.AmmoInMagazine : -1,
-                    rifleAmmoWeapon.IsValid() ? rifleAmmoWeapon.AmmoReserve : -1,
-                    shotgunAmmoWeapon.IsValid() ? shotgunAmmoWeapon.AmmoInMagazine : -1,
-                    shotgunAmmoWeapon.IsValid() ? shotgunAmmoWeapon.AmmoReserve : -1,
-                    CurrentWeaponBloomBucket,
-                    JammerBatteryBucket
-                ),
-                LocalOptionsState.UiScalePercent,
-                (int)(LocalOptionsState.LookSensitivity * 100f),
-                HashCode.Combine(
-                    // Animate hitmarker/crosshair/arcs/suppression at ~15 Hz
-                    (int)(Time.Now * 15f),
-                    KillFeed?.Entries.Count ?? 0
-                )
-            )
+                RoundEndVisible, RoundWinnerLabel,
+                EliminatedVisible, EliminatedName,
+                (int)(SuppressionOpacity * 50f),
+                (int)(SunGlareOpacity * 100f)
+            ),
+            HashCode.Combine( AmmoHudLabel, AmmoHudValue ),
+            ScoreboardRowsHash
         );
     }
 }

@@ -1,0 +1,32 @@
+@using Sandbox
+@using Sandbox.UI
+@using System
+@using DroneVsPlayers
+@namespace DroneVsPlayers
+@inherits Panel
+
+@* Drone first-person LCD frame. Parent gates on ShowDroneLcdOverlay. *@
+
+<root class="drone-lcd-overlay @(Hud?.DroneVariantClass)">
+    @if ( Hud.IsValid() )
+    {
+        <div class="lcd-glass"></div>
+        <div class="lcd-scanlines"></div>
+        <div class="lcd-corner top-left"></div>
+        <div class="lcd-corner top-right"></div>
+        <div class="lcd-corner bottom-left"></div>
+        <div class="lcd-corner bottom-right"></div>
+        <div class="lcd-label">@Hud.DroneLcdVariantLabel</div>
+    }
+</root>
+
+@code
+{
+    public HudPanel Hud { get; set; }
+
+    protected override int BuildHash()
+    {
+        if ( !Hud.IsValid() ) return 0;
+        return HashCode.Combine( Hud.DroneVariantClass, Hud.DroneLcdVariantLabel );
+    }
+}

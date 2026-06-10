@@ -1,0 +1,59 @@
+@using Sandbox
+@using Sandbox.UI
+@using System
+@using DroneVsPlayers
+@namespace DroneVsPlayers
+@inherits Panel
+
+@* Top-center round header, state line, and countdown timer. *@
+
+<root class="top-center">
+    @if ( Hud.IsValid() )
+    {
+        @if ( Hud.Round is not null && (Hud.Round.State == RoundState.Countdown || Hud.Round.State == RoundState.Active) && Hud.LocalRole != PlayerRole.Spectator )
+        {
+            <div class="round-header">Round @(Hud.PilotWins + Hud.SoldierWins + 1) / You are <span class="role-tag @Hud.LocalRole.ToString().ToLower()">@(Hud.LocalRole == PlayerRole.Pilot ? "DRONE PILOTS" : "HUNTERS")</span></div>
+        }
+        <div class="state">@RoundLine</div>
+        @if ( ShowTimer )
+        {
+            <div class="timer">@TimerLine</div>
+        }
+    }
+</root>
+
+@code
+{
+    public HudPanel Hud { get; set; }
+
+    string RoundLine => Hud.Round?.State switch
+    {
+        RoundState.WaitingForPlayers => "Waiting for players",
+        RoundState.Countdown => "Get ready",
+        RoundState.Active => Hud.LocalRole == PlayerRole.Pilot ? "Find the hunters." : "Take down drone pilots.",
+        RoundState.Ended => "Round over",
+        _ => "",
+    };
+
+    bool ShowTimer => Hud.Round?.State is RoundState.Countdown or RoundState.Active or RoundState.Ended;
+
+    string TimerLine
+    {
+        get
+        {
+            if ( Hud.Round is null ) return "";
+            var remaining = Math.Max( 0, Hud.Round.StateSecondsRemaining );
+            var mins = remaining / 60;
+            var secs = remaining % 60;
+            return $"{mins:0}:{secs:00}";
+        }
+    }
+
+    protected override int BuildHash()
+    {
+        if ( !Hud.IsValid() ) return 0;
+        return HashCode.Combine(
+            Hud.Round?.State, Hud.PilotWins, Hud.SoldierWins,
+            Hud.LocalRole, RoundLine, ShowTimer, TimerLine );
+    }
+}

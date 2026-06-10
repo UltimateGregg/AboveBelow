@@ -141,7 +141,15 @@ function Get-CheckedFileText {
         return $null
     }
 
-    return Get-Content -LiteralPath $fullPath -Raw
+    $text = Get-Content -LiteralPath $fullPath -Raw
+    if ($RelativePath -eq "Code/UI/HudPanel.razor") {
+        # The HUD is composed of child razor panels; copy checks read the family.
+        foreach ($childPanel in Get-ChildItem -Path (Join-Path $Root "Code/UI/Hud/*.razor") -ErrorAction SilentlyContinue) {
+            $text += "`n" + (Get-Content -LiteralPath $childPanel.FullName -Raw)
+        }
+    }
+
+    return $text
 }
 
 foreach ($check in $forbiddenChecks) {

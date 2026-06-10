@@ -1,0 +1,134 @@
+@using Sandbox
+@using Sandbox.UI
+@using System
+@using DroneVsPlayers
+@namespace DroneVsPlayers
+@inherits Panel
+
+@* Team / drone / soldier-class picker shown between rounds and on join. *@
+
+<root class="@(Hud?.RolePickerShellClass)">
+    @if ( Hud.IsValid() )
+    {
+        <div class="role-panel">
+            <div class="title">@RolePickerTitle</div>
+
+            @if ( Hud.SelectedLoadoutTeam == PlayerRole.Spectator )
+            {
+                <div class="team-choices">
+                    <div class="@TeamChoiceClass(PlayerRole.Pilot)" onclick=@(() => Hud.ClickMenuOption(Hud.SelectPilotTeam))>
+                        <span class="label">DRONE PILOTS</span>
+                        <span class="desc">Fly drones as drone pilots</span>
+                    </div>
+                    <div class="@TeamChoiceClass(PlayerRole.Soldier)" onclick=@(() => Hud.ClickMenuOption(Hud.SelectSoldierTeam))>
+                        <span class="label">HUNTERS</span>
+                        <span class="desc">Fight as hunters</span>
+                    </div>
+                </div>
+
+                <div class="choice back" onclick=@(() => Hud.ClickMenuOption(Hud.BackToMainMenu))>
+                    <span class="label">GO BACK</span>
+                    <span class="desc">Return to main menu</span>
+                </div>
+            }
+
+            @if ( Hud.SelectedLoadoutTeam == PlayerRole.Pilot )
+            {
+                <div class="loadout-section">
+                    <div class="choices">
+                        <div class="choice pilot" onclick=@(() => Hud.ClickMenuOption(Hud.SelectGpsDrone))>
+                            <span class="label">@DroneChoiceLabel(DroneType.Gps)</span>
+                            <span class="desc">@DroneChoiceDescription(DroneType.Gps)</span>
+                            <span class="meta">@DroneChoiceMeta(DroneType.Gps)</span>
+                        </div>
+                        <div class="choice pilot" onclick=@(() => Hud.ClickMenuOption(Hud.SelectFpvDrone))>
+                            <span class="label">@DroneChoiceLabel(DroneType.Fpv)</span>
+                            <span class="desc">@DroneChoiceDescription(DroneType.Fpv)</span>
+                            <span class="meta">@DroneChoiceMeta(DroneType.Fpv)</span>
+                        </div>
+                        <div class="choice pilot" onclick=@(() => Hud.ClickMenuOption(Hud.SelectFiberFpvDrone))>
+                            <span class="label">@DroneChoiceLabel(DroneType.FiberOpticFpv)</span>
+                            <span class="desc">@DroneChoiceDescription(DroneType.FiberOpticFpv)</span>
+                            <span class="meta">@DroneChoiceMeta(DroneType.FiberOpticFpv)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="choice back" onclick=@(() => Hud.ClickMenuOption(Hud.ClearLoadoutTeam))>
+                    <span class="label">GO BACK</span>
+                    <span class="desc">Choose a different team</span>
+                </div>
+            }
+
+            @if ( Hud.SelectedLoadoutTeam == PlayerRole.Soldier )
+            {
+                <div class="loadout-section">
+                    <div class="choices">
+                        <div class="choice soldier" onclick=@(() => Hud.ClickMenuOption(Hud.SelectAssaultSoldier))>
+                            <span class="label">@SoldierChoiceLabel(SoldierClass.Assault)</span>
+                            <span class="desc">@SoldierChoiceDescription(SoldierClass.Assault)</span>
+                            <span class="meta">@SoldierChoiceMeta(SoldierClass.Assault)</span>
+                        </div>
+                        <div class="choice soldier" onclick=@(() => Hud.ClickMenuOption(Hud.SelectCounterUavSoldier))>
+                            <span class="label">@SoldierChoiceLabel(SoldierClass.CounterUav)</span>
+                            <span class="desc">@SoldierChoiceDescription(SoldierClass.CounterUav)</span>
+                            <span class="meta">@SoldierChoiceMeta(SoldierClass.CounterUav)</span>
+                        </div>
+                        <div class="choice soldier" onclick=@(() => Hud.ClickMenuOption(Hud.SelectHeavySoldier))>
+                            <span class="label">@SoldierChoiceLabel(SoldierClass.Heavy)</span>
+                            <span class="desc">@SoldierChoiceDescription(SoldierClass.Heavy)</span>
+                            <span class="meta">@SoldierChoiceMeta(SoldierClass.Heavy)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="choice back" onclick=@(() => Hud.ClickMenuOption(Hud.ClearLoadoutTeam))>
+                    <span class="label">GO BACK</span>
+                    <span class="desc">Choose a different team</span>
+                </div>
+            }
+        </div>
+    }
+</root>
+
+@code
+{
+    public HudPanel Hud { get; set; }
+
+    string RolePickerTitle => Hud.SelectedLoadoutTeam switch
+    {
+        PlayerRole.Pilot => "Drone Pilot Loadout",
+        PlayerRole.Soldier => "Hunters Loadout",
+        _ => "Select team",
+    };
+
+    string TeamChoiceClass( PlayerRole team )
+    {
+        var className = team == PlayerRole.Pilot ? "team-choice pilot" : "team-choice soldier";
+        return Hud.SelectedLoadoutTeam == team ? $"{className} selected" : className;
+    }
+
+    string SoldierChoiceLabel( SoldierClass cls ) => Hud.SoldierDefinition( cls )?.DisplayName?.ToUpperInvariant() ?? HudPanel.SoldierClassName( cls ).ToUpperInvariant();
+    string SoldierChoiceDescription( SoldierClass cls ) => Hud.SoldierDefinition( cls )?.ShortDescription ?? "";
+    string SoldierChoiceMeta( SoldierClass cls )
+    {
+        var definition = Hud.SoldierDefinition( cls );
+        return definition is null ? "" : $"{definition.PrimaryLabel} / {definition.EquipmentLabel}";
+    }
+
+    string DroneChoiceLabel( DroneType type ) => Hud.DroneDefinition( type )?.DisplayName?.ToUpperInvariant() ?? HudPanel.DroneVariantName( type ).ToUpperInvariant();
+    string DroneChoiceDescription( DroneType type ) => Hud.DroneDefinition( type )?.ShortDescription ?? "";
+    string DroneChoiceMeta( DroneType type )
+    {
+        var definition = Hud.DroneDefinition( type );
+        return definition is null ? "" : definition.EquipmentDetail;
+    }
+
+    protected override int BuildHash()
+    {
+        if ( !Hud.IsValid() ) return 0;
+        return HashCode.Combine(
+            Hud.SelectedLoadoutTeam,
+            Hud.LoadoutPreviewHash,
+            Hud.RolePickerShellClass,
+            Hud.MainMenuTransitionHashTick );
+    }
+}

@@ -1,0 +1,30 @@
+@using Sandbox
+@using Sandbox.UI
+@using System
+@using DroneVsPlayers
+@namespace DroneVsPlayers
+@inherits Panel
+
+@* Drone optic-zoom ring overlay. Parent gates on ShowDroneOpticOverlay. *@
+
+<root class="drone-optic-overlay @(Hud?.DroneVariantClass)">
+    @if ( Hud.IsValid() )
+    {
+        <div class="optic-ring outer"></div>
+        <div class="optic-ring inner"></div>
+        <div class="optic-line horizontal"></div>
+        <div class="optic-line vertical"></div>
+        <div class="optic-label">ZOOM @Hud.DroneOpticZoomLabel</div>
+    }
+</root>
+
+@code
+{
+    public HudPanel Hud { get; set; }
+
+    protected override int BuildHash()
+    {
+        if ( !Hud.IsValid() ) return 0;
+        return HashCode.Combine( Hud.DroneVariantClass, Hud.DroneOpticZoomLabel );
+    }
+}

@@ -1,0 +1,53 @@
+@using Sandbox
+@using Sandbox.UI
+@using DroneVsPlayers
+@namespace DroneVsPlayers
+@inherits Panel
+
+@* Static pilot key hints + camera-mode label. Parent gates on pilot role. *@
+
+<root class="pilot-controls">
+    @if ( Hud.IsValid() )
+    {
+        <div class="control-row">
+            <span class="key">WASD</span>
+            <span>Move</span>
+        </div>
+        <div class="control-row">
+            <span class="key">Space</span>
+            <span>Ascend</span>
+        </div>
+        <div class="control-row">
+            <span class="key">Ctrl</span>
+            <span>Descend</span>
+        </div>
+        <div class="control-row">
+            <span class="key">Shift</span>
+            <span>Boost</span>
+        </div>
+        <div class="control-row emphasized">
+            <span class="key">F</span>
+            <span>Toggle drone control</span>
+        </div>
+        <div class="control-row">
+            <span class="key">X</span>
+            <span>@DroneCameraModeLabel</span>
+        </div>
+    }
+</root>
+
+@code
+{
+    public HudPanel Hud { get; set; }
+
+    string DroneCameraModeLabel =>
+        Hud.LocalDroneCamera.IsValid() && Hud.LocalDroneCamera.IsFirstPersonActive
+            ? "Camera: First person"
+            : "Camera: Third person";
+
+    protected override int BuildHash()
+    {
+        if ( !Hud.IsValid() ) return 0;
+        return DroneCameraModeLabel.GetHashCode();
+    }
+}

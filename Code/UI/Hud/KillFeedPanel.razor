@@ -1,0 +1,70 @@
+@using Sandbox
+@using Sandbox.UI
+@using System
+@using System.Collections.Generic
+@using System.Linq
+@using DroneVsPlayers
+@namespace DroneVsPlayers
+@inherits Panel
+
+@* Top-right score pair + kill feed rows. *@
+
+<root class="top-right">
+    @if ( Hud.IsValid() )
+    {
+        <div class="score">
+            <span class="pilot">@Hud.PilotWins</span>
+            <span class="sep">vs</span>
+            <span class="soldier">@Hud.SoldierWins</span>
+        </div>
+
+        @if ( KillFeedEntries.Count > 0 )
+        {
+            <div class="kill-feed">
+                @foreach ( var e in KillFeedEntries )
+                {
+                    <div class="@KillFeedEntryClass(e)">
+                        <span class="attacker">@e.AttackerName</span>
+                        <span class="weapon">[@e.WeaponName]</span>
+                        <span class="victim">@e.VictimName</span>
+                    </div>
+                }
+            </div>
+        }
+    }
+</root>
+
+@code
+{
+    public HudPanel Hud { get; set; }
+
+    record struct KillFeedRow( string AttackerName, string WeaponName, string VictimName, bool LocalIsAttacker, bool LocalIsVictim );
+
+    IReadOnlyList<KillFeedRow> KillFeedEntries
+    {
+        get
+        {
+            var feed = Hud.KillFeed;
+            if ( feed is null ) return Array.Empty<KillFeedRow>();
+            return feed.Entries
+                .Select( e => new KillFeedRow( e.AttackerName, e.WeaponName, e.VictimName, e.LocalIsAttacker, e.LocalIsVictim ) )
+                .ToList();
+        }
+    }
+
+    string KillFeedEntryClass( KillFeedRow e )
+    {
+        if ( e.LocalIsAttacker ) return "kill-feed-entry local-attacker";
+        if ( e.LocalIsVictim ) return "kill-feed-entry local-victim";
+        return "kill-feed-entry";
+    }
+
+    protected override int BuildHash()
+    {
+        if ( !Hud.IsValid() ) return 0;
+        var hash = HashCode.Combine( Hud.PilotWins, Hud.SoldierWins );
+        foreach ( var e in KillFeedEntries )
+            hash = HashCode.Combine( hash, e );
+        return hash;
+    }
+}

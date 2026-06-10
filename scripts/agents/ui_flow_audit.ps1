@@ -139,22 +139,22 @@ function Test-HudRolePickerStagedTeamAndLoadouts {
         Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Team picker loadout options are nested vertically under individual team cards." "Keep team choice and loadout choice as separate picker stages."
     }
 
-    $titlePattern = '(?s)<div\s+class="title">@RolePickerTitle</div>.*?string\s+RolePickerTitle\s*=>\s*SelectedLoadoutTeam\s+switch.*?PlayerRole\.Pilot\s*=>\s*"Drone Pilot Loadout".*?PlayerRole\.Soldier\s*=>\s*"Hunters Loadout".*?_\s*=>\s*"Select team"'
+    $titlePattern = '(?s)<div\s+class="title">@RolePickerTitle</div>.*?string\s+RolePickerTitle\s*=>\s*(?:Hud\.)?SelectedLoadoutTeam\s+switch.*?PlayerRole\.Pilot\s*=>\s*"Drone Pilot Loadout".*?PlayerRole\.Soldier\s*=>\s*"Hunters Loadout".*?_\s*=>\s*"Select team"'
     if ($Text -notmatch $titlePattern) {
         Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Role picker title must match the active picker stage." "Render Select team for the team stage, Drone Pilot Loadout for the pilot loadout stage, and Hunters Loadout for the hunter loadout stage."
     }
 
-    $teamPattern = '(?s)@if\s*\(\s*SelectedLoadoutTeam\s*==\s*PlayerRole\.Spectator\s*\).*?<div\s+class="team-choices">.*?(?:SelectLoadoutTeam\s*\(\s*PlayerRole\.Pilot\s*\)|ClickMenuOption\s*\(\s*SelectPilotTeam\s*\)).*?DRONE PILOTS.*?(?:SelectLoadoutTeam\s*\(\s*PlayerRole\.Soldier\s*\)|ClickMenuOption\s*\(\s*SelectSoldierTeam\s*\)).*?HUNTERS.*?ClickMenuOption\s*\(\s*BackToMainMenu\s*\).*?GO BACK'
+    $teamPattern = '(?s)@if\s*\(\s*(?:Hud\.)?SelectedLoadoutTeam\s*==\s*PlayerRole\.Spectator\s*\).*?<div\s+class="team-choices">.*?(?:SelectLoadoutTeam\s*\(\s*PlayerRole\.Pilot\s*\)|ClickMenuOption\s*\(\s*(?:Hud\.)?SelectPilotTeam\s*\)).*?DRONE PILOTS.*?(?:SelectLoadoutTeam\s*\(\s*PlayerRole\.Soldier\s*\)|ClickMenuOption\s*\(\s*(?:Hud\.)?SelectSoldierTeam\s*\)).*?HUNTERS.*?ClickMenuOption\s*\(\s*(?:Hud\.)?BackToMainMenu\s*\).*?GO BACK'
     if ($Text -notmatch $teamPattern) {
         Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Role picker must show a standalone team selection stage with its own Back button." "Render Drone Pilots/Hunters choices only while SelectedLoadoutTeam is Spectator, followed by a Back action to the main menu."
     }
 
-    $pilotPattern = '(?s)@if\s*\(\s*SelectedLoadoutTeam\s*==\s*PlayerRole\.Pilot\s*\).*?<div\s+class="loadout-section">.*?<div\s+class="choices">.*?(GPS DRONE|DroneChoiceLabel\s*\(\s*DroneType\.Gps\s*\)).*?(FPV DRONE|DroneChoiceLabel\s*\(\s*DroneType\.Fpv\s*\)).*?(FIBER FPV|DroneChoiceLabel\s*\(\s*DroneType\.FiberOpticFpv\s*\)).*?ClickMenuOption\s*\(\s*ClearLoadoutTeam\s*\).*?GO BACK'
+    $pilotPattern = '(?s)@if\s*\(\s*(?:Hud\.)?SelectedLoadoutTeam\s*==\s*PlayerRole\.Pilot\s*\).*?<div\s+class="loadout-section">.*?<div\s+class="choices">.*?(GPS DRONE|DroneChoiceLabel\s*\(\s*DroneType\.Gps\s*\)).*?(FPV DRONE|DroneChoiceLabel\s*\(\s*DroneType\.Fpv\s*\)).*?(FIBER FPV|DroneChoiceLabel\s*\(\s*DroneType\.FiberOpticFpv\s*\)).*?ClickMenuOption\s*\(\s*(?:Hud\.)?ClearLoadoutTeam\s*\).*?GO BACK'
     if ($Text -notmatch $pilotPattern) {
         Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Drone Pilot loadout options must render as the second-stage Pilot picker." "Render GPS, FPV, and Fiber FPV only after the Pilot team is selected, followed by a Back action to team selection."
     }
 
-    $soldierPattern = '(?s)@if\s*\(\s*SelectedLoadoutTeam\s*==\s*PlayerRole\.Soldier\s*\).*?<div\s+class="loadout-section">.*?<div\s+class="choices">.*?(ASSAULT|SoldierChoiceLabel\s*\(\s*SoldierClass\.Assault\s*\)).*?(COUNTER-UAV|SoldierChoiceLabel\s*\(\s*SoldierClass\.CounterUav\s*\)).*?(HEAVY|SoldierChoiceLabel\s*\(\s*SoldierClass\.Heavy\s*\)).*?ClickMenuOption\s*\(\s*ClearLoadoutTeam\s*\).*?GO BACK'
+    $soldierPattern = '(?s)@if\s*\(\s*(?:Hud\.)?SelectedLoadoutTeam\s*==\s*PlayerRole\.Soldier\s*\).*?<div\s+class="loadout-section">.*?<div\s+class="choices">.*?(ASSAULT|SoldierChoiceLabel\s*\(\s*SoldierClass\.Assault\s*\)).*?(COUNTER-UAV|SoldierChoiceLabel\s*\(\s*SoldierClass\.CounterUav\s*\)).*?(HEAVY|SoldierChoiceLabel\s*\(\s*SoldierClass\.Heavy\s*\)).*?ClickMenuOption\s*\(\s*(?:Hud\.)?ClearLoadoutTeam\s*\).*?GO BACK'
     if ($Text -notmatch $soldierPattern) {
         Add-AgentIssue $Issues "Error" "UI Flow" $Relative "Soldier class options must render as the second-stage Soldier picker." "Render Assault, Counter-UAV, and Heavy only after the Soldier team is selected, followed by a Back action to team selection."
     }
@@ -188,7 +188,7 @@ function Test-HudMainMenuTransitionContract {
             Recommendation = "Track local transition state and include it in BuildHash() instead of forcing StateHasChanged() from Tick()."
         },
         @{
-            Pattern = '(?:onclick=@StartMainMenuPlayTransition|ClickMenuOption\s*\(\s*StartMainMenuPlayTransition\s*\))'
+            Pattern = '(?:onclick=@(?:Hud\.)?StartMainMenuPlayTransition|(?:Hud\.)?ClickMenuOption\s*\(\s*(?:Hud\.)?StartMainMenuPlayTransition\s*\))'
             Message = "Play should start the animated main-menu transition."
             Recommendation = "Route the Play button through StartMainMenuPlayTransition instead of immediately hiding the main menu."
         },
@@ -429,6 +429,13 @@ foreach ($file in $razorFiles) {
     $relative = ConvertTo-AgentRelativePath -Path $file.FullName -Root $Root
     $lines = @(Get-Content -LiteralPath $file.FullName)
     $text = Get-Content -LiteralPath $file.FullName -Raw
+
+    if ($relative -eq "Code/UI/HudPanel.razor") {
+        # The HUD is composed of child razor panels; contract checks read the family.
+        foreach ($childPanel in Get-ChildItem -Path (Join-Path $Root "Code/UI/Hud/*.razor") -ErrorAction SilentlyContinue) {
+            $text += "`n" + (Get-Content -LiteralPath $childPanel.FullName -Raw)
+        }
+    }
 
     Test-HudRolePickerStagedTeamAndLoadouts -Text $text -Relative $relative -Issues $issues
     Test-HudMainMenuTransitionContract -Text $text -Relative $relative -Issues $issues

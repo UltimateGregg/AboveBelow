@@ -67,6 +67,9 @@ foreach ($partial in Get-ChildItem -Path (Join-Path $Root "Code\Game\GameSetup.*
 }
 $round = Read-ProjectText $roundPath
 $hud = Read-ProjectText $hudPath
+foreach ($childPanel in Get-ChildItem -Path (Join-Path $Root "Code\UI\Hud\*.razor") -ErrorAction SilentlyContinue) {
+    $hud += "`n" + (Get-Content -LiteralPath $childPanel.FullName -Raw)
+}
 $gameplayDoc = Read-ProjectText $gameplayDocPath
 $architectureDoc = Read-ProjectText $architectureDocPath
 $testingDoc = Read-ProjectText $testingDocPath

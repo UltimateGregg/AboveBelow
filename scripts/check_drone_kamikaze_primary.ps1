@@ -44,6 +44,9 @@ function Reject-Match {
 
 $weapon = Read-ProjectFile "Code/Drone/DroneWeapon.cs"
 $hud = Read-ProjectFile "Code/UI/HudPanel.razor"
+foreach ($childPanel in Get-ChildItem -Path (Join-Path $Root "Code/UI/Hud/*.razor") -ErrorAction SilentlyContinue) {
+    $hud += "`n" + (Get-Content -LiteralPath $childPanel.FullName -Raw)
+}
 $promptRenderer = Read-ProjectFile "Code/UI/InteractionPromptRenderer.cs"
 $deployer = Read-ProjectFile "Code/Player/DroneDeployer.cs"
 $pilot = Read-ProjectFile "Code/Player/PilotSoldier.cs"
@@ -61,7 +64,7 @@ Require-Match "Pilot drone HUD should hide bottom loadout cards while the local 
     $hud "ShowLoadoutHud\s*=>[\s\S]{0,260}!\s*LocalDroneViewActive"
 
 Require-Match "Pilot drone HUD should render a single drone action prompt inside the existing reticle stack." `
-    $hud "<div\s+class=""reticle-stack"">[\s\S]{0,900}ShowDroneActionPrompt[\s\S]{0,700}drone-action-prompt"
+    $hud "<(?:div|root)\s+class=""reticle-stack"">[\s\S]{0,900}ShowDroneActionPrompt[\s\S]{0,700}drone-action-prompt"
 
 Require-Match "Pilot drone HUD should render the drone action prompt through the shared interaction prompt renderer." `
     $hud "ShowDroneActionPrompt[\s\S]{0,900}InteractionPromptRenderer\.Render[\s\S]{0,180}drone-action-prompt"

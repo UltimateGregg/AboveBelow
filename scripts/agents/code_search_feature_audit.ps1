@@ -52,6 +52,10 @@ $tracer = Get-Text "Code/Player/BallisticTracerRenderer.cs"
 $grenade = Get-Text "Code/Equipment/ThrowableGrenade.cs"
 $projectile = Get-Text "Code/Equipment/ThrownGrenadeProjectile.cs"
 $hud = Get-Text "Code/UI/HudPanel.razor"
+# The HUD is composed of child razor panels; feature checks read the family.
+foreach ($childPanel in Get-ChildItem -Path (Join-Path $Root "Code/UI/Hud/*.razor") -ErrorAction SilentlyContinue) {
+    $hud += "`n" + (Get-Content -LiteralPath $childPanel.FullName -Raw)
+}
 $ammoHud = Get-Text "Code/UI/AmmoHudRenderer.cs"
 $scoreboardOverlay = Get-Text "Code/UI/ScoreboardOverlayRenderer.cs"
 $setup = Get-Text "Code/Game/GameSetup.cs"
