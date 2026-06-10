@@ -168,10 +168,16 @@ function Assert-DeployerFirstPersonIkOffsets {
 
 $deployer = Read-Text "Code\Player\DroneDeployer.cs"
 $viewmodel = Read-Text "Code\Player\FirstPersonViewmodel.cs"
+foreach ($partial in Get-ChildItem -Path (Join-Path $Root "Code\Player\FirstPersonViewmodel.*.cs") -ErrorAction SilentlyContinue) {
+    $viewmodel += "`n" + (Get-Content -LiteralPath $partial.FullName -Raw)
+}
 $controller = Read-Text "Code\Player\GroundPlayerController.cs"
 $droneCamera = Read-Text "Code\Drone\DroneCamera.cs"
 $droneController = Read-Text "Code\Drone\DroneController.cs"
 $gameSetup = Read-Text "Code\Game\GameSetup.cs"
+foreach ($partial in Get-ChildItem -Path (Join-Path $Root "Code\Game\GameSetup.*.cs") -ErrorAction SilentlyContinue) {
+    $gameSetup += "`n" + (Get-Content -LiteralPath $partial.FullName -Raw)
+}
 $roundFlow = Read-Text "Code\Game\RoundFlowDebugCommands.cs"
 
 Require-Pattern $viewmodel 'HiddenStaticVisualRoot' `

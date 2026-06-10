@@ -45,6 +45,9 @@ if (Test-Path -LiteralPath $hitscanWeaponPath) {
 $gameSetupPath = Join-Path $codeRoot "Game\GameSetup.cs"
 if (Test-Path -LiteralPath $gameSetupPath) {
     $gameSetupText = Get-Content -LiteralPath $gameSetupPath -Raw
+    foreach ($partial in Get-ChildItem -Path (Join-Path $codeRoot "Game\GameSetup.*.cs") -ErrorAction SilentlyContinue) {
+        $gameSetupText += "`n" + (Get-Content -LiteralPath $partial.FullName -Raw)
+    }
     $gameSetupRelative = ConvertTo-AgentRelativePath -Path $gameSetupPath -Root $Root
     $requestSpawnMatch = [regex]::Match($gameSetupText, '(?s)\[Rpc\.(?<kind>Broadcast|Host)\]\s*\r?\n\s*void\s+RequestSpawn\s*\((?<args>[^\)]*)\)')
 

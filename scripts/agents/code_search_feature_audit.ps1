@@ -51,6 +51,9 @@ $hud = Get-Text "Code/UI/HudPanel.razor"
 $ammoHud = Get-Text "Code/UI/AmmoHudRenderer.cs"
 $scoreboardOverlay = Get-Text "Code/UI/ScoreboardOverlayRenderer.cs"
 $setup = Get-Text "Code/Game/GameSetup.cs"
+foreach ($partial in Get-ChildItem -Path (Join-Path $Root "Code/Game/GameSetup.*.cs") -ErrorAction SilentlyContinue) {
+    $setup += "`n" + (Get-Content -LiteralPath $partial.FullName -Raw)
+}
 $teamComms = Get-Text "Code/Game/TeamComms.cs"
 $teamVoice = Get-Text "Code/Game/TeamVoice.cs"
 $trainingDummy = Get-Text "Code/Game/TrainingDummy.cs"

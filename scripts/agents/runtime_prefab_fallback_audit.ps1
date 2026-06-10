@@ -104,7 +104,13 @@ $allowed = @{
             'ViewmodelArmsPrefabPath\s*=\s*"prefabs/items/viewmodel_arms\.prefab"',
             'ViewmodelStockWeaponPrefabPath\s*=\s*"prefabs/items/viewmodel_stock_weapon\.prefab"',
             'ViewmodelCustomVisualPrefabPath\s*=\s*"prefabs/items/viewmodel_custom_visual\.prefab"',
-            'ViewmodelStaticItemPrefabPath\s*=\s*"prefabs/items/viewmodel_static_item\.prefab"',
+            'ViewmodelStaticItemPrefabPath\s*=\s*"prefabs/items/viewmodel_static_item\.prefab"'
+        )
+        Recommendation = "Keep reusable first-person roots prefab-backed; per-item source renderer copies may remain runtime children."
+    }
+    "Code/Player/FirstPersonViewmodel.Build.cs" = @{
+        Patterns = @(
+            'GameObject\.GetPrefab\(\s*ViewmodelRootPrefabPath\s*\)',
             'Components\.Get<ModelRenderer>\(\)'
         )
         Recommendation = "Keep reusable first-person roots prefab-backed; per-item source renderer copies may remain runtime children."

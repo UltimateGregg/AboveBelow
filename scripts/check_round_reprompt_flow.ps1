@@ -62,6 +62,9 @@ $architectureDocPath = "docs\architecture.md"
 $testingDocPath = "TESTING_GUIDE.md"
 
 $setup = Read-ProjectText $setupPath
+foreach ($partial in Get-ChildItem -Path (Join-Path $Root "Code\Game\GameSetup.*.cs") -ErrorAction SilentlyContinue) {
+    $setup += "`n" + (Get-Content -LiteralPath $partial.FullName -Raw)
+}
 $round = Read-ProjectText $roundPath
 $hud = Read-ProjectText $hudPath
 $gameplayDoc = Read-ProjectText $gameplayDocPath

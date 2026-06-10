@@ -264,13 +264,16 @@ function Require-Pattern {
 }
 
 $viewmodel = Read-Text "Code\Player\FirstPersonViewmodel.cs"
+foreach ($partial in Get-ChildItem -Path (Join-Path $Root "Code\Player\FirstPersonViewmodel.*.cs") -ErrorAction SilentlyContinue) {
+    $viewmodel += "`n" + (Get-Content -LiteralPath $partial.FullName -Raw)
+}
 $controller = Read-Text "Code\Player\GroundPlayerController.cs"
 $hitscan = Read-Text "Code\Player\HitscanWeapon.cs"
 $shotgun = Read-Text "Code\Player\ShotgunWeapon.cs"
 $jammer = Read-Text "Code\Player\DroneJammerGun.cs"
 $grenade = Read-Text "Code\Equipment\ThrowableGrenade.cs"
 $deployer = Read-Text "Code\Player\DroneDeployer.cs"
-Require-Pattern $viewmodel 'sealed\s+class\s+FirstPersonViewmodel' "FirstPersonViewmodel component is required."
+Require-Pattern $viewmodel 'sealed\s+partial\s+class\s+FirstPersonViewmodel' "FirstPersonViewmodel component is required."
 Require-Pattern $viewmodel 'ViewmodelRootPrefabPath\s*=\s*"prefabs/items/local_first_person_viewmodel\.prefab"' "FirstPersonViewmodel must use a reusable prefab for the local viewmodel root."
 Require-Pattern $viewmodel 'GameObject\.GetPrefab\(\s*ViewmodelRootPrefabPath\s*\)' "FirstPersonViewmodel must resolve the local viewmodel root prefab before falling back to procedural creation."
 Require-Pattern $viewmodel 'ViewmodelArmsPrefabPath\s*=\s*"prefabs/items/viewmodel_arms\.prefab"' "FirstPersonViewmodel must use a reusable prefab for the local viewmodel arms child."

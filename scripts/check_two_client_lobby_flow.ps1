@@ -47,6 +47,9 @@ $testingGuidePath = "TESTING_GUIDE.md"
 $agentToolkitPath = "docs\agent_toolkit.md"
 
 $setup = Read-ProjectText $setupPath
+foreach ($partial in Get-ChildItem -Path (Join-Path $Root "Code\Game\GameSetup.*.cs") -ErrorAction SilentlyContinue) {
+    $setup += "`n" + (Get-Content -LiteralPath $partial.FullName -Raw)
+}
 $debug = Read-ProjectText $debugPath
 $gameplayGuard = Read-ProjectText $gameplayGuardPath
 $testingGuide = Read-ProjectText $testingGuidePath

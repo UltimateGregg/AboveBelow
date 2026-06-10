@@ -2471,6 +2471,8 @@ Use editor-first-workflow-agent.md for animated Blender/FBX/VMDL imports.
         'Animated Model Intake Agent "animated-model" animated_model_intake_audit.ps1' | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\test_full_automation_layer.ps1") -Encoding UTF8
         "AnimatedAssets animated_model_intake_audit.ps1 AnimGraph" | Set-Content -LiteralPath (Join-Path $tempRoot "scripts\agents\post_task_training_agent.ps1") -Encoding UTF8
         'UseAnimGraph Parameters.Set SetIk' | Set-Content -LiteralPath (Join-Path $tempRoot "Code\Player\FirstPersonViewmodel.cs") -Encoding UTF8
+        'UseAnimGraph Parameters.Set' | Set-Content -LiteralPath (Join-Path $tempRoot "Code\Player\FirstPersonViewmodel.Build.cs") -Encoding UTF8
+        'Parameters.Set SetIk' | Set-Content -LiteralPath (Join-Path $tempRoot "Code\Player\FirstPersonViewmodel.Pose.cs") -Encoding UTF8
         '{"hooks":[{"id":"sbox-animated-model-check","action":{"args":["-Suite","animated-model",".\\scripts\\agents\\animated_model_intake_audit.ps1"]}}]}' | Set-Content -LiteralPath (Join-Path $tempRoot ".claude\settings.json") -Encoding UTF8
 
         & powershell -NoProfile -ExecutionPolicy Bypass -File $animatedModelAudit -Root $tempRoot | Out-Host

@@ -70,15 +70,18 @@ Test-Pattern `
     -Message "Prefab and loadout path resolution should live in GameSetupPrefabResolver." `
     -Recommendation "Extract prefab/loadout resolution out of GameSetup so spawn flow stays focused."
 
-Test-NotPattern `
-    -Path "Code/Game/GameSetup.cs" `
-    -Pattern 'GameObject\s+Resolve(PilotGround|TrainingDummy|Soldier|Drone)Prefab\s*\(' `
-    -Area "GameSetup Extraction" `
-    -Message "GameSetup should not own bulky prefab resolver methods." `
-    -Recommendation "Call GameSetupPrefabResolver from spawn code instead of keeping resolver implementations inside GameSetup."
+foreach ($gameSetupPart in @("Code/Game/GameSetup.cs", "Code/Game/GameSetup.Networking.cs", "Code/Game/GameSetup.Selection.cs", "Code/Game/GameSetup.Spawning.cs")) {
+    if (-not (Test-Path -LiteralPath (Join-Path $Root $gameSetupPart))) { continue }
+    Test-NotPattern `
+        -Path $gameSetupPart `
+        -Pattern 'GameObject\s+Resolve(PilotGround|TrainingDummy|Soldier|Drone)Prefab\s*\(' `
+        -Area "GameSetup Extraction" `
+        -Message "GameSetup should not own bulky prefab resolver methods." `
+        -Recommendation "Call GameSetupPrefabResolver from spawn code instead of keeping resolver implementations inside GameSetup."
+}
 
 Test-Pattern `
-    -Path "Code/Game/GameSetup.cs" `
+    -Path "Code/Game/GameSetup.Spawning.cs" `
     -Pattern 'GameSetupPrefabResolver\.ResolvePilotGroundPrefab[\s\S]*GameSetupPrefabResolver\.ResolveSoldierPrefab[\s\S]*GameSetupPrefabResolver\.ResolveTrainingDummyPrefab' `
     -Area "GameSetup Extraction" `
     -Message "GameSetup spawn paths should call the extracted prefab resolver." `

@@ -42,8 +42,8 @@ Require-Match "FiberCable should cap the live lead projection distance." `
 Require-Match "FiberCable should build a shifted drone lead point before adding drone trail points." `
     $fiberCable "var\s+droneLeadPoint\s*=\s*BuildDroneLeadPoint\(\s*dronePos,\s*groundUnderDrone,\s*groundUnderPilot\s*\);[\s\S]{0,260}AddTrailPoint\(\s*_droneTrail,\s*droneLeadPoint"
 
-Require-Match "FiberCable should render the current shifted lead point before the live drone endpoint." `
-    $fiberCable "for\s*\(\s*int\s+i\s*=\s*0;\s*i\s*<\s*_droneTrail\.Count;\s*i\+\+\s*\)[\s\S]{0,180}AddRenderPoint\(\s*droneLeadPoint\s*\);[\s\S]{0,120}AddRenderPoint\(\s*dronePos\s*\);"
+Require-Match "FiberCable should end the grounded polyline at the shifted lead point and hand the air span to the rope." `
+    $fiberCable "for\s*\(\s*int\s+i\s*=\s*0;\s*i\s*<\s*_droneTrail\.Count;\s*i\+\+\s*\)[\s\S]{0,300}AddRenderPoint\(\s*droneLeadPoint\s*\);[\s\S]{0,200}UpdateAirSpan\(\s*dronePos,\s*droneLeadPoint\s*\)"
 
 Require-Match "FiberCable should calculate horizontal lead distance from the target angle." `
     $fiberCable "var\s+angleRadians\s*=\s*DroneLeadAngleDegrees\.Clamp\(\s*10f,\s*85f\s*\)\s*\*\s*\(MathF\.PI\s*/\s*180f\);[\s\S]{0,220}MathF\.Tan\(\s*angleRadians\s*\)"

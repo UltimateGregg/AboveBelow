@@ -77,7 +77,7 @@ Test-FilePattern `
     -Recommendation "Use a helper seam so GameSetup and DroneDeployer do not grow more balance-application logic."
 
 Test-FilePattern `
-    -Path "Code/Game/GameSetup.cs" `
+    -Path "Code/Game/GameSetup.Spawning.cs" `
     -Area "Balance Application" `
     -Pattern 'BalanceApplier\.ApplyPilotGround[\s\S]*BalanceApplier\.ApplySoldier[\s\S]*BalanceApplier\.ApplyTrainingDummy' `
     -Message "GameSetup should apply central balance to pilot, soldier, and solo dummy spawns." `

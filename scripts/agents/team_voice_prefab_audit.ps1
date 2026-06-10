@@ -54,6 +54,9 @@ foreach ($prefabPath in @(
 
 $setupPath = "Code/Game/GameSetup.cs"
 $setupText = Get-Text $setupPath
+foreach ($partial in Get-ChildItem -Path (Join-Path $Root "Code/Game/GameSetup.*.cs") -ErrorAction SilentlyContinue) {
+    $setupText += "`n" + (Get-Content -LiteralPath $partial.FullName -Raw)
+}
 Assert-Pattern $setupPath $setupText 'Components\.Get<TeamVoice>\(\s*FindMode\.EverythingInSelfAndDescendants\s*\)' "GameSetup should look for prefab-authored TeamVoice before adding a fallback." "Prefer prefab-authored TeamVoice while keeping fallback repair for legacy or broken prefabs."
 Assert-Pattern $setupPath $setupText 'Components\.Create<TeamVoice>\(\)' "GameSetup should keep a TeamVoice fallback." "Do not strand voice routing if a prefab is temporarily missing TeamVoice during iteration."
 Assert-Pattern $setupPath $setupText 'voice\.Setup\s*=\s*this' "GameSetup should assign itself to TeamVoice." "Keep spawned voice components connected to the authoritative team setup."

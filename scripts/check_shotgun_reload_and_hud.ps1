@@ -32,6 +32,9 @@ function Require-Match {
 $shotgun = Read-ProjectFile "Code/Player/ShotgunWeapon.cs"
 $hud = Read-ProjectFile "Code/UI/HudPanel.razor"
 $viewmodel = Read-ProjectFile "Code/Player/FirstPersonViewmodel.cs"
+foreach ($partial in Get-ChildItem -Path (Join-Path $Root "Code/Player/FirstPersonViewmodel.*.cs") -ErrorAction SilentlyContinue) {
+    $viewmodel += "`n" + (Get-Content -LiteralPath $partial.FullName -Raw)
+}
 
 Require-Match "ShotgunWeapon should declare a 6-shell magazine." `
     $shotgun "\[Property\]\s+public\s+int\s+MagazineSize\s*\{\s*get;\s*set;\s*\}\s*=\s*6\s*;"

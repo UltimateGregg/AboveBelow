@@ -133,8 +133,12 @@ Test-FileHasPatterns ".claude/settings.json" @(
     '"animated-model"'
 ) "Claude Hook"
 
-Test-FileHasPatterns "Code/Player/FirstPersonViewmodel.cs" @(
+Test-FileHasPatterns "Code/Player/FirstPersonViewmodel.Build.cs" @(
     "UseAnimGraph",
+    "Parameters\.Set"
+) "First-Person Animation Owner"
+
+Test-FileHasPatterns "Code/Player/FirstPersonViewmodel.Pose.cs" @(
     "Parameters\.Set",
     "SetIk"
 ) "First-Person Animation Owner"
