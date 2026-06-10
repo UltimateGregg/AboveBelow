@@ -393,10 +393,10 @@
 
 @code
 {
-    RoundManager Round => Scene.GetAllComponents<RoundManager>().FirstOrDefault();
-    GameSetup Setup => Scene.GetAllComponents<GameSetup>().FirstOrDefault();
-    GameStats Stats => Scene.GetAllComponents<GameStats>().FirstOrDefault();
-    KillFeedTracker KillFeed => Scene.GetAllComponents<KillFeedTracker>().FirstOrDefault();
+    RoundManager Round => EnsureValid( ref _round );
+    GameSetup Setup => EnsureValid( ref _setup );
+    GameStats Stats => EnsureValid( ref _stats );
+    KillFeedTracker KillFeed => EnsureValid( ref _killFeed );
 
     const string MenuClickSoundPath = "sounds/ui_menu_click.sound";
     const float MainMenuPlayTransitionSeconds = 0.5f;
@@ -607,6 +607,7 @@
 
     protected override void OnUpdate()
     {
+        RefreshHudCache();
         SyncSelectionGeneration();
         HandleOptionsInput();
         LocalOptionsState.ApplyTo( Components.Get<ScreenPanel>() );
@@ -906,33 +907,20 @@
         return conn?.DisplayName ?? "Target";
     }
 
-    Vector3 LocalCameraPosition
-    {
-        get
-        {
-            var cam = Scene.GetAllComponents<CameraComponent>().FirstOrDefault();
-            return cam.IsValid() ? cam.WorldPosition : Vector3.Zero;
-        }
-    }
+    Vector3 LocalCameraPosition =>
+        _sceneCamera.IsValid() ? _sceneCamera.WorldPosition : Vector3.Zero;
 
-    Vector3 LocalCameraForward
-    {
-        get
-        {
-            var cam = Scene.GetAllComponents<CameraComponent>().FirstOrDefault();
-            return cam.IsValid() ? cam.WorldRotation.Forward : Vector3.Forward;
-        }
-    }
+    Vector3 LocalCameraForward =>
+        _sceneCamera.IsValid() ? _sceneCamera.WorldRotation.Forward : Vector3.Forward;
 
-    RemoteController LocalRemoteController =>
-        Scene.GetAllComponents<RemoteController>().FirstOrDefault( r => !r.IsProxy );
+    RemoteController LocalRemoteController => _localRemote;
 
     float SunGlareOpacity
     {
         get
         {
-            var source = Scene.GetAllComponents<SunGlareSource>().FirstOrDefault( s => s.Enabled );
-            if ( !source.IsValid() )
+            var source = EnsureValid( ref _sunGlareSource );
+            if ( !source.IsValid() || !source.Enabled )
                 return 0f;
 
             var remote = LocalRemoteController;
@@ -1128,32 +1116,15 @@
             : null;
     }
 
-    GroundPlayerController LocalGroundController =>
-        Scene.GetAllComponents<GroundPlayerController>().FirstOrDefault( g => !g.IsProxy );
+    GroundPlayerController LocalGroundController => _localGround;
 
-    PilotSoldier LocalPilotSoldier =>
-        Scene.GetAllComponents<PilotSoldier>().FirstOrDefault( p => !p.IsProxy );
+    PilotSoldier LocalPilotSoldier => _localPilot;
 
-    DroneController LocalDroneController =>
-        Scene.GetAllComponents<DroneController>().FirstOrDefault( d => !d.IsProxy );
+    DroneController LocalDroneController => _localDrone;
 
-    DroneWeapon LocalDroneWeapon =>
-        LocalDroneController.IsValid() ? LocalDroneController.Components.Get<DroneWeapon>() : null;
+    DroneWeapon LocalDroneWeapon => _localDroneWeapon;
 
-    WorldInteractionPrompt CurrentWorldPrompt
-    {
-        get
-        {
-            if ( GameplayUiBlocked )
-                return null;
-
-            var cameraPosition = LocalCameraPosition;
-            return Scene.GetAllComponents<WorldInteractionPrompt>()
-                .Where( prompt => prompt.IsValid() && prompt.IsAvailableFor( cameraPosition, LocalRole ) )
-                .OrderBy( prompt => prompt.WorldPosition.Distance( cameraPosition ) )
-                .FirstOrDefault();
-        }
-    }
+    WorldInteractionPrompt CurrentWorldPrompt => _worldPrompt;
 
     string WorldPromptClass
     {
@@ -1315,43 +1286,9 @@
         return className;
     }
 
-    HitscanWeapon CurrentRifleAmmoWeapon
-    {
-        get
-        {
-            var ground = LocalGroundController;
-            if ( !ground.IsValid() )
-                return null;
+    HitscanWeapon CurrentRifleAmmoWeapon => _activeRifle;
 
-            var selectedSlot = SelectedLoadoutSlot;
-            var loadout = ground.GameObject.Components.Get<SoldierLoadout>( FindMode.EverythingInSelfAndDescendants );
-            if ( loadout.IsValid() )
-                selectedSlot = loadout.ActiveSlot;
-
-            return ground.GameObject.Components
-                .GetAll<HitscanWeapon>( FindMode.EverythingInSelfAndDescendants )
-                .FirstOrDefault( weapon => weapon.IsValid() && weapon.Slot == selectedSlot );
-        }
-    }
-
-    ShotgunWeapon CurrentShotgunAmmoWeapon
-    {
-        get
-        {
-            var ground = LocalGroundController;
-            if ( !ground.IsValid() )
-                return null;
-
-            var selectedSlot = SelectedLoadoutSlot;
-            var loadout = ground.GameObject.Components.Get<SoldierLoadout>( FindMode.EverythingInSelfAndDescendants );
-            if ( loadout.IsValid() )
-                selectedSlot = loadout.ActiveSlot;
-
-            return ground.GameObject.Components
-                .GetAll<ShotgunWeapon>( FindMode.EverythingInSelfAndDescendants )
-                .FirstOrDefault( weapon => weapon.IsValid() && weapon.Slot == selectedSlot );
-        }
-    }
+    ShotgunWeapon CurrentShotgunAmmoWeapon => _activeShotgun;
 
     bool ShowAmmoHud => ShowLoadoutHud
         && !LocalDroneViewActive
@@ -1405,7 +1342,7 @@
     {
         get
         {
-            var jammer = LocalSoldierComponent<DroneJammerGun>();
+            var jammer = _activeJammerGun;
             return jammer.IsValid() ? Math.Clamp( (int)MathF.Ceiling( jammer.BatteryChargeFraction * 20f ), 0, 20 ) : -1;
         }
     }
@@ -1419,14 +1356,7 @@
         }
     }
 
-    JammingReceiver LocalJammer
-    {
-        get
-        {
-            var drone = Scene.GetAllComponents<DroneController>().FirstOrDefault( d => !d.IsProxy );
-            return drone.IsValid() ? drone.Components.Get<JammingReceiver>() : null;
-        }
-    }
+    JammingReceiver LocalJammer => _localJammer;
 
     bool ShowJamWarning => LocalRole == PlayerRole.Pilot
         && LocalJammer.IsValid()
@@ -1434,51 +1364,23 @@
         && LocalDroneBase.IsValid()
         && LocalDroneBase.JamSusceptibility > 0.01f;
 
-    DroneBase LocalDroneBase
-    {
-        get
-        {
-            var drone = Scene.GetAllComponents<DroneController>().FirstOrDefault( d => !d.IsProxy );
-            return drone.IsValid() ? drone.Components.Get<DroneBase>() : null;
-        }
-    }
+    DroneBase LocalDroneBase => _localDroneBase;
 
-    Health LocalHealth
-    {
-        get
-        {
-            // Drone first, then ground player. Owner == not proxy == this client.
-            var drone = Scene.GetAllComponents<DroneController>().FirstOrDefault( d => !d.IsProxy );
-            if ( drone.IsValid() )
-                return drone.Components.Get<Health>() ?? drone.Components.GetInAncestors<Health>();
-
-            var ground = Scene.GetAllComponents<GroundPlayerController>().FirstOrDefault( g => !g.IsProxy );
-            if ( ground.IsValid() )
-                return ground.Components.Get<Health>() ?? ground.Components.GetInAncestors<Health>();
-
-            return null;
-        }
-    }
+    Health LocalHealth => _localHealth;
 
     PlayerRole LocalRole
     {
         get
         {
-            var drone = Scene.GetAllComponents<DroneController>().FirstOrDefault( d => !d.IsProxy );
-            if ( drone.IsValid() ) return PlayerRole.Pilot;
-
-            var pilot = LocalPilotSoldier;
-            if ( pilot.IsValid() ) return PlayerRole.Pilot;
-
-            var ground = Scene.GetAllComponents<GroundPlayerController>().FirstOrDefault( g => !g.IsProxy );
-            if ( ground.IsValid() ) return PlayerRole.Soldier;
+            if ( _localDrone.IsValid() ) return PlayerRole.Pilot;
+            if ( _localPilot.IsValid() ) return PlayerRole.Pilot;
+            if ( _localGround.IsValid() ) return PlayerRole.Soldier;
 
             return PlayerRole.Spectator;
         }
     }
 
-    DroneCamera LocalDroneCamera =>
-        Scene.GetAllComponents<DroneCamera>().FirstOrDefault( c => !c.IsProxy );
+    DroneCamera LocalDroneCamera => _localDroneCamera;
 
     string DroneCameraModeLabel =>
         LocalDroneCamera.IsValid() && LocalDroneCamera.IsFirstPersonActive
