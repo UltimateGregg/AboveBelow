@@ -1,0 +1,150 @@
+{
+  "source_blend": "environment_model.blend/large_command_tent.blend",
+  "root_object": "LargeCommandTent_Root",
+  "target_fbx": "Assets/models/large_command_tent.fbx",
+  "target_vmdl": "Assets/models/large_command_tent.vmdl",
+  "model_resource_path": "models/large_command_tent.vmdl",
+  "prefab": "Assets/prefabs/environment/large_command_tent.prefab",
+  "visual_object": "Visual",
+  "visual_scale": "1,1,1",
+  "visual_tint": "1,1,1,1",
+  "clear_visual_children": false,
+  "verify_fbx": true,
+  "required_object": [
+    "LargeCommandTentMesh"
+  ],
+  "object_type": [
+    "EMPTY",
+    "MESH"
+  ],
+  "combine_meshes": true,
+  "combined_object_name": "LargeCommandTentMesh",
+  "material_remap": {
+    "LargeCommandTentCanvas": "materials/environment/large_command_tent_canvas.vmat",
+    "LargeCommandTentPatch": "materials/environment/large_command_tent_patch.vmat",
+    "LargeCommandTentPole": "materials/environment/large_command_tent_pole.vmat",
+    "LargeCommandTentRope": "materials/environment/large_command_tent_rope.vmat",
+    "LargeCommandTentStake": "materials/environment/large_command_tent_stake.vmat",
+    "LargeCommandTentDirt": "materials/environment/large_command_tent_dirt.vmat"
+  },
+  "vmdl_material_source_suffix": "",
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
+  "allow_default_color_texture": false,
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z",
+  "collision": {
+    "mode": "primitives",
+    "surface_prop": "cloth",
+    "collision_tags": "solid",
+    "reason": "The command tent must remain hollow and walk-through, and visual guy ropes must not snag players. Primitive blockers are limited to the side/back canvas, high roof/ridge mass, support poles, and small stake points while the open interior stays traversable.",
+    "shapes": [
+      {
+        "type": "box",
+        "origin": [0, 0, 3.271],
+        "dimensions": [10.102, 6.102, 0.16],
+        "surface_prop": "cloth",
+        "collision_tags": "solid"
+      },
+      {
+        "type": "box",
+        "origin": [0, -2.92, 1.35],
+        "dimensions": [8.6, 0.16, 2.3],
+        "surface_prop": "cloth",
+        "collision_tags": "solid"
+      },
+      {
+        "type": "box",
+        "origin": [0, 2.92, 1.35],
+        "dimensions": [8.6, 0.16, 2.3],
+        "surface_prop": "cloth",
+        "collision_tags": "solid"
+      },
+      {
+        "type": "box",
+        "origin": [4.4, 0, 1.35],
+        "dimensions": [0.18, 5.6, 2.3],
+        "surface_prop": "cloth",
+        "collision_tags": "solid"
+      },
+      {
+        "type": "cylinder",
+        "point0": [-4.3, -2.6, 0.08],
+        "point1": [-4.3, -2.6, 2.27],
+        "radius": 0.08,
+        "surface_prop": "wood",
+        "collision_tags": "solid"
+      },
+      {
+        "type": "cylinder",
+        "point0": [4.3, -2.6, 0.08],
+        "point1": [4.3, -2.6, 2.27],
+        "radius": 0.08,
+        "surface_prop": "wood",
+        "collision_tags": "solid"
+      },
+      {
+        "type": "cylinder",
+        "point0": [-4.3, 2.6, 0.08],
+        "point1": [-4.3, 2.6, 2.27],
+        "radius": 0.08,
+        "surface_prop": "wood",
+        "collision_tags": "solid"
+      },
+      {
+        "type": "cylinder",
+        "point0": [4.3, 2.6, 0.08],
+        "point1": [4.3, 2.6, 2.27],
+        "radius": 0.08,
+        "surface_prop": "wood",
+        "collision_tags": "solid"
+      },
+      {
+        "type": "cylinder",
+        "point0": [-4.3, 0, 0.08],
+        "point1": [-4.3, 0, 3.19],
+        "radius": 0.08,
+        "surface_prop": "wood",
+        "collision_tags": "solid"
+      },
+      {
+        "type": "cylinder",
+        "point0": [4.3, 0, 0.08],
+        "point1": [4.3, 0, 3.19],
+        "radius": 0.08,
+        "surface_prop": "wood",
+        "collision_tags": "solid"
+      },
+      {
+        "type": "box",
+        "origin": [-4.951, -2.951, 0.05],
+        "dimensions": [0.2, 0.2, 0.1],
+        "surface_prop": "wood",
+        "collision_tags": "solid"
+      },
+      {
+        "type": "box",
+        "origin": [4.951, -2.951, 0.05],
+        "dimensions": [0.2, 0.2, 0.1],
+        "surface_prop": "wood",
+        "collision_tags": "solid"
+      },
+      {
+        "type": "box",
+        "origin": [-4.951, 2.951, 0.05],
+        "dimensions": [0.2, 0.2, 0.1],
+        "surface_prop": "wood",
+        "collision_tags": "solid"
+      },
+      {
+        "type": "box",
+        "origin": [4.951, 2.951, 0.05],
+        "dimensions": [0.2, 0.2, 0.1],
+        "surface_prop": "wood",
+        "collision_tags": "solid"
+      }
+    ]
+  },
+  "_collision_note": "Primitive collision is a documented exception to keep the command tent hollow and guy ropes visual-only. The primitive union intentionally tracks the exported model bounds within audit tolerance while playable blockers stay on poles, sides, back canvas, roof/ridge, and small stakes."
+}

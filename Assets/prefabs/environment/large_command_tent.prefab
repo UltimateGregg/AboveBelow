@@ -1,0 +1,68 @@
+{
+  "RootObject": {
+    "__guid": "f87693da-2c80-41fd-96bc-2374f4578b5c",
+    "Flags": 0,
+    "Name": "Large_Command_Tent",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.SelectedHierarchyColliderViewer",
+        "__guid": "768c839b-9b7d-4e82-b3f4-575bc8244101",
+        "IncludeTriggers": true,
+        "SolidColliderColor": "1,0.55,0.12,1",
+        "TriggerColliderColor": "0.25,0.75,1,1"
+      }
+    ],
+    "Children": [
+      {
+        "__guid": "a768ffdf-762e-4e14-a58c-b240a1745a72",
+        "Flags": 0,
+        "Name": "Visual",
+        "Position": "0,0,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Enabled": true,
+        "Components": [
+          {
+            "__type": "Sandbox.ModelRenderer",
+            "__guid": "d1d70408-4d30-45e8-84a2-0f75af058fc0",
+            "BodyGroups": 18446744073709551615,
+            "Model": "models/large_command_tent.vmdl",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          },
+          {
+            "__type": "Sandbox.ModelCollider",
+            "__guid": "1e33f431-8565-41f8-a631-3c4fb7c9df0a",
+            "IsTrigger": false,
+            "Model": "models/large_command_tent.vmdl",
+            "Static": true,
+            "Surface": null,
+            "SurfaceVelocity": "0,0,0"
+          }
+        ],
+        "Children": []
+      }
+    ],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": true,
+  "MenuPath": "Drone vs Players/Environment/Large Command Tent",
+  "MenuIcon": "camping",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}
