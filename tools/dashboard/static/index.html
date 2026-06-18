@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ABOVE / BELOW — Ops Dashboard</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">ABOVE <span class="slash">/</span> BELOW <span class="brand-sub">OPS DASHBOARD</span></div>
+  <div class="chips">
+    <div id="job-chip" class="chip">IDLE</div>
+    <div id="editor-chip" class="chip"><span class="dot off"></span>EDITOR</div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="suites">Suites</button>
+  <button class="tab" data-tab="pipeline">Asset Pipeline</button>
+  <button class="tab" data-tab="editor">Editor</button>
+  <button class="tab" data-tab="reports">Reports</button>
+</nav>
+
+<main>
+  <section id="view-suites" class="view active">
+    <div class="toolbar">
+      <input id="suite-filter" class="filter" type="text" placeholder="FILTER SUITES..." autocomplete="off">
+      <button id="opt-showinfo" class="pill" title="Pass -ShowInfo: include Info-level findings">SHOW INFO</button>
+      <button id="opt-failwarn" class="pill" title="Pass -FailOnWarning: warnings fail the run">FAIL ON WARNING</button>
+    </div>
+    <div class="suites-layout">
+      <div id="suite-groups" class="suite-groups"></div>
+      <aside class="side">
+        <div class="panel">
+          <h3 class="panel-title">Queue</h3>
+          <div id="queue-panel"></div>
+        </div>
+        <div class="panel">
+          <h3 class="panel-title">History</h3>
+          <div id="history-panel"></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="view-pipeline" class="view">
+    <div id="blender-warn" class="banner hidden">
+      BLENDER NOT FOUND at the pipeline's default path — exports will fail until Blender is installed or the config's blender_exe is updated.
+    </div>
+    <div id="config-grid" class="config-grid"></div>
+  </section>
+
+  <section id="view-editor" class="view">
+    <div class="editor-layout">
+      <div id="editor-card" class="panel editor-card"></div>
+    </div>
+  </section>
+
+  <section id="view-reports" class="view">
+    <div class="reports-layout">
+      <aside class="panel reports-list-panel">
+        <input id="report-filter" class="filter" type="text" placeholder="FILTER..." autocomplete="off">
+        <div id="reports-list" class="reports-list"></div>
+      </aside>
+      <div class="panel report-view">
+        <div id="report-head" class="report-head"><span class="dim">Select a report</span></div>
+        <div id="report-md" class="report-md hidden"></div>
+        <pre id="report-pre" class="report-pre hidden"></pre>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="console-drawer" class="drawer collapsed">
+  <div class="console-head">
+    <button id="drawer-toggle" class="drawer-toggle" title="Toggle console">CONSOLE</button>
+    <span id="console-title" class="console-title"></span>
+    <span id="console-state" class="state-pill hidden"></span>
+    <span id="console-elapsed" class="console-elapsed"></span>
+    <span class="spacer"></span>
+    <button id="console-autoscroll" class="pill on">AUTOSCROLL</button>
+    <button id="console-cancel" class="btn danger hidden">CANCEL</button>
+  </div>
+  <pre id="console-log" class="console-log"></pre>
+</footer>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

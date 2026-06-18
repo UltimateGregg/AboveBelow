@@ -11,7 +11,9 @@ http://localhost:29015/mcp
 Keep the S&Box MCP Server dock running in the editor. Prefer this native MCP
 server for scene, component, asset, docs, screenshot, play/stop, and sound work.
 Use the older CoworkBridge on `127.0.0.1:38080` only as a fallback when a needed
-operation is not exposed through the native MCP tools.
+operation is not exposed through the native MCP tools. CoworkBridge starts
+automatically from the editor frame pump after the project editor assembly loads;
+the `Editor > Cowork` menu remains available for manual stop/start fallback.
 
 If a newly built tool is missing from `tools/list`, restart or fully reload the
 S&Box editor MCP server. New tool classes can compile successfully while the

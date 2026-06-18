@@ -97,7 +97,8 @@ Test-RequiredText -Path "AGENTS.md" -Area "Project Instructions" -Patterns @(
 
 Test-RequiredText -Path "scripts/agents/run_agent_checks.ps1" -Area "Suite Wiring" -Patterns @(
     '"editor-first"',
-    'editor_first_workflow_audit\.ps1'
+    'editor_first_workflow_audit\.ps1',
+    'cowork_bridge_autostart_audit\.ps1'
 ) -Recommendation "Expose a focused editor-first suite and wire the audit into recurring checks."
 
 Test-RequiredText -Path "scripts/agents/post_task_training_agent.ps1" -Area "Training Wiring" -Patterns @(

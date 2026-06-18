@@ -95,11 +95,11 @@ public sealed class ShotgunWeapon : WeaponBase
 			if ( health.IsValid() )
 			{
 				health.RequestDamageNamed( DamagePerPellet, attackerId, tr.HitPosition, WeaponDisplayName );
-				BroadcastImpact( tr.HitPosition, (int)ImpactEffects.SurfaceKind.Flesh );
+				BroadcastImpact( tr.HitPosition, tr.Normal, (int)ImpactEffects.SurfaceKind.Flesh );
 			}
 			else
 			{
-				BroadcastImpactFromTrace( tr.HitPosition, tr.Surface?.ResourceName ?? "" );
+				BroadcastImpactFromTrace( tr.HitPosition, tr.Normal, tr.Surface?.ResourceName ?? "" );
 			}
 		}
 	}

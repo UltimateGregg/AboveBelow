@@ -1,6 +1,6 @@
 param(
     [string]$Root = "",
-    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "held-items", "viewmodel-prefab", "runtime-prefab-fallbacks", "terrain-scene-prefabs", "scene-prefab-coverage", "scene-markers", "buildings", "readability-lights", "ambient-sounds", "scene-singletons", "ballistic-tracers", "muzzle-flash-prefab", "grenade-effects", "team-voice-prefabs", "team-comms-prefab", "training-dummy-prefab", "thrown-grenade-projectile", "stock-scene-props", "transient-combat", "scene", "blue-lines", "terrain", "collision", "collision-chain", "nav", "asset", "asset-production", "modeldoc", "animated-model", "blender-live", "sound", "networking", "gameplay-regression", "docs", "api", "sbox-docs", "release-notes", "code-search", "learn", "editor-node-tool", "editor-first", "balance", "playtest", "logs", "readiness", "train", "self-test")]
+    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "held-items", "viewmodel-prefab", "runtime-prefab-fallbacks", "terrain-scene-prefabs", "scene-prefab-coverage", "scene-markers", "buildings", "readability-lights", "ambient-sounds", "scene-singletons", "ballistic-tracers", "muzzle-flash-prefab", "grenade-effects", "team-voice-prefabs", "team-comms-prefab", "training-dummy-prefab", "thrown-grenade-projectile", "stock-scene-props", "transient-combat", "scene", "blue-lines", "terrain", "collision", "collision-chain", "nav", "asset", "asset-production", "modeldoc", "animated-model", "blender-live", "sound", "networking", "gameplay-regression", "docs", "api", "sbox-public", "sbox-docs", "release-notes", "code-search", "learn", "editor-node-tool", "editor-first", "balance", "playtest", "logs", "readiness", "train", "self-test")]
     [string]$Suite = "quick",
     [switch]$ShowInfo,
     [switch]$FailOnWarning
@@ -101,6 +101,7 @@ switch ($Suite) {
             @{ Name = "networking_review_audit.ps1"; Args = $commonArgs },
             @{ Name = "large_component_risk_audit.ps1"; Args = $commonArgs },
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_public_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_docs_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_release_notes_audit.ps1"; Args = $commonArgs },
@@ -110,6 +111,7 @@ switch ($Suite) {
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs },
+            @{ Name = "cowork_bridge_autostart_audit.ps1"; Args = $commonArgs },
             @{ Name = "current_log_audit.ps1"; Args = $quickLogArgs },
             @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root) }
         )
@@ -161,6 +163,7 @@ switch ($Suite) {
             @{ Name = "mcp_screenshot_audit.ps1"; Args = $commonArgs },
             @{ Name = "networking_review_audit.ps1"; Args = $commonArgs },
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_public_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_docs_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_release_notes_audit.ps1"; Args = $commonArgs },
@@ -170,6 +173,7 @@ switch ($Suite) {
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs },
+            @{ Name = "cowork_bridge_autostart_audit.ps1"; Args = $commonArgs },
             @{ Name = "current_log_audit.ps1"; Args = $commonArgs },
             @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root, "-ShowFiles") },
             @{ Name = "balance_tuning_report.ps1"; Args = @("-Root", $Root) },
@@ -334,6 +338,7 @@ switch ($Suite) {
     "docs" {
         $scripts = @(
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_public_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_docs_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_release_notes_audit.ps1"; Args = $commonArgs },
@@ -342,11 +347,13 @@ switch ($Suite) {
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs },
+            @{ Name = "cowork_bridge_autostart_audit.ps1"; Args = $commonArgs },
             @{ Name = "animated_model_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "drone_variant_visual_audit.ps1"; Args = $commonArgs }
         )
     }
     "sbox-docs" { $scripts = @(@{ Name = "sbox_docs_source_audit.ps1"; Args = $commonArgs }) }
+    "sbox-public" { $scripts = @(@{ Name = "sbox_public_source_audit.ps1"; Args = $commonArgs + @("-RequireLocalCheckout", "-RequireLatest") }) }
     "release-notes" {
         $scripts = @(
             @{ Name = "sbox_release_notes_audit.ps1"; Args = $commonArgs },
@@ -378,7 +385,12 @@ switch ($Suite) {
         )
     }
     "editor-node-tool" { $scripts = @(@{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs }) }
-    "editor-first" { $scripts = @(@{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs }) }
+    "editor-first" {
+        $scripts = @(
+            @{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs },
+            @{ Name = "cowork_bridge_autostart_audit.ps1"; Args = $commonArgs }
+        )
+    }
     "balance" {
         $scripts = @(
             @{ Name = "balance_config_audit.ps1"; Args = $commonArgs },
@@ -392,6 +404,7 @@ switch ($Suite) {
         $scripts = @(
             @{ Name = "post_task_training_agent.ps1"; Args = @("-Root", $Root, "-ShowFiles", "-WriteReport") },
             @{ Name = "aaa_asset_quality_audit.ps1"; Args = $commonArgs },
+            @{ Name = "sbox_public_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_docs_source_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_engine_reference_audit.ps1"; Args = $commonArgs },
             @{ Name = "sbox_release_notes_audit.ps1"; Args = $commonArgs },
@@ -401,6 +414,7 @@ switch ($Suite) {
             @{ Name = "sbox_learn_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs },
+            @{ Name = "cowork_bridge_autostart_audit.ps1"; Args = $commonArgs },
             @{ Name = "animated_model_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "model_collision_scale_audit.ps1"; Args = $commonArgs },
             @{ Name = "prefab_visual_quality_audit.ps1"; Args = $commonArgs }

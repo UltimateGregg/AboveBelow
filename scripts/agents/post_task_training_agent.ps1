@@ -171,13 +171,24 @@ $areaRules = @(
     },
     [pscustomobject]@{
         Name = "EngineResearch"
-        Patterns = @("docs/sbox_engine_llm_reference.md", ".agents/sbox/sbox-engine-reference-agent.md", ".agents/sbox/sbox-docs-source-agent.md", ".agents/sbox/sbox-release-notes-agent.md", "scripts/agents/sbox_docs_source_audit.ps1", "scripts/agents/sbox_engine_reference_audit.ps1", "scripts/agents/sbox_release_notes_audit.ps1", "scripts/agents/sbox_api_lookup.ps1", "scripts/agents/sbox_api_reference_audit.ps1", "API.json", "api.json")
+        Patterns = @("docs/sbox_engine_llm_reference.md", ".agents/sbox/sbox-engine-reference-agent.md", ".agents/sbox/sbox-public-source-agent.md", ".agents/sbox/sbox-docs-source-agent.md", ".agents/sbox/sbox-release-notes-agent.md", "scripts/agents/sbox_public_source_audit.ps1", "scripts/agents/sbox_docs_source_audit.ps1", "scripts/agents/sbox_engine_reference_audit.ps1", "scripts/agents/sbox_release_notes_audit.ps1", "scripts/agents/sbox_api_lookup.ps1", "scripts/agents/sbox_api_reference_audit.ps1", "API.json", "api.json")
         Checks = @(
+            "scripts/agents/run_agent_checks.ps1 -Suite sbox-public -ShowInfo",
             "scripts/agents/run_agent_checks.ps1 -Suite sbox-docs -ShowInfo",
             "scripts/agents/sbox_engine_reference_audit.ps1 -ShowInfo",
             "scripts/agents/run_agent_checks.ps1 -Suite docs"
         )
-        Training = "External S&Box or Source 2 research should be verified against official docs/public source and local API.json when exact symbols matter, captured in the engine reference, routed through the reference agent, and protected by stale-guidance/API audits."
+        Training = "External S&Box or Source 2 research should be verified against official docs/public source and local API.json when exact symbols matter, captured in the engine reference, routed through the relevant source/reference agent, and protected by stale-guidance/API audits."
+    },
+    [pscustomobject]@{
+        Name = "SboxPublicSource"
+        Patterns = @(".agents/sbox/sbox-public-source-agent.md", "scripts/agents/sbox_public_source_audit.ps1", "docs/sbox_engine_llm_reference.md", "docs/known_sbox_patterns.md", "docs/agent_toolkit.md", ".claude/settings.json", "AGENTS.md")
+        Checks = @(
+            "scripts/agents/run_agent_checks.ps1 -Suite sbox-public -ShowInfo",
+            "scripts/agents/editor_first_workflow_audit.ps1 -ShowInfo",
+            "dotnet build Libraries/jtc.mcp-server/Editor/mcp-server.editor.csproj --no-restore"
+        )
+        Training = "Facepunch/sbox-public training should install or refresh the project-local tools/sbox-public clone, run Bootstrap.bat, preserve dirty sibling engine checkouts, and prove MCP manifest/build/live status before claiming the update is safe."
     },
     [pscustomobject]@{
         Name = "SboxDocsSource"

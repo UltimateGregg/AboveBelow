@@ -111,6 +111,15 @@ public sealed class GroundPlayerController : Component
 	[Sync] public bool IsClimbingLadder { get; set; }
 
 	private CameraComponent _cachedCamera;
+
+	// Death/spectator cam: when the local player is dead, orbit the body instead
+	// of driving the (otherwise frozen) first-person view.
+	private Health _health;
+	private float _deathCamYaw;
+	private bool _wasDead;
+	[Property] public float DeathCamDistance { get; set; } = 170f;
+	[Property] public float DeathCamHeight { get; set; } = 95f;
+	[Property] public float DeathCamOrbitSpeed { get; set; } = 12f;
 	FirstPersonViewmodel _localFirstPersonViewmodel;
 
 	// Recoil
@@ -294,6 +303,18 @@ public sealed class GroundPlayerController : Component
 
 	void HandleLook()
 	{
+		if ( !_health.IsValid() )
+			_health = Components.Get<Health>( FindMode.EverythingInSelfAndDescendants );
+
+		// Dead players spectate: orbit the body rather than driving the
+		// first-person camera (which would otherwise freeze on the corpse).
+		if ( _health.IsValid() && _health.IsDead )
+		{
+			UpdateDeathCam();
+			return;
+		}
+		_wasDead = false;
+
 		// Suppression damps look sensitivity proportionally. At max
 		// suppression, sensitivity drops to (1 - SuppressionLookDampening).
 		var lookScale = 0.5f * MathX.Lerp( 1f, 1f - SuppressionLookDampening, _suppressionT );
@@ -397,6 +418,36 @@ public sealed class GroundPlayerController : Component
 			_cachedCamera.WorldRotation = displayDir;
 			SetLocalFirstPersonBodyMode( false );
 		}
+	}
+
+	void UpdateDeathCam()
+	{
+		if ( !_cachedCamera.IsValid() )
+			_cachedCamera = Scene.GetAllComponents<CameraComponent>().FirstOrDefault();
+		if ( !_cachedCamera.IsValid() )
+			return;
+
+		// On the first dead frame, seat the orbit behind the player's last look.
+		if ( !_wasDead )
+		{
+			_deathCamYaw = EyeAngles.yaw + 180f;
+			_wasDead = true;
+		}
+
+		_deathCamYaw += Time.Delta * DeathCamOrbitSpeed;
+
+		var anchor = WorldPosition + Vector3.Up * 40f;
+		var orbit = Rotation.FromYaw( _deathCamYaw );
+		var camPos = anchor + orbit.Forward * DeathCamDistance + Vector3.Up * DeathCamHeight;
+
+		_cachedCamera.WorldPosition = camPos;
+		_cachedCamera.WorldRotation = Rotation.LookAt( (anchor - camPos).Normal );
+		_cachedCamera.FieldOfView = MathX.Lerp( _cachedCamera.FieldOfView, BaseFovDegrees,
+			1f - MathF.Exp( -8f * Time.Delta ) );
+
+		// Show the third-person body (the corpse) and hide the local viewmodel.
+		SetLocalFirstPersonBodyMode( false );
+		LocalFirstPersonViewmodelActive = false;
 	}
 
 	internal void SetLocalFirstPersonBodyMode( bool handsOnly )
@@ -741,6 +792,12 @@ public sealed class GroundPlayerController : Component
 
 	void BuildWishVelocity()
 	{
+		if ( _health.IsValid() && _health.IsDead )
+		{
+			WishVelocity = Vector3.Zero;
+			return;
+		}
+
 		if ( IsClimbingLadder )
 		{
 			WishVelocity = Vector3.Zero;

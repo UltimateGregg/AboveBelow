@@ -4,12 +4,12 @@ namespace DroneVsPlayers;
 
 /// <summary>
 /// Surface-aware impact feedback for hitscan bullets. Branches on the trace
-/// surface to play the right "thwack" / "ping" / "thud" sound at the hit
-/// position. Visual decals + particles are a future polish pass — they
-/// require texture / .vpcf assets we don't have yet.
+/// surface to play the right "thwack" / "ping" / "thud" sound AND spawn a
+/// matching <see cref="ImpactEffectVisual"/> burst (sparks / dust / splinters /
+/// mist) at the hit position. Decals are still a future pass.
 ///
 /// Call from inside <c>[Rpc.Broadcast]</c> fire-fx handlers so every peer
-/// hears the impact, not just the shooter.
+/// sees and hears the impact, not just the shooter.
 /// </summary>
 public static class ImpactEffects
 {
@@ -27,6 +27,8 @@ public static class ImpactEffects
 		var sound = SoundPathFor( kind );
 		if ( !string.IsNullOrEmpty( sound ) )
 			Sound.Play( sound, tr.HitPosition );
+
+		ImpactEffectVisual.Spawn( tr.HitPosition, tr.Normal, kind );
 	}
 
 	/// <summary>
@@ -35,10 +37,19 @@ public static class ImpactEffects
 	/// the trace surface).
 	/// </summary>
 	public static void Spawn( Vector3 position, SurfaceKind kind )
+		=> Spawn( position, Vector3.Up, kind );
+
+	/// <summary>
+	/// Normal-aware variant: the impact burst sprays out along
+	/// <paramref name="normal"/> (the hit surface normal).
+	/// </summary>
+	public static void Spawn( Vector3 position, Vector3 normal, SurfaceKind kind )
 	{
 		var sound = SoundPathFor( kind );
 		if ( !string.IsNullOrEmpty( sound ) )
 			Sound.Play( sound, position );
+
+		ImpactEffectVisual.Spawn( position, normal, kind );
 	}
 
 	static SurfaceKind ClassifySurface( SceneTraceResult tr )

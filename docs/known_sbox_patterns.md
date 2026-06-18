@@ -81,6 +81,18 @@ pawn.NetworkSpawn(connection);  // Sets Network.Owner = connection
 - Record the reviewed commit/date in `docs/sbox_engine_llm_reference.md` before turning a docs sweep into standing guidance.
 - Verify exact C# symbols through local `API.json` or existing code before implementation.
 
+### Official S&Box Public Source Intake
+
+**Pattern:** `Facepunch/sbox-public` is useful engine source context, but a latest source checkout is not automatically the active engine used by this game's C# and MCP projects.
+
+**Workflow:**
+- Use `.agents/sbox/sbox-public-source-agent.md` when a task asks to install, refresh, or train from `https://github.com/Facepunch/sbox-public`.
+- Keep the project-local clone at `tools/sbox-public`, verify upstream `master`, and run `cmd /c Bootstrap.bat` there after updates so managed assemblies and `sbox-dev.exe` exist.
+- Do not reset or overwrite dirty sibling engine checkouts such as `C:\Programming\sbox-public`; this repo's current project and MCP project references still compile against that sibling path.
+- Do not reroute project references to `tools/sbox-public` unless a separate scoped migration proves the latest public distribution exposes compatible editor project references or intentionally converts those references to verified DLL references.
+- After source updates, prove MCP health with `.mcp.json`, the native `control_plane_status` or `tools/list` MCP call when the editor is running, and `dotnet build Libraries\jtc.mcp-server\Editor\mcp-server.editor.csproj --no-restore`.
+- Run `scripts\agents\sbox_public_source_audit.ps1 -Root . -RequireLatest -ShowInfo` or `scripts\agents\run_agent_checks.ps1 -Suite sbox-public -ShowInfo` before claiming the public-source snapshot is current and MCP-safe.
+
 ### Official S&Box Release Notes Intake
 
 **Pattern:** Official release notes are the best way to spot new engine features, but they are dated change logs, not direct implementation proof.
@@ -91,6 +103,8 @@ pawn.NetworkSpawn(connection);  // Sets Network.Owner = connection
 - Promote recurring lessons into `docs/sbox_engine_llm_reference.md`, agents, hooks, or focused audits. Do not copy every note into docs.
 - Verify exact C# symbols through `scripts\agents\sbox_api_lookup.ps1`, official API pages, or existing code before editing gameplay, UI, asset, or editor code.
 - If a fresh release note names a symbol that local `API.json` does not expose yet, keep it as volatile guidance and do not implement against it until the local dump, official API page, or editor/build proof confirms the signature.
+- The 26.06.17 notes added recurring workflow guidance for this project: mounted games/maps are now platform-visible and multiplayer-sensitive; the refreshed local API exposes `PhysicsBody.ComputePenetration` and `Collider.ComputePenetration` as candidate depenetration/collision-authoring tools; terrain traces and terrain enable/disable behavior need editor proof after terrain changes; publish/package work should check Cloud Asset license warnings; and asset QA should use model/texture preview selectors for LOD, material group, and mip inspection.
+- The 26.06.10 notes added recurring workflow guidance for this project: account for precompiled DLLs loading from manifests, mounted scenes/maps, the restored Twitch/Streamer API, new or reworked terrain rendering/sampling/collision behavior, `TargetMixer` on DSP volumes, per-object render callbacks, and new editor/inspector quality-of-life APIs such as `[Uniform]`, light contribution settings, `TextureGenerator.FormatOverride`, and `AssetType` icon colors.
 - The 26.06.03 notes added recurring guidance for this project: keep `Connection.Name` for networking/internal identity and `Connection.DisplayName` for UI text; account for physical sound simulation during audio proof; use newly supported S&Box UI CSS features where they replace layout hacks; and treat `Mesh.AddSubMesh` as pending until exact API shape is verified locally.
 - Run `scripts\agents\sbox_release_notes_audit.ps1 -Root . -ShowInfo` or `scripts\agents\run_agent_checks.ps1 -Suite release-notes -ShowInfo` after changing release-note-derived guidance.
 
@@ -865,5 +879,5 @@ public void TakeDamage(DamageInfo info)
 
 ---
 
-Last Updated: May 23, 2026
-Version: 1.14 - Added S&Box Learn intake agent, Razor subagent, and hook guidance
+Last Updated: June 17, 2026
+Version: 1.16 - Added 26.06.17 release-note workflow guidance

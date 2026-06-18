@@ -9,7 +9,7 @@ Phased plan from "open the project" to "publish on sbox.game". Each phase has a 
 - [x] GameSetup (network listener) and RoundManager (state machine)
 - [x] Create main.scene with map, GameManager, spawn points
 - [x] Build soldier.prefab and drone.prefab per SETUP.md
-- [ ] First two-client local playtest succeeds (drone vs soldier, round ends, roles rotate)
+- [x] First local playtest succeeds — solo vs bots, verified 2026-06-14 (spawn → round Active → win condition → Ended → reset → class-picker re-prompt → respawn). Two-client pass deferred (solo dev)
 
 Exit criterion: you can play a 2-player round end-to-end without crashes.
 
@@ -27,7 +27,7 @@ Done as a single batch in May 2026:
 - [x] Per-class tuning fields in `GameRules`
 - [x] HUD class/variant picker (`HudPanel.razor`)
 - [x] Visual fiber-optic tether (`FiberCable` + `LineRenderer`)
-- [ ] Round-end respawn flow that re-prompts the class picker (currently uses legacy single-pilot rotation as a fallback)
+- [x] Round-end respawn flow re-prompts the class picker — verified 2026-06-14; the legacy single-pilot `PromotePilot` rotation was unused and has been retired
 
 Exit criterion: every class/variant can be picked, the jamming hierarchy holds (jammer gun > chaff > EMP for soldiers; fiber-optic FPV ignores all of them), and pilot-death cascades to a drone crash.
 

@@ -174,12 +174,12 @@ public sealed class HitscanWeapon : WeaponBase
 		{
 			var attackerId = DamageAttribution.OwnerConnectionId( pc.GameObject );
 			health.RequestDamageNamed( Damage, attackerId, tr.HitPosition, WeaponDisplayName );
-			BroadcastImpact( tr.HitPosition, (int)ImpactEffects.SurfaceKind.Flesh );
+			BroadcastImpact( tr.HitPosition, tr.Normal, (int)ImpactEffects.SurfaceKind.Flesh );
 		}
 		else
 		{
 			// Surface-aware impact (concrete / metal / wood / default)
-			BroadcastImpactFromTrace( tr.HitPosition, tr.Surface?.ResourceName ?? "" );
+			BroadcastImpactFromTrace( tr.HitPosition, tr.Normal, tr.Surface?.ResourceName ?? "" );
 		}
 	}
 

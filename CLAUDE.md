@@ -2,7 +2,9 @@
 
 This is "ABOVE / BELOW" (`DroneVsPlayers`) — a vertical asymmetric s&box shooter. One player flies a drone from above, the rest fight on the ground. Roles rotate each round.
 
-**The detailed rules of the road for changing this project live in [`AGENTS.md`](AGENTS.md).** Read it first. The notes below are the practical, hard-won bits that aren't obvious from a fresh code read.
+**Setting:** the whole game takes place in **Bouneurmaum National Park** — a rural, daytime national park (pine forest, grassland clearings, dirt roads, scattered rural structures + park infrastructure, a staged incident-response command tent). This is the canonical art direction for every model, light, and effect: if it wouldn't look at home in a real national park, it doesn't belong. Full guide in [`docs/setting.md`](docs/setting.md).
+
+**This guide (`CLAUDE.md`) is the canonical practical reference for working in this repo** — it's auto-loaded each session and kept current. [`AGENTS.md`](AGENTS.md) holds the standing AI-workflow rules (small verifiable phases, compile + log checks after each, editor-first, don't invent APIs) and still applies; where the two overlap on project specifics, this file wins. The notes below are the practical, hard-won bits that aren't obvious from a fresh code read.
 
 ## Project layout (the short version)
 
@@ -17,7 +19,7 @@ Code/
   Player/    GroundPlayerController, PilotSoldier, RemoteController,
              SoldierBase + AssaultSoldier / CounterUavSoldier / HeavySoldier,
              HitscanWeapon, ShotgunWeapon, DroneJammerGun,
-             WeaponPose (static utility), SoldierLoadout, FpvArms,
+             WeaponPose (static utility), SoldierLoadout, FirstPersonViewmodel,
              TracerLifetime, ImpactEffects
   Equipment/ ThrowableGrenade + ChaffGrenade / EmpGrenade / FragGrenade
   UI/        HudPanel (Razor), MainMenuPanel, KillFeedTracker
@@ -119,18 +121,28 @@ if ( IsSelected )
 
 When a slot isn't selected the item's `ModelRenderer.RenderType` is set to `ShadowsOnly` (visible to other players, invisible to the local player) and its input is gated off. Sounds owned by the item (jammer loop, etc.) force-stop on deselect.
 
-## First-person arms (`FpvArms` — Phase 7)
+## First-person viewmodel (`FirstPersonViewmodel`)
 
-Every soldier prefab has an `FpvArms` GameObject as a child of `Eye`. It renders `models/fps_arms.vmdl` (forearm cylinders + boxy hands, tinted per class) and follows the camera every frame — same hip ↔ ADS blend and view-inertia smoothing as `WeaponPose`, just inlined into the component because the arms aren't slot-gated.
+> Earlier docs described an `FpvArms` "two cylinders + two boxes that float into view" stub.
+> **That component is gone** — `FirstPersonViewmodel` replaced it. There is no standalone
+> `fps_arms` floating-arms component anymore; `models/first_person/first_person_arms_preview.vmdl`
+> survives only as the `ArmsFallbackModelPath`.
 
-Key conventions:
-- `IsProxy` hides the renderer entirely for remote players (they see the third-person citizen body's arms instead — no double-arms in the world).
-- `FirstPerson == false` (third-person debug mode) also hides the arms.
-- Default offsets are tuned for the mesh's natural forward extent (`bounds.x ≈ 4 → 32`): `HipOffset = (0,-2,-4)`, `AdsOffset = (-6,-2,2)`. The mesh sits in front of the camera at hip, pulls back + up on ADS.
-- Each soldier prefab tints the arms differently via `ModelRenderer.Tint` to match class colors (assault white, counter-UAV cyan, heavy red-brown, pilot grey-blue).
-- The held weapon and the arms are *separate GameObjects* — there's no bone-attach. The arms are purely visual flair behind/around the weapon. A proper rigged setup (Phase 7.B in the roadmap) would parent the weapon to a `hand_R` bone, but the stub version is "two cylinders + two boxes that float into view."
+`FirstPersonViewmodel` (partial class: `FirstPersonViewmodel.cs` / `.Build.cs` / `.Pose.cs`) is the local-only held-item renderer that sits on the soldier/pilot beside `GroundPlayerController`. It is `NetworkMode.Never`, hidden for proxies, and only runs when `pc.UseLocalFirstPersonViewmodel && pc.FirstPerson && !IsProxy`. Each time the selected held item changes it rebuilds a viewmodel root in one of three render modes:
 
-If you swap the arms model, keep the mesh extending in the +X direction with origin near the wrists; adjust offsets only if the new mesh's `bounds.x` minimum is meaningfully different from `~4`.
+1. **StockVisible** — shows a Facepunch stock weapon viewmodel (`facepunch/v_m4a1`, `v_mp5`, the grenades, …) with `UseAnimGraph`, driven by `UpdateStockAnimParameters` (deploy / attack / reload / ADS / sprint / empty). Facepunch first-person arms (`facepunch/v_first_person_arms_human`) are **bone-merged** onto the weapon via `BoneMergeTarget`, so the hands ride the weapon animation.
+2. **CustomVisibleStockAnimated** — shows the *project's* custom weapon model (`models/weapons/assault_rifle_m4.vmdl`, etc.) while a **hidden** stock weapon plays as the animation driver. After two frames it bone-attaches the visible custom model to the stock weapon's grip bone (`CreateBoneObjects` + `GetBoneObject`), so the custom gun rides the exact stock skeleton and never drifts from the bone-merged arms on fast camera turns.
+3. **StaticFallback** — if no stock/custom model loads, it copies the held item's `ModelRenderer`s into the root, floats them at the eye, and runs explicit `SetIk` hand IK on the arms to the item's left/right hand targets.
+
+Conventions:
+- **Local-only, proxy-hidden.** Remote players see the third-person **Citizen** body (`models/citizen_human/citizen_human_male.vmdl` + `CitizenAnimationHelper`) holding the *world* item — not these arms. `GroundPlayerController` hides the local body's hands while the viewmodel is active so there are no double-arms.
+- `FirstPersonViewmodel.ShouldHideWorldHeldItem(...)` tells each held item to hide its world model locally while the viewmodel is showing.
+- Model paths and per-weapon alignment are all `[Property]` fields on the component (`ArmsModelPath`, `AssaultRifleViewmodelPath`, `AssaultRifleCustomModelPath`, `CustomM4ViewmodelOffset/Rotation/Scale`, `CustomSmg…`, `CustomShotgun…`, `CustomJammer…`, `StockViewmodelOffset`). Tune offsets there; don't hardcode new model paths in code.
+- Bone resolution is currently **heuristic** — `FindStockWeaponBoneObject` / `TryGetStockHandAnchor` / `TryGetStockWeaponAnchor` each try several bone/attachment names. Pinning these to the real Facepunch bone names is open viewmodel polish (drift/desync risk lives here).
+
+Third-person grip is a separate path: `WeaponPose.ApplyHandPose` seats the *world* weapon in the Citizen's hands via `CitizenAnimationHelper` `HoldTypes` + `IkLeftHand` / `IkRightHand`.
+
+For the full first-person weapon-rig anatomy (skeletal mesh, bone hierarchy, anim clips, anim graph, attachment points, IK, anim events, camera offsets, weapon-part rig) and a per-part status/gap table for this project, see [`docs/first_person_weapon_rig.md`](docs/first_person_weapon_rig.md).
 
 ## Collision authoring (mesh-based) — the default for props/buildings
 
@@ -532,7 +544,7 @@ For each new building:
 - Don't bake new asset paths into code; use prefab references or `[Property]` strings.
 - Don't reach for `GameObject.Find()` inside fixed update.
 - Don't ship a hand-rolled instantiation of a prefab when you can just edit the prefab JSON and let `GameSetup.SpawnPilotPawn` / `SpawnSoldierPawn` do its job at runtime.
-- Don't change `AGENTS.md` content without flagging it — that's the legacy source of truth.
+- Don't change `AGENTS.md` content without flagging it — it's the standing AI-workflow rules doc (this file, CLAUDE.md, is canonical for project specifics).
 - Don't mix recoil into `EyeAngles` — that's the aim source. Use `_recoilOffset` for camera display only (see `GroundPlayerController.AddRecoil`).
 - Don't subscribe to `Health.OnDamaged` / `OnKilled` from a `Component` without storing the handler reference if you ever need to unsubscribe (`KillFeedTracker` and `HudPanel` both manage this — copy their pattern).
 - Don't ship a new/exported model "visual only." Collision + physics are part of making a model — see the **STANDING RULE** under [Collision authoring](#collision-authoring-mesh-based--the-default-for-propsbuildings). Skip collision only when the user explicitly says it's decoration, and flag it in your summary.

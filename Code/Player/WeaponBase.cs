@@ -330,20 +330,20 @@ public abstract class WeaponBase : Component
 	}
 
 	[Rpc.Broadcast]
-	protected void BroadcastImpact( Vector3 position, int surfaceKindInt )
+	protected void BroadcastImpact( Vector3 position, Vector3 normal, int surfaceKindInt )
 	{
-		ImpactEffects.Spawn( position, (ImpactEffects.SurfaceKind)surfaceKindInt );
+		ImpactEffects.Spawn( position, normal, (ImpactEffects.SurfaceKind)surfaceKindInt );
 	}
 
 	[Rpc.Broadcast]
-	protected void BroadcastImpactFromTrace( Vector3 position, string surfaceName )
+	protected void BroadcastImpactFromTrace( Vector3 position, Vector3 normal, string surfaceName )
 	{
 		var kind = ImpactEffects.SurfaceKind.Default;
 		var n = surfaceName?.ToLowerInvariant() ?? "";
 		if ( n.Contains( "metal" ) || n.Contains( "steel" ) || n.Contains( "alum" ) ) kind = ImpactEffects.SurfaceKind.Metal;
 		else if ( n.Contains( "wood" ) ) kind = ImpactEffects.SurfaceKind.Wood;
 		else if ( n.Contains( "concrete" ) || n.Contains( "stone" ) || n.Contains( "brick" ) ) kind = ImpactEffects.SurfaceKind.Concrete;
-		ImpactEffects.Spawn( position, kind );
+		ImpactEffects.Spawn( position, normal, kind );
 	}
 
 	[Rpc.Broadcast]

@@ -43,7 +43,7 @@ foreach ($check in $requiredMarkers) {
 $nodeToolPattern = "\b(GraphView|NodeUI|IPlug(In|Out)?|INodeType)\b|Editor\.NodeEditor"
 $nodeToolFiles = @(Get-AgentFiles -Root $Root -Include @("*.cs") | Where-Object {
     $relative = ConvertTo-AgentRelativePath -Path $_.FullName -Root $Root
-    if ($relative -like "obj/*" -or $relative -like "bin/*") {
+    if ($relative -like "obj/*" -or $relative -like "bin/*" -or $relative -like "tools/sbox-public/*") {
         return $false
     }
 

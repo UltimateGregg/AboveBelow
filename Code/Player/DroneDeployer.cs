@@ -208,12 +208,20 @@ public sealed class DroneDeployer : Component
 		var selected = IsSelected;
 		WeaponPose.SetVisibility( GameObject, false );
 
-		if ( !selected || droneViewActive )
+		if ( !selected )
 			return false;
 
-		var hideForFirstPersonViewmodel = FirstPersonViewmodel.ShouldHideWorldHeldItem( this, selected );
+		// While flying (drone view), the pilot's body keeps holding the RC
+		// transmitter in the left hand so they read as "piloting" — to other
+		// players and in the chase cam. The drone itself is airborne, so the
+		// right-hand mini-drone is hidden. When NOT flying, the local
+		// first-person viewmodel hides these world hands for the local player.
+		var hideForFirstPersonViewmodel = !droneViewActive
+			&& FirstPersonViewmodel.ShouldHideWorldHeldItem( this, selected );
+
 		WeaponPose.SetVisibility( LeftHandVisual, !hideForFirstPersonViewmodel );
-		WeaponPose.SetVisibility( RightHandVisual, !hideForFirstPersonViewmodel && !DroneInFlight );
+		WeaponPose.SetVisibility( RightHandVisual,
+			!hideForFirstPersonViewmodel && !DroneInFlight && !droneViewActive );
 		return true;
 	}
 

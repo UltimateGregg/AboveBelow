@@ -59,6 +59,27 @@ function Find-ApiType {
     return @($Types | Where-Object { $_.FullName -eq $FullName } | Select-Object -First 1)
 }
 
+function Test-ApiMemberExists {
+    param(
+        [object[]]$Types,
+        [string]$FullName,
+        [string]$MemberCollection,
+        [string]$MemberName,
+        [string]$ApiPath
+    )
+
+    $apiType = Find-ApiType -Types $Types -FullName $FullName
+    if ($apiType.Count -eq 0) {
+        Add-AgentIssue $issues "Error" "API Dump" (ConvertTo-AgentRelativePath -Path $ApiPath -Root $Root) "API dump is missing required type '$FullName'." "Refresh API.json from the official S&Box API export."
+        return
+    }
+
+    $members = @($apiType[0].$MemberCollection)
+    if (@($members | Where-Object { $_.Name -eq $MemberName }).Count -eq 0) {
+        Add-AgentIssue $issues "Error" "API Dump" (ConvertTo-AgentRelativePath -Path $ApiPath -Root $Root) "API dump is missing required member '$FullName.$MemberName'." "Refresh API.json from the official S&Box API export or update the dated API guidance intentionally."
+    }
+}
+
 Test-TextMarkers -Path "docs/sbox_engine_llm_reference.md" -Area "API Reference Docs" -Patterns @(
     "API\.json",
     "sbox_api_lookup\.ps1",
@@ -148,6 +169,20 @@ else {
         $gameObject = Find-ApiType -Types $types -FullName "Sandbox.GameObject"
         if ($gameObject.Count -gt 0 -and @(@($gameObject[0].Methods) | Where-Object { $_.Name -eq "NetworkSpawn" }).Count -eq 0) {
             Add-AgentIssue $issues "Error" "API Dump" (ConvertTo-AgentRelativePath -Path $apiPath -Root $Root) "Sandbox.GameObject does not expose NetworkSpawn in the local API dump." "Refresh API.json or update network-spawn guidance after source verification."
+        }
+
+        foreach ($requiredMember in @(
+            @{ Type = "Sandbox.PhysicsBody"; Collection = "Methods"; Name = "ComputePenetration" },
+            @{ Type = "Sandbox.Collider"; Collection = "Methods"; Name = "ComputePenetration" },
+            @{ Type = "Sandbox.Mounting.MountResourceInfo"; Collection = "Properties"; Name = "Path" },
+            @{ Type = "Sandbox.Game.Overlay"; Collection = "Methods"; Name = "ShowMapSelector" },
+            @{ Type = "Sandbox.Modals.IModalSystem"; Collection = "Methods"; Name = "MapSelect" },
+            @{ Type = "Sandbox.Mounting.Directory"; Collection = "Methods"; Name = "GetMetadata" },
+            @{ Type = "Sandbox.Mounting.MountUtility"; Collection = "Methods"; Name = "TryParse" },
+            @{ Type = "Sandbox.IndirectLightVolume"; Collection = "Methods"; Name = "BakeProbesUnavailableMessage" },
+            @{ Type = "Sandbox.Mesh"; Collection = "Methods"; Name = "AddSubMesh" }
+        )) {
+            Test-ApiMemberExists -Types $types -FullName $requiredMember.Type -MemberCollection $requiredMember.Collection -MemberName $requiredMember.Name -ApiPath $apiPath
         }
 
         Add-AgentIssue $issues "Info" "API Dump" (ConvertTo-AgentRelativePath -Path $apiPath -Root $Root) "Validated local S&Box API dump with $($types.Count) reflected types."

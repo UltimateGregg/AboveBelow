@@ -6,6 +6,10 @@
 - Category: environment
 - Profile: Environment and Prop
 
+## Setting
+
+- Part of **Bouneurmaum National Park** — pines are the dominant flora of the park's forested cover. Art-direction source of truth: [`docs/setting.md`](../../setting.md).
+
 ## Category Profile
 
 Required material roles:

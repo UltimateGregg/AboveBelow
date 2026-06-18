@@ -272,34 +272,6 @@ public sealed partial class GameSetup
 		return !hasLocalDrone && !hasLocalSoldier;
 	}
 
-	// ── Legacy: kept so RoundManager + HUD continue to compile while we
-	// migrate. It is not used by the next-round re-prompt flow.
-	[Rpc.Broadcast]
-	public void PromotePilot( Guid newPilotId )
-	{
-		if ( !Networking.IsHost ) return;
-
-		var newPilot = Connection.All.FirstOrDefault( c => c.Id == newPilotId );
-		if ( newPilot is null )
-			return;
-
-		var previousPilots = PilotTeam.ToList();
-		foreach ( var pilotId in previousPilots )
-		{
-			if ( pilotId == newPilotId ) continue;
-
-			var previousPilot = Connection.All.FirstOrDefault( c => c.Id == pilotId );
-			if ( previousPilot is null ) continue;
-
-			AssignConnectionToTeam( pilotId, PlayerRole.Soldier );
-			SpawnSoldierPawn( previousPilot, GetSelectedSoldierClass( pilotId ) );
-		}
-
-		AssignConnectionToTeam( newPilotId, PlayerRole.Pilot );
-		PilotConnectionId = newPilotId;
-		SpawnPilotPawn( newPilot, GetSelectedDroneType( newPilotId ) );
-	}
-
 	SoldierClass GetSelectedSoldierClass( Guid connId )
 	{
 		return _selectedSoldierClasses.TryGetValue( connId, out var cls )
@@ -312,15 +284,5 @@ public sealed partial class GameSetup
 		return _selectedDroneTypes.TryGetValue( connId, out var type )
 			? type
 			: DroneType.Gps;
-	}
-
-	// Legacy: HudPanel calls this for the old direct role picker. We
-	// route both options into the new selection flow with a default class.
-	public void SelectLocalRole( PlayerRole role )
-	{
-		if ( role == PlayerRole.Pilot )
-			SelectLocalDrone( DroneType.Gps );
-		else if ( role == PlayerRole.Soldier )
-			SelectLocalSoldier( SoldierClass.Assault );
 	}
 }

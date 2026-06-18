@@ -50,9 +50,9 @@ public sealed partial class FirstPersonViewmodel : Component
 	[Property] public Vector3 CustomShotgunViewmodelOffset { get; set; } = new( 2f, 0f, 0f );
 	[Property] public Angles CustomShotgunViewmodelRotation { get; set; } = new( 0f, 0f, 0f );
 	[Property] public Vector3 CustomShotgunViewmodelScale { get; set; } = new( 1f, 1f, 1f );
-	[Property] public Vector3 CustomJammerViewmodelOffset { get; set; } = Vector3.Zero;
+	[Property] public Vector3 CustomJammerViewmodelOffset { get; set; } = new( 5f, -5f, 9f );
 	[Property] public Angles CustomJammerViewmodelRotation { get; set; } = new( 0f, 0f, 0f );
-	[Property] public Vector3 CustomJammerViewmodelScale { get; set; } = new( 1f, 1f, 1f );
+	[Property] public Vector3 CustomJammerViewmodelScale { get; set; } = new( 1.4f, 1.4f, 1.4f );
 	[Property, Range( 1f, 60f )] public float StaticArmFollowRate { get; set; } = 28f;
 	/// <summary>
 	/// Eye-relative anchor (forward, right, up) for the pilot deployer's stock

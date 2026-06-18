@@ -84,6 +84,7 @@ $requiredScripts = @(
     "scripts/agents/sound_playback_audit.ps1",
     "scripts/agents/team_label_copy_audit.ps1",
     "scripts/agents/mcp_screenshot_audit.ps1",
+    "scripts/agents/sbox_public_source_audit.ps1",
     "scripts/agents/sbox_docs_source_audit.ps1",
     "scripts/agents/sbox_engine_reference_audit.ps1",
     "scripts/agents/sbox_release_notes_audit.ps1",
@@ -94,12 +95,15 @@ $requiredScripts = @(
     "scripts/agents/animated_model_intake_audit.ps1",
     "scripts/agents/editor_node_tool_audit.ps1",
     "scripts/agents/editor_first_workflow_audit.ps1",
+    "scripts/agents/cowork_bridge_autostart_audit.ps1",
     "scripts/agents/asset_visual_review.ps1",
     "scripts/agents/blender_live_toolkit_self_test.ps1"
 )
 
 # Release-notes audit coverage marker: S&Box Release Notes Intake Agent
 # https://sbox.game/release-notes is protected by the "release-notes" suite and sbox_release_notes_audit.ps1.
+# Public source audit coverage marker: S&Box Public Source Agent
+# https://github.com/Facepunch/sbox-public is protected by the "sbox-public" suite and sbox_public_source_audit.ps1.
 # Code Search audit coverage marker: S&Box Code Search Agent
 # https://sbox.game/codesearch is protected by the "code-search" suite and sbox_code_search_audit.ps1.
 # Animated model import coverage marker: S&Box Animated Model Intake Agent
@@ -119,7 +123,7 @@ if (Test-Path -LiteralPath $runner) {
         Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner does not declare a ValidateSet for suites." "Restore suite validation on the Suite parameter."
     }
 
-    foreach ($suite in @("ui", "prefab-graph", "scene", "terrain", "logs", "readiness", "train", "asset-production", "modeldoc", "animated-model", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain", "api", "sbox-docs", "release-notes", "code-search", "learn", "editor-node-tool", "editor-first")) {
+    foreach ($suite in @("ui", "prefab-graph", "scene", "terrain", "logs", "readiness", "train", "asset-production", "modeldoc", "animated-model", "blender-live", "gameplay-regression", "sound", "collision", "collision-chain", "api", "sbox-public", "sbox-docs", "release-notes", "code-search", "learn", "editor-node-tool", "editor-first")) {
         $quotedSuite = '"' + [regex]::Escape($suite) + '"'
         if ($validateSetMatch.Success -and $validateSetMatch.Groups["values"].Value -notmatch $quotedSuite) {
             Add-AgentIssue $issues "Error" "Full Automation Tests" "scripts/agents/run_agent_checks.ps1" "Runner ValidateSet does not expose suite '$suite'." "Add the suite to the Suite parameter ValidateSet."
@@ -2273,12 +2277,30 @@ if (Test-Path -LiteralPath $sboxReleaseNotesAudit) {
         @'
 # S&Box Engine LLM Reference
 
-Official S&Box release notes reviewed on 2026-06-04:
+Official S&Box release notes reviewed on 2026-06-17:
 
 - https://sbox.game/release-notes
+- https://sbox.game/news/update-26-06-17
+- https://sbox.game/news/update-26-06-10
 - https://sbox.game/news/update-26-06-03
 - https://sbox.game/api/changes
+- 26.06.17
+- 26.06.10
 - 26.06.03
+- Sandbox.PhysicsBody.ComputePenetration
+- Sandbox.Mounting.MountResourceInfo
+- Sandbox.Game.Overlay.ShowMapSelector
+- Sandbox.Modals.IModalSystem.MapSelect
+- Sandbox.Mounting.Directory.GetMetadata
+- Sandbox.Mounting.MountUtility.TryParse
+- Sandbox.IndirectLightVolume.BakeProbesUnavailableMessage
+- Sandbox.Mounting.SceneLoader<T>
+- Sandbox.SceneFile.Load
+- Sandbox.Streamer
+- Sandbox.UniformAttribute
+- Sandbox.Light.LightContribution
+- Sandbox.Terrain.UpdateCollision
+- Collider.ComputePenetration
 - Mesh.AddMorph
 - Mesh.AddSubMesh
 - MorphDelta
@@ -2287,7 +2309,7 @@ Official S&Box release notes reviewed on 2026-06-04:
 - Connection.Name
 - Connection.DisplayName
 
-Use HasTag() on trace results. Route chat through IChatEvent. Custom panel drawing can use IPanelDraw. Voice Mixer owns voice transmission. TerrainStorage.SetResolution() is the terrain resolution workflow. Scene.Trace.Cone and Rigidbody.SleepThreshold are available after API verification. VMDL writer now also saves the PHYS block. Physical sound simulation changes sound proof expectations. UI mixer routing matters for 2D cues. Modern UI CSS features such as clamp() and :has() are available. Mesh.AddSubMesh stays pending when the local API dump does not expose the exact member.
+Use HasTag() on trace results. Route chat through IChatEvent. Custom panel drawing can use IPanelDraw. Voice Mixer owns voice transmission. TerrainStorage.SetResolution() is the terrain resolution workflow. Scene.Trace.Cone and Rigidbody.SleepThreshold are available after API verification. VMDL writer now also saves the PHYS block. Physical sound simulation changes sound proof expectations. UI mixer routing matters for 2D cues. Modern UI CSS features such as clamp() and :has() are available. Mesh.AddSubMesh is available after the local API dump exposes the exact member.
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot "docs\sbox_engine_llm_reference.md") -Encoding UTF8
 
         @'
@@ -2311,7 +2333,7 @@ Evidence:
 '@ | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\sbox-release-notes-agent.md") -Encoding UTF8
 
         "https://sbox.game/release-notes https://sbox.game/api/changes sbox-release-notes-agent.md" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\sbox-engine-reference-agent.md") -Encoding UTF8
-        "Official S&Box Release Notes Intake sbox-release-notes-agent.md sbox_release_notes_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\known_sbox_patterns.md") -Encoding UTF8
+        "Official S&Box Release Notes Intake 26.06.17 26.06.10 ComputePenetration Cloud Asset license warnings sbox-release-notes-agent.md sbox_release_notes_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\known_sbox_patterns.md") -Encoding UTF8
         "S&Box Release Notes Intake Agent sbox_release_notes_audit.ps1 Suite release-notes" | Set-Content -LiteralPath (Join-Path $tempRoot "docs\agent_toolkit.md") -Encoding UTF8
         "sbox-release-notes-agent.md sbox_release_notes_audit.ps1" | Set-Content -LiteralPath (Join-Path $tempRoot ".agents\sbox\README.md") -Encoding UTF8
         "S&Box release notes sbox-release-notes-agent.md run_agent_checks.ps1 -Suite release-notes" | Set-Content -LiteralPath (Join-Path $tempRoot "AGENTS.md") -Encoding UTF8
@@ -2530,6 +2552,15 @@ if (Test-Path -LiteralPath $sboxApiReferenceAudit) {
         $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.Rpc.OwnerAttribute"; Name = "OwnerAttribute" })
         $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.ClientEditableAttribute"; Name = "ClientEditableAttribute" })
         $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.TimeSince"; Name = "TimeSince" })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.PhysicsBody"; Name = "PhysicsBody"; Methods = @([pscustomobject]@{ Name = "ComputePenetration" }) })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.Collider"; Name = "Collider"; Methods = @([pscustomobject]@{ Name = "ComputePenetration" }) })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.Mounting.MountResourceInfo"; Name = "MountResourceInfo"; Properties = @([pscustomobject]@{ Name = "Path" }) })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.Game.Overlay"; Name = "Overlay"; Methods = @([pscustomobject]@{ Name = "ShowMapSelector" }) })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.Modals.IModalSystem"; Name = "IModalSystem"; Methods = @([pscustomobject]@{ Name = "MapSelect" }) })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.Mounting.Directory"; Name = "Directory"; Methods = @([pscustomobject]@{ Name = "GetMetadata" }) })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.Mounting.MountUtility"; Name = "MountUtility"; Methods = @([pscustomobject]@{ Name = "TryParse" }) })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.IndirectLightVolume"; Name = "IndirectLightVolume"; Methods = @([pscustomobject]@{ Name = "BakeProbesUnavailableMessage" }) })
+        $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.Mesh"; Name = "Mesh"; Methods = @([pscustomobject]@{ Name = "AddSubMesh" }) })
         for ($i = 0; $i -lt 100; $i++) {
             $validTypes.Add([pscustomobject]@{ FullName = "Sandbox.FixtureType$i"; Name = "FixtureType$i" })
         }

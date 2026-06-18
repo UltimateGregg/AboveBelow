@@ -24,6 +24,7 @@ scripts/_preview/
 api schema.json
 mcp.zip
 screenshots/
+tools/sbox-public/
 *_preview.png
 *.log
 *.binlog

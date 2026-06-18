@@ -117,6 +117,11 @@ $nameHints
 - Prefab: $prefabText
 - Model: $modelText
 
+## Setting
+
+- This asset must read as part of **Bouneurmaum National Park** (rural, daytime national park). State what it is in the park, where it sits, and how weathered it is.
+- Art-direction source of truth: ``docs/setting.md``. If it would not look at home in a real national park, reframe it as park or incident-response equipment before modeling.
+
 ## Reference Notes
 
 - TBD

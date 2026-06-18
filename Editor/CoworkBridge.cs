@@ -33,6 +33,7 @@ public static class CoworkBridge
 	static CancellationTokenSource _cts;
 	static readonly ConcurrentQueue<PendingRequest> _queue = new();
 	public static bool IsRunning => _listener?.IsListening ?? false;
+	static bool _autoStartAttempted;
 
 	class PendingRequest
 	{
@@ -40,6 +41,19 @@ public static class CoworkBridge
 		public ManualResetEventSlim Done = new( false );
 		public string ResponseBody;
 		public int ResponseStatus = 200;
+	}
+
+	static void EnsureStartedForEditorFrame()
+	{
+		if ( _autoStartAttempted )
+			return;
+
+		_autoStartAttempted = true;
+
+		if ( IsRunning )
+			return;
+
+		Start();
 	}
 
 	[Menu( "Editor", "Cowork/Start MCP Bridge" )]
@@ -130,6 +144,8 @@ public static class CoworkBridge
 	[EditorEvent.Frame]
 	static void Pump()
 	{
+		EnsureStartedForEditorFrame();
+
 		while ( _queue.TryDequeue( out var p ) )
 		{
 			HandleOnEditorThread( p );

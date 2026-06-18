@@ -11,6 +11,10 @@ A vertical asymmetric shooter. **Pilot team** flies drones from the ground; **So
 **Platform:** S&Box
 **Status:** Class system implemented. Rock-paper-scissors balance design is documented; tuning and art pass pending.
 
+### Setting
+
+The whole game is set in **Bouneurmaum National Park** — a rural, daytime national park of pine forest, grassland clearings, dirt roads, and scattered rural structures, with an incident-response staging area dropped into a clearing. This is the project's canonical art direction; every model, light, and effect should read as one place. See [Setting & Art Direction](docs/setting.md).
+
 ### Teams
 
 **Pilot Team** — each pilot picks one of three drone variants:
@@ -162,5 +166,5 @@ Assets/prefabs/
 
 ---
 
-**Last Updated:** May 8, 2026
-**Status:** Two-team class system in. RPS balance spec documented. Tuning + production art still pending.
+**Last Updated:** June 13, 2026
+**Status:** Two-team class system in. RPS balance spec + national-park setting documented. Tuning + production art still pending.

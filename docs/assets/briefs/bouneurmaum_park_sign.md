@@ -6,6 +6,10 @@
 - Category: environment
 - Profile: Environment and Prop
 
+## Setting
+
+- Part of **Bouneurmaum National Park** — this is the park's welcome sign at an entrance / trailhead. Art-direction source of truth: [`docs/setting.md`](../../setting.md).
+
 ## Category Profile
 
 Required material roles:

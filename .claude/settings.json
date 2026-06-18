@@ -43,6 +43,62 @@
       }
     },
     {
+      "id": "sbox-public-source-check",
+      "name": "S&Box Public Source Check",
+      "description": "Runs public source and MCP preservation checks when Facepunch/sbox-public training surfaces change",
+      "enabled": true,
+      "trigger": {
+        "type": "file_pattern_change",
+        "patterns": [
+          "docs/sbox_engine_llm_reference.md",
+          "docs/known_sbox_patterns.md",
+          "docs/agent_toolkit.md",
+          ".agents/sbox/sbox-public-source-agent.md",
+          ".agents/sbox/sbox-engine-reference-agent.md",
+          ".agents/sbox/README.md",
+          "AGENTS.md",
+          ".gitignore",
+          ".mcp.json",
+          "scripts/agents/sbox_public_source_audit.ps1",
+          "scripts/agents/sbox_engine_reference_audit.ps1",
+          "scripts/agents/run_agent_checks.ps1",
+          "scripts/agents/post_task_training_agent.ps1",
+          "scripts/agents/test_full_automation_layer.ps1"
+        ],
+        "events": ["modified", "saved"],
+        "debounce_ms": 1500
+      },
+      "action": {
+        "type": "script",
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          ".\\scripts\\agents\\run_agent_checks.ps1",
+          "-Root",
+          "${WORKSPACE_ROOT}",
+          "-Suite",
+          "sbox-public",
+          "-ShowInfo"
+        ],
+        "cwd": "${WORKSPACE_ROOT}",
+        "timeout_seconds": 120,
+        "capture_output": true,
+        "on_success": {
+          "notify": false,
+          "message": "S&Box public source checks passed",
+          "level": "info"
+        },
+        "on_failure": {
+          "notify": true,
+          "message": "S&Box public source check failed",
+          "level": "error"
+        }
+      }
+    },
+    {
       "id": "drone-control-regression-check",
       "name": "Drone Control Regression Check",
       "description": "Runs focused gameplay checks when drone input, pilot control, HUD loadout, or drone prefab files change",

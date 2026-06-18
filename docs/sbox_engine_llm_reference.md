@@ -26,23 +26,36 @@ Official editor docs reviewed on 2026-05-25:
 - https://sbox.game/dev/doc/editor/mapping/
 - https://sbox.game/dev/doc/editor/mapping/shortcuts
 
-Official docs source repo reviewed on 2026-05-27:
+Official docs source repo reviewed on 2026-06-14:
 
 - https://github.com/Facepunch/sbox-docs
-- commit `9ce559cf0b18b687db02ade27cc35b65a56b3049`
+- commit `a0071282e0757420c20dd17bccbe97b25ad45c2f`
 - `docfx.json` builds `docs/**/*.md` and `docs/**/toc.yml` into the published docs site
-- top-level docs sections include actiongraph, animation, assets, code, editor, exporting, gameplay, networking, physics, rendering, scene, sound, and ui
+- top-level docs sections include actiongraph, animation, assets, code, editor, exporting, game-mounts, gameplay, networking, physics, rendering, scene, services, sound, and ui
 
-Official S&Box release notes reviewed on 2026-06-04:
+Official S&Box public source reviewed on 2026-06-14:
+
+- https://github.com/Facepunch/sbox-public
+- project-local clone: `tools/sbox-public`
+- commit `ddfca8546c2b564c057ca797757bbb14a2f4f12c` (`add Collider.ComputePenetration with tests (#5073)`)
+- `Bootstrap.bat` was run in `tools/sbox-public`; the public distribution downloaded artifacts for that commit and produced `game/sbox-dev.exe` plus `game/bin/managed` assemblies
+- current project and MCP editor projects still compile against the sibling `C:\Programming\sbox-public` checkout through existing relative project references; do not mass-rewrite those references to `tools/sbox-public` unless a separate migration proves compatible editor project references or intentionally switches to DLL references
+- protect this route with `.agents/sbox/sbox-public-source-agent.md` and `scripts/agents/sbox_public_source_audit.ps1`; after public-source updates, also verify MCP status/build before claiming the update preserved MCP functionality
+
+Official S&Box release notes reviewed on 2026-06-17:
 
 - https://sbox.game/release-notes
+- https://sbox.game/news/update-26-06-17
+- https://sbox.game/news/update-26-06-10
 - https://sbox.game/news/update-26-06-03
 - https://sbox.game/news/update-26-05-20
 - https://sbox.game/api/changes
-- latest reviewed release block: `26.06.03` (release-note block dated 2 June 2026; news post dated 3 June 2026)
-- recent API-change highlights include `Mesh.AddMorph`, `MorphDelta`, `Editor.CreateModelFromMeshDialog`, `ResourceWriter.AddExternalReference`, and service organization/package-type helpers
+- latest reviewed release block: `26.06.17` (release-note block and news post dated 17 June 2026)
+- carried-forward reviewed release blocks: `26.06.10`, `26.06.03`, `26.05.20`
+- recent API-change highlights include `Sandbox.Collider.ComputePenetration`, `Sandbox.PhysicsBody.ComputePenetration`, `Sandbox.Mounting.MountResourceInfo`, `Sandbox.Game.Overlay.ShowMapSelector`, `Sandbox.Modals.IModalSystem.MapSelect`, `Sandbox.Mounting.Directory.GetMetadata`, `Sandbox.Mounting.MountUtility.TryParse`, `Sandbox.IndirectLightVolume.BakeProbesUnavailableMessage`, `Sandbox.Mounting.SceneLoader<T>`, `Sandbox.SceneFile.Load`, `Sandbox.Streamer` / `Sandbox.Streamer.IEvents`, `Sandbox.UniformAttribute`, `Sandbox.Light.LightContribution`, `Sandbox.Terrain.UpdateCollision`, `Mesh.AddSubMesh`, `Mesh.AddMorph`, `MorphDelta`, `Editor.CreateModelFromMeshDialog`, `ResourceWriter.AddExternalReference`, and service organization/package-type helpers
 - `Connection.Name`, `Connection.DisplayName`, and `Sandbox.UI.Panel.BuildHash()` were verified in local `API.json` on 2026-06-04
-- `Mesh.AddSubMesh` was named in the 26.06.03 release notes, but the local `API.json` lookup did not expose the member on 2026-06-04; refresh or verify the exact signature before implementation
+- Local `api.json` was refreshed from `C:\Users\garre\Desktop\2026-06-17-19-19-04.zip.json` on 2026-06-17; SHA-256 `14B7A27A0E5FC2BC25237019BF9E845E45D93E4A6B5F8E315A10F533CE5B4695`; 1,927 reflected types.
+- The refreshed local dump exposes `PhysicsBody.ComputePenetration(PhysicsBody body, Vector3 direction, float distance)`, `PhysicsBody.ComputePenetration(PhysicsBody body, Transform transform, Vector3 direction, float distance)`, `Collider.ComputePenetration(Collider other, Vector3 direction, float distance)`, `MountResourceInfo`, `Game.Overlay.ShowMapSelector(Action<string> onSelect, string selected)`, `IModalSystem.MapSelect(Action<string> onMapSelected, string selected)`, `MountUtility.TryParse(string path, string ident)`, `Directory.GetMetadata(string filename)`, `IndirectLightVolume.BakeProbesUnavailableMessage()`, and `Mesh.AddSubMesh(Material material, int startIndex, int indexCount, int startVertex, int vertexCount)`.
 
 Official S&Box Code Search reviewed on 2026-05-30:
 
@@ -94,6 +107,7 @@ Secondary community tutorial context reviewed on 2026-05-23:
 - https://github.com/internetfishy/Node-Editor-Calculator
 
 Use `.agents/sbox/sbox-docs-source-agent.md` before broad official docs source sweeps or when `Facepunch/sbox-docs` is provided as training input. Refresh `.tmpbuild/sbox-docs` with `scripts/agents/sbox_docs_source_audit.ps1 -Refresh -ShowInfo`, use `.tmpbuild/sbox-docs-source-index.md`, the source `toc.yml` files, and `rg` for inventory, and record the reviewed commit/date before promoting durable lessons. Use `.agents/sbox/sbox-learn-intake-agent.md` before turning Learn tutorials or broad official editor-doc sweeps into standing project guidance. Use `.agents/sbox/ui-razor-reactivity-agent.md` for tutorials or bugs about Razor refresh behavior.
+Use `.agents/sbox/sbox-public-source-agent.md` before installing, refreshing, or relying on `Facepunch/sbox-public`. Keep the project-local source checkout under `tools/sbox-public`, run `Bootstrap.bat` after updates, preserve dirty sibling engine checkouts, and run `scripts/agents/run_agent_checks.ps1 -Suite sbox-public -ShowInfo` before claiming the public-source snapshot is current and MCP-safe.
 Use `.agents/sbox/sbox-release-notes-agent.md` before turning official S&Box patch notes, release notes, or API-change entries into standing project guidance. Prefer `https://sbox.game/release-notes` for dated release summaries and `https://sbox.game/api/changes` plus local `API.json` lookup for exact C# symbol shape.
 Use `.agents/sbox/sbox-code-search-agent.md` before relying on `https://sbox.game/codesearch` examples. Treat public package source as pattern discovery, compare multiple recent packages, and verify exact symbols through local `API.json`, official API pages, docs source, or local project code before implementation.
 
@@ -114,8 +128,22 @@ The API dump is a local reflection/reference surface, not a replacement for runt
 
 ## Release Notes Intake
 
-As of the 2026-06-04 review, recent official S&Box release notes affect these recurring project workflows:
+As of the 2026-06-17 review, recent official S&Box release notes affect these recurring project workflows:
 
+- Mounts are now a platform/main-menu concern as well as a Sandbox-mode concern. Future game-map, mounted-content, or workshop-map work should check ownership/installation assumptions, multiplayer join requirements, and the active `Sandbox.Mounting` API before adding custom map pickers or static mount-path logic.
+- The refreshed local API dump now exposes penetration helpers on `PhysicsBody` and `Collider`. Use them as candidate depenetration tools for stuck-player, collision authoring, and custom controller work after compiling the affected component and proving behavior in the editor.
+- Terrain trace support and terrain enable/disable crash fixes landed in the same patch. Terrain-backed gameplay, nav, or collision QA should include trace/start-solid checks against terrain and a quick editor toggle/edit sanity pass when terrain tools are touched.
+- The publish wizard now surfaces Cloud Asset license warnings. Publishing or asset-packaging work should check asset license/attribution eligibility instead of assuming every cloud asset is Play Fund-safe.
+- Model and texture preview tooling gained LOD/material-group and mip selectors. Asset QA should use editor ModelDoc/preview surfaces to inspect LODs, material groups, and texture mip behavior before accepting visual fixes.
+- Editor assembly caching and local-client fixes mean compile/load behavior may differ after an engine refresh; if hotload or local client behavior changes, separate active-engine version proof from project code regressions.
+- Public/source updates now need an MCP-preservation proof lane: bootstrap the project-local `tools/sbox-public` clone, but keep current MCP builds on the existing sibling checkout unless a separate migration proves the new source layout is compatible.
+- Game and addon loading is moving toward precompiled DLLs from manifests instead of CLLs. Future publish/load-time debugging should check manifest/DLL delivery before assuming source-compile behavior.
+- Mounted packages can mount scenes/maps. Any future map-mount workflow should verify `Sandbox.Mounting.SceneLoader<T>` / `Sandbox.SceneFile.Load` through the active API before implementing.
+- Twitch/Streamer integration is active again through `Sandbox.Streamer` and `Sandbox.Streamer.IEvents`; route any Twitch gameplay feature through release-note/API verification plus host-authoritative gameplay review.
+- Terrain work should recheck the reworked terrain sampling/rendering API, terrain samplers, terrain collision update-on-undo behavior, and `Sandbox.Terrain.UpdateCollision` before editing terrain tools or terrain-backed navigation assumptions.
+- DSP volume work should target `TargetMixer` instead of assuming the Game mixer, and sound proof should include physical sound, reverb/occlusion traces, and mixer routing.
+- `OnRenderBefore` / `OnRenderAfter` callbacks now fire per object instead of per primitive; rendering or custom draw instrumentation should verify current callback frequency before relying on old counts.
+- `Sandbox.UniformAttribute`, `Sandbox.Light.LightContribution`, `TextureGenerator.FormatOverride`, and `AssetType` icon color are candidate editor/inspector quality-of-life APIs, but need local API lookup or active-editor proof before project adoption.
 - Use `HasTag()` on trace results instead of relying on obsolete trace-result `.Tags` access when checking trace tags in hot paths.
 - Platform chat is now a default opt-in/out project feature for existing projects; gameplay-specific chat or command handling should start from the platform chat surface and `IChatEvent` instead of a fully custom chat stack.
 - Custom UI panel drawing is available through `IPanelDraw` and `Draw(CommandList)`, but Razor HUD/menu reactivity still uses `BuildHash()` coverage rather than per-frame refresh.
@@ -131,7 +159,7 @@ As of the 2026-06-04 review, recent official S&Box release notes affect these re
 - Physical sound simulation is now a creator-facing default, with material-aware occlusion/transmission, dynamic reverb, diffraction, and new tuning settings. Sound work now needs editor/playtest checks across walls, doorways, interiors, and relevant physics materials instead of assuming a simple line-of-sight volume drop.
 - UI sounds now target the UI mixer by default when no mixer is set, but gameplay UI sound changes should still verify the intended mixer route so 2D cues do not become world-spatialized.
 - S&Box UI CSS gained support for more modern layout/style features such as `min()`, `max()`, `clamp()`, `currentColor`, `:has()` descendant selectors, `overflow: auto`, logical margin/padding/inset properties, `white-space: pre-wrap`, `word-break: break-word`, viewport variants such as `dvh`/`svh`/`lvh`, and more shorthand parsing. Prefer these supported stylesheet tools over custom Razor/layout workarounds when they solve the layout problem cleanly, while keeping dynamic Razor values covered by `BuildHash()`.
-- `Mesh.AddSubMesh` is a candidate API for multi-material runtime meshes, but do not implement against it from the release note alone. This checkout's local API dump did not expose the member during the 2026-06-04 review.
+- `Mesh.AddSubMesh(Material material, int startIndex, int indexCount, int startVertex, int vertexCount)` is available in the refreshed 2026-06-17 local API dump for multi-material runtime mesh work. Still compile and inspect the generated render result before relying on it in gameplay or tooling.
 
 Release notes are not implementation proof by themselves. For each adopted API, query `scripts/agents/sbox_api_lookup.ps1`, compile the relevant project, and verify through the editor when editor, asset, or runtime behavior changes.
 

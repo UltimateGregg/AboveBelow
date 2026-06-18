@@ -17,8 +17,7 @@ namespace DroneVsPlayers;
 ///   - for pilots, also spawns the chosen drone and links the two together
 ///
 /// Class / drone-type selection comes from the HUD class-picker via
-/// SelectSoldierClass / SelectDroneType, mirroring the original
-/// SelectLocalRole flow.
+/// SelectLocalSoldier / SelectLocalDrone.
 /// </summary>
 [Title( "Game Setup" )]
 [Category( "Drone vs Players" )]
@@ -78,8 +77,8 @@ public sealed partial class GameSetup : Component, Component.INetworkListener
 	public int LocalSelectionGeneration { get; private set; }
 
 	// Backwards-compat: original single-pilot field. The first connection on
-	// PilotTeam mirrors here so legacy systems (PromotePilot, HudPanel) keep
-	// working until they are migrated.
+	// PilotTeam mirrors here so the HUD and spawn paths that key off a single
+	// pilot still resolve one.
 	[Sync] public Guid PilotConnectionId { get; set; }
 
 	// Map connections -> spawned pawn (and pilot -> drone) for cleanup / role swaps.

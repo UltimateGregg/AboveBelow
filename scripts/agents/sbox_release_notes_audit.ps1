@@ -39,9 +39,27 @@ function Test-FileHasPatterns {
 Test-FileHasPatterns "docs/sbox_engine_llm_reference.md" @(
     "Official S&Box release notes reviewed on \d{4}-\d{2}-\d{2}",
     "https://sbox\.game/release-notes",
+    "https://sbox\.game/news/update-26-06-17",
+    "https://sbox\.game/news/update-26-06-10",
     "https://sbox\.game/news/update-26-06-03",
     "https://sbox\.game/api/changes",
+    "26\.06\.17",
+    "26\.06\.10",
     "26\.06\.03",
+    "Sandbox\.PhysicsBody\.ComputePenetration",
+    "Sandbox\.Mounting\.MountResourceInfo",
+    "Sandbox\.Game\.Overlay\.ShowMapSelector",
+    "Sandbox\.Modals\.IModalSystem\.MapSelect",
+    "Sandbox\.Mounting\.Directory\.GetMetadata",
+    "Sandbox\.Mounting\.MountUtility\.TryParse",
+    "Sandbox\.IndirectLightVolume\.BakeProbesUnavailableMessage",
+    "Sandbox\.Mounting\.SceneLoader<T>",
+    "Sandbox\.SceneFile\.Load",
+    "Sandbox\.Streamer",
+    "Sandbox\.UniformAttribute",
+    "Sandbox\.Light\.LightContribution",
+    "Sandbox\.Terrain\.UpdateCollision",
+    "Collider\.ComputePenetration",
     "Mesh\.AddMorph",
     "Mesh\.AddSubMesh",
     "MorphDelta",
@@ -82,6 +100,10 @@ Test-FileHasPatterns ".agents/sbox/sbox-engine-reference-agent.md" @(
 
 Test-FileHasPatterns "docs/known_sbox_patterns.md" @(
     "Official S&Box Release Notes Intake",
+    "26\.06\.17",
+    "26\.06\.10",
+    "ComputePenetration",
+    "Cloud Asset license warnings",
     "sbox-release-notes-agent\.md",
     "sbox_release_notes_audit\.ps1"
 ) "Known Patterns"

@@ -32,6 +32,8 @@ Use community posts, wikis, and third-party tools only as secondary context. Lab
 
 When the source repository is available or the user links `Facepunch/sbox-docs`, start with `sbox-docs-source-agent.md`. Refresh `.tmpbuild/sbox-docs`, inspect the markdown and `toc.yml` inventory locally, then bring only durable project lessons back into this engine reference workflow.
 
+When the user links `Facepunch/sbox-public` or asks to install or refresh the latest public engine source, start with `sbox-public-source-agent.md`. Keep the project-local clone under `tools/sbox-public`, bootstrap it, preserve dirty sibling engine checkouts, and prove MCP manifest/build/live status before promoting public-source facts into standing guidance.
+
 When the user asks to search S&Box patch notes, release notes, or new API changes, start with `sbox-release-notes-agent.md`. Use the dated release notes and API changes pages to identify candidate lessons, then verify exact symbols through local `API.json` before promoting them into standing guidance.
 
 When the user links `https://sbox.game/codesearch` or asks for practical examples from published packages, start with `sbox-code-search-agent.md`. Treat public package source as pattern discovery; compare multiple examples and verify exact symbols locally before implementation.
@@ -46,6 +48,7 @@ When the user links `https://sbox.game/codesearch` or asks for practical example
 - Keep Valve `Nav Mesh` / `Nav_Mesh_Editing` guidance marked as legacy Source/Counter-Strike context unless a task explicitly targets that toolchain; S&Box navigation defaults to Recast and `Scene.NavMesh`.
 - Update `docs/sbox_engine_llm_reference.md` or `docs/known_sbox_patterns.md` when the lesson is broadly useful.
 - For `https://sbox.game/learn` tutorial reviews, hand off workflow-specific lessons to `sbox-learn-intake-agent.md` so community guidance becomes focused docs, audits, hooks, or routing.
+- For `Facepunch/sbox-public` install, update, or source-layout lessons, hand off to `sbox-public-source-agent.md` so clone freshness, bootstrap artifacts, MCP proof, and sibling checkout preservation stay explicit.
 - For official release-note and API-change reviews, hand off volatile update tracking to `sbox-release-notes-agent.md` so new-feature lessons stay dated, sourced, and audit-backed.
 - For public package examples from Code Search, hand off pattern discovery to `sbox-code-search-agent.md` so examples stay separated from official API proof and project implementation.
 - Add or update a focused audit if the lesson prevents a repeatable failure.

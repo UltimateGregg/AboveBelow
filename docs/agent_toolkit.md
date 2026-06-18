@@ -77,6 +77,7 @@ When a script edits `Assets/scenes/main.scene` while the editor is open, check `
 | Balance and Tuning Agent | Snapshot balance-related values | `scripts/agents/balance_tuning_report.ps1` |
 | Current Log Audit | Search project and local app log locations for fresh runtime/editor logs | `scripts/agents/current_log_audit.ps1` |
 | S&Box Engine Reference Agent | Verify external S&Box/Source 2 research and guard against obsolete guidance | `scripts/agents/sbox_engine_reference_audit.ps1` |
+| S&Box Public Source Agent | Install, bootstrap, and validate the project-local `Facepunch/sbox-public` checkout while preserving MCP functionality | `scripts/agents/run_agent_checks.ps1 -Suite sbox-public -ShowInfo` |
 | S&Box Docs Source Agent | Refresh and inspect the official `Facepunch/sbox-docs` markdown source before broad official-docs training | `scripts/agents/sbox_docs_source_audit.ps1 -Refresh -ShowInfo` |
 | S&Box Release Notes Intake Agent | Convert official S&Box release notes and API changes into dated project guidance, hooks, and audits | `scripts/agents/sbox_release_notes_audit.ps1` |
 | S&Box Code Search Agent | Use public package examples from `https://sbox.game/codesearch` for pattern discovery while verifying exact symbols locally | `scripts/agents/run_agent_checks.ps1 -Suite code-search -ShowInfo` |
@@ -101,6 +102,7 @@ When a script edits `Assets/scenes/main.scene` while the editor is open, check `
 - The UI flow audit checks both interaction affordances and Razor refresh contracts. Dynamic rendered values should be listed in `BuildHash()`, not forced through `StateHasChanged()` in `Tick()`.
 - The Learn intake audit keeps S&Box Learn tutorial lessons wired through a specific agent, Razor subagent, docs, suite, self-test, and Claude hook instead of living only in chat.
 - The docs source audit keeps official `Facepunch/sbox-docs` intake routed through a source clone, dated reference note, agent routing, suite wiring, self-test, and hook instead of brittle page scraping.
+- The public source audit, `sbox_public_source_audit.ps1`, keeps the project-local `Facepunch/sbox-public` clone current, bootstrapped, ignored from the game repo, and paired with MCP manifest/build/live proof before source-update claims.
 - The release notes audit keeps official S&Box patch-note/API-change lessons dated, source-linked, routed through a dedicated agent, and protected by Suite release-notes instead of living only in chat.
 - The Code Search audit, `sbox_code_search_audit.ps1`, keeps `https://sbox.game/codesearch` available as a public-package pattern resource without treating package source as verified API authority.
 - The scene marker and stock scene prop audits accept strict migration checks when direct marker or mounted stock prop placements are expected to have been converted to saved-scene prefab instances.
@@ -342,6 +344,7 @@ Docs/tooling changes:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/docs_roadmap_audit.ps1
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite sbox-public -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite sbox-docs -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite code-search -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_engine_reference_audit.ps1 -Root . -ShowInfo
@@ -355,13 +358,14 @@ External S&Box or Source 2 research intake:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_docs_source_audit.ps1 -Root . -Refresh -ShowInfo
+powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite sbox-public -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/run_agent_checks.ps1 -Suite sbox-docs -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_engine_reference_audit.ps1 -Root . -ShowInfo
 powershell -ExecutionPolicy Bypass -File scripts/agents/sbox_api_lookup.ps1 -Root . -Query SyncAttribute -ShowMembers
 powershell -ExecutionPolicy Bypass -File scripts/agents/editor_node_tool_audit.ps1 -Root . -ShowInfo
 ```
 
-Use `.agents/sbox/sbox-docs-source-agent.md` when the user links `Facepunch/sbox-docs` or asks for broad official docs training. The source snapshot belongs under `.tmpbuild/sbox-docs`; use `.tmpbuild/sbox-docs-source-index.md`, `toc.yml`, and `rg` to inspect it, record the reviewed commit/date, and do not vendor the full docs tree. Use `.agents/sbox/sbox-engine-reference-agent.md` before turning pasted engine research into standing guidance. Prefer official S&Box docs, the public engine repo, local `API.json`, and local project patterns. Keep volatile claims dated and sourced, and turn recurring stale-guidance risks into audit rules rather than leaving them only in chat history.
+Use `.agents/sbox/sbox-docs-source-agent.md` when the user links `Facepunch/sbox-docs` or asks for broad official docs training. The source snapshot belongs under `.tmpbuild/sbox-docs`; use `.tmpbuild/sbox-docs-source-index.md`, `toc.yml`, and `rg` to inspect it, record the reviewed commit/date, and do not vendor the full docs tree. Use `.agents/sbox/sbox-public-source-agent.md` when the user links `Facepunch/sbox-public` or asks for latest public engine source; keep that clone under `tools/sbox-public`, run `Bootstrap.bat`, preserve dirty sibling engine checkouts, and prove MCP health before claiming the update is safe. Use `.agents/sbox/sbox-engine-reference-agent.md` before turning pasted engine research into standing guidance. Prefer official S&Box docs, the public engine repo, local `API.json`, and local project patterns. Keep volatile claims dated and sourced, and turn recurring stale-guidance risks into audit rules rather than leaving them only in chat history.
 
 S&Box Code Search intake:
 
