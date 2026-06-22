@@ -1,0 +1,23 @@
+{
+  "Entries": [
+    {
+      "Prefab": {
+        "_type": "gameobject",
+        "prefab": "prefabs/environment/stock/tree_oak_big_a.prefab"
+      },
+      "Weight": 1
+    }
+  ],
+  "TileSizeEnum": "Size1024",
+  "TileRadius": 4,
+  "Scatterer": {
+    "Type": "SimpleScatterer",
+    "Scale": "0.85 1.25",
+    "Density": 0.0125,
+    "PlaceOnGround": true,
+    "HeightOffset": 0,
+    "AlignToNormal": false
+  },
+  "__references": [],
+  "__version": 0
+}

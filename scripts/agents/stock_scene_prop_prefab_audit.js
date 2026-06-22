@@ -20,12 +20,14 @@ const templates = [
     path: "Assets/prefabs/environment/stock/beech_bush_medium_wall.prefab",
     rootName: "BeechBushMediumWall",
     model: "models/sbox_props/shrubs/beech/beech_bush_medium_wall.vmdl",
+    packageIdent: "facepunch.beech_bush_medium_wall",
     components: ["Sandbox.ModelRenderer"],
   },
   {
     path: "Assets/prefabs/environment/stock/beech_bush_regular_medium_b.prefab",
     rootName: "BeechBushRegularMediumB",
     model: "models/sbox_props/shrubs/beech/beech_bush_regular_medium_b.vmdl",
+    packageIdent: "facepunch.beech_bush_regular_medium_b",
     components: ["Sandbox.ModelRenderer"],
   },
   {

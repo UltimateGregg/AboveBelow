@@ -24,7 +24,9 @@
     "facepunch.fence_panel_large",
     "facepunch.fence_panel_large_bent",
     "facepunch.pine_shrub_tall_b",
-    "facepunch.sboxweapons"
+    "facepunch.sboxweapons",
+    "facepunch.beech_bush_regular_medium_b",
+    "facepunch.beech_bush_medium_wall"
   ],
   "EditorReferences": [
     "Libraries/sboxskinsgg.claudebridge"

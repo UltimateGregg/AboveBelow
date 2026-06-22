@@ -5,7 +5,7 @@
 @namespace DroneVsPlayers
 @inherits Panel
 
-@* Main menu shell: title + PLAY / OPTIONS / QUIT, with the play-transition scanline. *@
+@* Main menu shell: title + PLAY / OPTIONS / CREDITS / QUIT, with the play-transition scanline. *@
 
 <root class="@(Hud?.MainMenuShellClass)">
     @if ( Hud.IsValid() )
@@ -26,6 +26,10 @@
                             <span class="label">OPTIONS</span>
                             <span class="desc">Local settings</span>
                         </div>
+                        <div class="choice main-menu-credits" onclick=@(() => Hud.ClickMenuOption(Hud.OpenCredits))>
+                            <span class="label">CREDITS</span>
+                            <span class="desc">Attribution</span>
+                        </div>
                         <div class="choice" onclick=@(() => Hud.ClickMenuOption(Hud.QuitGame))>
                             <span class="label">QUIT</span>
                             <span class="desc">Close the game</span>
@@ -37,6 +41,40 @@
         @if ( Hud.PlayTransitionActive )
         {
             <div class="main-menu-scanline"></div>
+        }
+        @if ( Hud.ShowCredits )
+        {
+            <div class="credits-overlay">
+                <div class="credits-backdrop" onclick=@(() => Hud.ClickMenuOption(Hud.CloseCredits))></div>
+                <div class="credits-card">
+                    <div class="credits-card-header">
+                        <div class="credits-card-title">Credits</div>
+                        <div class="credits-close" onclick=@(() => Hud.ClickMenuOption(Hud.CloseCredits))>X</div>
+                    </div>
+                    <div class="credits-body">
+                        @foreach ( var section in CreditsData.Sections )
+                        {
+                            <div class="credits-section">
+                                <div class="credits-heading">@(section.Heading)</div>
+                                @foreach ( var entry in section.Entries )
+                                {
+                                    <div class="credit-entry">
+                                        <span class="credit-title">@entry.Title</span>
+                                        @if ( !string.IsNullOrWhiteSpace( entry.Author ) )
+                                        {
+                                            <span class="credit-author">@entry.Author</span>
+                                        }
+                                        @if ( !string.IsNullOrWhiteSpace( entry.Detail ) )
+                                        {
+                                            <span class="credit-detail">@entry.Detail</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
         }
     }
 </root>
@@ -51,6 +89,7 @@
         return HashCode.Combine(
             Hud.MainMenuShellClass,
             Hud.PlayTransitionActive,
+            Hud.ShowCredits,
             Hud.MainMenuTransitionHashTick );
     }
 }

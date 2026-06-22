@@ -210,6 +210,92 @@ function Test-VectorValue {
     return $true
 }
 
+function Convert-AgentVectorValue {
+    param([object]$Value)
+
+    if ($null -eq $Value) {
+        return $null
+    }
+
+    $parts = @($Value.ToString().Split(","))
+    if ($parts.Count -ne 3) {
+        return $null
+    }
+
+    $values = New-Object double[] 3
+    for ($i = 0; $i -lt 3; $i++) {
+        $parsed = 0.0
+        if (-not [double]::TryParse($parts[$i].Trim(), [Globalization.NumberStyles]::Float, [Globalization.CultureInfo]::InvariantCulture, [ref]$parsed)) {
+            return $null
+        }
+        $values[$i] = $parsed
+    }
+
+    return $values
+}
+
+function Add-AgentVectors {
+    param([double[]]$A, [double[]]$B)
+
+    if ($null -eq $A -or $null -eq $B) {
+        return $null
+    }
+
+    $x = ([double]$A[0]) + ([double]$B[0])
+    $y = ([double]$A[1]) + ([double]$B[1])
+    $z = ([double]$A[2]) + ([double]$B[2])
+    return @($x, $y, $z)
+}
+
+function Find-SceneObjectWorldPosition {
+    param(
+        [object]$Object,
+        [string]$TargetGuid,
+        [double[]]$ParentWorldPosition
+    )
+
+    if ($null -eq $Object) {
+        return $null
+    }
+
+    $local = Convert-AgentVectorValue -Value (Get-JsonPropertyValue -Object $Object -Name "Position")
+    if ($null -eq $local) {
+        $local = @(0.0, 0.0, 0.0)
+    }
+    $world = Add-AgentVectors -A $ParentWorldPosition -B $local
+
+    if ([string](Get-JsonPropertyValue -Object $Object -Name "__guid") -eq $TargetGuid) {
+        return $world
+    }
+
+    foreach ($child in @(Get-JsonPropertyValue -Object $Object -Name "Children")) {
+        $match = Find-SceneObjectWorldPosition -Object $child -TargetGuid $TargetGuid -ParentWorldPosition $world
+        if ($null -ne $match) {
+            return $match
+        }
+    }
+
+    return $null
+}
+
+function Get-SceneObjectWorldPosition {
+    param([object]$Scene, [object]$Target)
+
+    $targetGuid = [string](Get-JsonPropertyValue -Object $Target -Name "__guid")
+    if ([string]::IsNullOrWhiteSpace($targetGuid)) {
+        return Convert-AgentVectorValue -Value (Get-JsonPropertyValue -Object $Target -Name "Position")
+    }
+
+    foreach ($rootObject in @(Get-JsonPropertyValue -Object $Scene -Name "GameObjects")) {
+        $match = Find-SceneObjectWorldPosition -Object $rootObject -TargetGuid $targetGuid -ParentWorldPosition @(0.0, 0.0, 0.0)
+        if ($null -ne $match) {
+            return $match
+        }
+    }
+
+    return $null
+}
+
 function Expand-DeflatedBytes {
     param([string]$Base64)
 
@@ -331,7 +417,8 @@ if ($arenaFloors.Count -ne 1) {
 }
 else {
     $arenaFloor = $arenaFloors[0]
-    if (-not (Test-VectorValue -Value (Get-JsonPropertyValue -Object $arenaFloor -Name "Position") -Expected @(-10800, -10800, -8))) {
+    $arenaFloorWorldPosition = Get-SceneObjectWorldPosition -Scene $scene -Target $arenaFloor
+    if (-not (Test-VectorValue -Value ($arenaFloorWorldPosition -join ",") -Expected @(-10800, -10800, -8))) {
         Add-AgentIssue $issues "Error" "ArenaFloor" $sceneRelative "ArenaFloor terrain origin is not centered at -10800,-10800,-8." "Sandbox.Terrain is corner-origin; offset the object by half of TerrainSize so it covers the centered arena terrain footprint."
     }
 
@@ -396,10 +483,14 @@ else {
         }
 
         $maps = Get-JsonPropertyValue -Object $terrainAsset -Name "Maps"
-        foreach ($mapName in @("heightmap", "splatmap")) {
-            $mapValue = Get-JsonPropertyValue -Object $maps -Name $mapName
-            if ([string]::IsNullOrWhiteSpace([string]$mapValue)) {
-                Add-AgentIssue $issues "Error" "Terrain Asset" $terrainRelative "Terrain asset is missing Maps.$mapName." "Keep the native terrain storage maps present so editor sculpt and paint tools can save changes."
+        $mapsBlob = [string](Get-JsonPropertyValue -Object $maps -Name '$blob')
+        $usesOpaqueMapBlob = -not [string]::IsNullOrWhiteSpace($mapsBlob)
+        if (-not $usesOpaqueMapBlob) {
+            foreach ($mapName in @("heightmap", "splatmap")) {
+                $mapValue = Get-JsonPropertyValue -Object $maps -Name $mapName
+                if ([string]::IsNullOrWhiteSpace([string]$mapValue)) {
+                    Add-AgentIssue $issues "Error" "Terrain Asset" $terrainRelative "Terrain asset is missing Maps.$mapName." "Keep the native terrain storage maps present so editor sculpt and paint tools can save changes."
+                }
             }
         }
 
@@ -459,6 +550,12 @@ else {
             }
         }
 
+        if ($usesOpaqueMapBlob) {
+            if ($ShowInfo) {
+                Add-AgentIssue $issues "Info" "Terrain Maps" $terrainRelative "Terrain maps are stored in S&Box ResourceVersion $([string](Get-JsonPropertyValue -Object $terrainAsset -Name "ResourceVersion")) opaque blob '$mapsBlob'; byte-level heightmap and splatmap sampling was skipped." ""
+            }
+        }
+        else {
         try {
             $heightmapText = [string](Get-JsonPropertyValue -Object $maps -Name "heightmap")
             $splatmapText = [string](Get-JsonPropertyValue -Object $maps -Name "splatmap")
@@ -555,6 +652,7 @@ else {
         }
         catch {
             Add-AgentIssue $issues "Error" "Terrain Maps" $terrainRelative "Could not decode compressed terrain maps: $($_.Exception.Message)" "Regenerate the terrain through S&Box TerrainStorage before relying on heightmap or splatmap validation."
+        }
         }
     }
     catch {

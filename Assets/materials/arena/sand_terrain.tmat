@@ -1,0 +1,18 @@
+{
+  "AlbedoImage": "materials/arena/sand_terrain_color.png",
+  "RoughnessImage": "materials/arena/sand_terrain_rough.png",
+  "NormalImage": "materials/arena/sand_terrain_normal.png",
+  "HeightImage": "materials/arena/sand_terrain_height.png",
+  "AOImage": "materials/arena/sand_terrain_ao.png",
+  "UVScale": 7.58,
+  "Metalness": 0,
+  "NormalStrength": 1.188,
+  "HeightBlendStrength": 0.774,
+  "DisplacementScale": 0,
+  "NoTiling": false,
+  "Flags": "None",
+  "Surface": null,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

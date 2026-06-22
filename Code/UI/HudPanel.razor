@@ -141,6 +141,7 @@
     internal int SelectedLoadoutSlot { get; set; } = 1;
     int ObservedSelectionGeneration { get; set; } = -1;
     bool MainMenuOpen { get; set; } = true;
+    internal bool ShowCredits { get; private set; }
     float _mainMenuPlayTransitionStartedAt = MainMenuTransitionInactiveTime;
 
     bool OptionsMenuOpen => LocalOptionsState.IsOpen;
@@ -354,7 +355,15 @@
         var escapePressed = Input.Keyboard.Pressed( "Escape" );
         var menuPressed = escapePressed || Input.Pressed( "Menu" );
         if ( menuPressed )
+        {
+            if ( ShowCredits )
+            {
+                ShowCredits = false;
+                return;
+            }
+
             LocalOptionsState.ToggleOpen();
+        }
     }
 
     internal void ClickMenuOption( Action action )
@@ -368,10 +377,22 @@
         Sound.Play( MenuClickSoundPath );
     }
 
+    internal void OpenCredits()
+    {
+        LocalOptionsState.SetOpen( false );
+        ShowCredits = true;
+    }
+
+    internal void CloseCredits()
+    {
+        ShowCredits = false;
+    }
+
     void StartFromMainMenu()
     {
         MainMenuOpen = false;
         SelectedLoadoutTeam = PlayerRole.Spectator;
+        ShowCredits = false;
         LocalOptionsState.SetOpen( false );
         _mainMenuPlayTransitionStartedAt = MainMenuTransitionInactiveTime;
     }
@@ -389,12 +410,14 @@
 
         MainMenuOpen = false;
         SelectedLoadoutTeam = PlayerRole.Spectator;
+        ShowCredits = false;
         LocalOptionsState.SetOpen( false );
         _mainMenuPlayTransitionStartedAt = Time.Now;
     }
 
     internal void OpenMainMenuOptions()
     {
+        ShowCredits = false;
         LocalOptionsState.SetOpen( true );
     }
 
@@ -476,6 +499,7 @@
 
     internal void QuitGame()
     {
+        ShowCredits = false;
         LocalOptionsState.SetOpen( false );
         Game.Close();
     }
@@ -878,6 +902,7 @@
             ),
             HashCode.Combine(
                 LocalRole, LocalHealth is not null, VignetteClass,
+                ShowCredits,
                 ShowDroneLcdOverlay, ShowDroneOpticOverlay, ShowJamWarning
             ),
             HashCode.Combine(

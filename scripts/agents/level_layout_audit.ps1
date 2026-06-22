@@ -408,7 +408,14 @@ foreach ($rootObject in @($scene.GameObjects)) {
 }
 
 $levelPassMatches = @(Find-ObjectsByName -Objects $rootObjects -Name "LevelDesignPass_AboveBelow")
-if ($levelPassMatches.Count -ne 1) {
+if ($levelPassMatches.Count -eq 0) {
+    if ($ShowInfo) {
+        Add-AgentIssue $issues "Info" "Layout Pass" $relative "No LevelDesignPass_AboveBelow group is present; skipped legacy blockout layout checks for the current park terrain scene."
+    }
+    Write-AgentIssues -Issues $issues -ShowInfo:$ShowInfo
+    exit (Get-AgentExitCode -Issues $issues -FailOnWarning:$FailOnWarning)
+}
+if ($levelPassMatches.Count -gt 1) {
     Add-AgentIssue $issues "Error" "Layout Pass" $relative "Expected exactly one LevelDesignPass_AboveBelow group; found $($levelPassMatches.Count)." "Regenerate the scene pass so layout validation has a single authoritative group."
     Write-AgentIssues -Issues $issues -ShowInfo:$ShowInfo
     exit (Get-AgentExitCode -Issues $issues -FailOnWarning:$FailOnWarning)

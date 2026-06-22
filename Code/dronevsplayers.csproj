@@ -38,6 +38,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="../../sbox-public/game/addons/base/code/Base Library.csproj" />
+		<ProjectReference Include="../Libraries/redsnail.watertool/Code/watertool.csproj" />
 		<ProjectReference Include="../Libraries/sboxskinsgg.claudebridge/Code/claudebridge.csproj" />
 	</ItemGroup>
 

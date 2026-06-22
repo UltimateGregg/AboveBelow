@@ -1,6 +1,6 @@
 param(
     [string]$Root = "",
-    [ValidateSet("quick", "full", "build", "ui", "prefab", "prefab-graph", "held-items", "viewmodel-prefab", "runtime-prefab-fallbacks", "terrain-scene-prefabs", "scene-prefab-coverage", "scene-markers", "buildings", "readability-lights", "ambient-sounds", "scene-singletons", "ballistic-tracers", "muzzle-flash-prefab", "grenade-effects", "team-voice-prefabs", "team-comms-prefab", "training-dummy-prefab", "thrown-grenade-projectile", "stock-scene-props", "transient-combat", "scene", "blue-lines", "terrain", "collision", "collision-chain", "nav", "asset", "asset-production", "modeldoc", "animated-model", "blender-live", "sound", "networking", "gameplay-regression", "docs", "api", "sbox-public", "sbox-docs", "release-notes", "code-search", "learn", "editor-node-tool", "editor-first", "balance", "playtest", "logs", "readiness", "train", "self-test")]
+    [ValidateSet("quick", "full", "build", "ui", "startup-flow", "prefab", "prefab-graph", "held-items", "viewmodel-prefab", "runtime-prefab-fallbacks", "terrain-scene-prefabs", "scene-prefab-coverage", "scene-markers", "buildings", "readability-lights", "ambient-sounds", "scene-singletons", "ballistic-tracers", "muzzle-flash-prefab", "grenade-effects", "team-voice-prefabs", "team-comms-prefab", "training-dummy-prefab", "thrown-grenade-projectile", "stock-scene-props", "transient-combat", "scene", "blue-lines", "terrain", "clutter", "water", "collision", "collision-chain", "nav", "asset", "asset-production", "modeldoc", "animated-model", "blender-live", "sound", "networking", "gameplay-regression", "docs", "api", "sbox-public", "sbox-docs", "release-notes", "code-search", "learn", "editor-node-tool", "editor-first", "balance", "playtest", "logs", "readiness", "train", "self-test")]
     [string]$Suite = "quick",
     [switch]$ShowInfo,
     [switch]$FailOnWarning
@@ -42,8 +42,8 @@ if ($FailOnWarning) {
 }
 
 $sceneMarkerArgs = $commonArgs + "-RequireMigrated"
-$buildingSceneArgs = $commonArgs + "-RequireMigrated"
-$readabilityLightArgs = $commonArgs + "-RequireMigrated"
+$buildingSceneArgs = $commonArgs
+$readabilityLightArgs = $commonArgs
 $ambientSoundArgs = $commonArgs + "-RequireMigrated"
 $sceneSingletonArgs = $commonArgs + "-RequireMigrated"
 
@@ -86,6 +86,7 @@ switch ($Suite) {
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
             @{ Name = "model_collision_scale_audit.ps1"; Args = $commonArgs },
             @{ Name = "tree_collision_audit.ps1"; Args = $commonArgs },
+            @{ Name = "painted_tree_clutter_spacing_audit.ps1"; Args = $commonArgs },
             @{ Name = "nav_collision_qa_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs },
             @{ Name = "aaa_asset_quality_audit.ps1"; Args = $commonArgs },
@@ -97,6 +98,8 @@ switch ($Suite) {
             @{ Name = "sound_playback_audit.ps1"; Args = $commonArgs },
             @{ Name = "team_label_copy_audit.ps1"; Args = $commonArgs },
             @{ Name = "ui_flow_audit.ps1"; Args = $commonArgs },
+            @{ Name = "main_menu_credits_audit.ps1"; Args = $commonArgs },
+            @{ Name = "startup_flow_audit.ps1"; Args = $commonArgs },
             @{ Name = "mcp_screenshot_audit.ps1"; Args = $commonArgs },
             @{ Name = "networking_review_audit.ps1"; Args = $commonArgs },
             @{ Name = "large_component_risk_audit.ps1"; Args = $commonArgs },
@@ -148,6 +151,7 @@ switch ($Suite) {
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
             @{ Name = "model_collision_scale_audit.ps1"; Args = $commonArgs },
             @{ Name = "tree_collision_audit.ps1"; Args = $commonArgs },
+            @{ Name = "painted_tree_clutter_spacing_audit.ps1"; Args = $commonArgs },
             @{ Name = "nav_collision_qa_audit.ps1"; Args = $commonArgs },
             @{ Name = "collision_agent_chain_audit.ps1"; Args = $commonArgs },
             @{ Name = "aaa_asset_quality_audit.ps1"; Args = $commonArgs },
@@ -160,6 +164,8 @@ switch ($Suite) {
             @{ Name = "sound_playback_audit.ps1"; Args = $commonArgs },
             @{ Name = "team_label_copy_audit.ps1"; Args = $commonArgs },
             @{ Name = "ui_flow_audit.ps1"; Args = $commonArgs },
+            @{ Name = "main_menu_credits_audit.ps1"; Args = $commonArgs },
+            @{ Name = "startup_flow_audit.ps1"; Args = $commonArgs },
             @{ Name = "mcp_screenshot_audit.ps1"; Args = $commonArgs },
             @{ Name = "networking_review_audit.ps1"; Args = $commonArgs },
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
@@ -190,10 +196,12 @@ switch ($Suite) {
         $scripts = @(
             @{ Name = "team_label_copy_audit.ps1"; Args = $commonArgs },
             @{ Name = "ui_flow_audit.ps1"; Args = $commonArgs },
+            @{ Name = "main_menu_credits_audit.ps1"; Args = $commonArgs },
             @{ Name = "playtest_checklist.ps1"; Args = @("-Root", $Root, "-ChangeArea", "UI") },
             @{ Name = "feature_readiness_report.ps1"; Args = @("-Root", $Root, "-ShowFiles") }
         )
     }
+    "startup-flow" { $scripts = @(@{ Name = "startup_flow_audit.ps1"; Args = $commonArgs }) }
     "prefab" {
         $scripts = @(
             @{ Name = "prefab_wiring_audit.ps1"; Args = $commonArgs },
@@ -244,6 +252,7 @@ switch ($Suite) {
             @{ Name = "scene_integrity_audit.ps1"; Args = $commonArgs },
             @{ Name = "blockout_blue_line_audit.ps1"; Args = $commonArgs },
             @{ Name = "terrain_floor_audit.ps1"; Args = $commonArgs },
+            @{ Name = "water_tool_runtime_audit.ps1"; Args = $commonArgs },
             @{ Name = "floating_center_ladder_audit.ps1"; Args = $commonArgs },
             @{ Name = "sandbag_cover_audit.ps1"; Args = $commonArgs },
             @{ Name = "road_cover_barrier_audit.ps1"; Args = $commonArgs },
@@ -258,11 +267,20 @@ switch ($Suite) {
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
             @{ Name = "model_collision_scale_audit.ps1"; Args = $commonArgs },
             @{ Name = "tree_collision_audit.ps1"; Args = $commonArgs },
+            @{ Name = "painted_tree_clutter_spacing_audit.ps1"; Args = $commonArgs },
             @{ Name = "nav_collision_qa_audit.ps1"; Args = $commonArgs }
         )
     }
     "blue-lines" { $scripts = @(@{ Name = "blockout_blue_line_audit.ps1"; Args = $commonArgs }) }
-    "terrain" { $scripts = @(@{ Name = "terrain_floor_audit.ps1"; Args = $commonArgs }) }
+    "terrain" {
+        $scripts = @(
+            @{ Name = "terrain_floor_audit.ps1"; Args = $commonArgs },
+            @{ Name = "painted_tree_clutter_spacing_audit.ps1"; Args = $commonArgs },
+            @{ Name = "floating_clutter_audit.ps1"; Args = $commonArgs }
+        )
+    }
+    "clutter" { $scripts = @(@{ Name = "painted_tree_clutter_spacing_audit.ps1"; Args = $commonArgs }) }
+    "water" { $scripts = @(@{ Name = "water_tool_runtime_audit.ps1"; Args = $commonArgs }) }
     "collision" {
         $scripts = @(
             @{ Name = "collision_authoring_agent.ps1"; Args = $commonArgs },
@@ -334,7 +352,12 @@ switch ($Suite) {
             @{ Name = "large_component_risk_audit.ps1"; Args = $commonArgs }
         )
     }
-    "gameplay-regression" { $scripts = @(@{ Name = "gameplay_regression_guard.ps1"; Args = $commonArgs }) }
+    "gameplay-regression" {
+        $scripts = @(
+            @{ Name = "gameplay_regression_guard.ps1"; Args = $commonArgs },
+            @{ Name = "startup_flow_audit.ps1"; Args = $commonArgs }
+        )
+    }
     "docs" {
         $scripts = @(
             @{ Name = "docs_roadmap_audit.ps1"; Args = $commonArgs },
@@ -348,6 +371,7 @@ switch ($Suite) {
             @{ Name = "editor_node_tool_audit.ps1"; Args = $commonArgs },
             @{ Name = "editor_first_workflow_audit.ps1"; Args = $commonArgs },
             @{ Name = "cowork_bridge_autostart_audit.ps1"; Args = $commonArgs },
+            @{ Name = "water_tool_runtime_audit.ps1"; Args = $commonArgs },
             @{ Name = "animated_model_intake_audit.ps1"; Args = $commonArgs },
             @{ Name = "drone_variant_visual_audit.ps1"; Args = $commonArgs }
         )

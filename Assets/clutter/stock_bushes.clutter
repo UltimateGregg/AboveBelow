@@ -1,0 +1,44 @@
+{
+  "Entries": [
+    {
+      "Prefab": {
+        "_type": "gameobject",
+        "prefab": "prefabs/environment/stock/beech_bush_regular_medium_b.prefab"
+      },
+      "Weight": 0.35
+    },
+    {
+      "Prefab": {
+        "_type": "gameobject",
+        "prefab": "prefabs/environment/stock/beech_shrub_wide_small.prefab"
+      },
+      "Weight": 0.3
+    },
+    {
+      "Prefab": {
+        "_type": "gameobject",
+        "prefab": "prefabs/environment/stock/pine_shrub_tall_b.prefab"
+      },
+      "Weight": 0.25
+    },
+    {
+      "Prefab": {
+        "_type": "gameobject",
+        "prefab": "prefabs/environment/stock/beech_bush_medium_wall.prefab"
+      },
+      "Weight": 0.1
+    }
+  ],
+  "TileSizeEnum": "Size512",
+  "TileRadius": 4,
+  "Scatterer": {
+    "Type": "SimpleScatterer",
+    "Scale": "1.1 1.9",
+    "Density": 0.25,
+    "PlaceOnGround": true,
+    "HeightOffset": 0,
+    "AlignToNormal": true
+  },
+  "__references": [],
+  "__version": 0
+}

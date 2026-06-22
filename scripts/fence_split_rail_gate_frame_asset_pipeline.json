@@ -1,0 +1,28 @@
+{
+  "source_blend": "environment_model.blend/fence_split_rail_gate_frame.blend",
+  "target_fbx": "Assets/models/fence_split_rail_gate_frame.fbx",
+  "target_vmdl": "Assets/models/fence_split_rail_gate_frame.vmdl",
+  "model_resource_path": "models/fence_split_rail_gate_frame.vmdl",
+  "root_object": "FenceSplitRailGateFrame_Root",
+  "combine_meshes": true,
+  "combined_object_name": "FenceSplitRailGateFrameMesh",
+  "material_remap": {
+    "Wood": "materials/environment/fence_wood.vmat",
+    "Endgrain": "materials/environment/fence_endgrain.vmat"
+  },
+  "vmdl_material_source_suffix": "",
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
+  "verify_fbx": true,
+  "required_object": ["FenceSplitRailGateFrameMesh"],
+  "object_type": ["EMPTY", "MESH"],
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z",
+  "collision": {
+    "mode": "render_mesh",
+    "surface_prop": "wood",
+    "collision_tags": "solid"
+  },
+  "_collision_note": "EXACT mesh collision. Static gate posts (the opening is between them). FenceSplitRailGate.prefab carries a Static ModelCollider on the Visual child; the swinging leaf is a separate Gate child (fence_split_rail_gate_leaf.vmdl). See docs/collision_authoring.md."
+}

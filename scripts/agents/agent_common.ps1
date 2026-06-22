@@ -153,6 +153,18 @@ function Resolve-AgentResourcePath {
         return $null
     }
 
+    $libraryResourceAliases = @{
+        "materials/lakewater.vmat" = "Libraries/redsnail.watertool/Assets/Materials/LakeWater.vmat"
+        "materials/oceanwater.vmat" = "Libraries/redsnail.watertool/Assets/Materials/OceanWater.vmat"
+        "materials/poolwater.vmat" = "Libraries/redsnail.watertool/Assets/Materials/PoolWater.vmat"
+    }
+    if ($libraryResourceAliases.ContainsKey($normalized)) {
+        $libraryPath = Join-Path $Root $libraryResourceAliases[$normalized]
+        if (Test-Path -LiteralPath $libraryPath) {
+            return $libraryPath
+        }
+    }
+
     $skipPrefixes = @(
         "models/dev/",
         "models/citizen/",

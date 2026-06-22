@@ -170,6 +170,137 @@ MainMenuPanel {
         text-align: center;
     }
 
+    .credits-link {
+        position: absolute;
+        left: 24px;
+        bottom: 18px;
+        padding: 6px 10px;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0;
+        text-transform: uppercase;
+        color: rgba(206, 226, 233, 0.5);
+        cursor: pointer;
+        transition: all 0.08s ease-out;
+
+        &:hover {
+            color: #9fe6ff;
+        }
+    }
+
+    .credits-overlay {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .credits-backdrop {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.66);
+        cursor: pointer;
+    }
+
+    .credits-card {
+        width: 560px;
+        max-width: 90%;
+        max-height: 72%;
+        flex-direction: column;
+        border-radius: 8px;
+        border: 1px solid rgba(73, 205, 241, 0.44);
+        background-color: rgba(8, 16, 20, 0.97);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+        overflow: hidden;
+    }
+
+    .credits-card-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 22px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .credits-card-title {
+        font-size: 22px;
+        font-weight: 900;
+        letter-spacing: 0;
+        text-transform: uppercase;
+        color: #f4fbff;
+    }
+
+    .credits-close {
+        width: 34px;
+        height: 34px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        border: 1px solid rgba(73, 205, 241, 0.44);
+        background-color: rgba(12, 23, 29, 0.9);
+        color: #dff8ff;
+        font-size: 16px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.08s ease-out;
+
+        &:hover {
+            background-color: rgba(31, 87, 100, 0.92);
+            border-color: rgba(104, 229, 255, 0.9);
+        }
+    }
+
+    .credits-body {
+        flex-direction: column;
+        max-height: 520px;
+        padding: 12px 22px 20px;
+        overflow-y: scroll;
+    }
+
+    .credits-section {
+        flex-direction: column;
+        margin-top: 16px;
+        gap: 5px;
+    }
+
+    .credits-heading {
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #58dcff;
+        margin-bottom: 3px;
+    }
+
+    .credit-entry {
+        flex-direction: column;
+        padding: 4px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .credit-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #f0f7fa;
+    }
+
+    .credit-author {
+        font-size: 13px;
+        color: rgba(220, 238, 244, 0.7);
+    }
+
+    .credit-detail {
+        font-size: 12px;
+        font-style: italic;
+        color: rgba(206, 226, 233, 0.5);
+    }
+
     .visual-panel {
         width: 410px;
         height: 318px;

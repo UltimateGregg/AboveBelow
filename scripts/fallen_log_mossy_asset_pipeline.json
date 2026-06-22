@@ -1,0 +1,34 @@
+{
+  "source_blend": "environment_model.blend/fallen_log_mossy.blend",
+  "target_fbx": "Assets/models/fallen_log_mossy.fbx",
+  "target_vmdl": "Assets/models/fallen_log_mossy.vmdl",
+  "model_resource_path": "models/fallen_log_mossy.vmdl",
+  "root_object": "FallenLogMossy_Root",
+  "combine_meshes": true,
+  "combined_object_name": "FallenLogMossyMesh",
+  "material_remap": {
+    "Bark": "materials/environment/fallen_log_bark.vmat",
+    "Endgrain": "materials/environment/fallen_log_endgrain.vmat",
+    "Moss": "materials/environment/fallen_log_moss.vmat"
+  },
+  "vmdl_material_source_suffix": "",
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
+  "verify_fbx": true,
+  "required_object": [
+    "FallenLogMossyMesh"
+  ],
+  "object_type": [
+    "EMPTY",
+    "MESH"
+  ],
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z",
+  "collision": {
+    "mode": "render_mesh",
+    "surface_prop": "wood",
+    "collision_tags": "solid"
+  },
+  "_collision_note": "EXACT mesh collision (water-tower technique): render_mesh writes a PhysicsMeshFile nested inside PhysicsShapeList in fallen_log_mossy.vmdl. FallenLogMossy.prefab carries a ModelCollider (Model=fallen_log_mossy.vmdl, Static=true) on the Visual child. See docs/collision_authoring.md."
+}

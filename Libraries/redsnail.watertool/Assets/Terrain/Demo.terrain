@@ -1,0 +1,16 @@
+{
+  "Maps": {
+    "$blob": "7db3b31d-6a58-4d67-98f3-36f075f2ca8a"
+  },
+  "Resolution": 512,
+  "TerrainSize": 25000,
+  "TerrainHeight": 2000,
+  "Materials": [],
+  "MaterialSettings": {
+    "HeightBlendEnabled": true,
+    "HeightBlendSharpness": 0.87
+  },
+  "ResourceVersion": 3,
+  "__references": [],
+  "__version": 3
+}

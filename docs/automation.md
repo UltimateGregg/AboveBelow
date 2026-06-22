@@ -88,6 +88,44 @@ These hooks are intentionally conservative. They do not compile the project, mut
 5. **Notification**: Claude Code displays success or error notification in the UI
 6. **Auto-Reload**: S&Box editor detects `.vmdl` and `.prefab` changes and automatically reloads
 
+### Companion: MCP-save auto-export (PostToolUse hook)
+
+The `file_pattern_change` watcher above only sees `.blend` changes made by Claude's
+own file tools. When a `.blend` is saved by the **Blender process itself** — i.e. via
+the MCP tool `mcp__blender_stdio__blender_save_file` (or `bpy.ops.wm.save_as_mainfile`)
+— that is an external disk write the watcher never observes, so the pipeline does not
+run and the model silently does not update.
+
+A native Claude Code **PostToolUse hook** closes that gap. It lives in
+`.claude/settings.local.json` (kept out of the custom `hooks` array in `settings.json`,
+which is a different schema) and matches `mcp__blender_stdio__blender_save_file`:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "mcp__blender_stdio__blender_save_file",
+        "hooks": [
+          { "type": "command", "command": "powershell",
+            "args": ["-NoProfile","-ExecutionPolicy","Bypass","-File",
+                     "C:\\Programming\\S&Box\\scripts\\hooks\\blender_save_export_hook.ps1"],
+            "timeout": 600 }
+        ]
+      }
+    ]
+  }
+}
+```
+
+`scripts/hooks/blender_save_export_hook.ps1` reads the tool-call JSON from stdin,
+pulls the saved `.blend` path out of `tool_input.path` (falling back to the tool
+result's `saved` field), and runs `scripts/smart_asset_export.ps1 -BlendFilePath <path>`
+— the same exporter the file watcher would have run. So an MCP save now exports
+exactly like a Ctrl+S save. (Newly added hooks reload because `.claude/` is watched
+when a settings file is present at session start; if a save ever does not export, open
+`/hooks` once or restart to reload the config.)
+
 The `.blend` save hook remains export-focused. Production quality gates are run manually or through:
 
 ```powershell

@@ -242,6 +242,14 @@ function Get-ComponentByTypeName {
             $null -ne (Get-JsonPropertyValue -Object $component -Name "RenderType")) {
             return $component
         }
+
+        if ($TypeName -eq "ModelCollider" -and
+            $null -ne (Get-JsonPropertyValue -Object $component -Name "Model") -and
+            $null -ne (Get-JsonPropertyValue -Object $component -Name "Static") -and
+            $null -ne (Get-JsonPropertyValue -Object $component -Name "IsTrigger") -and
+            $null -ne (Get-JsonPropertyValue -Object $component -Name "ColliderFlags")) {
+            return $component
+        }
     }
 
     return $null
@@ -286,6 +294,55 @@ function Test-JsonBool {
     }
 
     return $Value.ToString().Equals($Expected.ToString(), [System.StringComparison]::OrdinalIgnoreCase)
+}
+
+function Test-ModelBackedBarrierContract {
+    param(
+        [object]$Cover,
+        [string]$Relative
+    )
+
+    $expectedModel = "models/road_cover_northwest_barrier.vmdl"
+    $children = @(Get-ObjectChildren -Object $Cover)
+    $visual = @($children | Where-Object { [string](Get-JsonPropertyValue -Object $_ -Name "Name") -eq "Visual" } | Select-Object -First 1)
+    if ($visual.Count -eq 0) {
+        return $false
+    }
+
+    $renderer = Get-ComponentByTypeName -Object $visual[0] -TypeName "ModelRenderer"
+    $modelCollider = Get-ComponentByTypeName -Object $visual[0] -TypeName "ModelCollider"
+    $rendererModel = [string](Get-JsonPropertyValue -Object $renderer -Name "Model")
+    $colliderModel = [string](Get-JsonPropertyValue -Object $modelCollider -Name "Model")
+
+    if ($rendererModel -ne $expectedModel -and $colliderModel -ne $expectedModel) {
+        return $false
+    }
+
+    if ($children.Count -ne 1) {
+        Add-AgentIssue $issues "Error" "Road Cover Barrier" $Relative "Model-backed RoadCover_Northwest_Barrier should have exactly one Visual child; found $($children.Count)." "Keep authored model/collision details in the VMDL and the scene instance lightweight."
+    }
+
+    if ($null -eq $renderer -or $rendererModel -ne $expectedModel) {
+        Add-AgentIssue $issues "Error" "Road Cover Barrier" $Relative "Visual should render $expectedModel." "Keep the scene instance backed by the road_cover_northwest_barrier model asset."
+    }
+
+    if ($null -eq $modelCollider -or $colliderModel -ne $expectedModel) {
+        Add-AgentIssue $issues "Error" "Road Cover Barrier" $Relative "Visual should carry a ModelCollider for $expectedModel." "Use the VMDL's generated mesh collision instead of stale primitive child colliders."
+    }
+    else {
+        if (-not (Test-JsonBool -Value (Get-JsonPropertyValue -Object $modelCollider -Name "Static") -Expected $true)) {
+            Add-AgentIssue $issues "Error" "Road Cover Barrier" $Relative "Visual ModelCollider is not static." "Road cover should be static scene geometry."
+        }
+        if (-not (Test-JsonBool -Value (Get-JsonPropertyValue -Object $modelCollider -Name "IsTrigger") -Expected $false)) {
+            Add-AgentIssue $issues "Error" "Road Cover Barrier" $Relative "Visual ModelCollider is a trigger." "Road cover should block movement and projectiles as solid cover."
+        }
+    }
+
+    if ($ShowInfo) {
+        Add-AgentIssue $issues "Info" "Road Cover Barrier" $Relative "Validated model-backed RoadCover_Northwest_Barrier using $expectedModel and ModelCollider."
+    }
+
+    return $true
 }
 
 if (-not (Test-Path -LiteralPath $fullScenePath)) {
@@ -340,6 +397,11 @@ $cover = $coverMatches[0]
 $coverPosition = Convert-AgentVectorText -Value (Get-JsonPropertyValue -Object $cover -Name "Position")
 if ($null -eq $coverPosition -or [Math]::Abs($coverPosition[0] - 111.190948) -gt 0.1 -or [Math]::Abs($coverPosition[1] - 1185) -gt 0.1 -or [Math]::Abs($coverPosition[2]) -gt 0.1) {
     Add-AgentIssue $issues "Error" "Road Cover Barrier" $relative "RoadCover_Northwest_Barrier is not at the expected northwest placeholder position." "Keep the replacement group centered where the placeholder stood."
+}
+
+if (Test-ModelBackedBarrierContract -Cover $cover -Relative $relative) {
+    Write-AgentIssues -Issues $issues -ShowInfo:$ShowInfo
+    exit (Get-AgentExitCode -Issues $issues -FailOnWarning:$FailOnWarning)
 }
 
 if (@(Get-ObjectComponents -Object $cover).Count -ne 0) {

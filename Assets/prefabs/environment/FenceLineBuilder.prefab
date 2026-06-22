@@ -1,0 +1,54 @@
+{
+  "RootObject": {
+    "__guid": "fa0ce511-0004-4a11-9c01-aa00fe000001",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "FenceLine",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 0,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "DroneVsPlayers.FenceLine",
+        "__guid": "fa0ce511-0004-4a11-9c01-aa00fe000002",
+        "__enabled": true,
+        "Flags": 0,
+        "SectionPrefab": {
+          "_type": "gameobject",
+          "prefab": "prefabs/environment/FenceSplitRail.prefab"
+        },
+        "Count": 8,
+        "Spacing": 118,
+        "CurvePerSection": 0,
+        "EndPostPrefab": null
+      }
+    ],
+    "Children": [],
+    "__variables": [],
+    "__properties": {
+      "FixedUpdateFrequency": 50,
+      "MaxFixedUpdates": 5,
+      "NetworkFrequency": 30,
+      "NetworkInterpolation": true,
+      "PhysicsSubSteps": 1,
+      "ThreadedAnimation": true,
+      "TimeScale": 1,
+      "UseFixedUpdate": true,
+      "Metadata": {}
+    }
+  },
+  "ShowInMenu": true,
+  "MenuPath": "Drone vs Players/Environment/Fences/Fence Line (auto run)",
+  "MenuIcon": "fence",
+  "DontBreakAsTemplate": false,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

@@ -84,6 +84,8 @@ $requiredScripts = @(
     "scripts/agents/sound_playback_audit.ps1",
     "scripts/agents/team_label_copy_audit.ps1",
     "scripts/agents/mcp_screenshot_audit.ps1",
+    "scripts/agents/startup_flow_audit.ps1",
+    "scripts/agents/water_tool_runtime_audit.ps1",
     "scripts/agents/sbox_public_source_audit.ps1",
     "scripts/agents/sbox_docs_source_audit.ps1",
     "scripts/agents/sbox_engine_reference_audit.ps1",

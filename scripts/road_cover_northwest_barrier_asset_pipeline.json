@@ -1,0 +1,32 @@
+{
+  "source_blend": "environment_model.blend/road_cover_northwest_barrier.blend",
+  "target_fbx": "Assets/models/road_cover_northwest_barrier.fbx",
+  "target_vmdl": "Assets/models/road_cover_northwest_barrier.vmdl",
+  "model_resource_path": "models/road_cover_northwest_barrier.vmdl",
+  "root_object": "RoadBarrierNorthwest_Root",
+  "combine_meshes": true,
+  "combined_object_name": "RoadBarrierNorthwestMesh",
+  "material_remap": {
+    "Concrete": "materials/environment/road_barrier_concrete.vmat"
+  },
+  "vmdl_material_source_suffix": "",
+  "vmdl_use_global_default": false,
+  "strict_vmdl_material_sources": true,
+  "verify_fbx": true,
+  "required_object": [
+    "RoadBarrierNorthwestMesh"
+  ],
+  "object_type": [
+    "EMPTY",
+    "MESH"
+  ],
+  "global_scale": 0.0254,
+  "axis_forward": "-Y",
+  "axis_up": "Z",
+  "collision": {
+    "mode": "render_mesh",
+    "surface_prop": "concrete",
+    "collision_tags": "solid"
+  },
+  "_collision_note": "EXACT mesh collision (water-tower technique): render_mesh writes a PhysicsMeshFile nested inside PhysicsShapeList in road_cover_northwest_barrier.vmdl, so the whole barrier is solid cover. road_cover_northwest_barrier.prefab carries a ModelCollider (Model=road_cover_northwest_barrier.vmdl, Static=true) on the Visual child so collision rides the exact visual transform. See docs/collision_authoring.md."
+}

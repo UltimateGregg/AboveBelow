@@ -173,7 +173,7 @@ public sealed partial class GameSetup : Component, Component.INetworkListener
 			return false;
 #endif
 
-		return Scene.IsEditor;
+		return Scene.IsEditor && !Game.IsPlaying;
 	}
 
 	void ResolveManagerRefs()

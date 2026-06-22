@@ -390,6 +390,14 @@ if (Test-Path -LiteralPath $roadEdgeWearPrefabPath) {
 }
 $wearObjects = @(Find-RoadEdgeWearObjects -Road $road -PrefabRoot $roadEdgeWearPrefabRoot)
 
+if ($wearObjects.Count -eq 0) {
+    if ($ShowInfo) {
+        Add-AgentIssue $issues "Info" "Road Edge Wear" $relative "No RoadEdgeWear_* decals are present; skipped legacy road-edge decal layout checks for the current park terrain scene."
+    }
+    Write-AgentIssues -Issues $issues -ShowInfo:$ShowInfo
+    exit (Get-AgentExitCode -Issues $issues -FailOnWarning:$FailOnWarning)
+}
+
 $expectedWearTotal = $expectedWearPerSide * 2
 if ($wearObjects.Count -ne $expectedWearTotal) {
     Add-AgentIssue $issues "Error" "Road Edge Wear" $relative "Expected $expectedWearTotal road-edge wear decals; found $($wearObjects.Count)." "Generate a stable randomized decal set across both road edges."

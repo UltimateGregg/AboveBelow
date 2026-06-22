@@ -10,6 +10,7 @@
   <Folder Name="/Libraries/">
     <Project Path="Libraries/jtc.mcp-server/Editor/mcp-server.editor.csproj" />
     <Project Path="Libraries/kamishell.blender_bridge/Editor/blender_bridge.editor.csproj" />
+    <Project Path="Libraries/redsnail.watertool/Code/watertool.csproj" />
     <Project Path="Libraries/sboxskinsgg.claudebridge/Code/claudebridge.csproj" />
     <Project Path="Libraries/sboxskinsgg.claudebridge/Editor/claudebridge.editor.csproj" />
     <Project Path="Libraries/sboxskinsgg.claudebridge/UnitTests/claudebridge.unittest.csproj" />

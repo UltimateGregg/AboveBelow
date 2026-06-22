@@ -66,7 +66,7 @@ HudPanel {
                     position: absolute;
                     top: 68%;
                     left: 50%;
-                    width: 430px;
+                    width: 520px;
                     max-width: 88%;
                     padding: 16px;
                     gap: 10px;
@@ -85,7 +85,7 @@ HudPanel {
                 .main-menu-secondary {
                     width: 100%;
                     flex-direction: row;
-                    gap: 10px;
+                    gap: 8px;
                 }
 
                 .choice {
@@ -95,6 +95,126 @@ HudPanel {
 
                 .main-menu-play {
                     min-height: 68px;
+                }
+
+                .main-menu-credits {
+                    background-color: rgba(44, 47, 54, 0.94);
+                    border-color: rgba(195, 212, 224, 0.36);
+
+                    &:hover {
+                        background-color: rgba(62, 68, 78, 0.96);
+                        border-color: rgba(226, 239, 247, 0.7);
+                    }
+                }
+
+                .credits-overlay {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    bottom: 0;
+                    left: 0;
+                    z-index: 20;
+                    pointer-events: all;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .credits-backdrop {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    bottom: 0;
+                    left: 0;
+                    background-color: rgba(0, 0, 0, 0.72);
+                    cursor: pointer;
+                }
+
+                .credits-card {
+                    width: 620px;
+                    max-width: 86%;
+                    max-height: 72%;
+                    flex-direction: column;
+                    border-radius: 8px;
+                    border: 1px solid rgba(77, 210, 255, 0.46);
+                    background-color: rgba(12, 17, 20, 0.98);
+                    box-shadow: 0 22px 58px rgba(0, 0, 0, 0.55);
+                    overflow: hidden;
+                }
+
+                .credits-card-header {
+                    flex-direction: row;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 16px 20px;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+                }
+
+                .credits-card-title {
+                    font-size: 24px;
+                    font-weight: 900;
+                    color: white;
+                    text-transform: uppercase;
+                }
+
+                .credits-close {
+                    width: 34px;
+                    height: 34px;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 6px;
+                    border: 1px solid rgba(255, 255, 255, 0.22);
+                    background-color: rgba(255, 255, 255, 0.08);
+                    color: rgba(255, 255, 255, 0.92);
+                    font-size: 15px;
+                    font-weight: 900;
+                    cursor: pointer;
+
+                    &:hover {
+                        background-color: rgba(255, 255, 255, 0.16);
+                        border-color: rgba(255, 255, 255, 0.42);
+                    }
+                }
+
+                .credits-body {
+                    flex-direction: column;
+                    max-height: 500px;
+                    padding: 10px 20px 18px;
+                    overflow-y: scroll;
+                }
+
+                .credits-section {
+                    flex-direction: column;
+                    margin-top: 14px;
+                    gap: 5px;
+                }
+
+                .credits-heading {
+                    font-size: 13px;
+                    font-weight: 900;
+                    color: #4dd2ff;
+                    text-transform: uppercase;
+                }
+
+                .credit-entry {
+                    flex-direction: column;
+                    padding: 4px 0;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+                }
+
+                .credit-title {
+                    font-size: 15px;
+                    font-weight: 800;
+                    color: white;
+                }
+
+                .credit-author {
+                    font-size: 13px;
+                    color: rgba(255, 255, 255, 0.72);
+                }
+
+                .credit-detail {
+                    font-size: 12px;
+                    color: rgba(255, 255, 255, 0.52);
                 }
 
                 .main-menu-scanline {

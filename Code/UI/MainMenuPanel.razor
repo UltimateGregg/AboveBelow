@@ -70,6 +70,43 @@
                 </div>
             </div>
         </div>
+
+        <div class="credits-link" onclick=@OpenCredits>Credits</div>
+
+        @if ( ShowCredits )
+        {
+            <div class="credits-overlay">
+                <div class="credits-backdrop" onclick=@CloseCredits></div>
+                <div class="credits-card">
+                    <div class="credits-card-header">
+                        <div class="credits-card-title">Credits</div>
+                        <div class="credits-close" onclick=@CloseCredits>✕</div>
+                    </div>
+                    <div class="credits-body">
+                        @foreach ( var section in CreditsData.Sections )
+                        {
+                            <div class="credits-section">
+                                <div class="credits-heading">@(section.Heading)</div>
+                                @foreach ( var entry in section.Entries )
+                                {
+                                    <div class="credit-entry">
+                                        <span class="credit-title">@entry.Title</span>
+                                        @if ( !string.IsNullOrEmpty( entry.Author ) )
+                                        {
+                                            <span class="credit-author">@entry.Author</span>
+                                        }
+                                        @if ( !string.IsNullOrEmpty( entry.Detail ) )
+                                        {
+                                            <span class="credit-detail">@entry.Detail</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </root>
 
@@ -78,6 +115,20 @@
     const string MenuClickSoundPath = "sounds/ui_menu_click.sound";
 
     string StatusLine { get; set; } = "";
+
+    bool ShowCredits { get; set; }
+
+    void OpenCredits()
+    {
+        PlayMenuClickSound();
+        ShowCredits = true;
+    }
+
+    void CloseCredits()
+    {
+        PlayMenuClickSound();
+        ShowCredits = false;
+    }
 
     void ClickMenuOption( Action action )
     {
@@ -124,5 +175,5 @@
         return Game.ChangeScene( options );
     }
 
-    protected override int BuildHash() => HashCode.Combine( StatusLine );
+    protected override int BuildHash() => HashCode.Combine( StatusLine, ShowCredits );
 }

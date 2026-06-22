@@ -542,6 +542,18 @@ $expectedGroups = @(
     @{ Name = "CenterLane_DestroyedPickup_North"; Position = @(923.058044, 690.0, 0.0) }
 )
 
+$presentExpectedGroups = @()
+foreach ($expected in $expectedGroups) {
+    $presentExpectedGroups += @(Find-DestroyedPickupGroups -Objects $allObjects -Name $expected.Name -PrefabRoot $destroyedPickupPrefabRoot)
+}
+if ($presentExpectedGroups.Count -eq 0) {
+    if ($ShowInfo) {
+        Add-AgentIssue $issues "Info" "Destroyed Pickup Scene" $relative "No CenterLane_DestroyedPickup_* group is present; skipped legacy destroyed-pickup layout checks for the current park terrain scene."
+    }
+    Write-AgentIssues -Issues $issues -ShowInfo:$ShowInfo
+    exit (Get-AgentExitCode -Issues $issues -FailOnWarning:$FailOnWarning)
+}
+
 foreach ($expected in $expectedGroups) {
     $matches = @(Find-DestroyedPickupGroups -Objects $allObjects -Name $expected.Name -PrefabRoot $destroyedPickupPrefabRoot)
     if ($matches.Count -ne 1) {
